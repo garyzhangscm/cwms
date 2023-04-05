@@ -20,10 +20,10 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ItemPackageType implements Serializable {
@@ -46,6 +46,29 @@ public class ItemPackageType implements Serializable {
 
 
     private Boolean defaultFlag;
+
+    @Transient
+    private ItemUnitOfMeasure trackingLpnUOM;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPackageType that = (ItemPackageType) o;
+        if (Objects.equals(id, that.id)) {
+            return true;
+        }
+        // if ID doesn't match, let's see if the name matches
+        if (getName().equals(that.getName()) && Objects.equals(item, that.getItem())) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, item);
+    }
 
     public Long getId() {
         return id;
@@ -147,5 +170,26 @@ public class ItemPackageType implements Serializable {
 
     public void setDefaultFlag(Boolean defaultFlag) {
         this.defaultFlag = defaultFlag;
+    }
+
+
+    public void setTrackingLpnUOM(ItemUnitOfMeasure trackingLpnUOM) {
+        this.trackingLpnUOM = trackingLpnUOM;
+    }
+
+    public ItemUnitOfMeasure getTrackingLpnUOM() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+        // let's find the smallest uom marked as tracking UOM
+        List<ItemUnitOfMeasure> trackingLPNUoms = itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getTrackingLpn())
+        ).collect(Collectors.toList());
+        if (trackingLPNUoms.size() == 0) {
+            return null;
+        }
+        Collections.sort(trackingLPNUoms, (Comparator.comparing(ItemUnitOfMeasure::getQuantity)));
+
+        return trackingLPNUoms.get(0);
     }
 }

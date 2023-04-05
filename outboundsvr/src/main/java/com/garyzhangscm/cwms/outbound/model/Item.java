@@ -83,7 +83,8 @@ public class Item implements Serializable {
 
     @Override
     public int hashCode() {
-        return this.getName().hashCode();
+
+        return Objects.hash(id, name, warehouseId);
     }
 
     public Long getId() {

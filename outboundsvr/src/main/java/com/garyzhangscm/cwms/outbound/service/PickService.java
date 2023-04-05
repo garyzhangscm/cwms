@@ -487,12 +487,16 @@ public class PickService {
 
     @Transactional
     public Pick saveOrUpdate(Pick pick) {
+        return saveOrUpdate(pick, true);
+    }
+
+    @Transactional
+    public Pick saveOrUpdate(Pick pick, boolean loadDetails ) {
         if (pick.getId() == null && findByNumber(pick.getNumber()) != null) {
             pick.setId(findByNumber(pick.getNumber()).getId());
         }
-        return save(pick);
+        return save(pick, loadDetails);
     }
-
 
     public void delete(Pick pick) {
         pickRepository.delete(pick);
@@ -849,8 +853,9 @@ public class PickService {
         // Let's see if we can group the pick either
         // 1. into an existing pick list
         // 2. or create a new picking list so other picks can be grouped
-        logger.debug("start to create list of pick {}", pick.getNumber());
-        processPickList(pick);
+        logger.debug("We will postpone the list pick and bulk pick until all the picks are generated for the wave. " +
+                "List pick and bulk pick will only possible for wave at this moment");
+        // processPickList(pick);
 
         logger.debug("pick {} is processed. we are good to go",
                 pick.getNumber());

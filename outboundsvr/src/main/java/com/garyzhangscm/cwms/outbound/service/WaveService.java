@@ -23,7 +23,6 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.repository.ShipmentRepository;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -31,9 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -61,6 +58,10 @@ public class WaveService {
     private OrderLineService orderLineService;
 
     @Autowired
+    private BulkPickConfiguration bulkPickConfiguration;
+    @Autowired
+    private BulkPickService bulkPickService;
+    @Autowired
     private ShipmentLineService shipmentLineService;
 
     @Autowired
@@ -69,6 +70,9 @@ public class WaveService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
+    @Autowired
+    private BulkPickConfigurationService bulkPickConfigurationService;
 
     public Wave findById(Long id) {
         return findById(id, true);
@@ -344,13 +348,67 @@ public class WaveService {
     public Wave allocateWave(Wave wave) {
 
         // Allocate each open shipment line
+        List<AllocationResult> allocationResults = new ArrayList<>();
         wave.getShipmentLines().forEach(shipmentLine -> {
-            shipmentLineService.allocateShipmentLine(shipmentLine);
+            allocationResults.add(shipmentLineService.allocateShipmentLine(shipmentLine));
         });
+
+        // post allocation process
+        // 1. bulk pick
+        // 2. list pick
+        postAllocationProcess(wave.getWarehouseId(),
+                wave.getNumber(),
+                PickType.OUTBOUND, allocationResults);
         wave.setStatus(WaveStatus.ALLOCATED);
 
         // return the latest information
         return save(wave);
+
+    }
+
+    /**
+     * Post allocation process
+     * 1. bulk pick
+     * 2. list pick
+     * @param allocationResults
+     */
+    private void postAllocationProcess(Long warehouseId,
+                                       String waveNumber,
+                                       PickType pickType,
+                                       List<AllocationResult> allocationResults) {
+        // we will always try bulk pick first
+        requestBulkPick(warehouseId, waveNumber,
+                pickType, allocationResults);
+
+        // for anything that not fall in the bulk pick, see if we can group them into
+        // a list pick
+        // requestListPick(allocationResults);
+
+    }
+
+    /**
+     * Group all the picks into bulk pick, if possible
+     * @param allocationResults
+     */
+    private void requestBulkPick(Long warehouseId,
+                                 String waveNumber,
+                                 PickType pickType,
+                                 List<AllocationResult> allocationResults) {
+
+        logger.debug("start to seek bulk pick possibility for wave {}",
+                waveNumber);
+        // make sure the bulk pick is enabled
+        BulkPickConfiguration bulkPickConfiguration =
+                bulkPickConfigurationService.findByWarehouseAndPickType(warehouseId, pickType);
+        if (Objects.isNull(bulkPickConfiguration) || !Boolean.TRUE.equals(bulkPickConfiguration.getEnabled())){
+            // bulk pick is not enabled at the warehouse
+
+            return;
+        }
+
+        bulkPickService.groupPicksIntoBulk(
+                waveNumber, allocationResults, bulkPickConfiguration.getDirection());
+
 
     }
 
