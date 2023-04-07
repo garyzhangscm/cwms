@@ -38,10 +38,14 @@ public class WaveController {
     @RequestMapping(value="/waves", method = RequestMethod.GET)
     public List<Wave> findAllWaves(@RequestParam Long warehouseId,
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                   @RequestParam(name="waveStatus", required = false, defaultValue = "") String waveStatus,
                                    @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
                                    @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
-                                   @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return waveService.findAll(warehouseId, number, startTime, endTime, date);
+                                   @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                   @RequestParam(name = "includeCompletedWave", required = false, defaultValue = "false") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Boolean includeCompletedWave,
+                                   @RequestParam(name = "includeCancelledWave", required = false, defaultValue = "false") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Boolean includeCancelledWave,
+                                   @RequestParam(name = "loadAttribute", required = false, defaultValue = "false") Boolean loadAttribute) {
+        return waveService.findAll(warehouseId, number, waveStatus, startTime, endTime, date, includeCompletedWave, includeCancelledWave, loadAttribute);
     }
 
     @ClientValidationEndpoint

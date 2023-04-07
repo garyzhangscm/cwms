@@ -250,6 +250,7 @@ public class BulkPickService {
         List<Pick> pickCandidates = allocationResults.stream().map(
                 allocationResult -> {
                     List<Pick> picks = allocationResult.getPicks();
+
                     picks.forEach(
                             pick -> allocationResultMap.put(pick.getNumber(), allocationResult)
                     );
@@ -266,7 +267,7 @@ public class BulkPickService {
                                 Objects.isNull(pick.getPickingByUserId()) &&
                                 Strings.isBlank(pick.getLpn()) &&
                                 pick.getPickedQuantity() == 0 &&
-                                pick.getStatus() == PickStatus.PENDING
+                                pick.getStatus() == PickStatus.RELEASED
                 ).collect(Collectors.toList());
 
         groupPicksIntoBulk(waveNumber, pickCandidates, direction, allocationResultMap);
@@ -346,11 +347,16 @@ public class BulkPickService {
         // let's see if we can start build the bulk pick
         pickCandidateMap.entrySet().forEach(
                 entry -> {
+
                     String key = entry.getKey();
+                    logger.debug("start to process picks with key {}",
+                            key);
                     List<Inventory> pickableInventory = pickableInventoryMap.get(key);
                     List<Pick> pickCandidates = entry.getValue();
 
                     setupBulkPick(waveNumber, pickableInventory, pickCandidates, allocationResultMap);
+                    logger.debug("complete processing picks with key {}",
+                            key);
 
                 }
         );
@@ -428,10 +434,20 @@ public class BulkPickService {
             if (lpnQuantity.equals(totalPickQuantity)) {
                 // OK, we found a LPN for all the picks in the list
                 BulkPick bulkPick = createBulkPick(waveNumber, picksForCurrentBulkGroup, bulkPickUnitOfMeasure);
+                // attach the picks to the bulk pick
                 bulkPick.getPicks().forEach(
-                        pickByBulk -> pickByBulk.setBulkPick(bulkPick)
+                        pickByBulk -> {
+                            logger.debug("1. set pick {} / {}'s bulk pick to {}",
+                                    pickByBulk.getId(),
+                                    pickByBulk.getNumber(),
+                                    bulkPick.getNumber());
+                            pickByBulk.setBulkPick(bulkPick);
+                        }
                 );
                 saveOrUpdate(bulkPick);
+                logger.debug("Bulk pick {} / {} saved!",
+                        bulkPick.getId(), bulkPick.getNumber());
+
                 // clear the pick list
                 totalPickQuantity = 0l;
                 picksForCurrentBulkGroup.clear();
@@ -440,8 +456,16 @@ public class BulkPickService {
                 // OK, we found a LPN for all the picks in the list
                 BulkPick bulkPick = createBulkPick(waveNumber, picksForCurrentBulkGroup, lpnQuantity,
                         bulkPickUnitOfMeasure);
+
+                // attach the picks to the bulk pick
                 bulkPick.getPicks().forEach(
-                        pickByBulk -> pickByBulk.setBulkPick(bulkPick)
+                        pickByBulk -> {
+                            logger.debug("2. set pick {} / {}'s bulk pick to {}",
+                                    pickByBulk.getId(),
+                                    pickByBulk.getNumber(),
+                                    bulkPick.getNumber());
+                            pickByBulk.setBulkPick(bulkPick);
+                        }
                 );
                 saveOrUpdate(bulkPick);
 
@@ -473,6 +497,7 @@ public class BulkPickService {
         newPick.setNumber(pickService.getNextPickNumber(pick.getWarehouseId()));
         newPick.setPickedQuantity(0l);
         newPick.setQuantity(newPickQuantity);
+        newPick.setBulkPick(null);
 
         return pickService.saveOrUpdate(newPick);
 

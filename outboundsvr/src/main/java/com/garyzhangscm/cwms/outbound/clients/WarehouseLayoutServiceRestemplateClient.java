@@ -396,6 +396,8 @@ public class WarehouseLayoutServiceRestemplateClient {
                         null,
                         new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
 
+        logger.debug("Get result from reserve location by location group \n{}",
+                responseBodyWrapper);
         return responseBodyWrapper.getData();
     }
 

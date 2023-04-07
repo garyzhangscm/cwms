@@ -611,12 +611,12 @@ public class ItemService {
 
         item.setWarehouseId(warehouse.getId());
 
-        if (!itemCSVWrapper.getClient().isEmpty()) {
+        if (Strings.isNotBlank(itemCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
                     warehouse.getId(),itemCSVWrapper.getClient());
             item.setClientId(client.getId());
         }
-        if (!itemCSVWrapper.getItemFamily().isEmpty()) {
+        if (Strings.isNotBlank(itemCSVWrapper.getItemFamily())) {
 
             ItemFamily itemFamily = itemFamilyService.findByName(warehouse.getId(), itemCSVWrapper.getItemFamily());
             item.setItemFamily(itemFamily);

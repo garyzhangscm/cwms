@@ -35,6 +35,7 @@ public interface ItemPackageTypeRepository extends JpaRepository<ItemPackageType
     @Query("select itemPackageType from ItemPackageType itemPackageType " +
             " where itemPackageType.name = :name and itemPackageType.item.name = :itemName " +
             "   and itemPackageType.warehouseId = :warehouseId" +
-            "   and itemPackageType.clientId = :clientId")
+            "   and ((:clientId is not null and itemPackageType.clientId = :clientId)" +
+            "         or (:clientId is null and itemPackageType.clientId is null))")
     ItemPackageType findByNaturalKeys(Long warehouseId, Long clientId, String itemName, String name);
 }

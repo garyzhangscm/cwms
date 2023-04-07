@@ -58,8 +58,6 @@ public class WaveService {
     private OrderLineService orderLineService;
 
     @Autowired
-    private BulkPickConfiguration bulkPickConfiguration;
-    @Autowired
     private BulkPickService bulkPickService;
     @Autowired
     private ShipmentLineService shipmentLineService;
@@ -90,17 +88,26 @@ public class WaveService {
 
     public List<Wave> findAll(Long warehouseId,
                               String number,
+                              String waveStatus,
                               ZonedDateTime startTime,
                               ZonedDateTime endTime,
-                              LocalDate date) {
-        return findAll(warehouseId, number, startTime, endTime, date, true);
+                              LocalDate date,
+                              Boolean includeCompletedWave,
+                              Boolean includeCancelledWave) {
+        return findAll(warehouseId, number, waveStatus,
+                startTime, endTime, date, includeCompletedWave,
+                includeCancelledWave,
+                true);
     }
 
     public List<Wave> findAll(Long warehouseId,
                               String number,
+                              String waveStatus,
                               ZonedDateTime startTime,
                               ZonedDateTime endTime,
                               LocalDate date,
+                              Boolean includeCompletedWave,
+                              Boolean includeCancelledWave,
                               boolean loadAttribute) {
         List<Wave> waves
             = waveRepository.findAll(
@@ -119,6 +126,25 @@ public class WaveService {
 
                         }
 
+                    }
+                    if (Strings.isNotBlank(waveStatus)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("status"),
+                                WaveStatus.valueOf(waveStatus)));
+                    }
+
+                    // if not include complete wave
+                    if (!Boolean.TRUE.equals(includeCompletedWave)) {
+
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"),
+                                WaveStatus.COMPLETED));
+                    }
+
+                    // if not include complete wave
+                    if (!Boolean.TRUE.equals(includeCancelledWave)) {
+
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"),
+                                WaveStatus.CANCELLED));
                     }
 
                     if (Objects.nonNull(startTime)) {
@@ -353,17 +379,19 @@ public class WaveService {
             allocationResults.add(shipmentLineService.allocateShipmentLine(shipmentLine));
         });
 
+        wave.setStatus(WaveStatus.ALLOCATED);
+
+        // return the latest information
+        wave = save(wave);
+
         // post allocation process
         // 1. bulk pick
         // 2. list pick
         postAllocationProcess(wave.getWarehouseId(),
-                wave.getNumber(),
-                PickType.OUTBOUND, allocationResults);
-        wave.setStatus(WaveStatus.ALLOCATED);
+                wave.getNumber(),  allocationResults);
 
-        // return the latest information
-        return save(wave);
-
+        logger.debug("Wave {} is allocated", wave.getNumber());
+        return wave;
     }
 
     /**
@@ -374,11 +402,9 @@ public class WaveService {
      */
     private void postAllocationProcess(Long warehouseId,
                                        String waveNumber,
-                                       PickType pickType,
                                        List<AllocationResult> allocationResults) {
         // we will always try bulk pick first
-        requestBulkPick(warehouseId, waveNumber,
-                pickType, allocationResults);
+        requestBulkPick(warehouseId, waveNumber, allocationResults);
 
         // for anything that not fall in the bulk pick, see if we can group them into
         // a list pick
@@ -392,27 +418,56 @@ public class WaveService {
      */
     private void requestBulkPick(Long warehouseId,
                                  String waveNumber,
-                                 PickType pickType,
                                  List<AllocationResult> allocationResults) {
 
         logger.debug("start to seek bulk pick possibility for wave {}",
                 waveNumber);
         // make sure the bulk pick is enabled
         BulkPickConfiguration bulkPickConfiguration =
-                bulkPickConfigurationService.findByWarehouseAndPickType(warehouseId, pickType);
-        if (Objects.isNull(bulkPickConfiguration) || !Boolean.TRUE.equals(bulkPickConfiguration.getEnabled())){
+                bulkPickConfigurationService.findByWarehouse(warehouseId);
+        if (Objects.isNull(bulkPickConfiguration)) {
+            logger.debug("Skip the bulk pick process as there's no configuration setup for bulk picking");
+            return;
+        }
+        if (!Boolean.TRUE.equals(bulkPickConfiguration.getEnabledForOutbound())){
             // bulk pick is not enabled at the warehouse
 
+            logger.debug("Skip the bulk pick process as it is disabled for the outbound process");
             return;
         }
 
         bulkPickService.groupPicksIntoBulk(
-                waveNumber, allocationResults, bulkPickConfiguration.getDirection());
+                waveNumber, allocationResults, bulkPickConfiguration.getPickSortDirection());
 
 
+        logger.debug("complete bulk pick processing for wave {}",
+                waveNumber);
     }
 
     private String getNextWaveNumber(Long warehouseId){
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "wave-number");
     }
+
+    public Wave resetWaveStatus(Wave wave) {
+        logger.debug("Start to check if we can complete the wave {}",
+                wave.getNumber());
+        boolean waveComplete = false;
+        if (wave.getShipmentLines().isEmpty()) {
+            waveComplete = true;
+        }
+        else {
+            waveComplete = wave.getShipmentLines().stream().noneMatch(
+                    shipmentLine -> !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED) &&
+                            !shipmentLine.getStatus().equals(ShipmentLineStatus.DISPATCHED)
+            );
+        }
+        if (waveComplete) {
+            logger.debug("we are ready to complete wave {}",
+                    wave.getNumber());
+            wave.setStatus(WaveStatus.COMPLETED);
+            return save(wave);
+        }
+        return wave;
+    }
+
 }

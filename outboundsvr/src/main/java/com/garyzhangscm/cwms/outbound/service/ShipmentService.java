@@ -32,13 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -884,6 +882,11 @@ public class ShipmentService {
         sendOrderConfirmationIntegration(shipment);
 
         warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
+
+        // after we complete, see if we can complete the wave that related to this shipment
+        shipment.getShipmentLines().forEach(
+                shipmentLine -> waveService.resetWaveStatus(shipmentLine.getWave())
+        );
     }
 
     private void sendOrderConfirmationIntegration(Shipment shipment) {

@@ -2052,5 +2052,11 @@
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "Storage Fee by Aging Inventory",
   "leave-empty-system-generate": "Leave it empty to let the system generate one for you",
   "no-order-selected": "No Order Selected",
-  "current-wave": "Current Wave"
+  "current-wave": "Current Wave",
+  "menu.main.outbound.bulk-pick-configuration": "Bulk Pick Configuration",
+  "enabledForOutbound": "Enabled For Outbound",
+  "enabledForWorkOrder": "Enabled For Work Order",
+  "pickSortDirection": "Pick Sort Direction",
+  "SORT-DIRECTION-ASC": "Ascending",
+  "SORT-DIRECTION-DESC": "Descending"
 }

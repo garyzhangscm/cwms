@@ -826,8 +826,17 @@ public class PickService {
 
 
         Location stagingLocation = getDestinationLocationForPick(shipmentLine, pick);
-        pick.setDestinationLocation(stagingLocation);
-        pick.setDestinationLocationId(stagingLocation.getId());
+        if (Objects.isNull(stagingLocation)) {
+            // if we can't find a staging location, let's set the picks'
+            // status to hold
+            pick.setStatus(PickStatus.HOLD);
+        }
+        else {
+
+            pick.setStatus(PickStatus.RELEASED);
+            pick.setDestinationLocation(stagingLocation);
+            pick.setDestinationLocationId(stagingLocation.getId());
+        }
 
         return save(pick);
 
@@ -841,6 +850,13 @@ public class PickService {
     }
     @Transactional
     private Pick processPick(Pick pick, boolean loadDetails) {
+        // setup the destination for the pick
+
+        if (!pick.getStatus().equals(PickStatus.RELEASED) ||
+            !pick.getStatus().equals(PickStatus.INPROCESS)) {
+            logger.debug("Pick is not released!, skip further process");
+            return pick;
+        }
         // Setup the pick movement
         logger.debug("start to setup movement path for pick {}", pick.getNumber());
         setupMovementPath(pick);
@@ -1089,7 +1105,7 @@ public class PickService {
 
         Location stagingLocation = shippingStageAreaConfigurationService.reserveShippingStageLocation(shippingStageAreaConfiguration, pick);
 
-        logger.debug("Bingo, we got the ship stage location: {}", stagingLocation.getName());
+        logger.debug("Bingo, we got the ship stage location: \n{}", stagingLocation );
         return stagingLocation;
 
     }
