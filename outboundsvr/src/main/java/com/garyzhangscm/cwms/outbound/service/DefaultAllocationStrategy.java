@@ -79,7 +79,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         existingPicks.stream().forEach(pick -> {
             logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}",
                     pick.getNumber(), pick.getSourceLocation().getName(),
-                    pick.getDestinationLocation().getName(),
+                    Objects.isNull(pick.getDestinationLocation()) ?
+                    "N/A" : pick.getDestinationLocation().getName(),
                     pick.getQuantity(), pick.getPickedQuantity());
         });
 

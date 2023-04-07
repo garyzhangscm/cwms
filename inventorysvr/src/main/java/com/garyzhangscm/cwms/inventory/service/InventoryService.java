@@ -967,148 +967,16 @@ public class InventoryService {
         return fileService.loadData(file, InventoryCSVWrapper.class);
     }
 
-    private List<Inventory> convertFromWrapper(Long warehouseId,
-                                               List<InventoryCSVWrapper> inventoryCSVWrappers,
-                                               boolean preLoadDetails) {
-        if (!preLoadDetails) {
-            return inventoryCSVWrappers.stream().map(
-                    inventoryCSVWrapper -> convertFromWrapper(warehouseId, inventoryCSVWrapper)
-            ).collect(Collectors.toList());
-        }
-
-
-            // in case we have a big chunk of data in the list, we will preload all the
-            // item first, so that we don't have to get the data from database / API endpoint
-            // for each record. Instead we will bulk get the data
-            // 1. warehouse
-            // 2. item
-            // 3. item package type
-            // 4. inventory status
-            // 5. location
-
-
-        Map<String, Item> itemMap = new HashMap<>();
-        Map<String, ItemPackageType> itemPackageTypeMap = new HashMap<>();
-        Map<String, InventoryStatus> inventoryStatusMap = new HashMap<>();
-        Map<String, Location> locationMap = new HashMap<>();
-        Map<String, Client> clientMap = new HashMap<>();
-
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
-
-        for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
-
-            Client client = null;
-            if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
-                if (!clientMap.containsKey(inventoryCSVWrapper.getClient())) {
-                    client = commonServiceRestemplateClient.getClientByName(warehouse.getId(), inventoryCSVWrapper.getClient());
-                    clientMap.put(inventoryCSVWrapper.getClient(), client);
-                }
-                else {
-                    // load the client for current row so that we can load the right item
-                    // based on the warehouse and client infomration along with the item name
-                    client = clientMap.get(inventoryCSVWrapper.getClient());
-                }
-            }
-
-            if (!itemMap.containsKey(inventoryCSVWrapper.getItem()) && Objects.nonNull(warehouse)) {
-
-                Item item = itemService.findByName(warehouse.getId(),
-                        Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getItem());
-                if (Objects.isNull(item)) {
-
-                    logger.debug("skip the record as we can't find the item by name {} from warehouse {} / {}",
-                            inventoryCSVWrapper.getItem(),
-                            warehouse.getId(), warehouse.getName());
-                    continue;
-                }
-                itemMap.put(inventoryCSVWrapper.getItem(),item);
-            }
-            if (!itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType())
-                    && Objects.nonNull(warehouse)) {
-                ItemPackageType itemPackageType = itemPackageTypeService.findByNaturalKeys(
-                        warehouse.getId(),
-                        Objects.isNull(client) ? null : client.getId(),
-                        inventoryCSVWrapper.getItem(),
-                        inventoryCSVWrapper.getItemPackageType());
-                if (Objects.isNull(itemPackageType)) {
-                    logger.debug("skip the record as we can't find item package type by " +
-                            "warehouse {} / {}, item {}, item package type {}",
-                            warehouse.getId(), warehouse.getName(),
-                            inventoryCSVWrapper.getItem(),
-                            inventoryCSVWrapper.getItemPackageType());
-                    continue;
-                }
-                itemPackageTypeMap.put(
-                        inventoryCSVWrapper.getItemPackageType(),
-                        itemPackageType
-                        );
-            }
-            if (!inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus())
-                    && Objects.nonNull(warehouse)) {
-
-                InventoryStatus inventoryStatus = inventoryStatusService.findByName(
-                        warehouse.getId(), inventoryCSVWrapper.getInventoryStatus());
-                if (Objects.isNull(inventoryStatus)) {
-                    logger.debug("Skip the record as we can't find the inventory status by" +
-                            "warehouse {} / {}, inventory status {}",
-                            warehouse.getId(), warehouse.getName(),
-                            inventoryCSVWrapper.getInventoryStatus());
-                    continue;
-                }
-                inventoryStatusMap.put(
-                        inventoryCSVWrapper.getInventoryStatus(),
-                        inventoryStatus
-                        );
-            }
-            if (!locationMap.containsKey(inventoryCSVWrapper.getLocation())
-                    && Objects.nonNull(warehouse)) {
-                Location location =
-                        warehouseLayoutServiceRestemplateClient.getLocationByName(
-                                warehouse.getId(), inventoryCSVWrapper.getLocation());
-                if (Objects.isNull(location)) {
-                    logger.debug("skip the record as we can't find the location by " +
-                            "warehosue {} / {}, location name {}",
-                            warehouse.getId(), warehouse.getName(),
-                            inventoryCSVWrapper.getLocation());
-                    continue;
-                }
-                locationMap.put(
-                        inventoryCSVWrapper.getLocation(), location);
-            }
-        }
-
-        // only process the record if we have all the value ready
-        return inventoryCSVWrappers.stream().filter(
-                inventoryCSVWrapper ->
-                        itemMap.containsKey(inventoryCSVWrapper.getItem()) &&
-                        itemPackageTypeMap.containsKey(inventoryCSVWrapper.getItemPackageType()) &&
-                        inventoryStatusMap.containsKey(inventoryCSVWrapper.getInventoryStatus()) &&
-                        locationMap.containsKey(inventoryCSVWrapper.getLocation())
-        ).map(
-                inventoryCSVWrapper -> convertFromWrapper(inventoryCSVWrapper,
-                        warehouse.getId(),
-                        itemMap.get(inventoryCSVWrapper.getItem()),
-                        itemPackageTypeMap.get(inventoryCSVWrapper.getItemPackageType()),
-                        inventoryStatusMap.get(inventoryCSVWrapper.getInventoryStatus()),
-                        locationMap.get(inventoryCSVWrapper.getLocation()),
-                        clientMap.get(inventoryCSVWrapper.getClient()))
-        ).collect(Collectors.toList());
-
-
-
-    }
-    private Inventory convertFromWrapper(Long warehouseId, InventoryCSVWrapper inventoryCSVWrapper) {
-        return convertFromWrapper(inventoryCSVWrapper, warehouseId, null, null, null, null, null);
-    }
-    private Inventory convertFromWrapper(InventoryCSVWrapper inventoryCSVWrapper,
-                                         Long warehouseId,
-                                         Item item,
-                                         ItemPackageType itemPackageType,
-                                         InventoryStatus inventoryStatus,
-                                         Location location,
-                                         Client client) {
+    private Inventory convertFromWrapper(Long warehouseId,
+                                         InventoryCSVWrapper inventoryCSVWrapper) {
         Inventory inventory = new Inventory();
-        inventory.setLpn(inventoryCSVWrapper.getLpn());
+        if (Strings.isBlank(inventoryCSVWrapper.getLpn())) {
+            inventory.setLpn(commonServiceRestemplateClient.getNextLpn(warehouseId));
+        }
+        else {
+
+            inventory.setLpn(inventoryCSVWrapper.getLpn());
+        }
 
         inventory.setVirtual(false);
 
@@ -1119,11 +987,8 @@ public class InventoryService {
         inventory.setWarehouseId(warehouseId);
 
         // client
-        if (Objects.nonNull(client)) {
-            inventory.setClientId(client.getId());
-        }
-        else if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
-            client = commonServiceRestemplateClient.getClientByName(warehouseId,
+        if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
+            Client client = commonServiceRestemplateClient.getClientByName(warehouseId,
                     inventoryCSVWrapper.getClient());
             if (Objects.nonNull(client)) {
                 logger.debug("client is setup to {}", client.getName());
@@ -1135,10 +1000,7 @@ public class InventoryService {
         }
 
         // item
-        if (Objects.nonNull(item)) {
-            inventory.setItem(item);
-        }
-        else if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
+        if (Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
             logger.debug("start to get item from inventoryCSVWrapper.getItem(): {}, warehouseId: {}, client id: {}",
                     inventoryCSVWrapper.getItem(),
                     warehouseId,
@@ -1149,15 +1011,12 @@ public class InventoryService {
 
 
         // itemPackageType
-        if (Objects.nonNull(itemPackageType)) {
-            inventory.setItemPackageType(itemPackageType);
-        }
-        else if (Strings.isNotBlank(inventoryCSVWrapper.getItemPackageType()) &&
+        if (Strings.isNotBlank(inventoryCSVWrapper.getItemPackageType()) &&
                 Strings.isNotBlank(inventoryCSVWrapper.getItem())) {
             inventory.setItemPackageType(
                     itemPackageTypeService.findByNaturalKeys(
                             warehouseId,
-                            Objects.isNull(client) ? null : client.getId(),
+                            Objects.isNull(inventory.getClientId()) ? null : inventory.getClientId(),
                             inventoryCSVWrapper.getItem(),
                             inventoryCSVWrapper.getItemPackageType()));
         }
@@ -1184,10 +1043,7 @@ public class InventoryService {
 
 
         // inventoryStatus
-        if (Objects.nonNull(inventoryStatus)) {
-            inventory.setInventoryStatus(inventoryStatus);
-        }
-        else if (Strings.isNotBlank(inventoryCSVWrapper.getInventoryStatus())) {
+        if (Strings.isNotBlank(inventoryCSVWrapper.getInventoryStatus())) {
             logger.debug("will set inventory status: {} / {}",
                     warehouseId,
                     inventoryCSVWrapper.getInventoryStatus());
@@ -1201,15 +1057,9 @@ public class InventoryService {
 
         }
 
-        // location
-        if (Objects.nonNull(location)) {
-
-            inventory.setLocationId(location.getId());
-            inventory.setLocation(location);
-        }
-        else if (Strings.isNotBlank(inventoryCSVWrapper.getLocation())) {
+        if (Strings.isNotBlank(inventoryCSVWrapper.getLocation())) {
             logger.debug("start to get location by name: {}", inventoryCSVWrapper.getLocation());
-            location =
+            Location location =
                     warehouseLayoutServiceRestemplateClient.getLocationByName(
                             warehouseId, inventoryCSVWrapper.getLocation());
             inventory.setLocationId(location.getId());

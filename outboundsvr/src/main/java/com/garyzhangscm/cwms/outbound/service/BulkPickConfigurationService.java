@@ -79,9 +79,8 @@ public class BulkPickConfigurationService {
 
 
 
-    public BulkPickConfiguration findByWarehouseAndPickType(Long warehouseId,
-                                                            PickType pickType) {
-        return bulkPickConfigurationRepository.findByWarehouseIdAndPickType(warehouseId, pickType);
+    public BulkPickConfiguration findByWarehouse(Long warehouseId) {
+        return bulkPickConfigurationRepository.findByWarehouseId(warehouseId);
     }
 
 
@@ -91,10 +90,10 @@ public class BulkPickConfigurationService {
     }
 
     public BulkPickConfiguration saveOrUpdate(BulkPickConfiguration bulkPickConfiguration) {
-        if (bulkPickConfiguration.getId() == null && findByWarehouseAndPickType(
-                bulkPickConfiguration.getWarehouseId(), bulkPickConfiguration.getPickType()) != null) {
-            bulkPickConfiguration.setId(findByWarehouseAndPickType(
-                    bulkPickConfiguration.getWarehouseId(), bulkPickConfiguration.getPickType()).getId());
+        if (bulkPickConfiguration.getId() == null && findByWarehouse(
+                bulkPickConfiguration.getWarehouseId()) != null) {
+            bulkPickConfiguration.setId(findByWarehouse(
+                    bulkPickConfiguration.getWarehouseId()).getId());
         }
         return save(bulkPickConfiguration);
     }

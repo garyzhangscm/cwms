@@ -61,6 +61,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Allocation Configuration",menu.main.outbound.allocation-configuration,/outbound/allocation-configuration,14,Main-Menu-Outbound,Outbound-AllocationConfiguration,,true,false
 "Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,15,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
 "Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,16,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false
+"Bulk Pick Configuration",menu.main.outbound.bulk-pick-configuration,/outbound/bulk-pick-configuration,16,Main-Menu-Outbound,Outbound-BulkPickConfiguration,,true,false
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
 "Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false

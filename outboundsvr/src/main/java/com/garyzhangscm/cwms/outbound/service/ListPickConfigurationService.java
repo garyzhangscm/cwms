@@ -177,10 +177,6 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                 Objects.isNull(listPickConfiguration.getWarehouse())) {
             listPickConfiguration.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(listPickConfiguration.getWarehouseId()));
         }
-        if (Objects.nonNull(listPickConfiguration.getClientId()) &&
-                Objects.isNull(listPickConfiguration.getClient())) {
-            listPickConfiguration.setClient(commonServiceRestemplateClient.getClientById(listPickConfiguration.getClientId()));
-        }
         if (Objects.nonNull(listPickConfiguration.getCustomerId()) &&
                 Objects.isNull(listPickConfiguration.getCustomer())) {
             listPickConfiguration.setCustomer(commonServiceRestemplateClient.getCustomerById(listPickConfiguration.getCustomerId()));
@@ -267,15 +263,6 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                     listPickingConfigurationCSVWrapper.getWarehouse()
             );
 
-        if (!StringUtils.isBlank(listPickingConfigurationCSVWrapper.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientByName(
-                    warehouse.getId(),
-                    listPickingConfigurationCSVWrapper.getClient()
-            );
-            if (client != null) {
-                listPickConfiguration.setClientId(client.getId());
-            }
-        }
 /**
         listPickingConfiguration.setGroupRule(
                 ListPickingGroupRuleType.valueOf(listPickingConfigurationCSVWrapper.getGroupRule())
@@ -321,19 +308,6 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                     listPickConfiguration.getPickType(), pick.getPickType());
             return false;
         }
-        // If the configuraiton has client id defined, we will need to make sure
-        // the pick's client id not null
-        //
-        if (Objects.nonNull(listPickConfiguration.getClientId()) &&
-                (Objects.isNull(pick.getClient())
-                        || !pick.getClient().getId().equals(listPickConfiguration.getClientId()))) {
-
-            logger.debug("The client doesn't match! client id in configuration {} " +
-                            "doesnt match with pick's client id {}",
-                    listPickConfiguration.getClientId(), pick.getClient());
-            return false;
-        }
-
         logger.debug(">> list picking configuraiton matches with the pick!");
         return true;
 

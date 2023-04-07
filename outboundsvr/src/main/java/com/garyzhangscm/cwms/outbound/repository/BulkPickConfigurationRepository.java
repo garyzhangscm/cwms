@@ -29,5 +29,5 @@ import org.springframework.stereotype.Repository;
 public interface BulkPickConfigurationRepository extends JpaRepository<BulkPickConfiguration, Long>, JpaSpecificationExecutor<BulkPickConfiguration> {
 
 
-    BulkPickConfiguration findByWarehouseIdAndPickType(Long warehouseId, PickType pickType);
+    BulkPickConfiguration findByWarehouseId(Long warehouseId);
 }

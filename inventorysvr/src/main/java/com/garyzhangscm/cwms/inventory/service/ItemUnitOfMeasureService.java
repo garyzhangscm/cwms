@@ -191,6 +191,10 @@ public class ItemUnitOfMeasureService {
             client = commonServiceRestemplateClient.getClientByName(
                     warehouseId, itemUnitOfMeasureCSVWrapper.getClient()
             );
+            if(Objects.isNull(client)) {
+                throw ResourceNotFoundException.raiseException(" Can't find client " +
+                        itemUnitOfMeasureCSVWrapper.getClient());
+            }
         }
         itemUnitOfMeasure.setCompanyId(warehouse.getCompanyId());
         itemUnitOfMeasure.setWarehouseId(warehouse.getId());
@@ -245,6 +249,7 @@ public class ItemUnitOfMeasureService {
             // item package type first. We allow the user to create the item package type
             // when load item unit of measure from CSV files
             if (Objects.isNull(itemPackageType) && autoCreateItemPackageType) {
+                logger.debug("automatically create the item package type when create the item unit of measure");
                 itemPackageType = createItemPackageType(warehouseId, itemUnitOfMeasureCSVWrapper, username);
 
             }
@@ -278,7 +283,7 @@ public class ItemUnitOfMeasureService {
 
         fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
 
-        logger.debug("get {} record from the file", itemUnitOfMeasureCSVWrappers.size());
+        logger.debug("get {} record from the item unit of measure file", itemUnitOfMeasureCSVWrappers.size());
 
         // start a new thread to process the inventory
         new Thread(() -> {
@@ -296,6 +301,7 @@ public class ItemUnitOfMeasureService {
                     // Note 2: we will pass in the username here so that we know who created the item
                     // and item package type(the user who upload the file). As we are in a separate thread,
                     //    the user information that upload the CSV file is no long in the context
+
                     saveOrUpdate(convertFromWrapper(warehouseId, itemUnitOfMeasureCSVWrapper, true, username));
                     // we complete this inventory
                     fileUploadProgressMap.put(fileUploadProgressKey, 10.0 + (90.0 / totalCount) * (index + 1));

@@ -26,12 +26,12 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "itemDescription", "Item Description(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
-                "itemFamily", "Item Name(only needed for new item)",
-                String.class, 100, false
+                "itemFamily", "Item Family Name(only needed for new item)",
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
@@ -52,32 +52,32 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "trackingColorFlag", "Tracking Color?(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "defaultColor", "Default Color(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "trackingProductSizeFlag", "Tracking Product Size?(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "defaultProductSize", "Default Product Size(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "trackingStyleFlag", "Tracking Style?(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "defaultStyle", "Default Style(only needed for new item)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
 

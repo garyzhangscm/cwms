@@ -2050,5 +2050,10 @@
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_AGING_PALLET": "按库龄计费",
   "leave-empty-system-generate": "如果不填，系统将会自动生成号码",
   "no-order-selected": "请选择订单",
-  "current-wave": "当前波次"
+  "current-wave": "当前波次",
+  "enabledForOutbound": "出库启用",
+  "enabledForWorkOrder": "工单启用",
+  "pickSortDirection": "拣货任务排序",
+  "SORT-DIRECTION-ASC": "从小到大",
+  "SORT-DIRECTION-DESC": "从大到小"
 }

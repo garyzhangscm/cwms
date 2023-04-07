@@ -342,7 +342,8 @@ public class LocationGroupService implements TestDataInitiableService {
 
         logger.debug(">> No location has been found");
         // If we are here, we fail to find any location
-        throw LocationOperationException.raiseException("fail to reserve a location from the group");
+        // throw LocationOperationException.raiseException("fail to reserve a location from the group");
+        return null;
     }
 
     private boolean ifVolumeFitForLocation(LocationVolumeTrackingPolicy locationVolumeTrackingPolicy,

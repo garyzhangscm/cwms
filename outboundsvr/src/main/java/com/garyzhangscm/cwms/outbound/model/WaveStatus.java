@@ -7,5 +7,6 @@ public enum WaveStatus {
     PICKING,
     STAGED,
     LOADED,
-    COMPLETED
+    COMPLETED,
+    CANCELLED
 }

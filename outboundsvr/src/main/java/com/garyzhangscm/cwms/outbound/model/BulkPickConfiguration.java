@@ -23,18 +23,19 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
+    @Column(name = "enabled_for_outbound")
+    private Boolean enabledForOutbound;
 
-    @Column(name = "pick_type")
+    @Column(name = "enabled_for_work_order")
+    private Boolean enabledForWorkOrder;
+
+    // when we get a group of candidate picks, how we
+    // sort the picks (from biggest pick quantity to smallest
+    // or from smallest to biggest) before we can group them into
+    // several bulk picks
+    @Column(name = "pick_sort_direction")
     @Enumerated(EnumType.STRING)
-    private PickType pickType;
-
-
-    @Column(name = "enabled")
-    private Boolean enabled;
-
-    @Column(name = "sort_direction")
-    @Enumerated(EnumType.STRING)
-    private Sort.Direction direction;
+    private Sort.Direction pickSortDirection;
 
     public Long getId() {
         return id;
@@ -60,27 +61,27 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
         this.warehouse = warehouse;
     }
 
-    public Sort.Direction getDirection() {
-        return direction;
+    public Sort.Direction getPickSortDirection() {
+        return pickSortDirection;
     }
 
-    public void setDirection(Sort.Direction direction) {
-        this.direction = direction;
+    public void setPickSortDirection(Sort.Direction pickSortDirection) {
+        this.pickSortDirection = pickSortDirection;
     }
 
-    public PickType getPickType() {
-        return pickType;
+    public Boolean getEnabledForOutbound() {
+        return enabledForOutbound;
     }
 
-    public void setPickType(PickType pickType) {
-        this.pickType = pickType;
+    public void setEnabledForOutbound(Boolean enabledForOutbound) {
+        this.enabledForOutbound = enabledForOutbound;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
+    public Boolean getEnabledForWorkOrder() {
+        return enabledForWorkOrder;
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    public void setEnabledForWorkOrder(Boolean enabledForWorkOrder) {
+        this.enabledForWorkOrder = enabledForWorkOrder;
     }
 }
