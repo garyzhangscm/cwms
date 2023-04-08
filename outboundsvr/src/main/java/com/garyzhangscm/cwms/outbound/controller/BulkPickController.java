@@ -101,6 +101,12 @@ public class BulkPickController {
         logger.debug("=> pick from LPN: {}", lpn);
             return bulkPickService.confirmPick(id, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
     }
+    @RequestMapping(value="/bulk-picks/{id}/assign-user", method = RequestMethod.POST)
+    public BulkPick assignToUser(@PathVariable Long id,
+                                 Long warehouseId,
+                                 Long userId) {
+        return bulkPickService.assignToUser(id, warehouseId, userId);
+    }
 
 
 }

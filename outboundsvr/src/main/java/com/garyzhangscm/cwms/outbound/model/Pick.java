@@ -33,7 +33,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "pick")
-public class Pick  extends AuditibleEntity<String> implements Serializable {
+public class Pick  extends AuditibleEntity<String> implements Serializable, GroupPick {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -279,6 +279,11 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public String getNumber() {
         return number;
+    }
+
+    @Override
+    public PickGroupType getGroupType() {
+        return PickGroupType.SINGLE_PICK;
     }
 
     public void setNumber(String number) {

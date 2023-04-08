@@ -63,6 +63,8 @@ public class PickService {
     @Autowired
     private CancelledPickService cancelledPickService;
     @Autowired
+    private UserService userService;
+    @Autowired
     private ShortAllocationService shortAllocationService;
     @Autowired
     private CartonizationService cartonizationService;
@@ -95,6 +97,8 @@ public class PickService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
+    @Autowired
+    private BulkPickService bulkPickService;
 
     public Pick findById(Long id, boolean loadDetails) {
         Pick pick = pickRepository.findById(id)
@@ -1781,4 +1785,179 @@ public class PickService {
     }
 
 
+    /**
+     * Get the next pick from the pick pool
+     * 1. single pick
+     * 2. bulk pick
+     * 3. list pick
+     * Assigned to the user first
+     * @param warehouseId
+     * @param currentLocationId
+     * @return
+     */
+    public GroupPick getNextPick(Long warehouseId, Long currentLocationId) {
+        // get the current user first as we will always start from
+        // the picks that are assigned to the user
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        User user = userService.getCurrentUser(warehouse.getCompanyId());
+        if (Objects.isNull(user)) {
+            throw ResourceNotFoundException.raiseException("Can't find the current user");
+        }
+
+        // let's get all the picks and sort by the
+        // distance between the pick and the current location
+        // for pick groups(bulk pick / list pick / carton pick), we will
+        // use the first pick that closest to the current location
+        // as the pick of the whole pick group
+        Location currentLocation = warehouseLayoutServiceRestemplateClient.getLocationById(currentLocationId);
+
+        // get all the open picks
+        List<Pick> openPicks = findAll(warehouseId,
+                null, null, null, null,
+                null, null,
+                null, null, null,
+                null, null, null,
+                null, null,
+                null, true,null,
+                null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false);
+
+        // only consider the open pick that is released, and not in any group
+
+        // get best bulk pick that is assigned
+        List<BulkPick> openBulkPicks = bulkPickService.findAll(warehouseId,
+                null,null,null,null,null,
+                null, null, null, null, null, null,
+                true, null,null,null,false);
+
+        GroupPick groupPick = getBestAssignedPicks(user, currentLocation, openPicks, openBulkPicks);
+
+        if (Objects.nonNull(groupPick)) {
+            // OK, we get the best pick from the assigned pick / pick groups
+            logger.debug("We found the best pick {} / {} that assigned to the current user {}",
+                    groupPick.getGroupType(),
+                    groupPick.getNumber(),
+                    user.getUsername()
+                    );
+            return groupPick;
+        }
+        logger.debug("There's no picks that is assigned to current user, get the best picks that is not assigned yet");
+        return getBestUnassignedPicks(user, currentLocation, openPicks, openBulkPicks);
+
+
+    }
+
+    private GroupPick getBestUnassignedPicks(User user, Location currentLocation, List<Pick> openPicks, List<BulkPick> openBulkPicks) {
+        // 1. get the picks that is not assigned.
+        Pick bestUnassignedSinglePick = openPicks.stream().filter(
+                pick -> Objects.isNull(pick.getAssignedToUserId()) &&
+                        Objects.isNull(pick.getPickingByUserId()) &&
+                        Objects.isNull(pick.getBulkPick()) && Objects.isNull(pick.getPickList())
+                        && Objects.isNull(pick.getCartonization()) && pick.getStatus().equals(PickStatus.RELEASED)
+
+        ).sorted((pick1, pick2) ->  sortPickBasedOnCurrentLocation(currentLocation, pick1, pick2)
+        ).findFirst().orElse(null);
+
+
+        BulkPick bestUnassignedBulkPick = openBulkPicks.stream().filter(
+                bulkPick -> Objects.isNull(bulkPick.getAssignedToUserId()) &&
+                        Objects.isNull(bulkPick.getPickingByUserId()) &&
+                        bulkPick.getStatus().equals(PickStatus.RELEASED) &&
+                        Objects.nonNull(bulkPick.getNextPick(currentLocation))
+                // only return the bulk that still have open pick
+        ).sorted((bulkPick1, bulkPick2) -> sortPickBasedOnCurrentLocation(currentLocation,
+                bulkPick1.getNextPick(currentLocation), bulkPick2.getNextPick(currentLocation))
+        ).findFirst().orElse(null);
+
+        if(Objects.isNull(bestUnassignedSinglePick)) {
+            return bestUnassignedBulkPick;
+        }
+        else if (Objects.isNull(bestUnassignedBulkPick)) {
+            return bestUnassignedSinglePick;
+        }
+        else {
+            // compare the first pick in the bulk and the best single pick
+            Pick nextPickInBestBulkPick = bestUnassignedBulkPick.getNextPick(currentLocation);
+            if (sortPickBasedOnCurrentLocation(currentLocation, bestUnassignedSinglePick, nextPickInBestBulkPick) > 0) {
+                return bestUnassignedBulkPick;
+            }
+            else {
+                return bestUnassignedSinglePick;
+            }
+        }
+    }
+
+    private GroupPick getBestAssignedPicks(User user,
+                                           Location currentLocation,
+                                           List<Pick> openPicks, List<BulkPick> openBulkPicks) {
+        // 1. get the picks that is assigned.
+        Pick bestAssignedSinglePick = openPicks.stream().filter(
+                pick -> user.getId().equals(pick.getAssignedToUserId()) &&
+                        Objects.isNull(pick.getPickingByUserId()) &&
+                        Objects.isNull(pick.getBulkPick()) && Objects.isNull(pick.getPickList())
+                        && Objects.isNull(pick.getCartonization()) && pick.getStatus().equals(PickStatus.RELEASED)
+
+        ).sorted((pick1, pick2) ->  sortPickBasedOnCurrentLocation(currentLocation, pick1, pick2)
+        ).findFirst().orElse(null);
+
+
+        BulkPick bestAssignedBulkPick = openBulkPicks.stream().filter(
+                bulkPick -> user.getId().equals(bulkPick.getAssignedToUserId()) &&
+                        Objects.isNull(bulkPick.getPickingByUserId()) &&
+                        bulkPick.getStatus().equals(PickStatus.RELEASED) &&
+                        Objects.nonNull(bulkPick.getNextPick(currentLocation))
+                // only return the bulk that still have open pick
+        ).sorted((bulkPick1, bulkPick2) -> sortPickBasedOnCurrentLocation(currentLocation,
+                bulkPick1.getNextPick(currentLocation), bulkPick2.getNextPick(currentLocation))
+        ).findFirst().orElse(null);
+
+        if(Objects.isNull(bestAssignedSinglePick)) {
+            return bestAssignedBulkPick;
+        }
+        else if (Objects.isNull(bestAssignedBulkPick)) {
+            return bestAssignedSinglePick;
+        }
+        else {
+            // compare the first pick in the bulk and the best single pick
+            Pick nextPickInBestBulkPick = bestAssignedBulkPick.getNextPick(currentLocation);
+            if (sortPickBasedOnCurrentLocation(currentLocation, bestAssignedSinglePick, nextPickInBestBulkPick) > 0) {
+                return bestAssignedBulkPick;
+            }
+            else {
+                return bestAssignedSinglePick;
+            }
+        }
+    }
+
+    public int sortPickBasedOnCurrentLocation(Location currentLocation, Pick pick1, Pick pick2) {
+        Long currentPickSequence = Objects.isNull(currentLocation) ?
+                0 :
+                Objects.isNull(currentLocation.getPickSequence()) ? 0 : currentLocation.getPickSequence();
+
+        Location location1 = Objects.isNull(pick1.getSourceLocation()) ?
+                warehouseLayoutServiceRestemplateClient.getLocationById(pick1.getSourceLocationId()) :
+                pick1.getSourceLocation();
+
+        Location location2 = Objects.isNull(pick2.getSourceLocation()) ?
+                warehouseLayoutServiceRestemplateClient.getLocationById(pick2.getSourceLocationId()) :
+                pick1.getSourceLocation();
+        Long pickSequence1 = Objects.isNull(location1) ?
+                0 :
+                Objects.isNull(location1.getPickSequence()) ? 0 : location1.getPickSequence();
+        Long pickSequence2 = Objects.isNull(location2) ?
+                0 :
+                Objects.isNull(location2.getPickSequence()) ? 0 : location2.getPickSequence();
+        if (Math.abs(pickSequence1 - currentPickSequence) > Math.abs(pickSequence2 - currentPickSequence)) {
+            return 1;
+        }
+        else {
+            return -1;
+        }
+    }
 }

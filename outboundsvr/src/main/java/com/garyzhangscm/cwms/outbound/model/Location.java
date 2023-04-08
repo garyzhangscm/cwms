@@ -39,6 +39,8 @@ public class Location {
 
     private Warehouse warehouse;
 
+    private Long pickSequence;
+
     @Override
     public String toString() {
         try {
@@ -87,6 +89,14 @@ public class Location {
 
     public void setCurrentVolume(Double currentVolume) {
         this.currentVolume = currentVolume;
+    }
+
+    public Long getPickSequence() {
+        return pickSequence;
+    }
+
+    public void setPickSequence(Long pickSequence) {
+        this.pickSequence = pickSequence;
     }
 
     public Double getPendingVolume() {

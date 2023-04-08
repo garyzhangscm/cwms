@@ -33,7 +33,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "bulk_pick")
-public class BulkPick extends AuditibleEntity<String> implements Serializable {
+public class BulkPick extends AuditibleEntity<String> implements Serializable, GroupPick {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -152,6 +152,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
         return null;
     }
 
+    @Override
+    public String getPickListNumber() {
+        return null;
+    }
+
     public Long getId() {
         return id;
     }
@@ -162,6 +167,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
 
     public String getNumber() {
         return number;
+    }
+
+    @Override
+    public PickGroupType getGroupType() {
+        return PickGroupType.BULK_PICK;
     }
 
     public void setNumber(String number) {
@@ -178,6 +188,27 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
 
     public Location getSourceLocation() {
         return sourceLocation;
+    }
+
+    @Override
+    public ShipmentLine getShipmentLine() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getShipmentLine();
+    }
+
+    @Override
+    public Long getDestinationLocationId() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getDestinationLocationId();
+    }
+
+    @Override
+    public Location getDestinationLocation() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getDestinationLocation();
     }
 
     public void setSourceLocation(Location sourceLocation) {
@@ -212,12 +243,65 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
         return warehouseId;
     }
 
+    @Override
+    public BulkPick getBulkPick() {
+        return null;
+    }
+
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
     }
 
     public Warehouse getWarehouse() {
         return warehouse;
+    }
+
+    @Override
+    public Client getClient() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getClient();
+    }
+
+    @Override
+    public PickType getPickType() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getPickType();
+    }
+
+    @Override
+    public Long getWorkOrderLineId() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getWorkOrderLineId();
+    }
+
+    public Pick getNextPick() {
+        return getNextPick(null);
+    }
+    public Pick getNextPick(Location currentLocation) {
+        Long currentPickSequence = Objects.isNull(currentLocation) ?
+                0 :
+                Objects.isNull(currentLocation.getPickSequence()) ? 0 : currentLocation.getPickSequence();
+
+        return picks.stream().filter(
+                pick -> pick.getPickedQuantity() < pick.getQuantity()
+        ).sorted((pick1, pick2) -> {
+                Long pickSequence1 = Objects.isNull(pick1.getSourceLocation()) ?
+                    0 :
+                    Objects.isNull(pick1.getSourceLocation().getPickSequence()) ? 0 : pick1.getSourceLocation().getPickSequence();
+                Long pickSequence2 = Objects.isNull(pick2.getSourceLocation()) ?
+                    0 :
+                    Objects.isNull(pick2.getSourceLocation().getPickSequence()) ? 0 : pick2.getSourceLocation().getPickSequence();
+                if (Math.abs(pickSequence1 - currentPickSequence) > Math.abs(pickSequence2 - currentPickSequence)) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            }
+        ).findFirst().orElse(null);
     }
 
     public void setWarehouse(Warehouse warehouse) {
@@ -244,12 +328,36 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
         return status;
     }
 
+    @Override
+    public String getOrderNumber() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getOrderNumber();
+    }
+
+    @Override
+    public List<PickMovement> getPickMovements() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getPickMovements();
+    }
+
     public void setStatus(PickStatus status) {
         this.status = status;
     }
 
     public Long getInventoryStatusId() {
         return inventoryStatusId;
+    }
+
+    @Override
+    public Cartonization getCartonization() {
+        return null;
+    }
+
+    @Override
+    public String getCartonizationNumber() {
+        return null;
     }
 
     public void setInventoryStatusId(Long inventoryStatusId) {
@@ -260,12 +368,29 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
         return inventoryStatus;
     }
 
+    @Override
+    public ShortAllocation getShortAllocation() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getShortAllocation();
+    }
+
+    @Override
+    public PickList getPickList() {
+        return null;
+    }
+
     public void setInventoryStatus(InventoryStatus inventoryStatus) {
         this.inventoryStatus = inventoryStatus;
     }
 
     public Long getUnitOfMeasureId() {
         return unitOfMeasureId;
+    }
+
+    @Override
+    public String getLpn() {
+        return null;
     }
 
     public void setUnitOfMeasureId(Long unitOfMeasureId) {
@@ -292,12 +417,24 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
         return confirmLocationCodeFlag;
     }
 
+    @Override
+    public Long getWorkId() {
+        return null;
+    }
+
     public void setConfirmLocationCodeFlag(boolean confirmLocationCodeFlag) {
         this.confirmLocationCodeFlag = confirmLocationCodeFlag;
     }
 
     public boolean isConfirmLpnFlag() {
         return confirmLpnFlag;
+    }
+
+    @Override
+    public String getDefaultPickableStockUomName() {
+        Pick pick = getNextPick();
+
+        return Objects.isNull(pick) ? null : pick.getDefaultPickableStockUomName();
     }
 
     public void setConfirmLpnFlag(boolean confirmLpnFlag) {
@@ -322,6 +459,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
 
     public String getStyle() {
         return style;
+    }
+
+    @Override
+    public String getBulkPickNumber() {
+        return null;
     }
 
     public void setStyle(String style) {
