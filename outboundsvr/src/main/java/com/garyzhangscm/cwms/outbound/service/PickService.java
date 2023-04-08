@@ -929,7 +929,11 @@ public class PickService {
         // Setup the destination, get from ship staging area
 
         // Long stagingLocationId = getDestinationLocationIdForPick(workOrder);
+        // for picks of work order, we will always assume that it has the
+        // destination, which is the production line. So we will always release the
+        // pick by default
         pick.setDestinationLocationId(destinationLocationId);
+        pick.setStatus(PickStatus.RELEASED);
 
         return save(pick, loadDetails);
     }

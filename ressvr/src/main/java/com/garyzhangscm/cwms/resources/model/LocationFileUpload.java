@@ -23,25 +23,25 @@ public class LocationFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "aisle", "aisle",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
 
         addColumn(new FileUploadTemplateColumn(
                 "x", "Coordinate X",
-                Double.class, 100, false
+                Double.class, 100, true
         ));
 
 
         addColumn(new FileUploadTemplateColumn(
                 "y", "Coordinate Y",
-                Double.class, 100, false
+                Double.class, 100, true
         ));
 
 
         addColumn(new FileUploadTemplateColumn(
                 "z", "Coordinate Z",
-                Double.class, 100, false
+                Double.class, 100, true
         ));
 
 
@@ -103,11 +103,6 @@ public class LocationFileUpload extends FileUploadType {
                 "enabled",  "Location is enabled or not",
                 Boolean.class, 100, false
         ));
-
-
-
-
-
     }
 
 

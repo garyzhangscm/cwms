@@ -133,18 +133,28 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @JsonIgnore
     private PickList pickList;
 
+    @Transient
+    private String pickListNumber;
+
     @ManyToOne
     @JoinColumn(name = "bulk_pick_id")
     @JsonIgnore
     private BulkPick bulkPick;
 
+    @Transient
+    private String bulkPickNumber;
+
     // if the pick is currently picking by certain user
     @Column(name = "picking_by_user_id")
     private Long pickingByUserId;
+    @Transient
+    private User pickingByUser;
 
     // if the user is assigned to certain user
     @Column(name = "assigned_to_user_id")
     private Long assignedToUserId;
+    @Transient
+    private User assignedToUser;
 
 
     @Column(name = "unit_of_measure_id")
@@ -466,6 +476,7 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         this.unitOfMeasureId = unitOfMeasureId;
     }
 
+
     public String getLpn() {
         return lpn;
     }
@@ -565,5 +576,34 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public void setPickListNumber(String pickListNumber) {
+        this.pickListNumber = pickListNumber;
+    }
+
+    public String getBulkPickNumber() {
+        return Objects.nonNull(getBulkPick()) ? getBulkPick().getNumber() :
+                bulkPickNumber;
+    }
+
+    public void setBulkPickNumber(String bulkPickNumber) {
+        this.bulkPickNumber = bulkPickNumber;
+    }
+
+    public User getPickingByUser() {
+        return pickingByUser;
+    }
+
+    public void setPickingByUser(User pickingByUser) {
+        this.pickingByUser = pickingByUser;
+    }
+
+    public User getAssignedToUser() {
+        return assignedToUser;
+    }
+
+    public void setAssignedToUser(User assignedToUser) {
+        this.assignedToUser = assignedToUser;
     }
 }

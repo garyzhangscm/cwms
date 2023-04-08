@@ -386,7 +386,11 @@ public class LocationService {
         location.setCountSequence(locationCSVWrapper.getCountSequence());
         location.setCapacity(locationCSVWrapper.getCapacity());
         location.setFillPercentage(locationCSVWrapper.getFillPercentage());
-        location.setEnabled(locationCSVWrapper.getEnabled());
+        location.setEnabled(
+                Strings.isBlank(locationCSVWrapper.getEnabled()) ? false :
+                    locationCSVWrapper.getEnabled().equals("1") || locationCSVWrapper.getEnabled().equalsIgnoreCase("true") ?
+                            true : false
+                );
         location.setCurrentVolume(0.0);
         location.setPendingVolume(0.0);
 
@@ -403,6 +407,10 @@ public class LocationService {
                     locationGroup.getId(),
                     warehouseId,
                     locationCSVWrapper.getLocationGroup());
+            if (Objects.isNull(locationGroup)) {
+                throw ResourceNotFoundException.raiseException("Location Group " +
+                        locationCSVWrapper.getLocationGroup() + " is not valid");
+            }
             location.setLocationGroup(locationGroup);
         }
         return location;

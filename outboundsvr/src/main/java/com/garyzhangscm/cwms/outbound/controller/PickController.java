@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -76,6 +77,7 @@ public class PickController {
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
                 sourceLocationName, destinationLocationName, trailerAppointmentId,
                 loadDetails);
+
     }
     @RequestMapping(value="/picks/{id}", method = RequestMethod.GET)
     public Pick findPick(@PathVariable Long id) {
