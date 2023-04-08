@@ -2058,5 +2058,11 @@
   "enabledForWorkOrder": "Enabled For Work Order",
   "pickSortDirection": "Pick Sort Direction",
   "SORT-DIRECTION-ASC": "Ascending",
-  "SORT-DIRECTION-DESC": "Descending"
+  "SORT-DIRECTION-DESC": "Descending",
+  "PICK-STATUS-PENDING": "Pending",
+  "PICK-STATUS-INPROCESS": "In Process",
+  "PICK-STATUS-CANCELLED": "Cancelled",
+  "PICK-STATUS-COMPLETED": "Completed",
+  "PICK-STATUS-HOLD": "Hold",
+  "PICK-STATUS-RELEASED": "Released"
 }

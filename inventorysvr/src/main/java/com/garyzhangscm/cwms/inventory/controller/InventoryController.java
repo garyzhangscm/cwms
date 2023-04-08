@@ -454,6 +454,7 @@ public class InventoryController {
         }
         catch (Exception ex) {
 
+            logger.debug("Get exception while validate new LPN: {}", ex.getMessage());
             return ResponseBodyWrapper.success(ex.getMessage());
         }
 

@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateC
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.BulkPickRepository;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,8 @@ public class BulkPickService {
     public List<BulkPick> findAll(Long warehouseId,
                                   String pickType,
                                   String number,
+                                  String numberList,
+                                  Long waveId,
                                   String waveNumber,
                                   Long itemId,
                                   Long clientId,
@@ -90,7 +93,8 @@ public class BulkPickService {
                                   String productSize) {
         return findAll(
                 warehouseId, pickType,
-                number,
+                number, numberList,
+                waveId,
                 waveNumber, itemId,
                 clientId, itemNumber,
                 sourceLocationId, sourceLocationName,
@@ -102,6 +106,8 @@ public class BulkPickService {
     public List<BulkPick> findAll(Long warehouseId,
                                   String pickType,
                                   String number,
+                                  String numberList,
+                                  Long waveId,
                                   String waveNumber,
                                   Long itemId,
                                   Long clientId,
@@ -128,8 +134,21 @@ public class BulkPickService {
                     if (Strings.isNotBlank(number)) {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
                     }
+
+                    if (StringUtils.isNotBlank(numberList)) {
+                        CriteriaBuilder.In<String> inNumbers = criteriaBuilder.in(root.get("number"));
+                        for(String bulkPickNumber : numberList.split(",")) {
+                            inNumbers.value(bulkPickNumber);
+                        }
+                        predicates.add(criteriaBuilder.and(inNumbers));
+
+                    }
+
                     if (Strings.isNotBlank(waveNumber)) {
                         predicates.add(criteriaBuilder.equal(root.get("waveNumber"), waveNumber));
+                    }
+                    if (Objects.nonNull(waveId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("waveId"), waveId));
                     }
                     if (Objects.nonNull(itemId)) {
                         predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
@@ -217,6 +236,8 @@ public class BulkPickService {
                                                 String style,
                                                 String productSize) {
         return findAll(warehouseId,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -450,7 +471,7 @@ public class BulkPickService {
 
                 // clear the pick list
                 totalPickQuantity = 0l;
-                picksForCurrentBulkGroup.clear();
+                picksForCurrentBulkGroup = new ArrayList<>();
             }
             else if (totalPickQuantity > lpnQuantity){
                 // OK, we found a LPN for all the picks in the list
@@ -479,7 +500,7 @@ public class BulkPickService {
                 }
                 // reset the quantity and list
                 totalPickQuantity = newPick.getQuantity();
-                picksForCurrentBulkGroup.clear();
+                picksForCurrentBulkGroup = new ArrayList<>();
                 picksForCurrentBulkGroup.add(newPick);
             }
 
@@ -527,7 +548,8 @@ public class BulkPickService {
         bulkPick.setPicks(picksForCurrentBulkGroup);
         bulkPick.setQuantity(bulkPickQuantity);
         bulkPick.setPickedQuantity(0l);
-        bulkPick.setStatus(PickStatus.PENDING);
+        // release the bulk pick by default
+        bulkPick.setStatus(PickStatus.RELEASED);
         bulkPick.setInventoryStatusId(pick.getInventoryStatusId());
         bulkPick.setUnitOfMeasureId(bulkPickItemUnitOfMeasure.getUnitOfMeasureId());
 
@@ -682,5 +704,20 @@ public class BulkPickService {
                         pick.getColor(),
                         pick.getProductSize(),
                         pick.getStyle());
+    }
+
+    public BulkPick cancelPick(Long id, Boolean errorLocation, Boolean generateCycleCount) {
+        return findById(id);
+    }
+
+    public BulkPick changePick(BulkPick bulkPick) {
+        return saveOrUpdate(bulkPick);
+    }
+
+    public BulkPick confirmPick(Long id, Long quantity, Long nextLocationId,
+                            String nextLocationName, boolean pickToContainer, String containerId, String lpn) {
+        BulkPick bulkPick = findById(id);
+
+        return saveOrUpdate(bulkPick);
     }
 }

@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.layout.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class LocationCSVWrapper {
 
 
@@ -43,8 +46,18 @@ public class LocationCSVWrapper {
 
     private String locationGroup;
 
-    private Boolean enabled;
+    private String enabled;
 
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public String getName() {
         return name;
@@ -158,12 +171,11 @@ public class LocationCSVWrapper {
         this.locationGroup = locationGroup;
     }
 
-    public Boolean getEnabled() {
+    public String getEnabled() {
         return enabled;
     }
 
-    public void setEnabled(Boolean enabled) {
+    public void setEnabled(String enabled) {
         this.enabled = enabled;
     }
-
 }

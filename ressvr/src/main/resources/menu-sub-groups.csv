@@ -19,3 +19,4 @@ text,i18n,icon,shortcutRoot,sequence,link,badge,menuGroup,name
 "Outbound",menu.mobile.outbound,menu_subgroup_outbound.png,,2,,,Mobile-Menu,Mobile-Menu-Outbound
 "Inventory",menu.mobile.inventory,menu_subgroup_inventory.png,,3,,,Mobile-Menu,Mobile-Menu-Inventory
 "WorkOrder",menu.mobile.work-order,menu_subgroup_workorder.png,,4,,,Mobile-Menu,Mobile-Menu-WorkOrder
+"SystemDrivenWork",menu.mobile.system-driven-work,menu_subgroup_systemdrivenwork.png,,5,system_driven_work,,Mobile-Menu,Mobile-Menu-SystemDrivenWork

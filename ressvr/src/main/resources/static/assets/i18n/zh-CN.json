@@ -2055,5 +2055,11 @@
   "enabledForWorkOrder": "工单启用",
   "pickSortDirection": "拣货任务排序",
   "SORT-DIRECTION-ASC": "从小到大",
-  "SORT-DIRECTION-DESC": "从大到小"
+  "SORT-DIRECTION-DESC": "从大到小",
+  "PICK-STATUS-PENDING": "新建",
+  "PICK-STATUS-INPROCESS": "正在作业",
+  "PICK-STATUS-CANCELLED": "已取消",
+  "PICK-STATUS-COMPLETED": "已完成",
+  "PICK-STATUS-HOLD": "未释放",
+  "PICK-STATUS-RELEASED": "已释放"
 }

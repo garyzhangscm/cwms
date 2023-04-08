@@ -118,10 +118,15 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
     // if the pick is currently picking by certain user
     @Column(name = "picking_by_user_id")
     private Long pickingByUserId;
+    @Transient
+    private User pickingByUser;
+
 
     // if the user is assigned to certain user
     @Column(name = "assigned_to_user_id")
     private Long assignedToUserId;
+    @Transient
+    private User assignedToUser;
 
     @JsonIgnore
     public Double getSize() {
@@ -345,5 +350,21 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable {
 
     public void setWaveNumber(String waveNumber) {
         this.waveNumber = waveNumber;
+    }
+
+    public User getPickingByUser() {
+        return pickingByUser;
+    }
+
+    public void setPickingByUser(User pickingByUser) {
+        this.pickingByUser = pickingByUser;
+    }
+
+    public User getAssignedToUser() {
+        return assignedToUser;
+    }
+
+    public void setAssignedToUser(User assignedToUser) {
+        this.assignedToUser = assignedToUser;
     }
 }

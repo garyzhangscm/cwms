@@ -2791,8 +2791,15 @@ public class InventoryService {
      */
     private void validateNonExistingLPN(Warehouse warehouse, String lpn) {
         // first, make sure the LPN exists in a four wall area
-        List<Inventory> inventories = findByLpn(warehouse.getId(), lpn);
+        List<Inventory> inventories = findByLpn(warehouse.getId(), lpn, false);
+        logger.debug("We get {} inventories with warehouse {} / {}, lpn {}",
+                inventories.size(),
+                warehouse.getId(),
+                warehouse.getName(),
+                lpn);
         if (inventories.size() > 0) {
+
+            logger.debug("LPN " + lpn + " already exists");
             throw InventoryException.raiseException("LPN " + lpn + " already exists");
         }
         // see if we defined any rules to validate the LPN
