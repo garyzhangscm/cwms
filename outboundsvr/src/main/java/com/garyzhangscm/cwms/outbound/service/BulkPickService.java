@@ -720,4 +720,11 @@ public class BulkPickService {
 
         return saveOrUpdate(bulkPick);
     }
+
+    public BulkPick assignToUser(Long id, Long warehouseId, Long userId) {
+        BulkPick bulkPick = findById(id);
+        bulkPick.setAssignedToUserId(userId);
+
+        return saveOrUpdate(bulkPick);
+    }
 }
