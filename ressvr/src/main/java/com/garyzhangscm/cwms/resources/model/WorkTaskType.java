@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.common.model;
+package com.garyzhangscm.cwms.resources.model;
 
 public enum WorkTaskType {
     INVENTORY_MOVEMENT,

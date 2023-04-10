@@ -26,7 +26,8 @@ public enum ExceptionCode {
     USER_OPERATION_EXCEPTION(50003, HttpStatus.BAD_REQUEST, "User Operation Exception"),
     REPORT_ACCESS_PERMISSION_EXCEPTION(50004, HttpStatus.BAD_REQUEST, "User Doesn't Have Permission to Access current Report"),
     REPORT_FILE_MISSING_EXCEPTION(50005, HttpStatus.BAD_REQUEST, "Cannot find the report file"),
-    EMAIL_EXCEPTION(50006, HttpStatus.BAD_REQUEST, "Email Exception");
+    EMAIL_EXCEPTION(50006, HttpStatus.BAD_REQUEST, "Email Exception"),
+    WORK_TASK_EXCEPTION(50007, HttpStatus.BAD_REQUEST, "Work Task Exception");
 
     private final int code;
 

@@ -30,6 +30,6 @@ import java.util.List;
 public interface WorkingTeamRepository extends JpaRepository<WorkingTeam, Long>, JpaSpecificationExecutor<WorkingTeam> {
 
 
-    WorkingTeam findByName(String name);
 
+    WorkingTeam findByWarehouseIdAndName(Long warehouseId, String name);
 }

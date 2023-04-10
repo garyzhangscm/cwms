@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.SystemControlledNumber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -32,6 +35,8 @@ import java.util.Collections;
 
 @Component
 public class CommonServiceRestemplateClient implements  InitiableServiceRestemplateClient{
+
+    private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
     @Autowired
     // OAuth2RestTemplate restTemplate;
@@ -106,6 +111,26 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
                 null,
                 String.class);
         return restExchange.getBody();
+    }
+
+    public String getNextNumber(Long warehouseId, String variable) {
+
+        logger.debug("Start to get next number for {} / {}",
+                warehouseId, variable);
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/system-controlled-number/{variable}/next")
+                        .queryParam("warehouseId", warehouseId);
+        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(variable).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+
+        logger.debug(">> Next number is: {}", responseBodyWrapper.getData().getNextNumber());
+        return responseBodyWrapper.getData().getNextNumber();
     }
 
 }

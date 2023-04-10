@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.Inventory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -30,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class InventoryServiceRestemplateClient implements  InitiableServiceRestemplateClient{
@@ -74,6 +76,26 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
         return restExchange.getBody();
 
     }
+
+    public List<Inventory> getInventoryByLpn(Long warehouseId, String lpn) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("lpn", lpn)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
 
     public String[] getTestDataNames() {
         UriComponentsBuilder builder =
