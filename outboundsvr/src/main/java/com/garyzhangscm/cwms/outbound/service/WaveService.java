@@ -71,6 +71,8 @@ public class WaveService {
 
     @Autowired
     private BulkPickConfigurationService bulkPickConfigurationService;
+    @Autowired
+    private PickReleaseService pickReleaseService;
 
     public Wave findById(Long id) {
         return findById(id, true);
@@ -387,6 +389,7 @@ public class WaveService {
         // post allocation process
         // 1. bulk pick
         // 2. list pick
+        // 3. release picks into work task
         postAllocationProcess(wave.getWarehouseId(),
                 wave.getNumber(),  allocationResults);
 
@@ -409,6 +412,40 @@ public class WaveService {
         // for anything that not fall in the bulk pick, see if we can group them into
         // a list pick
         // requestListPick(allocationResults);
+
+        releaseSinglePicks(warehouseId, waveNumber, allocationResults);
+
+    }
+
+    /**
+     * Release the picks of the wave, which are not in any group of
+     * 1. list pick
+     * 2. bulk pick
+     * 3. carton pick
+     * @param warehouseId
+     * @param waveNumber
+     * @param allocationResults
+     */
+    private void releaseSinglePicks(Long warehouseId,
+                                    String waveNumber,
+                                    List<AllocationResult> allocationResults) {
+        // let's get any pick that is
+        // 1. not in any group
+        // 2. in PENDING status
+        // and then release
+        allocationResults.stream().map(
+                allocationResult ->  allocationResult.getPicks()
+        ).flatMap(List::stream)
+                .filter(pick -> pick.getStatus().equals(PickStatus.PENDING) &&
+                        Objects.isNull(pick.getBulkPick()) &&
+                        Objects.isNull(pick.getCartonization()) &&
+                        Objects.isNull(pick.getPickList()) &&
+                        Objects.isNull(pick.getAssignedToUserId()) &&
+                        Objects.isNull(pick.getPickingByUserId()) &&
+                        pick.getPickedQuantity() == 0)
+                .forEach(
+                        pick -> pickReleaseService.releasePick(pick)
+                );
 
     }
 

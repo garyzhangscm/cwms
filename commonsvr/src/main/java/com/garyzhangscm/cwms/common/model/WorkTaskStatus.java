@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.common.model;
 
-public enum WorkStatus {
+public enum WorkTaskStatus {
     PENDING,
     WORKING,
     COMPLETE

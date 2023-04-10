@@ -29,6 +29,11 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
     @Column(name = "enabled_for_work_order")
     private Boolean enabledForWorkOrder;
 
+    @Column(name = "release_to_work_task")
+    private Boolean releaseToWorkTask;
+    @Column(name = "work_task_priority")
+    private Integer workTaskPriority;
+
     // when we get a group of candidate picks, how we
     // sort the picks (from biggest pick quantity to smallest
     // or from smallest to biggest) before we can group them into
@@ -83,5 +88,21 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
 
     public void setEnabledForWorkOrder(Boolean enabledForWorkOrder) {
         this.enabledForWorkOrder = enabledForWorkOrder;
+    }
+
+    public Boolean getReleaseToWorkTask() {
+        return releaseToWorkTask;
+    }
+
+    public void setReleaseToWorkTask(Boolean releaseToWorkTask) {
+        this.releaseToWorkTask = releaseToWorkTask;
+    }
+
+    public Integer getWorkTaskPriority() {
+        return workTaskPriority;
+    }
+
+    public void setWorkTaskPriority(Integer workTaskPriority) {
+        this.workTaskPriority = workTaskPriority;
     }
 }
