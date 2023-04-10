@@ -18,18 +18,21 @@
 
 package com.garyzhangscm.cwms.resources.repository;
 
-import com.garyzhangscm.cwms.resources.model.Role;
-import com.garyzhangscm.cwms.resources.model.WorkingTeam;
+import com.garyzhangscm.cwms.resources.model.OperationType;
+import com.garyzhangscm.cwms.resources.model.Report;
+import com.garyzhangscm.cwms.resources.model.ReportType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
-public interface WorkingTeamRepository extends JpaRepository<WorkingTeam, Long>, JpaSpecificationExecutor<WorkingTeam> {
+public interface OperationTypeRepository
+        extends JpaRepository<OperationType, Long>, JpaSpecificationExecutor<OperationType> {
 
 
-
-    WorkingTeam findByWarehouseIdAndName(Long warehouseId, String name);
+    OperationType findByWarehouseIdAndName(Long warehouseId, String name);
 }

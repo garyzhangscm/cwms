@@ -1,5 +1,5 @@
 /**
- * Copyright 2019
+ * Copyright 2018
  *
  * @author gzhang
  * <p>
@@ -18,18 +18,15 @@
 
 package com.garyzhangscm.cwms.resources.repository;
 
-import com.garyzhangscm.cwms.resources.model.Role;
-import com.garyzhangscm.cwms.resources.model.WorkingTeam;
+import com.garyzhangscm.cwms.resources.model.WorkTask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface WorkingTeamRepository extends JpaRepository<WorkingTeam, Long>, JpaSpecificationExecutor<WorkingTeam> {
+public interface WorkTaskRepository extends JpaRepository<WorkTask, Long>, JpaSpecificationExecutor<WorkTask> {
+
+    WorkTask findFirstByWarehouseIdAndNumber(Long warehouseId, String number);
 
 
-
-    WorkingTeam findByWarehouseIdAndName(Long warehouseId, String name);
 }

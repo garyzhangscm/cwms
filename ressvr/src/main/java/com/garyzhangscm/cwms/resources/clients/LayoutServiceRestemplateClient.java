@@ -18,11 +18,8 @@
 
 package com.garyzhangscm.cwms.resources.clients;
 
-import com.garyzhangscm.cwms.resources.model.WarehouseConfiguration;
+import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.resources.model.Company;
-import com.garyzhangscm.cwms.resources.model.Location;
-import com.garyzhangscm.cwms.resources.model.Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
@@ -231,6 +228,106 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
         return responseBodyWrapper.getData();
 
     }
+
+    @Cacheable(cacheNames = "ResourceService_Location", unless="#result == null")
+    public Location getLocationByName(Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+
+        ResponseBodyWrapper<Location[]> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {}).getBody();
+
+        Location[] locations = responseBodyWrapper.getData();
+        if (locations.length != 1) {
+            return null;
+        }
+        else {
+            return locations[0];
+        }
+    }
+    @Cacheable(cacheNames = "ResourceService_LocationGroup", unless="#result == null")
+    public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgroups")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<LocationGroup[]> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup[]>>() {}).getBody();
+
+        LocationGroup[] locationGroups = responseBodyWrapper.getData();
+
+        if (locationGroups.length != 1) {
+            return null;
+        }
+        else {
+
+            return locationGroups[0];
+        }
+    }
+
+    @Cacheable(cacheNames = "ResourceService_LocationGroupType", unless="#result == null")
+    public LocationGroupType getLocationGroupTypeByName(String name) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locationgrouptypes")
+                        .queryParam("name", name);
+
+        ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType[]>>() {}).getBody();
+
+        LocationGroupType[] locationGroupTypes = responseBodyWrapper.getData();
+
+        if (locationGroupTypes.length != 1) {
+            return null;
+        }
+        else {
+
+            return locationGroupTypes[0];
+        }
+    }
+
+
+
+    @Cacheable(cacheNames = "ResourceService_Location", unless="#result == null")
+    public Location getLocationById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/{id}");
+
+        ResponseBodyWrapper<Location> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
     public boolean contains(String name) {
         return Arrays.stream(getTestDataNames()).anyMatch(dataName -> dataName.equals(name));
     }

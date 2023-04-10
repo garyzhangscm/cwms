@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.common.model;
+package com.garyzhangscm.cwms.resources.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -37,6 +37,9 @@ public class WorkTask extends AuditibleEntity<String> {
     private WorkTaskStatus status;
 
 
+    @Column(name = "priority")
+    private Integer priority;
+
     @Column(name = "source_location_id")
     private Long sourceLocationId;
     @Transient
@@ -57,34 +60,28 @@ public class WorkTask extends AuditibleEntity<String> {
     private String referenceNumber;
 
 
-    @Column(name = "assigned_user_id")
-    private Long assignedUserId;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="assigned_user_id", referencedColumnName="user_id")
     private User assignedUser;
 
-    @Column(name = "assigned_role_id")
-    private Long assignedRoleId;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="assigned_role_id", referencedColumnName="role_id")
     private Role assignedRole;
 
-    @Column(name = "assigned_working_team_id")
-    private Long assignedWorkingTeamId;
-    @Transient
+
+    @ManyToOne
+    @JoinColumn(name="assigned_working_team_id", referencedColumnName="working_team_id")
     private WorkingTeam assignedWorkingTeam;
 
-
     // User who is working on this work now
-    @Column(name = "current_user_id")
-    private Long currentUserId;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="current_user_id", referencedColumnName="user_id")
     private User currentUser;
 
     // User who complete this work
-    @Column(name = "complete_user_id")
-    private Long completeUserId;
-    @Transient
+    @ManyToOne
+    @JoinColumn(name="complete_user_id", referencedColumnName="user_id")
     private User completeUser;
-
 
     // User who complete this work
     @Column(name = "start_time")
@@ -132,6 +129,14 @@ public class WorkTask extends AuditibleEntity<String> {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
     public WorkTaskType getType() {
@@ -190,62 +195,6 @@ public class WorkTask extends AuditibleEntity<String> {
         this.referenceNumber = referenceNumber;
     }
 
-    public Long getAssignedUserId() {
-        return assignedUserId;
-    }
-
-    public void setAssignedUserId(Long assignedUserId) {
-        this.assignedUserId = assignedUserId;
-    }
-
-    public Long getAssignedRoleId() {
-        return assignedRoleId;
-    }
-
-    public void setAssignedRoleId(Long assignedRoleId) {
-        this.assignedRoleId = assignedRoleId;
-    }
-
-    public Long getAssignedWorkingTeamId() {
-        return assignedWorkingTeamId;
-    }
-
-    public void setAssignedWorkingTeamId(Long assignedWorkingTeamId) {
-        this.assignedWorkingTeamId = assignedWorkingTeamId;
-    }
-
-    public Long getCurrentUserId() {
-        return currentUserId;
-    }
-
-    public void setCurrentUserId(Long currentUserId) {
-        this.currentUserId = currentUserId;
-    }
-
-    public Long getCompleteUserId() {
-        return completeUserId;
-    }
-
-    public void setCompleteUserId(Long completeUserId) {
-        this.completeUserId = completeUserId;
-    }
-
-    public ZonedDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(ZonedDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public ZonedDateTime getCompleteTime() {
-        return completeTime;
-    }
-
-    public void setCompleteTime(ZonedDateTime completeTime) {
-        this.completeTime = completeTime;
-    }
-
     public User getAssignedUser() {
         return assignedUser;
     }
@@ -284,5 +233,21 @@ public class WorkTask extends AuditibleEntity<String> {
 
     public void setCompleteUser(User completeUser) {
         this.completeUser = completeUser;
+    }
+
+    public ZonedDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(ZonedDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public ZonedDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public void setCompleteTime(ZonedDateTime completeTime) {
+        this.completeTime = completeTime;
     }
 }

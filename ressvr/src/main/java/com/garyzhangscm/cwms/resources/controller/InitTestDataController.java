@@ -40,6 +40,7 @@ public class InitTestDataController {
 
         return initTestDataService.getTestDataNames();
     }
+    /**
     @RequestMapping(value = "/init", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> init(
             @RequestParam Long companyId, @RequestParam String warehouseName) {
@@ -78,6 +79,6 @@ public class InitTestDataController {
         throw UserOperationException.raiseException("Initiate Test Data is not allowed in this server");
     }
 
-
+**/
 
 }

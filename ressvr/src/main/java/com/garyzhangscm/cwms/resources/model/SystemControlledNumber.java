@@ -1,5 +1,5 @@
 /**
- * Copyright 2018
+ * Copyright 2019
  *
  * @author gzhang
  * <p>
@@ -16,17 +16,20 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.common.repository;
+package com.garyzhangscm.cwms.resources.model;
 
-import com.garyzhangscm.cwms.common.model.WorkTask;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
+import java.io.Serializable;
 
-@Repository
-public interface WorkTaskRepository extends JpaRepository<WorkTask, Long>, JpaSpecificationExecutor<WorkTask> {
-
-    WorkTask findFirstByWarehouseIdAndNumber(Long warehouseId, String number);
+public class SystemControlledNumber implements Serializable {
 
 
+    private String nextNumber;
+
+    public String getNextNumber() {
+        return nextNumber;
+    }
+
+    public void setNextNumber(String nextNumber) {
+        this.nextNumber = nextNumber;
+    }
 }

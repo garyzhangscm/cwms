@@ -18,18 +18,15 @@
 
 package com.garyzhangscm.cwms.resources.repository;
 
-import com.garyzhangscm.cwms.resources.model.Role;
-import com.garyzhangscm.cwms.resources.model.WorkingTeam;
+import com.garyzhangscm.cwms.resources.model.WorkTaskConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
-public interface WorkingTeamRepository extends JpaRepository<WorkingTeam, Long>, JpaSpecificationExecutor<WorkingTeam> {
+public interface WorkTaskConfigurationRepository
+        extends JpaRepository<WorkTaskConfiguration, Long>, JpaSpecificationExecutor<WorkTaskConfiguration> {
 
 
-
-    WorkingTeam findByWarehouseIdAndName(Long warehouseId, String name);
 }

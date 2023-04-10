@@ -88,6 +88,7 @@ public class LocationGroupController {
                     @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_LocationGroup", allEntries = true),
             }
     )
     public LocationGroup changeLocationGroups(@PathVariable long id,
@@ -108,6 +109,7 @@ public class LocationGroupController {
                     @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_LocationGroup", allEntries = true),
             }
     )
     public void removeLocationGroup(@PathVariable long id) {
@@ -122,6 +124,7 @@ public class LocationGroupController {
                     @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_LocationGroup", allEntries = true),
             }
     )
     public void removeLocationGroups(@RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds) {
@@ -140,6 +143,7 @@ public class LocationGroupController {
                     @CacheEvict(cacheNames = "InboundService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_LocationGroup", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_LocationGroup", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_LocationGroup", allEntries = true),
             }
     )
     public Location reserveLocation(@PathVariable Long id,

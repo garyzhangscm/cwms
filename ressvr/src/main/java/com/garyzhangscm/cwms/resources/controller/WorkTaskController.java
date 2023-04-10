@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.common.controller;
+package com.garyzhangscm.cwms.resources.controller;
 
-import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
-import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Carrier;
-import com.garyzhangscm.cwms.common.model.WorkTask;
-import com.garyzhangscm.cwms.common.service.CarrierService;
-import com.garyzhangscm.cwms.common.service.WorkTaskService;
+import com.garyzhangscm.cwms.resources.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
+import com.garyzhangscm.cwms.resources.model.WorkTask;
+import com.garyzhangscm.cwms.resources.service.WorkTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

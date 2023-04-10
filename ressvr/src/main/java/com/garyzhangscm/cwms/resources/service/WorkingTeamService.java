@@ -110,11 +110,11 @@ public class WorkingTeamService implements TestDataInitiableService{
 
     }
 
-    public WorkingTeam findByName(String name) {
-        return findByName(name, true);
+    public WorkingTeam findByName(Long warehouseId, String name) {
+        return findByName(warehouseId, name, true);
     }
-    public WorkingTeam findByName(String name, boolean loadDetails) {
-        WorkingTeam workingTeam = workingTeamRepository.findByName(name);
+    public WorkingTeam findByName(Long warehouseId, String name, boolean loadDetails) {
+        WorkingTeam workingTeam = workingTeamRepository.findByWarehouseIdAndName(warehouseId,name);
         if (Objects.nonNull(workingTeam) && loadDetails) {
             loadAttribute(workingTeam);
         }
@@ -142,8 +142,8 @@ public class WorkingTeamService implements TestDataInitiableService{
     }
 
     public WorkingTeam saveOrUpdate(WorkingTeam workingTeam) {
-        if (Objects.isNull(workingTeam.getId()) && findByName(workingTeam.getName()) != null) {
-            workingTeam.setId(findByName(workingTeam.getName()).getId());
+        if (Objects.isNull(workingTeam.getId()) && findByName(workingTeam.getWarehouseId(), workingTeam.getName()) != null) {
+            workingTeam.setId(findByName(workingTeam.getWarehouseId(), workingTeam.getName()).getId());
         }
         return save(workingTeam);
     }

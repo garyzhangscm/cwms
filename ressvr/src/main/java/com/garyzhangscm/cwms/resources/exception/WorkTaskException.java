@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.common.exception;
+package com.garyzhangscm.cwms.resources.exception;
 
 
 import java.util.Map;
@@ -9,6 +9,6 @@ public class WorkTaskException extends GenericException {
     }
 
     public static WorkTaskException raiseException(String message) {
-        return new WorkTaskException(createDefaultData(message));
+        return new WorkTaskException(GenericException.createDefaultData(message));
     }
 }

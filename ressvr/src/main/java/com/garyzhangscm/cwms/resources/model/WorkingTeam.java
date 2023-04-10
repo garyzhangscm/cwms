@@ -26,6 +26,9 @@ public class WorkingTeam extends AuditibleEntity<String>  {
     @Column(name = "company_id")
     private Long companyId;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @Column(name = "name")
     private String name;
 
@@ -52,7 +55,16 @@ public class WorkingTeam extends AuditibleEntity<String>  {
             return Objects.equals(id, workingTeam.id);
         }
 
-        return name.equals(workingTeam.getName());
+        return warehouseId.equals(workingTeam.getWarehouseId()) &&
+                name.equals(workingTeam.getName());
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public void assignUser(User user) {

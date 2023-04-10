@@ -81,6 +81,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public ResponseBodyWrapper uploadLocations(Long warehouseId,
@@ -265,6 +266,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public ResponseBodyWrapper removeLocations(@RequestParam Long warehouseId,
@@ -293,6 +295,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location updateLocation(@PathVariable Long id,
@@ -330,6 +333,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location changeLocation(@RequestBody Location location) {
@@ -371,6 +375,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location removeRFLocation(@RequestParam Long warehouseId,
@@ -390,6 +395,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location reserveLocation(@PathVariable Long id,
@@ -417,6 +423,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public List<Location> unreserveLocation(@RequestParam Long warehouseId,
@@ -441,6 +448,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location reserveLocation(@PathVariable Long id,
@@ -467,6 +475,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location allocateLocation(@PathVariable Long id,
@@ -487,6 +496,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location changePendingVolume(@PathVariable Long id,
@@ -508,6 +518,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location changeVolume(@PathVariable Long id,
@@ -531,6 +542,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location processLocationLock(@PathVariable Long id,
@@ -548,6 +560,7 @@ public class LocationController {
                     @CacheEvict(cacheNames = "InventoryService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_Location", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Location", allEntries = true),
+                    @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
     public Location processLocationError(@PathVariable Long id,

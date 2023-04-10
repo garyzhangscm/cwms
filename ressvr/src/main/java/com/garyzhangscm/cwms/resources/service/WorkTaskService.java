@@ -16,26 +16,24 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.common.service;
+package com.garyzhangscm.cwms.resources.service;
 
-import com.garyzhangscm.cwms.common.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.clients.ResourceServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.common.exception.WorkTaskException;
-import com.garyzhangscm.cwms.common.model.*;
-import com.garyzhangscm.cwms.common.repository.WorkTaskRepository;
+import com.garyzhangscm.cwms.resources.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.resources.exception.WorkTaskException;
+import com.garyzhangscm.cwms.resources.model.*;
+import com.garyzhangscm.cwms.resources.repository.WorkTaskRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,14 +46,18 @@ public class WorkTaskService{
     @Autowired
     private WorkTaskRepository workTaskRepository;
     @Autowired
-    private SystemControlledNumberService systemControlledNumberService;
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     @Autowired
-    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
-    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    private UserService userService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private WorkingTeamService workingTeamService;
 
 
     public WorkTask findById(Long id) {
@@ -126,13 +128,13 @@ public class WorkTaskService{
 
                     }
                     if (StringUtils.isNotBlank(sourceLocationName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                        Location location = layoutServiceRestemplateClient.getLocationByName(
                                 warehouseId, sourceLocationName
                         );
                         predicates.add(criteriaBuilder.equal(root.get("sourceLocationId"), location.getId()));
                     }
                     if (StringUtils.isNotBlank(destinationLocationName)) {
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                        Location location = layoutServiceRestemplateClient.getLocationByName(
                                 warehouseId, destinationLocationName
                         );
                         predicates.add(criteriaBuilder.equal(root.get("destinationLocationId"), location.getId()));
@@ -144,40 +146,30 @@ public class WorkTaskService{
                             StringUtils.isNotBlank(assignedWorkingTeamName) ||
                             StringUtils.isNotBlank(currentUserName) ||
                             StringUtils.isNotBlank(completeUserName)) {
-                        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                        Long companyId = layoutServiceRestemplateClient.getWarehouseById(
                                 warehouseId
                         ).getCompanyId();
 
                         if (StringUtils.isNotBlank(assignedUserName)) {
-                            User user = resourceServiceRestemplateClient.getUserByUsername(
-                                    companyId, assignedUserName
-                            );
-                            predicates.add(criteriaBuilder.equal(root.get("assignedUserId"), user.getId()));
+                            Join<WorkTask, User> joinAssignedUser = root.join("assignedUser", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinAssignedUser.get("username"), assignedUserName));
                         }
                         if (StringUtils.isNotBlank(assignedRoleName)) {
-                            Role role = resourceServiceRestemplateClient.getRoleByName(
-                                    companyId, assignedRoleName
-                            );
-                            predicates.add(criteriaBuilder.equal(root.get("assignedRoleId"), role.getId()));
+                            Join<WorkTask, Role> joinAssignedRole = root.join("assignedRole", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinAssignedRole.get("name"), assignedRoleName));
                         }
                         if (StringUtils.isNotBlank(assignedWorkingTeamName)) {
-                            WorkingTeam workingTeam = resourceServiceRestemplateClient.getWorkingTeamByName(
-                                    companyId, assignedWorkingTeamName
-                            );
-                            predicates.add(criteriaBuilder.equal(root.get("assignedWorkingTeamId"), workingTeam.getId()));
+                            Join<WorkTask, WorkingTeam> joinAssignedWorkingTeam = root.join("assignedWorkingTeam", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinAssignedWorkingTeam.get("name"), assignedWorkingTeamName));
                         }
 
                         if (StringUtils.isNotBlank(currentUserName)) {
-                            User user = resourceServiceRestemplateClient.getUserByUsername(
-                                    companyId, currentUserName
-                            );
-                            predicates.add(criteriaBuilder.equal(root.get("currentUserId"), user.getId()));
+                            Join<WorkTask, User> joinCurrentUser = root.join("currentUser", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinCurrentUser.get("username"), currentUserName));
                         }
                         if (StringUtils.isNotBlank(completeUserName)) {
-                            User user = resourceServiceRestemplateClient.getUserByUsername(
-                                    companyId, completeUserName
-                            );
-                            predicates.add(criteriaBuilder.equal(root.get("completeUserId"), user.getId()));
+                            Join<WorkTask, User> joinCompleteUser = root.join("completeUser", JoinType.INNER);
+                            predicates.add(criteriaBuilder.equal(joinCompleteUser.get("username"), completeUserName));
                         }
                     }
 
@@ -194,6 +186,8 @@ public class WorkTaskService{
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
+                ,
+                Sort.by(Sort.Direction.DESC, "createdTime")
         );
         if (workTasks.size() >0 && loadAttribute) {
             loadAttribute(workTasks);
@@ -248,61 +242,24 @@ public class WorkTaskService{
 
         if (Objects.nonNull(workTask.getWarehouseId()) && Objects.isNull(workTask.getWarehouse())) {
             workTask.setWarehouse(
-                    warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                    layoutServiceRestemplateClient.getWarehouseById(
                             workTask.getWarehouseId()));
 
         }
 
         if (Objects.nonNull(workTask.getSourceLocationId()) && Objects.isNull(workTask.getSourceLocation())) {
             workTask.setSourceLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                    layoutServiceRestemplateClient.getLocationById(
                             workTask.getSourceLocationId()));
 
         }
 
         if (Objects.nonNull(workTask.getDestinationLocationId()) && Objects.isNull(workTask.getDestinationLocation())) {
             workTask.setDestinationLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                    layoutServiceRestemplateClient.getLocationById(
                             workTask.getDestinationLocationId()));
 
         }
-
-
-        if (Objects.nonNull(workTask.getAssignedUserId()) && Objects.isNull(workTask.getAssignedUser())) {
-            workTask.setAssignedUser(
-                    resourceServiceRestemplateClient.getUserById(
-                            workTask.getAssignedUserId()
-                    ));
-        }
-
-        if (Objects.nonNull(workTask.getAssignedRoleId()) && Objects.isNull(workTask.getAssignedRole())) {
-            workTask.setAssignedRole(
-                    resourceServiceRestemplateClient.getRoleById(
-                            workTask.getAssignedRoleId()
-                    ));
-        }
-
-        if (Objects.nonNull(workTask.getAssignedWorkingTeamId()) && Objects.isNull(workTask.getAssignedWorkingTeam())) {
-            workTask.setAssignedWorkingTeam(
-                    resourceServiceRestemplateClient.getWorkingTeamById(
-                            workTask.getAssignedWorkingTeamId()
-                    ));
-        }
-
-        if (Objects.nonNull(workTask.getCurrentUserId()) && Objects.isNull(workTask.getCurrentUser())) {
-            workTask.setCurrentUser(
-                    resourceServiceRestemplateClient.getUserById(
-                            workTask.getCurrentUserId()
-                    ));
-        }
-
-        if (Objects.nonNull(workTask.getCompleteUserId()) && Objects.isNull(workTask.getCompleteUser())) {
-            workTask.setCompleteUser(
-                    resourceServiceRestemplateClient.getUserById(
-                            workTask.getCompleteUserId()
-                    ));
-        }
-
     }
     @Transactional
     public void delete(WorkTask workTask) {
@@ -328,7 +285,7 @@ public class WorkTaskService{
     }
 
     private String getNextWorkTaskNumber(Long warehouseId) {
-        return systemControlledNumberService.getNextNumber(warehouseId, "work-task").getNextNumber();
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "work-task");
     }
 
     public WorkTask changeWorkTask(WorkTask workTask) {
@@ -359,34 +316,34 @@ public class WorkTaskService{
     @Transactional
     public WorkTask assignWorkTask(WorkTask workTask, String username, String rolename, String workingTeamName) {
 
-        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+        Long companyId = layoutServiceRestemplateClient.getWarehouseById(
                 workTask.getWarehouseId()
         ).getCompanyId();
 
         // clear the previous assignment
-        workTask.setAssignedUserId(null);
-        workTask.setAssignedRoleId(null);
-        workTask.setAssignedWorkingTeamId(null);
+        workTask.setAssignedUser(null);
+        workTask.setAssignedRole(null);
+        workTask.setAssignedWorkingTeam(null);
 
         if (StringUtils.isNotBlank(username)) {
-            User user = resourceServiceRestemplateClient.getUserByUsername(
+            User user = userService.findByUsername(
                     companyId, username
             );
-            workTask.setAssignedUserId(user.getId());
+            workTask.setAssignedUser(user);
             return saveOrUpdate(workTask);
         }
         else if (StringUtils.isNotBlank(rolename)) {
-            Role role = resourceServiceRestemplateClient.getRoleByName(
+            Role role = roleService.findByName(
                     companyId, rolename
             );
-            workTask.setAssignedRoleId(role.getId());
+            workTask.setAssignedRole(role);
             return saveOrUpdate(workTask);
         }
         else if (StringUtils.isNotBlank(workingTeamName)) {
-            WorkingTeam workingTeam = resourceServiceRestemplateClient.getWorkingTeamByName(
-                    companyId, workingTeamName
+            WorkingTeam workingTeam = workingTeamService.findByName(
+                    workTask.getWarehouseId(), workingTeamName
             );
-            workTask.setAssignedWorkingTeamId(workingTeam.getId());
+            workTask.setAssignedWorkingTeam(workingTeam);
             return saveOrUpdate(workTask);
         }
         else {
@@ -403,9 +360,9 @@ public class WorkTaskService{
     }
     public WorkTask deassignWorkTask(WorkTask workTask) {
 
-        workTask.setAssignedUserId(null);
-        workTask.setAssignedRoleId(null);
-        workTask.setAssignedWorkingTeamId(null);
+        workTask.setAssignedUser(null);
+        workTask.setAssignedRole(null);
+        workTask.setAssignedWorkingTeam(null);
         return saveOrUpdate(workTask);
     }
 
