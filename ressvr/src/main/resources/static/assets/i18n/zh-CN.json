@@ -2061,5 +2061,9 @@
   "PICK-STATUS-CANCELLED": "已取消",
   "PICK-STATUS-COMPLETED": "已完成",
   "PICK-STATUS-HOLD": "未释放",
-  "PICK-STATUS-RELEASED": "已释放"
+  "PICK-STATUS-RELEASED": "已释放",
+  "menu.main.outbound.pick-configuration": "拣货配置",
+  "releaseToWorkTask": "使用工作任务系统",
+  "workTaskPriority": "工作任务优先级",
+  "bulk-pick": "合并拣货（LPN级别）"
 }

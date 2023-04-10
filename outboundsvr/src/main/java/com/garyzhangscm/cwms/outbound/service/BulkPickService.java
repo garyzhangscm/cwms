@@ -56,6 +56,8 @@ public class BulkPickService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private PickReleaseService pickReleaseService;
 
 
     public BulkPick findById(Long id) {
@@ -288,7 +290,7 @@ public class BulkPickService {
                                 Objects.isNull(pick.getPickingByUserId()) &&
                                 Strings.isBlank(pick.getLpn()) &&
                                 pick.getPickedQuantity() == 0 &&
-                                pick.getStatus() == PickStatus.RELEASED
+                                pick.getStatus() == PickStatus.PENDING
                 ).collect(Collectors.toList());
 
         groupPicksIntoBulk(waveNumber, pickCandidates, direction, allocationResultMap);
@@ -466,6 +468,7 @@ public class BulkPickService {
                         }
                 );
                 saveOrUpdate(bulkPick);
+                releaseBulkPick(bulkPick);
                 logger.debug("Bulk pick {} / {} saved!",
                         bulkPick.getId(), bulkPick.getNumber());
 
@@ -489,6 +492,7 @@ public class BulkPickService {
                         }
                 );
                 saveOrUpdate(bulkPick);
+                releaseBulkPick(bulkPick);
 
                 // split the remaining quantity into a new pick,
                 // add the pick back to the list
@@ -726,5 +730,10 @@ public class BulkPickService {
         bulkPick.setAssignedToUserId(userId);
 
         return saveOrUpdate(bulkPick);
+    }
+
+    public void releaseBulkPick(BulkPick bulkPick) {
+
+        saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));
     }
 }

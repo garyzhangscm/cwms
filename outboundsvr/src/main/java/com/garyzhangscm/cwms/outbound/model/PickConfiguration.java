@@ -4,16 +4,14 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.data.domain.Sort;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "bulk_pick_configuration")
-public class BulkPickConfiguration extends AuditibleEntity<String> {
+@Table(name = "pick_configuration")
+public class PickConfiguration extends AuditibleEntity<String> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bulk_pick_configuration_id")
+    @Column(name = "pick_configuration_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -23,24 +21,11 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
-    @Column(name = "enabled_for_outbound")
-    private Boolean enabledForOutbound;
-
-    @Column(name = "enabled_for_work_order")
-    private Boolean enabledForWorkOrder;
-
     @Column(name = "release_to_work_task")
     private Boolean releaseToWorkTask;
     @Column(name = "work_task_priority")
     private Integer workTaskPriority;
 
-    // when we get a group of candidate picks, how we
-    // sort the picks (from biggest pick quantity to smallest
-    // or from smallest to biggest) before we can group them into
-    // several bulk picks
-    @Column(name = "pick_sort_direction")
-    @Enumerated(EnumType.STRING)
-    private Sort.Direction pickSortDirection;
 
     public Long getId() {
         return id;
@@ -66,29 +51,6 @@ public class BulkPickConfiguration extends AuditibleEntity<String> {
         this.warehouse = warehouse;
     }
 
-    public Sort.Direction getPickSortDirection() {
-        return pickSortDirection;
-    }
-
-    public void setPickSortDirection(Sort.Direction pickSortDirection) {
-        this.pickSortDirection = pickSortDirection;
-    }
-
-    public Boolean getEnabledForOutbound() {
-        return enabledForOutbound;
-    }
-
-    public void setEnabledForOutbound(Boolean enabledForOutbound) {
-        this.enabledForOutbound = enabledForOutbound;
-    }
-
-    public Boolean getEnabledForWorkOrder() {
-        return enabledForWorkOrder;
-    }
-
-    public void setEnabledForWorkOrder(Boolean enabledForWorkOrder) {
-        this.enabledForWorkOrder = enabledForWorkOrder;
-    }
 
     public Boolean getReleaseToWorkTask() {
         return releaseToWorkTask;

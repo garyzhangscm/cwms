@@ -31,14 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,8 +65,8 @@ public class WorkTaskService{
 
     public List<WorkTask> findAll(Long warehouseId,
                                   String number,
-                                  String workType,
-                                  String workStatus,
+                                  String type,
+                                  String status,
                                   String lpn,
                                   String sourceLocationName,
                                   String destinationLocationName,
@@ -78,14 +76,14 @@ public class WorkTaskService{
                                   String currentUserName,
                                   String completeUserName,
                                   String workTaskIds) {
-        return findAll(warehouseId, number, workType, workStatus,
+        return findAll(warehouseId, number, type, status,
                 lpn, sourceLocationName, destinationLocationName, assignedUserName,
                 assignedRoleName, assignedWorkingTeamName, currentUserName, completeUserName, workTaskIds, true);
     }
     public List<WorkTask> findAll(Long warehouseId,
                                   String number,
-                                  String workType,
-                                  String workStatus,
+                                  String type,
+                                  String status,
                                   String lpn,
                                   String sourceLocationName,
                                   String destinationLocationName,
@@ -110,11 +108,11 @@ public class WorkTaskService{
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
                     }
 
-                    if (StringUtils.isNotBlank(workType)) {
-                        predicates.add(criteriaBuilder.equal(root.get("workType"), WorkType.valueOf(workType)));
+                    if (StringUtils.isNotBlank(type)) {
+                        predicates.add(criteriaBuilder.equal(root.get("type"), WorkTaskType.valueOf(type)));
                     }
-                    if (StringUtils.isNotBlank(workStatus)) {
-                        predicates.add(criteriaBuilder.equal(root.get("workStatus"), WorkStatus.valueOf(workStatus)));
+                    if (StringUtils.isNotBlank(status)) {
+                        predicates.add(criteriaBuilder.equal(root.get("status"), WorkTaskStatus.valueOf(status)));
                     }
                     if (StringUtils.isNotBlank(lpn)) {
                         List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
@@ -269,12 +267,6 @@ public class WorkTaskService{
 
         }
 
-        if (Objects.nonNull(workTask.getInventoryId()) && Objects.isNull(workTask.getInventory())) {
-            workTask.setInventory(
-                    inventoryServiceRestemplateClient.getInventoryById(
-                            workTask.getInventoryId()));
-
-        }
 
         if (Objects.nonNull(workTask.getAssignedUserId()) && Objects.isNull(workTask.getAssignedUser())) {
             workTask.setAssignedUser(
@@ -323,8 +315,8 @@ public class WorkTaskService{
 
 
     public WorkTask addWorkTask(WorkTask workTask) {
-        if(Objects.isNull(workTask.getWorkStatus())) {
-            workTask.setWorkStatus(WorkStatus.PENDING);
+        if(Objects.isNull(workTask.getStatus())) {
+            workTask.setStatus(WorkTaskStatus.PENDING);
         }
         if (Objects.isNull(workTask.getNumber())) {
 

@@ -38,8 +38,8 @@ public class WorkTaskController {
     @RequestMapping(value="/work-tasks", method = RequestMethod.GET)
     public List<WorkTask> findAllWorkTasks(@RequestParam Long warehouseId,
                                            @RequestParam(name = "number", required = false, defaultValue = "") String number,
-                                           @RequestParam(name = "workType", required = false, defaultValue = "") String workType,
-                                           @RequestParam(name = "workStatus", required = false, defaultValue = "") String workStatus,
+                                           @RequestParam(name = "type", required = false, defaultValue = "") String type,
+                                           @RequestParam(name = "status", required = false, defaultValue = "") String status,
                                            @RequestParam(name = "lpn", required = false, defaultValue = "") String lpn,
                                            @RequestParam(name = "sourceLocationName", required = false, defaultValue = "") String sourceLocationName,
                                            @RequestParam(name = "destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
@@ -50,7 +50,7 @@ public class WorkTaskController {
                                            @RequestParam(name = "completeUserName", required = false, defaultValue = "") String completeUserName,
                                            @RequestParam(name = "workTaskIds", required = false, defaultValue = "") String workTaskIds) {
         return workTaskService.findAll(warehouseId, number,
-                workType, workStatus, lpn,
+                type, status, lpn,
                 sourceLocationName, destinationLocationName,
                 assignedUserName, assignedRoleName, assignedWorkingTeamName,
                 currentUserName, completeUserName, workTaskIds);
@@ -91,13 +91,14 @@ public class WorkTaskController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/work-tasks", method = RequestMethod.POST)
-    public WorkTask addWorkTask(@RequestBody WorkTask workTask) {
+    @RequestMapping(value="/work-tasks", method = RequestMethod.PUT)
+    public WorkTask addWorkTask(Long warehouseId,
+                                @RequestBody WorkTask workTask) {
         return workTaskService.addWorkTask(workTask);
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/work-tasks/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/work-tasks/{id}", method = RequestMethod.POST)
     public WorkTask changeWorkTask(@PathVariable Long id, @RequestBody WorkTask workTask) {
         if (Objects.nonNull(workTask.getId()) && !Objects.equals(workTask.getId(), id)) {
             throw RequestValidationFailException.raiseException(

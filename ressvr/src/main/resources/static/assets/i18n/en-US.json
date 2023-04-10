@@ -2064,5 +2064,9 @@
   "PICK-STATUS-CANCELLED": "Cancelled",
   "PICK-STATUS-COMPLETED": "Completed",
   "PICK-STATUS-HOLD": "Hold",
-  "PICK-STATUS-RELEASED": "Released"
+  "PICK-STATUS-RELEASED": "Released",
+  "menu.main.outbound.pick-configuration": "Pick Configuration",
+  "releaseToWorkTask": "Release to Work Task",
+  "workTaskPriority": "Work Task Priority",
+  "bulk-pick": "Bulk Pick"
 }

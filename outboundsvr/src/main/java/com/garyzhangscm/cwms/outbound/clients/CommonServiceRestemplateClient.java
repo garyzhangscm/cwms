@@ -17,6 +17,8 @@
  */
 
 package com.garyzhangscm.cwms.outbound.clients;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -28,7 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -52,6 +57,10 @@ public class CommonServiceRestemplateClient {
     @Autowired
     @Qualifier("autoLoginRestTemplate")
     RestTemplate autoLoginRestTemplate;
+
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private RestTemplateProxy restTemplateProxy;
@@ -402,4 +411,40 @@ public class CommonServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
     }
+
+
+    public WorkTask addWorkTask(Long warehouseId, WorkTask workTask)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/work-tasks")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<WorkTask> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplateProxy.getRestTemplate().exchange(
+                    builder.toUriString(),
+                    HttpMethod.PUT,
+                    getHttpEntity(objectMapper.writeValueAsString(workTask)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+
+        }
+        return null;
+
+    }
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
+    }
+
 }

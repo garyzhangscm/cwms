@@ -20,6 +20,9 @@ public class Company extends AuditibleEntity<String> {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "short_name")
+    private String shortName;
+
     @Column(name = "description")
     private String description;
 
@@ -56,6 +59,7 @@ public class Company extends AuditibleEntity<String> {
     @Column(name = "enabled")
     private Boolean enabled = true;
 
+
     public Long getId() {
         return id;
     }
@@ -78,6 +82,14 @@ public class Company extends AuditibleEntity<String> {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
     }
 
     public String getDescription() {

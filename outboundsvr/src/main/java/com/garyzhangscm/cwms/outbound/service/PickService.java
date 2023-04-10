@@ -837,7 +837,7 @@ public class PickService {
         }
         else {
 
-            pick.setStatus(PickStatus.RELEASED);
+            pick.setStatus(PickStatus.PENDING);
             pick.setDestinationLocation(stagingLocation);
             pick.setDestinationLocationId(stagingLocation.getId());
         }
@@ -1795,6 +1795,7 @@ public class PickService {
      * @param currentLocationId
      * @return
      */
+    /***
     public GroupPick getNextPick(Long warehouseId, Long currentLocationId) {
         // get the current user first as we will always start from
         // the picks that are assigned to the user
@@ -1852,7 +1853,9 @@ public class PickService {
 
 
     }
+     **/
 
+    /**
     private GroupPick getBestUnassignedPicks(User user, Location currentLocation, List<Pick> openPicks, List<BulkPick> openBulkPicks) {
         // 1. get the picks that is not assigned.
         Pick bestUnassignedSinglePick = openPicks.stream().filter(
@@ -1892,7 +1895,8 @@ public class PickService {
             }
         }
     }
-
+**/
+    /**
     private GroupPick getBestAssignedPicks(User user,
                                            Location currentLocation,
                                            List<Pick> openPicks, List<BulkPick> openBulkPicks) {
@@ -1934,8 +1938,10 @@ public class PickService {
             }
         }
     }
-
+**/
+    /**
     public int sortPickBasedOnCurrentLocation(Location currentLocation, Pick pick1, Pick pick2) {
+
         Long currentPickSequence = Objects.isNull(currentLocation) ?
                 0 :
                 Objects.isNull(currentLocation.getPickSequence()) ? 0 : currentLocation.getPickSequence();
@@ -1960,4 +1966,5 @@ public class PickService {
             return -1;
         }
     }
+     **/
 }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Entity
@@ -31,11 +30,11 @@ public class WorkTask extends AuditibleEntity<String> {
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    private WorkType workType;
+    private WorkTaskType type;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private WorkStatus workStatus;
+    private WorkTaskStatus status;
 
 
     @Column(name = "source_location_id")
@@ -50,10 +49,12 @@ public class WorkTask extends AuditibleEntity<String> {
     private Location destinationLocation;
 
 
-    @Column(name = "inventory_id")
-    private Long inventoryId;
-    @Transient
-    private Inventory inventory;
+    // bulk pick number if the task is bulk pick
+    // list pick number if the task is list pick
+    // pick number if the task is pick
+    // LPN is the task is inventory related
+    @Column(name = "reference_number")
+    private String referenceNumber;
 
 
     @Column(name = "assigned_user_id")
@@ -133,20 +134,20 @@ public class WorkTask extends AuditibleEntity<String> {
         this.number = number;
     }
 
-    public WorkType getWorkType() {
-        return workType;
+    public WorkTaskType getType() {
+        return type;
     }
 
-    public void setWorkType(WorkType workType) {
-        this.workType = workType;
+    public void setType(WorkTaskType type) {
+        this.type = type;
     }
 
-    public WorkStatus getWorkStatus() {
-        return workStatus;
+    public WorkTaskStatus getStatus() {
+        return status;
     }
 
-    public void setWorkStatus(WorkStatus workStatus) {
-        this.workStatus = workStatus;
+    public void setStatus(WorkTaskStatus status) {
+        this.status = status;
     }
 
     public Long getSourceLocationId() {
@@ -181,20 +182,12 @@ public class WorkTask extends AuditibleEntity<String> {
         this.destinationLocation = destinationLocation;
     }
 
-    public Long getInventoryId() {
-        return inventoryId;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setInventoryId(Long inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public Long getAssignedUserId() {

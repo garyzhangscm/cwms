@@ -158,11 +158,12 @@ public class PickController {
         logger.debug("=> lpn: {}", lpn);
         return pickService.generateManualPickForWorkOrder(warehouseId, workOrderId, productionLineId, lpn, pickableQuantity);
     }
-
+/**
     @BillableEndpoint
     @RequestMapping(value="/picks/system-driven/next-pick", method = RequestMethod.POST)
     public GroupPick getNextPick(@RequestParam Long warehouseId,
                                  @RequestParam Long currentLocationId) {
         return pickService.getNextPick(warehouseId, currentLocationId);
     }
+                                 **/
 }
