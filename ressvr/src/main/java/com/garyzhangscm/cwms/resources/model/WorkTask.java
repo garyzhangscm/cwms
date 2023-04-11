@@ -28,7 +28,7 @@ public class WorkTask extends AuditibleEntity<String> {
     private String number;
 
 
-    @Column(name = "type")
+    @Column(name = "work_task_type")
     @Enumerated(EnumType.STRING)
     private WorkTaskType type;
 

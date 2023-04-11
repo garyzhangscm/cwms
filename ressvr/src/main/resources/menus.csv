@@ -118,7 +118,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Invoice",menu.main.billing.invoice,/billing/invoice,2,Main-Menu-Billing,Billing-Invoice,,true,false
 "Billable Activity Type",menu.main.billing.billable-activity-type,/billing/billable-activity-type,3,Main-Menu-Billing,Billable-Activity-Type,,true,false
 "Billable Activity",menu.main.billing.billable-activity,/billing/billable-activity,4,Main-Menu-Billing,Billing-Billable-Activity,,true,false
-"Work",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,,true,false
+"Work Task",menu.main.work-task.work-task,/work-task/work-task,1,Main-Menu-WorkTask,WorkTask-WorkTask,,true,false
+"Work Task Configuration",menu.main.work-task.work-task-configuration,/work-task/work-task-configuration,2,Main-Menu-WorkTask,WorkTask-WorkTaskConfiguration,,true,false
+"Operation Type",menu.main.work-task.operation-type,/work-task/operation-type,3,Main-Menu-WorkTask,WorkTask-OperationType,,true,false
 "Report",menu.main.report.report,/report/report,1,Main-Menu-Report,Report-Report,,true,false
 "Report History",menu.main.report.report-history,/report/report-history,2,Main-Menu-Report,Report-Report-History,,true,false
 "Report Printer Configuration",menu.main.report.report-printer-configuration,/report/report-printer-configuration,3,Main-Menu-Report,Report-Report-PRINTER-CONFIGURATION,,true,false
