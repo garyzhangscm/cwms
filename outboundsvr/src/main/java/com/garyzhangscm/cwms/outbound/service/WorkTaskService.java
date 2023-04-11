@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -46,7 +47,7 @@ public class WorkTaskService {
     private static final Logger logger = LoggerFactory.getLogger(WorkTaskService.class);
 
     @Autowired
-    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public WorkTask releaseBulkPick(BulkPick bulkPick) {
         Pick pick = bulkPick.getNextPick();
@@ -64,7 +65,7 @@ public class WorkTaskService {
                 null,
                 bulkPick.getNumber());
 
-        return commonServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
+        return resourceServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
     }
 
     public WorkTask releasePick(Pick pick) {
@@ -78,7 +79,7 @@ public class WorkTaskService {
                 pick.getDestinationLocationId(),
                 pick.getNumber());
 
-        return commonServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
+        return resourceServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
     }
 
 }

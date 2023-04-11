@@ -34,7 +34,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @Service
-public class WorkingTeamUserService implements TestDataInitiableService{
+public class WorkingTeamUserService  {
     private static final Logger logger = LoggerFactory.getLogger(WorkingTeamUserService.class);
 
 
@@ -62,6 +62,7 @@ public class WorkingTeamUserService implements TestDataInitiableService{
         return fileService.loadData(inputStream, schema, WorkingTeamUser.class);
     }
 
+    /**
     public void initTestData(Long companyId, String warehouseName) {
         try {
 
@@ -107,6 +108,7 @@ public class WorkingTeamUserService implements TestDataInitiableService{
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+     **/
 
 
 }

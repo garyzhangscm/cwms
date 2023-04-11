@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.controller;
 
+import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.OperationType;
 import com.garyzhangscm.cwms.resources.service.OperationTypeService;
@@ -67,6 +68,16 @@ public class OperationTypeController {
         return operationTypeService.changeOperationType(id, operationType);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/operation-types/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeOperationType(
+            @RequestParam Long warehouseId,
+            @PathVariable Long id) {
+        operationTypeService.delete(id);
+
+        return ResponseBodyWrapper.success("operation type " + id  + " is removed");
+    }
 
 
 }

@@ -28,7 +28,7 @@ public class WorkTask extends AuditibleEntity<String> {
     private String number;
 
 
-    @Column(name = "work_task_type")
+    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private WorkTaskType type;
 
@@ -59,6 +59,9 @@ public class WorkTask extends AuditibleEntity<String> {
     @Column(name = "reference_number")
     private String referenceNumber;
 
+    @ManyToOne
+    @JoinColumn(name="operation_type_id")
+    private OperationType operationType;
 
     @ManyToOne
     @JoinColumn(name="assigned_user_id", referencedColumnName="user_id")
@@ -217,6 +220,14 @@ public class WorkTask extends AuditibleEntity<String> {
 
     public void setAssignedWorkingTeam(WorkingTeam assignedWorkingTeam) {
         this.assignedWorkingTeam = assignedWorkingTeam;
+    }
+
+    public OperationType getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(OperationType operationType) {
+        this.operationType = operationType;
     }
 
     public User getCurrentUser() {

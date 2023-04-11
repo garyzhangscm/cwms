@@ -413,32 +413,6 @@ public class CommonServiceRestemplateClient {
     }
 
 
-    public WorkTask addWorkTask(Long warehouseId, WorkTask workTask)  {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/work-tasks")
-                        .queryParam("warehouseId", warehouseId);
-
-        ResponseBodyWrapper<WorkTask> responseBodyWrapper
-                = null;
-        try {
-            responseBodyWrapper = restTemplateProxy.getRestTemplate().exchange(
-                    builder.toUriString(),
-                    HttpMethod.PUT,
-                    getHttpEntity(objectMapper.writeValueAsString(workTask)),
-                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
-
-            return responseBodyWrapper.getData();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-
-        }
-        return null;
-
-    }
-
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
