@@ -34,6 +34,7 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -173,27 +174,14 @@ public class WorkTaskConfigurationService {
         );
     }
 
-
-
-    public WorkTaskConfiguration findByName(Long warehouseId, String name) {
-        return workTaskConfigurationRepository.findByWarehouseIdAndName(warehouseId, name);
+    public List<WorkTaskConfiguration> findByWarehouse(Long warehouseId) {
+        return workTaskConfigurationRepository.findByWarehouseId(warehouseId);
     }
-
 
 
     public WorkTaskConfiguration save(WorkTaskConfiguration workTaskConfiguration) {
         return workTaskConfigurationRepository.save(workTaskConfiguration);
     }
-
-    public WorkTaskConfiguration saveOrUpdate(WorkTaskConfiguration workTaskConfiguration) {
-        if (operationType.getId() == null && findByName(
-                operationType.getWarehouseId(), operationType.getName()) != null) {
-            operationType.setId(findByName(
-                    operationType.getWarehouseId(), operationType.getName()).getId());
-        }
-        return save(operationType);
-    }
-
 
     public void delete(WorkTaskConfiguration workTaskConfiguration) {
         workTaskConfigurationRepository.delete(workTaskConfiguration);
@@ -205,13 +193,173 @@ public class WorkTaskConfigurationService {
 
 
 
-    public OperationType addOperationType(OperationType workTaskConfiguration) {
-        return saveOrUpdate(workTaskConfiguration);
+    public WorkTaskConfiguration addWorkTaskConfiguration(WorkTaskConfiguration workTaskConfiguration) {
+        return save(workTaskConfiguration);
     }
 
-    public OperationType changeOperationType(Long id, OperationType workTaskConfiguration) {
-        operationType.setId(id);
-        return saveOrUpdate(workTaskConfiguration);
+    public WorkTaskConfiguration changeWorkTaskConfiguration(Long id, WorkTaskConfiguration workTaskConfiguration) {
+        workTaskConfiguration.setId(id);
+        return save(workTaskConfiguration);
+    }
 
+    public WorkTaskConfiguration findBestMatch(Long warehouseId,
+                                               Long sourceLocationId,
+                                               Long destinationLocationId,
+                                               WorkTaskType workTaskType) {
+        List<WorkTaskConfiguration> workTaskConfigurations = findByWarehouse(warehouseId);
+
+        // work task type is a required field on the configuration
+        return workTaskConfigurations.stream().filter(
+                workTaskConfiguration -> workTaskType.equals(workTaskConfiguration.getWorkTaskType()) &&
+                        isMatch(sourceLocationId, destinationLocationId, workTaskConfiguration)
+        ).sorted((a, b) -> compareParticularity(a, b))
+                .findFirst().orElse(null);
+
+    }
+
+    /**
+     * Compare the particularity for 2 configuration. return -1 is a is more particular than b
+     * particularity level
+     * 1. source location id is setup
+     * 2. destination location is setup
+     * 3. source location group is setup
+     * 4. destination location group is setup
+     * 5. source location group type is setup
+     * 6. destination location group type is setup
+     * @param a
+     * @param b
+     * @return
+     */
+    private int compareParticularity(WorkTaskConfiguration a, WorkTaskConfiguration b) {
+        // particularity level
+        // 1. source location id is setup
+        // 2. destination location is setup
+        // 3. source location group is setup
+        // 4. destination location group is setup
+        // 5. source location group type is setup
+        // 6. destination location group type is setup
+        // we will implement a score system and both configuration start with 10000.
+        // 1. if the source location id is setup, then reduce by 2000
+        // 2. if the destination location id is setup, then reduce by 1000
+        // 3. if the source location group id is setup, then reduce by 200
+        // 4. if the destination location group id is setup, then reduce by 100
+        // 5. if the source location group type id is setup, then reduce by 20
+        // 6. if the destination location group type id is setup, then reduce by 10
+        // the configuration has lower score is more particular
+        int scoreA = score(a);
+        int scoreB = score(b);
+        return scoreA - scoreB;
+    }
+
+    /**
+     * A score system so we can compare 2 configuration's particularity
+     * we will implement a score system and both configuration start with 10000.
+     *  1. if the source location id is setup, then reduce by 2000
+     *  2. if the destination location id is setup, then reduce by 1000
+     *  3. if the source location group id is setup, then reduce by 200
+     *  4. if the destination location group id is setup, then reduce by 100
+     *  5. if the source location group type id is setup, then reduce by 20
+     *  6. if the destination location group type id is setup, then reduce by 10
+     *  the configuration has lower score is more particular
+     * @param workTaskConfiguration
+     * @return
+     */
+    private int score(WorkTaskConfiguration workTaskConfiguration) {
+        int score = 10000;
+        if (Objects.nonNull(workTaskConfiguration.getSourceLocationId())) {
+            score -= 2000;
+        }
+        if (Objects.nonNull(workTaskConfiguration.getSourceLocationGroupId())) {
+            score -= 200;
+        }
+        if (Objects.nonNull(workTaskConfiguration.getSourceLocationGroupTypeId())) {
+            score -= 20;
+        }
+        if (Objects.nonNull(workTaskConfiguration.getDestinationLocationId())) {
+            score -= 1000;
+        }
+        if (Objects.nonNull(workTaskConfiguration.getDestinationLocationGroupId())) {
+            score -= 100;
+        }
+        if (Objects.nonNull(workTaskConfiguration.getDestinationLocationGroupTypeId())) {
+            score -= 10;
+        }
+        return score;
+    }
+
+    public boolean isMatch(Long sourceLocationId, Long destinationLocationId,
+                            WorkTaskConfiguration workTaskConfiguration) {
+        if (Objects.nonNull(sourceLocationId)) {
+            Location sourceLocation = layoutServiceRestemplateClient.getLocationById(sourceLocationId);
+            if (Objects.nonNull(workTaskConfiguration.getSourceLocationGroupTypeId()) &&
+                !workTaskConfiguration.getSourceLocationGroupTypeId().equals(
+                        sourceLocation.getLocationGroup().getLocationGroupType().getId()
+                )) {
+                logger.debug("The source location group type is setup for the work task configuration as id = {}, " +
+                        " but the source location to be compared belongs to the location group type id = {}, NOT MATCH",
+                        workTaskConfiguration.getSourceLocationGroupTypeId(),
+                        sourceLocation.getLocationGroup().getLocationGroupType().getId());
+                return false;
+            }
+            if (Objects.nonNull(workTaskConfiguration.getSourceLocationGroupId()) &&
+                    !workTaskConfiguration.getSourceLocationGroupId().equals(
+                            sourceLocation.getLocationGroup().getId()
+                    )) {
+                logger.debug("The source location group is setup for the work task configuration as id = {}, " +
+                                " but the source location to be compared belongs to the location group id = {}, NOT MATCH",
+                        workTaskConfiguration.getSourceLocationGroupId(),
+                        sourceLocation.getLocationGroup().getId());
+                return false;
+            }
+            if (Objects.nonNull(workTaskConfiguration.getSourceLocationId()) &&
+                    !workTaskConfiguration.getSourceLocationId().equals(
+                            sourceLocation.getId()
+                    )) {
+                logger.debug("The source location is setup for the work task configuration as id = {}, " +
+                                " but the source location to be compared has id = {}, NOT MATCH",
+                        workTaskConfiguration.getSourceLocationId(),
+                        sourceLocation.getId());
+                return false;
+            }
+        }
+
+
+        if (Objects.nonNull(destinationLocationId)) {
+            Location destinationLocation = layoutServiceRestemplateClient.getLocationById(destinationLocationId);
+            if (Objects.nonNull(workTaskConfiguration.getDestinationLocationGroupTypeId()) &&
+                    !workTaskConfiguration.getDestinationLocationGroupTypeId().equals(
+                            destinationLocation.getLocationGroup().getLocationGroupType().getId()
+                    )) {
+                logger.debug("The destination location group type is setup for the work task configuration as id = {}, " +
+                                " but the destination location to be compared belongs to the location group type id = {}, NOT MATCH",
+                        workTaskConfiguration.getDestinationLocationGroupTypeId(),
+                        destinationLocation.getLocationGroup().getLocationGroupType().getId());
+                return false;
+            }
+            if (Objects.nonNull(workTaskConfiguration.getDestinationLocationGroupId()) &&
+                    !workTaskConfiguration.getDestinationLocationGroupId().equals(
+                            destinationLocation.getLocationGroup().getId()
+                    )) {
+                logger.debug("The destination location group is setup for the work task configuration as id = {}, " +
+                                " but the destination location to be compared belongs to the location group id = {}, NOT MATCH",
+                        workTaskConfiguration.getDestinationLocationGroupId(),
+                        destinationLocation.getLocationGroup().getId());
+                return false;
+            }
+            if (Objects.nonNull(workTaskConfiguration.getDestinationLocationId()) &&
+                    !workTaskConfiguration.getDestinationLocationId().equals(
+                            destinationLocation.getId()
+                    )) {
+                logger.debug("The destination location is setup for the work task configuration as id = {}, " +
+                                " but the destination location to be compared has id = {}, NOT MATCH",
+                        workTaskConfiguration.getDestinationLocationId(),
+                        destinationLocation.getId());
+                return false;
+            }
+        }
+
+
+
+        return true;
     }
 }

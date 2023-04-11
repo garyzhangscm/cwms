@@ -56,6 +56,8 @@ public class Location extends AuditibleEntity<String>{
 
     private Boolean locked = false;
 
+    private LocationGroup locationGroup;
+
     public Long getId() {
         return id;
     }
@@ -174,6 +176,14 @@ public class Location extends AuditibleEntity<String>{
 
     public void setFillPercentage(Double fillPercentage) {
         this.fillPercentage = fillPercentage;
+    }
+
+    public LocationGroup getLocationGroup() {
+        return locationGroup;
+    }
+
+    public void setLocationGroup(LocationGroup locationGroup) {
+        this.locationGroup = locationGroup;
     }
 
     public Double getCurrentVolume() {
