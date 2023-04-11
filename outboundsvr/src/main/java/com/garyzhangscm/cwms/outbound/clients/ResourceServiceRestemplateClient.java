@@ -21,10 +21,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.Report;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
-import com.garyzhangscm.cwms.outbound.model.ReportType;
-import com.garyzhangscm.cwms.outbound.model.User;
+import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,6 +153,33 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
+    }
+
+
+    public WorkTask addWorkTask(Long warehouseId, WorkTask workTask)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<WorkTask> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplateProxy.getRestTemplate().exchange(
+                    builder.toUriString(),
+                    HttpMethod.PUT,
+                    getHttpEntity(objectMapper.writeValueAsString(workTask)),
+                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+
+            return responseBodyWrapper.getData();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+
+        }
+        return null;
 
     }
 

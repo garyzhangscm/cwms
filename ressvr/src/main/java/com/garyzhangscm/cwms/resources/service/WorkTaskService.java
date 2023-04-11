@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.resources.exception.WorkTaskException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.WorkTaskRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,8 @@ public class WorkTaskService{
     private WorkTaskRepository workTaskRepository;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private WorkTaskConfigurationService workTaskConfigurationService;
 
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
@@ -275,13 +278,51 @@ public class WorkTaskService{
         if(Objects.isNull(workTask.getStatus())) {
             workTask.setStatus(WorkTaskStatus.PENDING);
         }
-        if (Objects.isNull(workTask.getNumber())) {
+        if (Strings.isBlank(workTask.getNumber())) {
 
             workTask.setNumber(
                     getNextWorkTaskNumber(workTask.getWarehouseId())
             );
         }
-        return save(workTask);
+
+        WorkTask newWorkTask =  saveOrUpdate(workTask);
+        // let's release the work task
+        if (newWorkTask.getStatus().equals(WorkTaskStatus.PENDING)) {
+            logger.debug("the new work task's status is pending, let's release it and get the operation type and priority");
+            newWorkTask = releaseWorkTask(newWorkTask);
+        }
+        return newWorkTask;
+    }
+
+    private WorkTask releaseWorkTask(WorkTask workTask) {
+        // let's see if we have the work task configuration setup for this work task
+
+        WorkTaskConfiguration workTaskConfiguration =
+                workTaskConfigurationService.findBestMatch(
+                        workTask.getWarehouseId(),
+                        workTask.getSourceLocationId(),
+                        workTask.getDestinationLocationId(),
+                        workTask.getType()
+                );
+        if (Objects.nonNull(workTaskConfiguration)) {
+            logger.debug("Found the best matched work task configuration: \n{}", workTaskConfiguration);
+            logger.debug("start to release work task {} / {}", workTask.getId(), workTask.getNumber());
+            Integer priority = Objects.isNull(workTaskConfiguration.getPriority()) ?
+                    workTaskConfiguration.getOperationType().getDefaultPriority() :
+                    workTaskConfiguration.getPriority();
+            if (Objects.isNull(priority)) {
+                logger.debug(">> fail to get priority");
+                return workTask;
+            }
+            workTask.setStatus(WorkTaskStatus.RELEASED);
+            workTask.setPriority(priority);
+            workTask.setOperationType(workTaskConfiguration.getOperationType());
+            return saveOrUpdate(workTask);
+        }
+        logger.debug("Fail to get the best matched work task configuration for work task {} / {}",
+                workTask.getId(), workTask.getNumber());
+
+        return workTask;
     }
 
     private String getNextWorkTaskNumber(Long warehouseId) {

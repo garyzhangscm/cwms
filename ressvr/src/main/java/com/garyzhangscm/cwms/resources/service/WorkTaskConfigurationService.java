@@ -362,4 +362,8 @@ public class WorkTaskConfigurationService {
 
         return true;
     }
+
+    public void remove(Long id) {
+        workTaskConfigurationRepository.deleteById(id);
+    }
 }

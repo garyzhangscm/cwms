@@ -46,7 +46,8 @@ public class Role extends AuditibleEntity<String>  {
     @OneToMany(
             mappedBy = "role",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
     List<RoleMenu> roleMenus = new ArrayList<>();
 
@@ -54,13 +55,14 @@ public class Role extends AuditibleEntity<String>  {
             mappedBy = "role",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<RoleClientAccess> clientAccesses = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "role",
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
     private List<RolePermission> rolePermissions = new ArrayList<>();
 

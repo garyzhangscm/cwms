@@ -47,6 +47,7 @@ public class PickReleaseService {
                 bulkPickConfigurationService.findByWarehouse(bulkPick.getWarehouseId());
         if (Objects.nonNull(bulkPickConfiguration) &&
                 Boolean.TRUE.equals(bulkPickConfiguration.getReleaseToWorkTask())) {
+            logger.debug("bulk pick configuration is setup and the pick will be released into work task");
             WorkTask workTask = workTaskService.releaseBulkPick(bulkPick);
             if (Objects.nonNull(workTask)) {
                 bulkPick.setStatus(PickStatus.RELEASED);
@@ -55,6 +56,7 @@ public class PickReleaseService {
         else {
             // if we don't need to release to work task, then set the bulk pick's status
             // to released
+            logger.debug("bulk pick configuration is not setup for work task, let's just mark the bulk pick as released");
             bulkPick.setStatus(PickStatus.RELEASED);
         }
         return bulkPick;

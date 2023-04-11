@@ -132,8 +132,6 @@ public class InitTestDataService {
 
         initiableServices.put("working_team", workingTeamService);
         serviceNames.add("working_team");
-        initiableServices.put("working_team_user", workingTeamUserService);
-        serviceNames.add("working_team_user");
         initiableServices.put("report", reportService);
         serviceNames.add("report");
 
