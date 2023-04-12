@@ -56,6 +56,8 @@ public class RoleService implements TestDataInitiableService{
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
     @Autowired
     private RolePermissionService rolePermissionService;
+    @Autowired
+    private OperationTypeService operationTypeService;
 
 
     @Autowired
@@ -378,5 +380,41 @@ public class RoleService implements TestDataInitiableService{
     public RolePermission processPermission(Role role, RolePermission rolePermission) {
 
         return rolePermissionService.processPermission(role, rolePermission);
+    }
+
+    public void processOperationTypes(Long roleId, String newlyAssignedOperationTypeIds) {
+
+        Role role = findById(roleId);
+
+        // see if we will need to add new operations to the user
+        Set<Long> newlyAssignedOperationTypeIdSet =
+                 Arrays.stream(newlyAssignedOperationTypeIds.split(","))
+                        .map(id -> Long.parseLong(id)).collect(Collectors.toSet());
+        // let's remove the operation types that no longer valid for this role
+        Iterator<OperationType> operationTypeIterator = role.getOperationTypes().iterator();
+        Set<Long> existingOperationTypeIdSet = new HashSet<>();
+        while(operationTypeIterator.hasNext()) {
+            OperationType operationType = operationTypeIterator.next();
+            if (!newlyAssignedOperationTypeIdSet.contains(operationType.getId())) {
+                // the role doesn't have the operation type any more
+                operationTypeIterator.remove();
+            }
+            else {
+                existingOperationTypeIdSet.add(operationType.getId());
+            }
+        }
+
+        // see if we will need to add new operation type to the role
+        newlyAssignedOperationTypeIdSet.stream().filter(
+                newlyAssignedOperationTypeId -> !existingOperationTypeIdSet.contains(newlyAssignedOperationTypeId)
+        ).forEach(
+                // for any operation type that is not assigned to the role yet, add it
+                newlyAssignedOperationTypeId -> {
+                    OperationType operationType = operationTypeService.findById(newlyAssignedOperationTypeId);
+                    role.addOperationType(operationType);
+                }
+        );
+
+        saveOrUpdate(role);
     }
 }
