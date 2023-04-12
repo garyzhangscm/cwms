@@ -62,11 +62,28 @@ public class Role extends AuditibleEntity<String>  {
     @OneToMany(
             mappedBy = "role",
             orphanRemoval = true,
+            cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
     )
     private List<RolePermission> rolePermissions = new ArrayList<>();
 
 
+    @ManyToMany(cascade = {
+            CascadeType.ALL
+    })
+    @JoinTable(name = "role_operation_type",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "operation_type_id")
+    )
+    private List<OperationType> operationTypes = new ArrayList<>();
+    /**
+    @OneToMany(
+            mappedBy = "role",
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<RoleOperationType> roleOperationTypes = new ArrayList<>();
+**/
     // whether the role has access to the non client data
     // by default, the role has access to any non client data
     @Column(name = "non_client_data_accessible")
@@ -168,6 +185,19 @@ public class Role extends AuditibleEntity<String>  {
     public void setRoleMenus(List<RoleMenu> roleMenus) {
         this.roleMenus = roleMenus;
     }
+
+    public List<OperationType> getOperationTypes() {
+        return operationTypes;
+    }
+
+    public void setOperationTypes(List<OperationType> operationTypes) {
+        this.operationTypes = operationTypes;
+    }
+
+    public void addOperationType(OperationType operationType) {
+        this.operationTypes.add(operationType);
+    }
+
 
     public List<MenuGroup> getMenuGroups() {
         return menuGroups;

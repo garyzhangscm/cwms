@@ -115,6 +115,27 @@ public class RoleController {
         return ResponseBodyWrapper.success("success");
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+            }
+    )
+    public ResponseBodyWrapper processOperationTypes(
+            @PathVariable Long id,
+            @RequestParam(name = "newlyAssignedOperationTypeIds", required = false, defaultValue = "") String newlyAssignedOperationTypeIds) {
+
+        // roleService.processMenus(id, assignedMenuIds, deassignedMenuIds);
+
+        roleService.processOperationTypes(id,
+                newlyAssignedOperationTypeIds);
+
+        return ResponseBodyWrapper.success("success");
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/roles/{id}/users", method = RequestMethod.POST)
     @Caching(
