@@ -43,6 +43,9 @@ public class RF extends AuditibleEntity<String>  {
     @Column(name = "rf_code")
     private String rfCode;
 
+    @Column(name = "current_location_id")
+    private Long currentLocationId;
+
 
     @Override
     public boolean equals(Object o) {
@@ -91,5 +94,13 @@ public class RF extends AuditibleEntity<String>  {
 
     public void setRfCode(String rfCode) {
         this.rfCode = rfCode;
+    }
+
+    public Long getCurrentLocationId() {
+        return currentLocationId;
+    }
+
+    public void setCurrentLocationId(Long currentLocationId) {
+        this.currentLocationId = currentLocationId;
     }
 }

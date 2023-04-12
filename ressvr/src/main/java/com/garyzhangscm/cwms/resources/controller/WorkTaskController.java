@@ -120,4 +120,44 @@ public class WorkTaskController {
         return workTaskService.deassignWorkTasks(workTaskIds);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/assign-user", method = RequestMethod.POST)
+    public WorkTask assignUser(@PathVariable Long id,
+                                   @RequestParam Long warehouseId,
+                                   @RequestParam Long userId) {
+        return workTaskService.assignUser(id, warehouseId, userId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/assign-role", method = RequestMethod.POST)
+    public WorkTask assignRole(@PathVariable Long id,
+                               @RequestParam Long warehouseId,
+                               @RequestParam Long roleId) {
+        return workTaskService.assignRole(id, warehouseId, roleId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/next-work-task", method = RequestMethod.GET)
+    public WorkTask getNextWorkTask(@RequestParam Long warehouseId,
+                                    @RequestParam(name = "currentLocationId", required = false, defaultValue = "") Long currentLocationId,
+                                    @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return workTaskService.getNextWorkTask(warehouseId, currentLocationId, rfCode);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/acknowledge", method = RequestMethod.POST)
+    public WorkTask acknowledgeWorkTask(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return workTaskService.acknowledgeWorkTask(warehouseId, id, rfCode);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/reset-status", method = RequestMethod.POST)
+    public WorkTask resetWorkTaskStatus(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return workTaskService.resetWorkTaskStatus(warehouseId, id);
+    }
 }

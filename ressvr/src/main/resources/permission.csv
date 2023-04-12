@@ -60,3 +60,6 @@ Inventory-Item,remove-item,Remove Item
 Inventory-Item,upload-item,Upload Item
 Inventory-Item,upload-item-unit-of-measure,Upload Item Unit Of Measure
 Inventory-Item,add-item,Add Item
+WorkTask-WorkTask,assign-user,Assign User
+WorkTask-WorkTask,assign-role,Assign Role
+WorkTask-WorkTask,assign-working-team,Assign Working Team

@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.resources.model;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "operation_type")
@@ -29,6 +30,22 @@ public class OperationType extends AuditibleEntity<String> {
 
     @Column(name = "default_priority")
     private Integer defaultPriority;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OperationType that = (OperationType) o;
+        if(Objects.equals(id, that.id))  {
+            return true;
+        }
+        return Objects.equals(warehouseId, that.warehouseId) && Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, warehouseId,  name);
+    }
 
     public Long getId() {
         return id;

@@ -44,8 +44,9 @@ public class RoleController {
     @RequestMapping(value="/roles", method = RequestMethod.GET)
     public List<Role> findAllRoles(@RequestParam Long companyId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
-                                   @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
-        return roleService.findAll(companyId, name, enabled);
+                                   @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled,
+                                   @RequestParam(name="assignableToWorkTaskId", required = false, defaultValue = "") Long assignableToWorkTaskId) {
+        return roleService.findAll(companyId, name, enabled, assignableToWorkTaskId);
     }
 
     @BillableEndpoint
@@ -117,7 +118,7 @@ public class RoleController {
 
 
     @BillableEndpoint
-    @RequestMapping(value="/roles/{id}/menus", method = RequestMethod.POST)
+    @RequestMapping(value="/roles/{id}/operation-types", method = RequestMethod.POST)
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
@@ -126,12 +127,14 @@ public class RoleController {
     )
     public ResponseBodyWrapper processOperationTypes(
             @PathVariable Long id,
-            @RequestParam(name = "newlyAssignedOperationTypeIds", required = false, defaultValue = "") String newlyAssignedOperationTypeIds) {
+            @RequestParam(name = "newlyAssignedOperationTypeIds", required = false, defaultValue = "") String newlyAssignedOperationTypeIds,
+            @RequestParam(name = "deassigned", required = false, defaultValue = "") String deassignedOperationTypeIds) {
 
         // roleService.processMenus(id, assignedMenuIds, deassignedMenuIds);
 
         roleService.processOperationTypes(id,
-                newlyAssignedOperationTypeIds);
+                newlyAssignedOperationTypeIds,
+                deassignedOperationTypeIds);
 
         return ResponseBodyWrapper.success("success");
     }
