@@ -45,9 +45,10 @@ public class UserController {
                                    @RequestParam(name="lastname", required = false, defaultValue = "") String lastname,
                                    @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled,
                                    @RequestParam(name="locked", required = false, defaultValue = "") Boolean locked,
-                                   @RequestParam(name="token", required = false, defaultValue = "") String token) {
+                                   @RequestParam(name="token", required = false, defaultValue = "") String token,
+                                   @RequestParam(name="assignableToWorkTaskId", required = false, defaultValue = "") Long assignableToWorkTaskId) {
         return userService.findAll(companyId, username, rolename, workingTeamName,  firstname, lastname, enabled, locked,
-                token);
+                token, assignableToWorkTaskId);
     }
 
     /**

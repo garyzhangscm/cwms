@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +72,8 @@ public class UserService  implements TestDataInitiableService{
     private PermissionService permissionService;
     @Autowired
     private RolePermissionService rolePermissionService;
+    @Autowired
+    private WorkTaskService workTaskService;
 
 
     @Value("${fileupload.test-data.users:users}")
@@ -128,7 +131,8 @@ public class UserService  implements TestDataInitiableService{
                               String lastname,
                               Boolean enabled,
                               Boolean locked,
-                              String token) {
+                              String token,
+                              Long assignableToWorkTaskId) {
 
         List<User> users =  userRepository.findAll(
                 (Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -174,7 +178,19 @@ public class UserService  implements TestDataInitiableService{
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
+                ,
+                Sort.by(Sort.Direction.ASC, "companyId", "username")
         );
+
+        if (Objects.nonNull(assignableToWorkTaskId)) {
+            // only return the user that can be assigned to the work task
+            users = users.stream().filter(
+                    user -> workTaskService.validateWorkTaskAgainstUser(
+                            assignableToWorkTaskId, user.getId()
+                    )
+            ).collect(Collectors.toList());
+
+        }
 
         loadAttribute(companyId, users);
         return users;

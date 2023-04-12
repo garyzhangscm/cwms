@@ -198,4 +198,11 @@ public class RFService implements TestDataInitiableService{
         );
 
     }
+
+    public void resetCurrentLocation(Long warehouseId, String rfCode, Long locationId) {
+        RF rf = findByRFCode(warehouseId, rfCode);
+        rf.setCurrentLocationId(locationId);
+
+        saveOrUpdate(rf);
+    }
 }

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -58,6 +59,8 @@ public class RoleService implements TestDataInitiableService{
     private RolePermissionService rolePermissionService;
     @Autowired
     private OperationTypeService operationTypeService;
+    @Autowired
+    private WorkTaskService workTaskService;
 
 
     @Autowired
@@ -75,9 +78,10 @@ public class RoleService implements TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("role  not found by id: " + id));
     }
 
-    public List<Role> findAll(Long companyId, String name,  Boolean enabled) {
+    public List<Role> findAll(Long companyId, String name,  Boolean enabled,
+                              Long assignableToWorkTaskId) {
 
-        return roleRepository.findAll(
+        List<Role> roles = roleRepository.findAll(
                 (Root<Role> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -95,8 +99,20 @@ public class RoleService implements TestDataInitiableService{
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
+                ,
+                Sort.by(Sort.Direction.ASC, "companyId", "name")
         );
 
+        if (Objects.nonNull(assignableToWorkTaskId)) {
+            // only return the user that can be assigned to the work task
+            roles = roles.stream().filter(
+                    role -> workTaskService.validateWorkTaskAgainstRole(
+                            assignableToWorkTaskId, role.getId()
+                    )
+            ).collect(Collectors.toList());
+
+        }
+        return roles;
 
     }
 
@@ -382,38 +398,61 @@ public class RoleService implements TestDataInitiableService{
         return rolePermissionService.processPermission(role, rolePermission);
     }
 
-    public void processOperationTypes(Long roleId, String newlyAssignedOperationTypeIds) {
+    public void processOperationTypes(Long roleId, String newlyAssignedOperationTypeIds,
+                                      String deassignedOperationTypeIds) {
 
         Role role = findById(roleId);
 
         // see if we will need to add new operations to the user
-        Set<Long> newlyAssignedOperationTypeIdSet =
-                 Arrays.stream(newlyAssignedOperationTypeIds.split(","))
-                        .map(id -> Long.parseLong(id)).collect(Collectors.toSet());
-        // let's remove the operation types that no longer valid for this role
-        Iterator<OperationType> operationTypeIterator = role.getOperationTypes().iterator();
-        Set<Long> existingOperationTypeIdSet = new HashSet<>();
-        while(operationTypeIterator.hasNext()) {
-            OperationType operationType = operationTypeIterator.next();
-            if (!newlyAssignedOperationTypeIdSet.contains(operationType.getId())) {
-                // the role doesn't have the operation type any more
-                operationTypeIterator.remove();
+        if (Strings.isNotBlank(newlyAssignedOperationTypeIds)) {
+
+            Set<Long> newlyAssignedOperationTypeIdSet =
+                    Arrays.stream(newlyAssignedOperationTypeIds.split(","))
+                            .map(id -> Long.parseLong(id)).collect(Collectors.toSet());
+
+            // let's remove the operation types that no longer valid for this role
+            Iterator<OperationType> operationTypeIterator = role.getOperationTypes().iterator();
+            Set<Long> existingOperationTypeIdSet = new HashSet<>();
+            while(operationTypeIterator.hasNext()) {
+                OperationType operationType = operationTypeIterator.next();
+                if (!newlyAssignedOperationTypeIdSet.contains(operationType.getId())) {
+                    // the role doesn't have the operation type any more
+                    operationTypeIterator.remove();
+                }
+                else {
+                    existingOperationTypeIdSet.add(operationType.getId());
+                }
             }
-            else {
-                existingOperationTypeIdSet.add(operationType.getId());
+            // see if we will need to add new operation type to the role
+            newlyAssignedOperationTypeIdSet.stream().filter(
+                    newlyAssignedOperationTypeId -> !existingOperationTypeIdSet.contains(newlyAssignedOperationTypeId)
+            ).forEach(
+                    // for any operation type that is not assigned to the role yet, add it
+                    newlyAssignedOperationTypeId -> {
+                        OperationType operationType = operationTypeService.findById(newlyAssignedOperationTypeId);
+                        role.addOperationType(operationType);
+                    }
+            );
+        }
+
+
+
+        // if the user pass in any deassigned id, let's deassign the operation type from the role
+        if (!StringUtils.isBlank(deassignedOperationTypeIds)) {
+            Set<Long> deassignedOperationTypeIdSet =
+                    Arrays.stream(deassignedOperationTypeIds.split(","))
+                            .map(id -> Long.parseLong(id)).collect(Collectors.toSet());
+            Iterator<OperationType> operationTypeIterator = role.getOperationTypes().iterator();
+
+            while(operationTypeIterator.hasNext()) {
+                OperationType operationType = operationTypeIterator.next();
+                if (deassignedOperationTypeIdSet.contains(operationType.getId())) {
+                    // the role doesn't have the operation type any more
+                    operationTypeIterator.remove();
+                }
             }
         }
 
-        // see if we will need to add new operation type to the role
-        newlyAssignedOperationTypeIdSet.stream().filter(
-                newlyAssignedOperationTypeId -> !existingOperationTypeIdSet.contains(newlyAssignedOperationTypeId)
-        ).forEach(
-                // for any operation type that is not assigned to the role yet, add it
-                newlyAssignedOperationTypeId -> {
-                    OperationType operationType = operationTypeService.findById(newlyAssignedOperationTypeId);
-                    role.addOperationType(operationType);
-                }
-        );
 
         saveOrUpdate(role);
     }

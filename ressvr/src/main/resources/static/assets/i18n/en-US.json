@@ -2088,5 +2088,6 @@
   "priority": "Priority",
   "sourceLocationGroupType": "Source Location Group Type",
   "destinationLocationGroupType": "Destination Location Group Type",
-  "workTaskType": "Work Task Type"
+  "workTaskType": "Work Task Type",
+  "assign-operation-type": "Assign Operation Type"
 }
