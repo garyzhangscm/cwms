@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.BulkPickRepository;
@@ -58,6 +59,8 @@ public class BulkPickService {
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private OrderActivityService orderActivityService;
 
 
     public BulkPick findById(Long id) {
@@ -200,12 +203,32 @@ public class BulkPickService {
 
     public void loadAttribute(List<BulkPick> bulkPicks) {
         // load the attribute for the picks in the bulk
-        List<Pick> picks = bulkPicks.stream().map(bulkPick -> bulkPick.getPicks())
-                .flatMap(List::stream).collect(Collectors.toList());
-        pickService.loadAttribute(picks);
+        bulkPicks.forEach(
+                bulkPick -> loadAttribute(bulkPick)
+        );
     }
 
     public void loadAttribute(BulkPick bulkPick) {
+        // Load the details for client and supplier informaiton
+        if (bulkPick.getSourceLocationId() != null && bulkPick.getSourceLocation() == null) {
+            bulkPick.setSourceLocation(warehouseLayoutServiceRestemplateClient.getLocationById(bulkPick.getSourceLocationId()));
+        }
+
+        // Load the item and inventory status information for each lines
+        if (bulkPick.getItemId() != null && bulkPick.getItem() == null) {
+            bulkPick.setItem(inventoryServiceRestemplateClient.getItemById(bulkPick.getItemId()));
+        }
+
+        // load pick's inventory status for
+        if (bulkPick.getInventoryStatusId() != null &&
+                bulkPick.getInventoryStatus() == null) {
+            bulkPick.setInventoryStatus(
+                    inventoryServiceRestemplateClient.getInventoryStatusById(
+                            bulkPick.getInventoryStatusId()
+                    ));
+        }
+
+
         // load the attribute for the picks in the bulk
         pickService.loadAttribute(bulkPick.getPicks());
     }
@@ -718,9 +741,37 @@ public class BulkPickService {
         return saveOrUpdate(bulkPick);
     }
 
-    public BulkPick confirmPick(Long id, Long quantity, Long nextLocationId,
-                            String nextLocationName, boolean pickToContainer, String containerId, String lpn) {
+    public BulkPick confirmPick(Long id, Long nextLocationId,
+                            String nextLocationName,  String lpn) {
+
         BulkPick bulkPick = findById(id);
+
+        if (Objects.nonNull(nextLocationId)) {
+            Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
+            if (Objects.nonNull(nextLocation)) {
+                return confirmPick(bulkPick, nextLocation, lpn);
+            }
+            else {
+                throw PickingException.raiseException(
+                        "Can't confirm bulk the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
+            }
+        }
+        else if (StringUtils.isNotBlank(nextLocationName)) {
+            Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
+                    bulkPick.getWarehouseId(), nextLocationName);
+            if (Objects.nonNull(nextLocation)) {
+                return confirmPick(bulkPick, nextLocation, lpn);
+            }
+            else {
+                logger.debug("Can't confirm the bulk pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
+                throw PickingException.raiseException(
+                        "Can't confirm the bulk pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
+            }
+        }
+        else {
+            throw PickingException.raiseException(
+                    "Can't confirm the bulk pick as there's no destination location information passed in");
+        }
 
         return saveOrUpdate(bulkPick);
     }
@@ -736,4 +787,84 @@ public class BulkPickService {
 
         saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));
     }
+
+
+    public BulkPick confirmBulkPick(BulkPick bulkPick, Location nextLocation, String lpn)   {
+
+        logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
+        // start the ord activity transaction
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                bulkPick.getWarehouseId(), bulkPick, OrderActivityType.BULK_PICK_CONFIRM
+        );
+
+        // for bulk pick, we will need to pick the whole LPN. and make sure
+        // the LPN quantity matches with bulk pick's quantity
+
+
+
+        // we will use synchronized to prevent multiple users picking the same lpn from the
+        // location;
+        List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryByLpn(bulkPick.getWarehouseId(), lpn);
+        logger.debug(" Get {} valid inventory for bulk pick {}",
+                pickableInventories.size(), bulkPick.getNumber());
+        Long inventoryQuantity = pickableInventories.stream().mapToLong(Inventory::getQuantity).sum();
+        if (!inventoryQuantity.equals(bulkPick.getQuantity())) {
+
+            throw PickingException.raiseException("Can't pick LPN " + lpn + " for the bulk pick " +
+                    bulkPick.getNumber() + ", as the LPN's quantity " + inventoryQuantity +
+                    " doesn't match with the bulk pick's requirement " + bulkPick.getQuantity());
+        }
+
+
+        synchronized (lpn) {
+
+            if (pickableInventories.size() == 0) {
+                throw PickingException.raiseException("There's no inventory available from location " +
+                        (Objects.isNull(bulkPick.getSourceLocation()) ?
+                                warehouseLayoutServiceRestemplateClient.getLocationById(bulkPick.getSourceLocationId()).getName() :
+                                bulkPick.getSourceLocation().getName()) +
+                        ", for item " +
+                        (Objects.isNull(bulkPick.getItem()) ?
+                                inventoryServiceRestemplateClient.getItemById(bulkPick.getItemId()) :
+                                bulkPick.getItem().getName()));
+            }
+            // pickableInventories.stream().forEach(System.out::print);
+            logger.debug(" start to pick with quantity {}",quantityToBePicked);
+            Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
+            while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
+                Inventory inventory = inventoryIterator.next();
+                if(match(inventory, pick)) {
+                    logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
+                            inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
+                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
+                    logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
+                    quantityToBePicked -= pickedQuantity;
+                    totalQuantityPicked += pickedQuantity;
+                    logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
+                }
+                else {
+                    logger.debug("inventory {} doesn't match with pick {}",
+                            inventory.getLpn(), pick.getNumber());
+                }
+
+            }
+            logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
+                    warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
+                    warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
+
+            // If we are picking for a work order, we will send a notification to the work order
+            sendNotification(pick, nextLocation, totalQuantityPicked);
+        }
+
+        // Get the latest pick information
+        Pick newPick = findById(pick.getId());
+        orderActivity.setQuantityByNewPick(newPick);
+        orderActivityService.saveOrderActivity(orderActivity);
+        return newPick;
+
+    }
+
 }
