@@ -136,6 +136,10 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     @Column(name = "new_pick_picked_quantity")
     private Long newPickPickedQuantity;
 
+    // bulk pick
+    @Column(name = "bulk_pick_number")
+    private String bulkPickNumber;
+
     // short allocation related quantity
     @Column(name = "old_short_allocation_quantity")
     private Long oldShortAllocationQuantity;
@@ -163,6 +167,11 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     @JoinColumn(name="pick_id")
     @NotFound(action = NotFoundAction.IGNORE)
     private Pick pick;
+
+    @ManyToOne
+    @JoinColumn(name="bulk_pick_id")
+    @NotFound(action = NotFoundAction.IGNORE)
+    private BulkPick bulkPick;
 
     @ManyToOne
     @JoinColumn(name="short_allocation_id")
@@ -303,6 +312,15 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
         setNewPickQuantity(pick.getQuantity());
         setNewPickPickedQuantity(pick.getPickedQuantity());
+        return this;
+    }
+    public OrderActivity withBulkPick(BulkPick bulkPick) {
+        setBulkPick(bulkPick);
+
+        if (Objects.isNull(bulkPick)) {
+            return this;
+        }
+        setBulkPickNumber(bulkPick.getNumber());
         return this;
     }
 
@@ -740,4 +758,19 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         this.transactionGroupId = transactionGroupId;
     }
 
+    public String getBulkPickNumber() {
+        return bulkPickNumber;
+    }
+
+    public void setBulkPickNumber(String bulkPickNumber) {
+        this.bulkPickNumber = bulkPickNumber;
+    }
+
+    public BulkPick getBulkPick() {
+        return bulkPick;
+    }
+
+    public void setBulkPick(BulkPick bulkPick) {
+        this.bulkPick = bulkPick;
+    }
 }

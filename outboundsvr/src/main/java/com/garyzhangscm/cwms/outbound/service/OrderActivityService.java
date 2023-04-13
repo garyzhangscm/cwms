@@ -262,6 +262,20 @@ public class OrderActivityService {
         return transactionGroupId;
     }
 
+    public OrderActivity createOrderActivity(Long warehouseId, BulkPick bulkPick, OrderActivityType orderActivityType) {
+        String transactionId = getTransactionGroupId(warehouseId);
+        return createOrderActivity(warehouseId, transactionId, bulkPick, orderActivityType);
+    }
+
+    private OrderActivity createOrderActivity(Long warehouseId, String transactionId,
+                                              BulkPick bulkPick, OrderActivityType orderActivityType) {
+        OrderActivity orderActivity =  OrderActivity.build(warehouseId, transactionId,
+                getNextNumber(warehouseId), getCurrentUsername())
+                .withBulkPick(bulkPick)
+                .withOrderActivityType(orderActivityType);
+        return orderActivity;
+    }
+
     public OrderActivity createOrderActivity(Long warehouseId, Order order, OrderActivityType orderActivityType) {
         String transactionId = getTransactionGroupId(warehouseId);
         return createOrderActivity(warehouseId, transactionId, order, orderActivityType);
@@ -310,6 +324,7 @@ public class OrderActivityService {
         }
         return orderActivity;
     }
+
 
     public OrderActivity createOrderActivity(Long warehouseId, Order order,
                                              ShipmentLine shipmentLine, OrderActivityType orderActivityType) {
