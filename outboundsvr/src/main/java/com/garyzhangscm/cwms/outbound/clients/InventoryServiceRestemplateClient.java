@@ -616,6 +616,29 @@ public class InventoryServiceRestemplateClient {
         logger.debug("Cycle count is generated: \n {}", responseBodyWrapper.getData());
     }
 
+    public List<Inventory> processBulkPick(BulkPick bulkPick, Location nextLocation, String lpn) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory/process-bulk-pick")
+                        .queryParam("nextLocation", nextLocation.getId())
+                        .queryParam("lpn", lpn);
+
+        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
+                = null;
+        try {
+            responseBodyWrapper = restTemplate.exchange(
+            builder.toUriString(),
+            HttpMethod.POST,
+            getHttpEntity(objectMapper.writeValueAsString(bulkPick)),
+            new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return responseBodyWrapper.getData();
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
