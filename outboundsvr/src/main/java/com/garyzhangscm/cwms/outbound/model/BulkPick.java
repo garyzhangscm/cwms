@@ -22,8 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,7 +31,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "bulk_pick")
-public class BulkPick extends AuditibleEntity<String> implements Serializable, GroupPick {
+public class BulkPick extends AuditibleEntity<String> implements Serializable  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -115,19 +113,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
     private String style;
 
 
-    // if the pick is currently picking by certain user
-    @Column(name = "picking_by_user_id")
-    private Long pickingByUserId;
-    @Transient
-    private User pickingByUser;
-
-
-    // if the user is assigned to certain user
-    @Column(name = "assigned_to_user_id")
-    private Long assignedToUserId;
-    @Transient
-    private User assignedToUser;
-
     @JsonIgnore
     public Double getSize() {
 
@@ -152,7 +137,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return null;
     }
 
-    @Override
     public String getPickListNumber() {
         return null;
     }
@@ -169,7 +153,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return number;
     }
 
-    @Override
     public PickGroupType getGroupType() {
         return PickGroupType.BULK_PICK;
     }
@@ -190,21 +173,18 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return sourceLocation;
     }
 
-    @Override
     public ShipmentLine getShipmentLine() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getShipmentLine();
     }
 
-    @Override
     public Long getDestinationLocationId() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getDestinationLocationId();
     }
 
-    @Override
     public Location getDestinationLocation() {
         Pick pick = getNextPick();
 
@@ -243,7 +223,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return warehouseId;
     }
 
-    @Override
     public BulkPick getBulkPick() {
         return null;
     }
@@ -256,21 +235,18 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return warehouse;
     }
 
-    @Override
     public Client getClient() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getClient();
     }
 
-    @Override
     public PickType getPickType() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getPickType();
     }
 
-    @Override
     public Long getWorkOrderLineId() {
         Pick pick = getNextPick();
 
@@ -328,14 +304,12 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return status;
     }
 
-    @Override
     public String getOrderNumber() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getOrderNumber();
     }
 
-    @Override
     public List<PickMovement> getPickMovements() {
         Pick pick = getNextPick();
 
@@ -350,15 +324,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return inventoryStatusId;
     }
 
-    @Override
-    public Cartonization getCartonization() {
-        return null;
-    }
-
-    @Override
-    public String getCartonizationNumber() {
-        return null;
-    }
 
     public void setInventoryStatusId(Long inventoryStatusId) {
         this.inventoryStatusId = inventoryStatusId;
@@ -368,14 +333,12 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return inventoryStatus;
     }
 
-    @Override
     public ShortAllocation getShortAllocation() {
         Pick pick = getNextPick();
 
         return Objects.isNull(pick) ? null : pick.getShortAllocation();
     }
 
-    @Override
     public PickList getPickList() {
         return null;
     }
@@ -388,7 +351,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return unitOfMeasureId;
     }
 
-    @Override
     public String getLpn() {
         return null;
     }
@@ -417,7 +379,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return confirmLocationCodeFlag;
     }
 
-    @Override
     public Long getWorkId() {
         return null;
     }
@@ -430,7 +391,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return confirmLpnFlag;
     }
 
-    @Override
     public String getDefaultPickableStockUomName() {
         Pick pick = getNextPick();
 
@@ -461,30 +421,10 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         return style;
     }
 
-    @Override
-    public String getBulkPickNumber() {
-        return null;
-    }
-
     public void setStyle(String style) {
         this.style = style;
     }
 
-    public Long getPickingByUserId() {
-        return pickingByUserId;
-    }
-
-    public void setPickingByUserId(Long pickingByUserId) {
-        this.pickingByUserId = pickingByUserId;
-    }
-
-    public Long getAssignedToUserId() {
-        return assignedToUserId;
-    }
-
-    public void setAssignedToUserId(Long assignedToUserId) {
-        this.assignedToUserId = assignedToUserId;
-    }
 
     public String getWaveNumber() {
         return waveNumber;
@@ -494,19 +434,6 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable, G
         this.waveNumber = waveNumber;
     }
 
-    public User getPickingByUser() {
-        return pickingByUser;
-    }
 
-    public void setPickingByUser(User pickingByUser) {
-        this.pickingByUser = pickingByUser;
-    }
 
-    public User getAssignedToUser() {
-        return assignedToUser;
-    }
-
-    public void setAssignedToUser(User assignedToUser) {
-        this.assignedToUser = assignedToUser;
-    }
 }

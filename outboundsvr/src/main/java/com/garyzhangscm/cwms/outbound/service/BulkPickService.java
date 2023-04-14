@@ -741,7 +741,7 @@ public class BulkPickService {
         return saveOrUpdate(bulkPick);
     }
 
-    public BulkPick confirmPick(Long id, Long nextLocationId,
+    public BulkPick confirmBulkPick(Long id, Long nextLocationId,
                             String nextLocationName,  String lpn) {
 
         BulkPick bulkPick = findById(id);
@@ -749,7 +749,7 @@ public class BulkPickService {
         if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(bulkPick, nextLocation, lpn);
+                return confirmBulkPick(bulkPick, nextLocation, lpn);
             }
             else {
                 throw PickingException.raiseException(
@@ -760,7 +760,7 @@ public class BulkPickService {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
                     bulkPick.getWarehouseId(), nextLocationName);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(bulkPick, nextLocation, lpn);
+                return confirmBulkPick(bulkPick, nextLocation, lpn);
             }
             else {
                 logger.debug("Can't confirm the bulk pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
@@ -772,13 +772,10 @@ public class BulkPickService {
             throw PickingException.raiseException(
                     "Can't confirm the bulk pick as there's no destination location information passed in");
         }
-
-        return saveOrUpdate(bulkPick);
     }
 
     public BulkPick assignToUser(Long id, Long warehouseId, Long userId) {
         BulkPick bulkPick = findById(id);
-        bulkPick.setAssignedToUserId(userId);
 
         return saveOrUpdate(bulkPick);
     }
@@ -795,31 +792,27 @@ public class BulkPickService {
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
 
-        // start the ord activity transaction
-        OrderActivity orderActivity = orderActivityService.createOrderActivity(
-                bulkPick.getWarehouseId(), bulkPick, OrderActivityType.BULK_PICK_CONFIRM
-        );
 
         // for bulk pick, we will need to pick the whole LPN. and make sure
         // the LPN quantity matches with bulk pick's quantity
 
 
 
-        // we will use synchronized to prevent multiple users picking the same lpn from the
-        // location;
-        List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryByLpn(bulkPick.getWarehouseId(), lpn);
-        logger.debug(" Get {} valid inventory for bulk pick {}",
-                pickableInventories.size(), bulkPick.getNumber());
-        Long inventoryQuantity = pickableInventories.stream().mapToLong(Inventory::getQuantity).sum();
-        if (!inventoryQuantity.equals(bulkPick.getQuantity())) {
-
-            throw PickingException.raiseException("Can't pick LPN " + lpn + " for the bulk pick " +
-                    bulkPick.getNumber() + ", as the LPN's quantity " + inventoryQuantity +
-                    " doesn't match with the bulk pick's requirement " + bulkPick.getQuantity());
-        }
-
 
         synchronized (lpn) {
+
+            // we will use synchronized to prevent multiple users picking the same lpn from the
+            // location;
+            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryByLpn(bulkPick.getWarehouseId(), lpn);
+            logger.debug(" Get {} valid inventory for bulk pick {}",
+                    pickableInventories.size(), bulkPick.getNumber());
+            Long inventoryQuantity = pickableInventories.stream().mapToLong(Inventory::getQuantity).sum();
+            if (!inventoryQuantity.equals(bulkPick.getQuantity())) {
+
+                throw PickingException.raiseException("Can't pick LPN " + lpn + " for the bulk pick " +
+                        bulkPick.getNumber() + ", as the LPN's quantity " + inventoryQuantity +
+                        " doesn't match with the bulk pick's requirement " + bulkPick.getQuantity());
+            }
 
             if (pickableInventories.size() == 0) {
                 throw PickingException.raiseException("There's no inventory available from location " +
@@ -832,39 +825,142 @@ public class BulkPickService {
                                 bulkPick.getItem().getName()));
             }
             // pickableInventories.stream().forEach(System.out::print);
-            logger.debug(" start to pick with quantity {}",quantityToBePicked);
-            Iterator<Inventory> inventoryIterator = pickableInventories.iterator();
-            while(quantityToBePicked > 0 && inventoryIterator.hasNext()) {
-                Inventory inventory = inventoryIterator.next();
-                if(match(inventory, pick)) {
-                    logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
-                            inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
-                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
-                    logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
-                    quantityToBePicked -= pickedQuantity;
-                    totalQuantityPicked += pickedQuantity;
-                    logger.debug(" >> there's {} left in the pick work", quantityToBePicked);
-                }
-                else {
-                    logger.debug("inventory {} doesn't match with pick {}",
-                            inventory.getLpn(), pick.getNumber());
-                }
+            String errorMessage = match(pickableInventories, bulkPick);
+            if (Strings.isNotBlank(errorMessage)) {
 
+                throw PickingException.raiseException("Can't pick LPN " + lpn + " for the bulk pick " +
+                        bulkPick.getNumber() + ", reason: " + errorMessage);
             }
+
+            inventoryServiceRestemplateClient.processBulkPick(bulkPick, nextLocation, lpn);
+
+            // set all the pick's quantity
+            bulkPick.getPicks().forEach(
+                    pick -> pick.setPickedQuantity(pick.getQuantity())
+            );
+            bulkPick.setPickedQuantity(bulkPick.getQuantity());
+
+
             logger.debug("==> after the pick confirm, the destination location {} 's volume is {}",
                     warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
                     warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
-
-            // If we are picking for a work order, we will send a notification to the work order
-            sendNotification(pick, nextLocation, totalQuantityPicked);
         }
 
         // Get the latest pick information
-        Pick newPick = findById(pick.getId());
-        orderActivity.setQuantityByNewPick(newPick);
-        orderActivityService.saveOrderActivity(orderActivity);
-        return newPick;
+        BulkPick newBulkPick = saveOrUpdate(bulkPick);
 
+        // start the ord activity transaction
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                bulkPick.getWarehouseId(), newBulkPick, OrderActivityType.BULK_PICK_CONFIRM
+        );
+        orderActivityService.saveOrderActivity(orderActivity);
+        return newBulkPick;
+
+    }
+
+    /**
+     * Check if the list of inventory can be picked by the bulk pick
+     * 1. inventory has to have same item and inventory status and match
+     *    with the pick
+     * 2. for other attribute, if the bulk pick has requirement on the attribute
+     *    then the list of inventory has to have the same value for the attribute
+     * @param inventories
+     * @param bulkPick
+     * @return error message
+     */
+    private String match(List<Inventory> inventories, BulkPick bulkPick) {
+        logger.debug("check if the inventory match with the pick");
+        logger.debug("========            Inventory   ===========");
+        Set<Long> itemIdSet = new HashSet<>();
+        Set<Long> inventoryStatusIDSet = new HashSet<>();
+        Set<String> colorSet = new HashSet<>();
+        Set<String> productSizeSet = new HashSet<>();
+        Set<String> styleSet = new HashSet<>();
+
+        inventories.forEach(
+                inventory -> {
+                    itemIdSet.add(inventory.getItem().getId());
+                    inventoryStatusIDSet.add(inventory.getInventoryStatus().getId());
+
+                    if (Strings.isNotBlank(inventory.getColor())) {
+                        colorSet.add(inventory.getColor());
+                    }
+                    if (Strings.isNotBlank(inventory.getProductSize())) {
+                        productSizeSet.add(inventory.getProductSize());
+                    }
+                    if (Strings.isNotBlank(inventory.getStyle())) {
+                        styleSet.add(inventory.getStyle());
+                    }
+                }
+        );
+        if (itemIdSet.size() != 1) {
+            logger.debug("inventory is mixed with item, not allowed to be bulk pick");
+            return "inventory is mixed with item, not allowed to be bulk pick";
+        }
+        if (inventoryStatusIDSet.size() != 1) {
+            logger.debug("inventory is mixed with item, not allowed to be bulk pick");
+            return "inventory is mixed with item, not allowed to be bulk pick";
+        }
+        Long itemId = itemIdSet.iterator().next();
+        if (!bulkPick.getItemId().equals(itemId)) {
+
+            logger.debug("inventory's item  {} doesn't match with the bulk pick's item {}",
+                    itemId, bulkPick.getItemId());
+            return "inventory's item " + itemId + " doesn't match with the bulk pick's item "
+                    + bulkPick.getItemId();
+        }
+
+        Long inventoryStatusID = inventoryStatusIDSet.iterator().next();
+        if (!bulkPick.getInventoryStatusId().equals(inventoryStatusID)) {
+            logger.debug("inventory's status  {} doesn't match with the bulk pick's status {}",
+                    inventoryStatusID, bulkPick.getInventoryStatusId());
+            return "inventory's status  " + inventoryStatusID + " doesn't match with the bulk pick's status "
+                    + bulkPick.getInventoryStatusId();
+        }
+
+        // if the bulk pick requires inventory with certain attribute, make sure
+        // it matches with the inventory on the LPN
+        if (Strings.isNotBlank(bulkPick.getColor())) {
+            if (colorSet.size() != 1) {
+                logger.debug("inventory is mixed with color, not allowed to be bulk pick");
+                return "inventory is mixed with color, not allowed to be bulk pick";
+            }
+            String color = colorSet.iterator().next();
+
+            if (!bulkPick.getColor().equalsIgnoreCase(color)) {
+                logger.debug("inventory's color  {} doesn't match with the bulk pick's color {}",
+                        color, bulkPick.getColor());
+                return "inventory's color  " + color + " doesn't match with the bulk pick's color " + bulkPick.getColor();
+            }
+        }
+        if (Strings.isNotBlank(bulkPick.getProductSize())) {
+            if (productSizeSet.size() != 1) {
+                logger.debug("inventory is mixed with production size, not allowed to be bulk pick");
+                return "inventory is mixed with production size, not allowed to be bulk pick";
+            }
+            String productSize = productSizeSet.iterator().next();
+
+            if (!bulkPick.getProductSize().equalsIgnoreCase(productSize)) {
+                logger.debug("inventory's production size  {} doesn't match with the bulk pick's production size {}",
+                        productSize, bulkPick.getProductSize());
+                return "inventory's production size  " + productSize + " doesn't match with the bulk pick's production size " + bulkPick.getProductSize();
+            }
+        }
+        if (Strings.isNotBlank(bulkPick.getStyle())) {
+            if (styleSet.size() != 1) {
+                logger.debug("inventory is mixed with production size, not allowed to be bulk pick");
+                return "inventory is mixed with production size, not allowed to be bulk pick";
+            }
+            String style = styleSet.iterator().next();
+
+            if (!bulkPick.getStyle().equalsIgnoreCase(style)) {
+                logger.debug("inventory's style {} doesn't match with the bulk pick's style {}",
+                        style, bulkPick.getProductSize());
+                return "inventory's style " + style + " doesn't match with the bulk pick's style " +
+                        bulkPick.getProductSize();
+            }
+        }
+        return "";
     }
 
 }

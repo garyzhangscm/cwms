@@ -85,7 +85,7 @@ public class BulkPickController {
 
     @BillableEndpoint
     @RequestMapping(value="/bulk-picks/{id}/confirm", method = RequestMethod.POST)
-    public BulkPick confirmPick(@PathVariable Long id,
+    public BulkPick confirmBulkPick(@PathVariable Long id,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
                             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
@@ -93,7 +93,7 @@ public class BulkPickController {
         logger.debug("=> nextLocationId: {}", nextLocationId);
         logger.debug("=> nextLocationName: {}", nextLocationName);
         logger.debug("=> pick from LPN: {}", lpn);
-            return bulkPickService.confirmPick(id, nextLocationId, nextLocationName, lpn);
+            return bulkPickService.confirmBulkPick(id, nextLocationId, nextLocationName, lpn);
     }
     @RequestMapping(value="/bulk-picks/{id}/assign-user", method = RequestMethod.POST)
     public BulkPick assignToUser(@PathVariable Long id,
