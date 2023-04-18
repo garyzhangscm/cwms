@@ -2086,5 +2086,6 @@
   "sourceLocationGroupType": "源库位组类型",
   "destinationLocationGroupType": "目标库位组类型",
   "workTaskType": "工作任务类型",
-  "assign-operation-type": "分配任务权限"
+  "assign-operation-type": "分配任务权限",
+  "release": "释放"
 }

@@ -2089,5 +2089,6 @@
   "sourceLocationGroupType": "Source Location Group Type",
   "destinationLocationGroupType": "Destination Location Group Type",
   "workTaskType": "Work Task Type",
-  "assign-operation-type": "Assign Operation Type"
+  "assign-operation-type": "Assign Operation Type",
+  "release": "Release"
 }

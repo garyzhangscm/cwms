@@ -41,7 +41,7 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "number", unique = true)
+    @Column(name = "number")
     private String number;
 
     @Column(name = "source_location_id")
@@ -83,6 +83,11 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
     private ShipmentLine shipmentLine;
+
+    @Column(name = "work_task_id")
+    private Long workTaskId;
+    @Transient
+    private WorkTask workTask;
 
     @ManyToOne
     @JoinColumn(name = "cartonization_id")
@@ -144,18 +149,6 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Transient
     private String bulkPickNumber;
 
-    // if the pick is currently picking by certain user
-    @Column(name = "picking_by_user_id")
-    private Long pickingByUserId;
-    @Transient
-    private User pickingByUser;
-
-    // if the user is assigned to certain user
-    @Column(name = "assigned_to_user_id")
-    private Long assignedToUserId;
-    @Transient
-    private User assignedToUser;
-
 
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
@@ -171,12 +164,6 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "confirm_lpn_flag")
     private boolean confirmLpnFlag;
 
-    // work related field. The work's ID is setup
-    // if it belongs to certain work. We use the
-    // work concept to assign job/work to certain
-    // person
-    @Column(name = "work_id")
-    private Long workId;
 
     @Column(name="color")
     private String color;
@@ -254,15 +241,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         pick.setPickMovements(getPickMovements());
         pick.setPickList(getPickList());
         pick.setBulkPick(getBulkPick());
-        pick.setPickingByUserId(getPickingByUserId());
-        pick.setAssignedToUserId(getAssignedToUserId());
         pick.setUnitOfMeasureId(getUnitOfMeasureId());
         pick.setConfirmLpnFlag(isConfirmLpnFlag());
         pick.setConfirmItemFlag(isConfirmItemFlag());
         pick.setConfirmLocationCodeFlag(isConfirmLocationCodeFlag());
         pick.setConfirmLocationFlag(isConfirmLocationFlag());
 
-        pick.setWorkId(getWorkId());
+        pick.setWorkTaskId(getWorkTaskId());
         pick.setColor(getColor());
         pick.setProductSize(getProductSize());
         pick.setStyle(getStyle());
@@ -509,15 +494,6 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     public void setConfirmLocationCodeFlag(boolean confirmLocationCodeFlag) {
         this.confirmLocationCodeFlag = confirmLocationCodeFlag;
     }
-
-    public Long getWorkId() {
-        return workId;
-    }
-
-    public void setWorkId(Long workId) {
-        this.workId = workId;
-    }
-
     public boolean isConfirmLpnFlag() {
         return confirmLpnFlag;
     }
@@ -539,21 +515,6 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         }
     }
 
-    public Long getPickingByUserId() {
-        return pickingByUserId;
-    }
-
-    public void setPickingByUserId(Long pickingByUserId) {
-        this.pickingByUserId = pickingByUserId;
-    }
-
-    public Long getAssignedToUserId() {
-        return assignedToUserId;
-    }
-
-    public void setAssignedToUserId(Long assignedToUserId) {
-        this.assignedToUserId = assignedToUserId;
-    }
 
     public String getColor() {
         return color;
@@ -592,19 +553,19 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         this.bulkPickNumber = bulkPickNumber;
     }
 
-    public User getPickingByUser() {
-        return pickingByUser;
+    public Long getWorkTaskId() {
+        return workTaskId;
     }
 
-    public void setPickingByUser(User pickingByUser) {
-        this.pickingByUser = pickingByUser;
+    public void setWorkTaskId(Long workTaskId) {
+        this.workTaskId = workTaskId;
     }
 
-    public User getAssignedToUser() {
-        return assignedToUser;
+    public WorkTask getWorkTask() {
+        return workTask;
     }
 
-    public void setAssignedToUser(User assignedToUser) {
-        this.assignedToUser = assignedToUser;
+    public void setWorkTask(WorkTask workTask) {
+        this.workTask = workTask;
     }
 }

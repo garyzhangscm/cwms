@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.BulkPick;
 import com.garyzhangscm.cwms.outbound.model.Pick;
@@ -76,10 +77,11 @@ public class BulkPickController {
 
     @BillableEndpoint
     @RequestMapping(value="/bulk-picks/{id}", method = RequestMethod.DELETE)
-    public BulkPick cancelPick(@PathVariable Long id,
-                           @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
-                           @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
-        return bulkPickService.cancelPick(id, errorLocation, generateCycleCount);
+    public ResponseBodyWrapper<String> cancelPick(@PathVariable Long id,
+                                          @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                                          @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
+        bulkPickService.cancelPick(id, errorLocation, generateCycleCount);
+        return ResponseBodyWrapper.success("bulk pick " + id + " is cancelled");
     }
 
 
@@ -95,11 +97,20 @@ public class BulkPickController {
         logger.debug("=> pick from LPN: {}", lpn);
             return bulkPickService.confirmBulkPick(id, nextLocationId, nextLocationName, lpn);
     }
+
+    @BillableEndpoint
     @RequestMapping(value="/bulk-picks/{id}/assign-user", method = RequestMethod.POST)
     public BulkPick assignToUser(@PathVariable Long id,
                                  Long warehouseId,
                                  Long userId) {
         return bulkPickService.assignToUser(id, warehouseId, userId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/{id}/release", method = RequestMethod.POST)
+    public BulkPick releasePick(@PathVariable Long id,
+                                 Long warehouseId) {
+        return bulkPickService.releasePick(id, warehouseId);
     }
 
 

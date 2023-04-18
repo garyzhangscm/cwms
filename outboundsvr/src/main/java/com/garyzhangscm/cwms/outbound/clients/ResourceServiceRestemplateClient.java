@@ -183,6 +183,46 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    public WorkTask getWorkTaskById(Long warehouseId, Long workTaskId)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks/{id}")
+                        .queryParam("warehouseId", warehouseId);
+
+        ResponseBodyWrapper<WorkTask> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+
+    }
+
+
+    public WorkTask assingUser(Long warehouseId, Long workTaskId, Long userId)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks/{id}/assign-user")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("userId", userId);
+
+        ResponseBodyWrapper<WorkTask> responseBodyWrapper
+                = restTemplateProxy.getRestTemplate().exchange(
+                    builder.buildAndExpand(workTaskId).toUriString(),
+                    HttpMethod.POST,
+                    null,
+                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
+
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");

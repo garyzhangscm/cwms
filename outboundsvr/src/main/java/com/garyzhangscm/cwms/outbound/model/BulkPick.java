@@ -92,6 +92,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
+    @Column(name = "work_task_id")
+    private Long workTaskId;
+    @Transient
+    private WorkTask workTask;
+
     // how to confirm the pick. THe flag
     // will be setup according to the area/ location's attribute
     @Column(name = "confirm_item_flag")
@@ -209,6 +214,14 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Long getWorkTaskId() {
+        return workTaskId;
+    }
+
+    public void setWorkTaskId(Long workTaskId) {
+        this.workTaskId = workTaskId;
     }
 
     public List<Pick> getPicks() {
@@ -434,6 +447,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
         this.waveNumber = waveNumber;
     }
 
+    public WorkTask getWorkTask() {
+        return workTask;
+    }
 
-
+    public void setWorkTask(WorkTask workTask) {
+        this.workTask = workTask;
+    }
 }

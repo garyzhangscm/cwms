@@ -1,6 +1,15 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import java.time.ZonedDateTime;
+
 public class WorkTask extends AuditibleEntity<String> {
 
     private Long id;
@@ -22,6 +31,22 @@ public class WorkTask extends AuditibleEntity<String> {
     // pick number if the task is pick
     // LPN is the task is inventory related
     private String referenceNumber;
+
+
+    private OperationType operationType;
+
+    private User assignedUser;
+
+    private Role assignedRole;
+
+    private User currentUser;
+
+    private User completeUser;
+
+    private ZonedDateTime startTime;
+    // private LocalDateTime startTime;
+
+    private ZonedDateTime completeTime;
 
     public WorkTask() {
 
@@ -101,5 +126,61 @@ public class WorkTask extends AuditibleEntity<String> {
 
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
+    }
+
+    public OperationType getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(OperationType operationType) {
+        this.operationType = operationType;
+    }
+
+    public User getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+    }
+
+    public Role getAssignedRole() {
+        return assignedRole;
+    }
+
+    public void setAssignedRole(Role assignedRole) {
+        this.assignedRole = assignedRole;
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User currentUser) {
+        this.currentUser = currentUser;
+    }
+
+    public User getCompleteUser() {
+        return completeUser;
+    }
+
+    public void setCompleteUser(User completeUser) {
+        this.completeUser = completeUser;
+    }
+
+    public ZonedDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(ZonedDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public ZonedDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public void setCompleteTime(ZonedDateTime completeTime) {
+        this.completeTime = completeTime;
     }
 }
