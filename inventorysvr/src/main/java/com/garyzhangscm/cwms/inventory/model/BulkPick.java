@@ -18,16 +18,10 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class BulkPick  implements Serializable  {
 
@@ -57,5 +51,107 @@ public class BulkPick  implements Serializable  {
 
     private Long unitOfMeasureId;
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getWaveNumber() {
+        return waveNumber;
+    }
+
+    public void setWaveNumber(String waveNumber) {
+        this.waveNumber = waveNumber;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Long getSourceLocationId() {
+        return sourceLocationId;
+    }
+
+    public void setSourceLocationId(Long sourceLocationId) {
+        this.sourceLocationId = sourceLocationId;
+    }
+
+    public Location getSourceLocation() {
+        return sourceLocation;
+    }
+
+    public void setSourceLocation(Location sourceLocation) {
+        this.sourceLocation = sourceLocation;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public List<Pick> getPicks() {
+        return picks;
+    }
+
+    public void setPicks(List<Pick> picks) {
+        this.picks = picks;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
+
+    public Long getUnitOfMeasureId() {
+        return unitOfMeasureId;
+    }
+
+    public void setUnitOfMeasureId(Long unitOfMeasureId) {
+        this.unitOfMeasureId = unitOfMeasureId;
+    }
 }

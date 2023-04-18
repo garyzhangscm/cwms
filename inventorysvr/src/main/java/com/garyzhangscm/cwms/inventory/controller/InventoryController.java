@@ -611,5 +611,29 @@ public class InventoryController {
         return inventoryService.getPutawayFileUploadResult(warehouseId, key);
     }
 
+    /**
+     * Process bulk pick for the inventory
+     * 1. move the lpn to the next location
+     * 2. consolidate and split the inventory so that the result of the inventory
+     *    matches with the picks in the bulk pick
+     * 3. Setup the pick id for each inventory
+     * @param warehouseId
+     * @param nextLocationId
+     * @param lpn
+     * @return
+     */
+    @RequestMapping(value="/inventories/process-bulk-pick", method = RequestMethod.POST)
+    public List<Inventory> processBulkPick(
+            @RequestParam Long warehouseId,
+            @RequestParam String lpn,
+            @RequestParam Long nextLocationId,
+            @RequestBody BulkPick bulkPick) {
+
+
+        return inventoryService.processBulkPick(
+                warehouseId, lpn, nextLocationId, bulkPick
+        );
+    }
+
 
 }

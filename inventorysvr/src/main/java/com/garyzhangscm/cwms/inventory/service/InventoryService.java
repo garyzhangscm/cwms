@@ -1591,10 +1591,15 @@ public class InventoryService {
         return markAsPicked(findById(inventoryId),destination,  pickId);
     }
     public Inventory markAsPicked(Inventory inventory, Location destination,  Long pickId) {
+
+        Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        return markAsPicked(inventory, destination, pick);
+    }
+    public Inventory markAsPicked(Inventory inventory, Location destination,  Pick pick) {
         if (Objects.nonNull(inventory.getAllocatedByPickId())) {
             // The inventory is allocated by certain pick. make sure it is
             // not picked by a different pick
-            if (!pickId.equals(inventory.getAllocatedByPickId())) {
+            if (!pick.getId().equals(inventory.getAllocatedByPickId())) {
                 throw InventoryException.raiseException("Inventory is allocated by other picks. Can't pick from it");
             }
 
@@ -1604,8 +1609,7 @@ public class InventoryService {
             inventory.setAllocatedByPickId(null);
 
         }
-        inventory.setPickId(pickId);
-        Pick pick = outbuondServiceRestemplateClient.getPickById(pickId);
+        inventory.setPickId(pick.getId());
         // logger.debug("Get pick by id {} \n {}", pickId, pick);
         inventory.setPick(pick);
         inventory.getInventoryMovements().clear();
@@ -1625,7 +1629,7 @@ public class InventoryService {
             copyMovementsFromPick(pick, inventory);
         }
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.PICKING,
-                "pick", String.valueOf(pickId), "", pick.getNumber());
+                "pick", String.valueOf(pick.getId()), "", pick.getNumber());
         return inventory;
     }
     private void copyMovementsFromPick(Pick pick, Inventory inventory) {
@@ -3577,4 +3581,294 @@ public class InventoryService {
                 false,
                 null, includeDetails);
     }
+
+    /**
+     * Process bulk pick for the inventory
+     * 1. move the lpn to the next location
+     * 2. consolidate and split the inventory so that the result of the inventory
+     *    matches with the picks in the bulk pick
+     * 3. Setup the pick id for each inventory
+     * @param warehouseId
+     * @param nextLocationId
+     * @param lpn
+     * @return
+     */
+    public List<Inventory> processBulkPick(Long warehouseId, String lpn,
+                                           Long nextLocationId,
+                                           BulkPick bulkPick) {
+        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+        if (inventories.isEmpty()) {
+            throw InventoryException.raiseException("can't find the inventory with LPN "+
+                    lpn);
+        }
+        // before we continue, let's make sure the inventory has exactly
+        // the same total quantity as the bulk pick
+        Long inventoryQuantity = inventories.stream().mapToLong(Inventory::getQuantity).sum();
+        Long pickQuantity = bulkPick.getPicks().stream().mapToLong(Pick::getQuantity).sum();
+        if (!inventoryQuantity.equals(pickQuantity)) {
+            throw InventoryException.raiseException("Can't bulk pick the inventory of LPN " +
+                    lpn + " for bulk pick " + bulkPick.getNumber());
+        }
+
+        // ok we get a list of inventory from the LPN,
+        // let's consolidate and split based on the bulk pick
+        inventories = consolidateAndSplitForBulkPick(inventories, bulkPick);
+
+        // move the whole LPN to the destination location
+
+        logger.debug("after we call the consolidateAndSplitForBulkPick, we have");
+
+        inventories.forEach(
+                resultInventory -> {
+                    logger.debug("inventory: lpn = {}, quantity = {}, picked id = {}",
+                            resultInventory.getLpn(), resultInventory.getQuantity(),
+                            resultInventory.getPickId());
+                }
+        );
+        bulkPick.getPicks().forEach(
+                pick -> {
+                    logger.debug("pick: id = {}, pick number = {}, pick quantity = {}",
+                            pick.getId(), pick.getNumber(), pick.getQuantity());
+                }
+        );
+
+        logger.debug("start to move the inventory to the destination location");
+        inventories = moveInventoryForBulkPick(warehouseId, inventories, bulkPick, nextLocationId);
+
+
+        // return the result
+        return inventories.stream().map(inventory -> saveOrUpdate(inventory)).collect(Collectors.toList());
+
+
+    }
+
+    private List<Inventory> moveInventoryForBulkPick(Long warehouseId, List<Inventory> inventories, BulkPick bulkPick, Long nextLocationId) {
+        Location destination = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
+        for (Inventory inventory : inventories) {
+            inventory.setLocationId(nextLocationId);
+            inventory.setLocation(destination);
+            // the inventory should already have the pick id setup
+            Pick matchedPick = bulkPick.getPicks().stream().filter(
+                    pick -> pick.getId().equals(inventory.getPickId())
+            ).findFirst().orElse(null);
+            if (Objects.nonNull(matchedPick)) {
+
+                markAsPicked(inventory, destination, matchedPick);
+            }
+            inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
+                    "location", inventory.getLocation().getName(), destination.getName());
+
+            recalculateLocationSizeForInventoryMovement(inventory.getLocation(), destination, inventory.getSize());
+
+            if (Objects.nonNull(inventory.getPickId())) {
+                outbuondServiceRestemplateClient.refreshPickMovement(inventory.getPickId(), destination.getId(), inventory.getQuantity());
+            }
+        }
+        return inventories;
+    }
+
+    /**
+     * Split and consolidate the inventory based on the buck pick's requirement so that
+     *  each pick in this bulk pick will have its own inventory
+     * @param inventories
+     * @param bulkPick
+     * @return
+     */
+    private List<Inventory> consolidateAndSplitForBulkPick(List<Inventory> inventories, BulkPick bulkPick) {
+
+        // Step 1: find all the inventory that already have quantity match with the pick in the bulk pick
+        // we will separate those inventory and pick as they don't require any future process
+        Set<Long> processedInventoryIds = new HashSet<>();
+        Set<Long> processedPickIds = new HashSet<>();
+
+        // key: inventory id
+        // value: pick id
+        Map<Long, Long> inventoryPickMap = new HashMap<>();
+        inventories.forEach(
+                inventory -> {
+                    // see if we can find any pick that in the bulk that has the same quantity
+                    Pick matchedPick = bulkPick.getPicks().stream().filter(
+                            pick -> !processedPickIds.contains(pick.getId()) &&
+                                    pick.getQuantity().equals(inventory.getQuantity())
+                    ).findFirst().orElse(null);
+
+                    if (Objects.nonNull(matchedPick)) {
+                        // OK, we find a pick that can be assigned to the inventory
+                        inventoryPickMap.put(inventory.getId(), matchedPick.getId());
+                        processedPickIds.add(matchedPick.getId());
+
+                        // mark the inventory as picked by the matched id
+                        inventory.setPickId(matchedPick.getId());
+                    }
+                }
+        );
+        // now we have a map with matched inventory and a list of all inventories. We will
+        // need to get all the un matched inventory and then
+        // 1. consolidate them into one inventory structure
+        // 2. split the single inventory into multiple inventories based on the pick quantities
+
+        List<Inventory> matchedInventory = inventories.stream().filter(
+                inventory -> inventoryPickMap.containsKey(inventory.getId())
+        ).collect(Collectors.toList());
+
+
+        List<Inventory> unmatchedInventory = inventories.stream().filter(
+                inventory -> !inventoryPickMap.containsKey(inventory.getId())
+        ).collect(Collectors.toList());
+
+        if (!unmatchedInventory.isEmpty()) {
+            // ok, let's consolidate unmatched inventory into one inventory
+            Inventory consolidatedInventory = consolidateInventory(unmatchedInventory);
+
+            List<Pick> unprocessedPicks = bulkPick.getPicks().stream().filter(
+                    pick -> !processedPickIds.contains(pick.getId())
+            ).collect(Collectors.toList());
+
+            List<Inventory> splitInventory = splitInventoryForPickGroup(consolidatedInventory, unprocessedPicks);
+            // when we split the inventory, the inventory should already have been setup with the
+            // matched picks
+            // let's just group them into the previous processed inventory
+            matchedInventory.addAll(splitInventory);
+        }
+
+        // when we are here, we should already have all inventory matched with the pick
+        return matchedInventory;
+
+
+    }
+
+    /**
+     * Split the single inventory into multiple inventories and distribute the quantity based on the
+     * list of pick
+     * @param inventory
+     * @param picks
+     * @return
+     */
+    private List<Inventory> splitInventoryForPickGroup(Inventory inventory, List<Pick> picks) {
+
+        logger.debug("start to split the inventory based on the group of picks");
+        logger.debug("Inventory: LPN = {}, quantity = {}",
+                inventory.getLpn(), inventory.getQuantity());
+        picks.forEach(
+                pick -> {
+                    logger.debug("pick: id = {}, pick number = {}, pick quantity = {}",
+                            pick.getId(), pick.getNumber(), pick.getQuantity());
+                }
+        );
+        // before we continue, let's make sure the inventory has exactly
+        // the same total quantity as the bulk pick
+        Long pickQuantity = picks.stream().mapToLong(Pick::getQuantity).sum();
+        if (!inventory.getQuantity().equals(pickQuantity)) {
+            throw InventoryException.raiseException("Can't split the inventory's quantity " +
+                     " for the group of  pick. inventory's quantity " + inventory.getQuantity() +
+                            "doesn't match with the total quantity of the group: " + pickQuantity);
+        }
+
+
+        List<Inventory> inventories = new ArrayList<>();
+        if (picks.size() == 0) {
+            throw InventoryException.raiseException("No pick left to match with the single inventory");
+
+        }
+        else if (picks.size() == 1) {
+            logger.debug("There's only one pick left and we only have one inventory, perfect match");
+            inventory.setPickId(picks.get(0).getId());
+            inventories.add(inventory);
+        }
+        else {
+            logger.debug("we get {} picks and the inventory's quantity is {}, we will split the inventory " +
+                    " and distribute the quantity into those picks",
+                    picks.size(), inventory.getQuantity());
+            for (Pick pick : picks) {
+                if(pick.getQuantity().equals(inventory)) {
+                    // ok, this is the last inventory and pick
+                    inventory.setPickId(pick.getId());
+                    inventories.add(inventory);
+                }
+                else {
+                    Inventory newInventory = inventory.split(inventory.getLpn(), pick.getQuantity());
+                    newInventory.setPickId(pick.getId());
+                    inventories.add(inventory);
+                }
+            }
+        }
+        logger.debug("after split the inventory based on the group of picks, we have");
+
+        inventories.forEach(
+                resultInventory -> {
+                    logger.debug("inventory: lpn = {}, quantity = {}",
+                            resultInventory.getLpn(), resultInventory.getQuantity());
+                }
+        );
+        picks.forEach(
+                pick -> {
+                    logger.debug("pick: id = {}, pick number = {}, pick quantity = {}",
+                            pick.getId(), pick.getNumber(), pick.getQuantity());
+                }
+        );
+        return inventories;
+
+
+    }
+
+    /**
+     * Consolidate inventory strucutre into one. We will only allow consolidate
+     * inventory from the same LPN with same attribute
+     * @param inventories
+     * @return
+     */
+    private Inventory consolidateInventory(List<Inventory> inventories) {
+        if (inventories.isEmpty()) {
+            throw InventoryException.raiseException("there's no inventory to be consolidated");
+        }
+        else if (inventories.size() == 1) {
+            return inventories.get(0);
+        }
+        // make sure we only have one LPN and same attribute
+        validateForConsolidateInventory(inventories);
+
+        // we will get the attribute from the first inventory and then
+        // consolidate all the quantity from the list of inventory into this single inventory
+        Inventory result = inventories.get(0);
+        // we will set the total quantity to the first inventory
+        // remove the other inventory
+        // and then save the first one
+        for (Inventory inventory : inventories) {
+            if (!inventory.equals(result)) {
+                result.setQuantity(result.getQuantity() + inventory.getQuantity());
+                delete(inventory);
+            }
+        }
+        return saveOrUpdate(result);
+    }
+
+    private void validateForConsolidateInventory(List<Inventory> inventories) {
+
+        if (inventories.stream().map(Inventory::getLpn).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory from multiple LPNs");
+        }
+        if (inventories.stream().map(Inventory::getInventoryStatus).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple status");
+        }
+        if (inventories.stream().map(Inventory::getItemPackageType).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple item package type");
+        }
+        if (inventories.stream().map(Inventory::getItem).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple item ");
+        }
+        if (inventories.stream().map(Inventory::getClientId).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple client ");
+        }
+        if (inventories.stream().map(Inventory::getColor).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple attribute: Color ");
+        }
+        if (inventories.stream().map(Inventory::getProductSize).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple attribute: Product Size ");
+        }
+        if (inventories.stream().map(Inventory::getStyle).distinct().count() > 1) {
+            throw InventoryException.raiseException("Can't consolidate inventory with multiple attribute: Style ");
+        }
+    }
+
+
 }

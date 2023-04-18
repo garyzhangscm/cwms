@@ -620,7 +620,8 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/inventory/process-bulk-pick")
+                        .path("/api/inventory/inventories/process-bulk-pick")
+                        .queryParam("warehouseId", bulkPick.getWarehouseId())
                         .queryParam("nextLocation", nextLocation.getId())
                         .queryParam("lpn", lpn);
 
