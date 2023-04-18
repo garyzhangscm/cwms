@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
+import com.garyzhangscm.cwms.outbound.model.BulkPick;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -155,6 +156,23 @@ public class PickController {
         logger.debug("=> lpn: {}", lpn);
         return pickService.generateManualPickForWorkOrder(warehouseId, workOrderId, productionLineId, lpn, pickableQuantity);
     }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/picks/{id}/assign-user", method = RequestMethod.POST)
+    public Pick assignToUser(@PathVariable Long id,
+                                 Long warehouseId,
+                                 Long userId) {
+        return pickService.assignToUser(id, warehouseId, userId);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/picks/{id}/release", method = RequestMethod.POST)
+    public Pick releasePick(@PathVariable Long id,
+                                Long warehouseId) {
+        return pickService.releasePick(id, warehouseId);
+    }
 /**
     @BillableEndpoint
     @RequestMapping(value="/picks/system-driven/next-pick", method = RequestMethod.POST)
@@ -163,4 +181,6 @@ public class PickController {
         return pickService.getNextPick(warehouseId, currentLocationId);
     }
                                  **/
+
+
 }

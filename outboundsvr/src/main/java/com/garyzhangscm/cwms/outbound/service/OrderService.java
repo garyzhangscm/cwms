@@ -1335,7 +1335,7 @@ public class OrderService {
         logger.debug(openPicks.toString());
         // get the picks that is not assigned yet
         List<Pick> unassignedOpenPick = openPicks.stream()
-                .filter(pick -> Objects.isNull(pick.getWorkId()))
+                .filter(pick -> Objects.isNull(pick.getWorkTaskId()))
                 .collect(Collectors.toList());
 
         logger.debug("=======  We get {} open unassigned picks  ======",

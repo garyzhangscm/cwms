@@ -51,6 +51,7 @@ public class PickReleaseService {
             WorkTask workTask = workTaskService.releaseBulkPick(bulkPick);
             if (Objects.nonNull(workTask)) {
                 bulkPick.setStatus(PickStatus.RELEASED);
+                bulkPick.setWorkTaskId(workTask.getId());
             }
         }
         else {
@@ -63,6 +64,8 @@ public class PickReleaseService {
     }
 
     public Pick releasePick(Pick pick) {
+        logger.debug("start to release pick {}", pick.getNumber());
+
         PickConfiguration pickConfiguration =
                 pickConfigurationService.findByWarehouse(pick.getWarehouseId());
         if (Objects.nonNull(pickConfiguration) &&
@@ -70,6 +73,7 @@ public class PickReleaseService {
             WorkTask workTask = workTaskService.releasePick(pick);
             if (Objects.nonNull(workTask)) {
                 pick.setStatus(PickStatus.RELEASED);
+                pick.setWorkTaskId(workTask.getId());
             }
         }
         else {

@@ -160,4 +160,5 @@ public class WorkTaskController {
             @RequestParam Long warehouseId) {
         return workTaskService.resetWorkTaskStatus(warehouseId, id);
     }
+
 }

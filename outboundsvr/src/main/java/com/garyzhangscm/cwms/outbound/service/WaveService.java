@@ -60,6 +60,8 @@ public class WaveService {
     @Autowired
     private BulkPickService bulkPickService;
     @Autowired
+    private PickService pickService;
+    @Autowired
     private ShipmentLineService shipmentLineService;
 
     @Autowired
@@ -436,15 +438,34 @@ public class WaveService {
         allocationResults.stream().map(
                 allocationResult ->  allocationResult.getPicks()
         ).flatMap(List::stream)
-                .filter(pick -> pick.getStatus().equals(PickStatus.PENDING) &&
+                .filter(pick -> {
+
+                    logger.debug("check if we will need to release the pick {}",
+                            pick.getNumber());
+                    logger.debug("pick.getStatus().equals(PickStatus.PENDING): {}",
+                            pick.getStatus().equals(PickStatus.PENDING));
+                    logger.debug("Objects.isNull(pick.getBulkPick()): {}",
+                            Objects.isNull(pick.getBulkPick()));
+                    logger.debug("Objects.isNull(pick.getCartonization()): {}", Objects.isNull(pick.getCartonization()) );
+                    logger.debug("Objects.isNull(pick.getPickList()): {}", Objects.isNull(pick.getPickList()));
+                    logger.debug("Objects.isNull(pick.getWorkTaskId()): {}", Objects.isNull(pick.getWorkTaskId()));
+                    logger.debug("pick.getPickedQuantity() == 0: {}", pick.getPickedQuantity() == 0);
+                    return pick.getStatus().equals(PickStatus.PENDING) &&
                         Objects.isNull(pick.getBulkPick()) &&
                         Objects.isNull(pick.getCartonization()) &&
                         Objects.isNull(pick.getPickList()) &&
-                        Objects.isNull(pick.getAssignedToUserId()) &&
-                        Objects.isNull(pick.getPickingByUserId()) &&
-                        pick.getPickedQuantity() == 0)
+                        Objects.isNull(pick.getWorkTaskId()) &&
+                        pick.getPickedQuantity() == 0;
+                })
                 .forEach(
-                        pick -> pickReleaseService.releasePick(pick)
+                        pick -> {
+                            pick = pickReleaseService.releasePick(pick);
+                            logger.debug("pick {} is released? {}, work task id: {}",
+                                    pick.getNumber(),
+                                    PickStatus.RELEASED.equals(pick.getStatus()),
+                                    pick.getWorkTaskId());
+                            pickService.saveOrUpdate(pick, false);
+                        }
                 );
 
     }

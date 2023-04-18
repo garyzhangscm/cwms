@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -37,6 +38,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,6 +63,8 @@ public class BulkPickService {
     private PickReleaseService pickReleaseService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
 
     public BulkPick findById(Long id) {
@@ -229,6 +233,14 @@ public class BulkPickService {
         }
 
 
+        if (Objects.nonNull(bulkPick.getWorkTaskId()) &&
+                Objects.isNull(bulkPick.getWorkTask())) {
+            bulkPick.setWorkTask(
+                    resourceServiceRestemplateClient.getWorkTaskById(
+                            bulkPick.getWarehouseId(), bulkPick.getWorkTaskId())
+            );
+        }
+
         // load the attribute for the picks in the bulk
         pickService.loadAttribute(bulkPick.getPicks());
     }
@@ -251,6 +263,10 @@ public class BulkPickService {
             );
         }
         return save(bulkPick);
+    }
+
+    public void delete(BulkPick bulkPick) {
+        bulkPickRepository.delete(bulkPick);
     }
 
     public List<BulkPick> getBulkPickByLocation(Long warehouseId,
@@ -309,8 +325,7 @@ public class BulkPickService {
                         pick -> Objects.isNull(pick.getBulkPick()) &&
                                 Objects.isNull(pick.getCartonization()) &&
                                 Objects.isNull(pick.getPickList()) &&
-                                Objects.isNull(pick.getAssignedToUserId()) &&
-                                Objects.isNull(pick.getPickingByUserId()) &&
+                                Objects.isNull(pick.getWorkTaskId()) &&
                                 Strings.isBlank(pick.getLpn()) &&
                                 pick.getPickedQuantity() == 0 &&
                                 pick.getStatus() == PickStatus.PENDING
@@ -733,8 +748,36 @@ public class BulkPickService {
                         pick.getStyle());
     }
 
-    public BulkPick cancelPick(Long id, Boolean errorLocation, Boolean generateCycleCount) {
-        return findById(id);
+    @Transactional
+    public void cancelPick(Long id, Boolean errorLocation, Boolean generateCycleCount) {
+        BulkPick bulkPick = findById(id);
+        // let's cancel all the picks in this bulk
+        // if we will need to generate the cycle count, then we will generate one
+        // cycle count no matter how many picks in this bulk
+        for (Pick pick : bulkPick.getPicks()) {
+            pickService.cancelPick(pick, false, false);
+        }
+
+        if (errorLocation) {
+            warehouseLayoutServiceRestemplateClient.errorLocation(
+                    bulkPick.getWarehouseId(), bulkPick.getSourceLocationId());
+        }
+        if (generateCycleCount) {
+
+            Location location = Objects.nonNull(bulkPick.getSourceLocation()) ?
+                    bulkPick.getSourceLocation() :
+                    Objects.nonNull(bulkPick.getSourceLocationId()) ?
+                            warehouseLayoutServiceRestemplateClient.getLocationById(bulkPick.getSourceLocationId()) : null;
+
+            if (Objects.nonNull(location)) {
+
+                inventoryServiceRestemplateClient.generateCycleCount(
+                        bulkPick.getWarehouseId(), location.getName()
+                );
+            }
+        }
+
+        delete(bulkPick);
     }
 
     public BulkPick changePick(BulkPick bulkPick) {
@@ -776,8 +819,22 @@ public class BulkPickService {
 
     public BulkPick assignToUser(Long id, Long warehouseId, Long userId) {
         BulkPick bulkPick = findById(id);
+        // the bulk pick has to be released and
+        // there's already work task id attached to it
+        if (!bulkPick.getStatus().equals(PickStatus.RELEASED)) {
+            throw PickingException.raiseException("You can only assign user to" +
+                    " released picks");
+        }
+        if (Objects.isNull(bulkPick.getWorkTaskId())) {
 
-        return saveOrUpdate(bulkPick);
+            throw PickingException.raiseException("You can only assign user to" +
+                    " the bulk pick that already released into the work task");
+        }
+
+        resourceServiceRestemplateClient.assingUser(warehouseId,
+                bulkPick.getWorkTaskId(), userId);
+
+        return bulkPick;
     }
 
     public void releaseBulkPick(BulkPick bulkPick) {
@@ -963,4 +1020,24 @@ public class BulkPickService {
         return "";
     }
 
+    /**
+     * Release the pending bulk pick
+     * @param id
+     * @param warehouseId
+     * @return
+     */
+    public BulkPick releasePick(Long id, Long warehouseId) {
+        BulkPick bulkPick = findById(id);
+        if (bulkPick.getStatus().equals(PickStatus.RELEASED)) {
+            logger.debug("bulk {} is already released",
+                    bulkPick.getNumber());
+            return bulkPick;
+        }
+        if (!bulkPick.getStatus().equals(PickStatus.PENDING)) {
+            throw PickingException.raiseException(
+                    "bulk " + bulkPick.getNumber() + " is not in pending status"
+                    );
+        }
+        return saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));
+    }
 }

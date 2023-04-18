@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.WorkOrderServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ReplenishmentException;
@@ -80,6 +77,8 @@ public class PickService {
     private OrderActivityService orderActivityService;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
     private AllocationService allocationService;
@@ -99,6 +98,8 @@ public class PickService {
     private WorkOrderServiceRestemplateClient workOrderServiceRestemplateClient;
     @Autowired
     private BulkPickService bulkPickService;
+    @Autowired
+    private PickReleaseService pickReleaseService;
 
     public Pick findById(Long id, boolean loadDetails) {
         Pick pick = pickRepository.findById(id)
@@ -422,6 +423,14 @@ public class PickService {
                     ));
         }
 
+        if (Objects.nonNull(pick.getWorkTaskId()) &&
+                Objects.isNull(pick.getWorkTask())) {
+            pick.setWorkTask(
+                    resourceServiceRestemplateClient.getWorkTaskById(
+                            pick.getWarehouseId(), pick.getWorkTaskId())
+            );
+        }
+
 
     }
 
@@ -502,6 +511,7 @@ public class PickService {
         return save(pick, loadDetails);
     }
 
+    @Transactional
     public void delete(Pick pick) {
         pickRepository.delete(pick);
     }
@@ -595,11 +605,13 @@ public class PickService {
         return cancelPick(findById(id), errorLocation, generateCycleCount);
     }
 
+    @Transactional
     public Pick cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount) {
         return cancelPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
                 errorLocation, generateCycleCount);
 
     }
+    @Transactional
     public Pick cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount) {
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
             throw PickingException.raiseException("Can't cancel pick that is already completed!");
@@ -668,9 +680,12 @@ public class PickService {
         orderActivity.setQuantityByNewPick(pick);
         orderActivityService.saveOrderActivity(orderActivity);
 
+        logger.debug("after we cancelled the quantity {}, there's still {} quantity left",
+                cancelledQuantity, pick.getQuantity());
         if (pick.getQuantity() == 0) {
             // There's nothing left on the picks, let's remove it.
             // We can find the history in the cancelled pick table
+            logger.debug("Remove the pick as there's nothing left for this pick {}", pick.getNumber());
             delete(pick);
             return pick;
         }
@@ -1782,6 +1797,48 @@ public class PickService {
         else {
             return false;
         }
+    }
+
+    /**
+     *
+     * @param id
+     * @param warehouseId
+     * @return
+     */
+    public Pick releasePick(Long id, Long warehouseId) {
+
+        Pick pick = findById(id);
+        if (pick.getStatus().equals(PickStatus.RELEASED)) {
+            logger.debug("pick {} is already released",
+                    pick.getNumber());
+            return pick;
+        }
+        if (!pick.getStatus().equals(PickStatus.PENDING)) {
+            throw PickingException.raiseException(
+                    "pick " + pick.getNumber() + " is not in pending status"
+            );
+        }
+        return saveOrUpdate(pickReleaseService.releasePick(pick));
+    }
+
+    public Pick assignToUser(Long id, Long warehouseId, Long userId) {
+        Pick pick = findById(id);
+        // the pick has to be released and
+        // there's already work task id attached to it
+        if (!pick.getStatus().equals(PickStatus.RELEASED)) {
+            throw PickingException.raiseException("You can only assign user to" +
+                    " released picks");
+        }
+        if (Objects.isNull(pick.getWorkTaskId())) {
+
+            throw PickingException.raiseException("You can only assign user to" +
+                    " the pick that already released into the work task");
+        }
+
+        resourceServiceRestemplateClient.assingUser(warehouseId,
+                pick.getWorkTaskId(), userId);
+
+        return pick;
     }
 
 

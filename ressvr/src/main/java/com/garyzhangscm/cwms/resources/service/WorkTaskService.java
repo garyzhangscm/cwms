@@ -475,9 +475,13 @@ public class WorkTaskService{
     public WorkTask assignUser(Long workTaskId, Long warehouseId, Long userId) {
         WorkTask workTask = findById(workTaskId);
 
-        if (!WorkTaskStatus.RELEASED.equals(workTask.getStatus())) {
+        if (WorkTaskStatus.WORKING.equals(workTask.getStatus())) {
             throw RequestValidationFailException.raiseException(
-                    "work task " + workTask.getNumber() + " is not in RELEASED status");
+                    "someone is working on the work task " + workTask.getNumber());
+        }
+        else if (WorkTaskStatus.COMPLETE.equals(workTask.getStatus())) {
+            throw RequestValidationFailException.raiseException(
+                    "work task " + workTask.getNumber() + " is already completed!");
         }
         User user = userService.findById(userId);
         // first of all, make sure the user has the right to perform the work task
