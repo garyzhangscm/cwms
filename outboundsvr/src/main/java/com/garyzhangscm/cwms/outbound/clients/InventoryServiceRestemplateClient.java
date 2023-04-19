@@ -22,6 +22,8 @@ package com.garyzhangscm.cwms.outbound.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -75,7 +77,7 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/items/{id}");
-
+/**
         ResponseBodyWrapper<Item> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -84,6 +86,13 @@ public class InventoryServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Item>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Item.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -133,6 +142,7 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/item-family/{id}");
+        /**
         ResponseBodyWrapper<ItemFamily> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -141,6 +151,13 @@ public class InventoryServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<ItemFamily>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                ItemFamily.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -176,7 +193,7 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory-status/{id}");
-
+/**
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -185,6 +202,13 @@ public class InventoryServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                InventoryStatus.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -447,6 +471,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("pickId", pick.getId());
 
 
+/**
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = null;
         try {
@@ -460,6 +485,13 @@ public class InventoryServiceRestemplateClient {
         }
 
         return responseBodyWrapper.getData();
+**/
+            return restTemplateProxy.exchange(
+                    Inventory.class,
+                    builder.buildAndExpand(inventory.getId()).toUriString(),
+                    HttpMethod.POST,
+                    nextLocation
+            );
     }
 
 
@@ -515,13 +547,13 @@ public class InventoryServiceRestemplateClient {
     public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
         return moveInventory(inventory, nextLocation, "");
     }
-    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn) throws IOException {
+    public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory/{id}/move")
                 .queryParam("destinationLpn", destinationLpn);
-
+/**
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(inventory.getId()).toUriString(),
@@ -530,6 +562,13 @@ public class InventoryServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                nextLocation
+        );
     }
 
     public List<Inventory> markLPNAllocated(Long warehouseId, String lpn, Long allocatedByPickId) {
@@ -578,7 +617,7 @@ public class InventoryServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory-statuses/available")
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -587,6 +626,13 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<InventoryStatus>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                InventoryStatus.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     /**
@@ -605,7 +651,7 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("beginValue", locationName)
                         .queryParam("endValue", locationName)
                         .queryParam("includeEmptyLocation", true);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -614,6 +660,13 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         logger.debug("Cycle count is generated: \n {}", responseBodyWrapper.getData());
+**/
+        restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     public List<Inventory> processBulkPick(BulkPick bulkPick, Location nextLocation, String lpn) {

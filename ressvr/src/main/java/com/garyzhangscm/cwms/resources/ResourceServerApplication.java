@@ -107,6 +107,13 @@ public class ResourceServerApplication {
 	}
 
 
+	@Bean
+	@Qualifier("noTokenRestTemplate")
+	public RestTemplate noTokenRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		return restTemplate;
+	}
+
 	// setup the configuration for redis cache
 
 	/****

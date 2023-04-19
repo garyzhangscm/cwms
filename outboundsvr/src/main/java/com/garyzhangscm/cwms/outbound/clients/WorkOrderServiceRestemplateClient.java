@@ -43,6 +43,9 @@ public class WorkOrderServiceRestemplateClient {
     // OAuth2RestTemplate restTemplate;
     private OAuth2RestOperations restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     @Cacheable(cacheNames = "OutboundService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
 
@@ -50,7 +53,7 @@ public class WorkOrderServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/{id}");
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -59,6 +62,13 @@ public class WorkOrderServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
     @Cacheable(cacheNames = "OutboundService_WorkOrderLine", unless="#result == null")
@@ -68,7 +78,7 @@ public class WorkOrderServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}");
-
+/**
         ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -77,6 +87,13 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderLine>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrderLine.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
     @Cacheable(cacheNames = "OutboundService_WorkOrder", unless="#result == null")
@@ -117,7 +134,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/work-orders/lines/{id}/pick-cancelled")
                         .queryParam("cancelledQuantity", cancelledQuantity)
                         .queryParam("destinationLocationId", destinationLocationId);
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(workOrderLineId).toUriString(),
@@ -126,6 +143,13 @@ public class WorkOrderServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public WorkOrder registerShortAllocationCancelled(Long workOrderLineId, Long cancelledQuantity){
@@ -134,7 +158,7 @@ public class WorkOrderServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/short-allocation-cancelled")
                         .queryParam("cancelledQuantity", cancelledQuantity);
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(workOrderLineId).toUriString(),
@@ -143,6 +167,13 @@ public class WorkOrderServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public WorkOrder createWorkOrderForShortAllocation(Long id, Long bomId, String workOrderNumber, Long workOrderQuantity) {
@@ -155,7 +186,7 @@ public class WorkOrderServiceRestemplateClient {
                         .queryParam("billOfMaterialId", bomId)
                         .queryParam("workOrderNumber", workOrderNumber)
                         .queryParam("expectedQuantity", workOrderQuantity);
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -164,6 +195,13 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public WorkOrderLine inventoryPickedForWorkOrderLine(Long workOrderLineId,
@@ -175,7 +213,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/work-orders/lines/{id}/inventory-being-delivered")
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);
-
+/**
         ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderLineId).toUriString(),
@@ -184,6 +222,13 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderLine>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                WorkOrderLine.class,
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 

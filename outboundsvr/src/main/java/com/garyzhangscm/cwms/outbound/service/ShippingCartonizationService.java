@@ -172,13 +172,9 @@ public class ShippingCartonizationService {
                     inventoryToBeMoved = inventoryServiceRestemplateClient.split(inventory, packedQuantity).get(1);
                 }
 
-                try {
                     inventoryServiceRestemplateClient.moveInventory(inventoryToBeMoved, packingStation, shippingCartonNumber);
                     movedInventories.add(inventoryToBeMoved);
                     packedQuantity -= inventoryToBeMoved.getQuantity();
-                } catch (IOException e) {
-                    throw PackingException.raiseException("Error while moving inventory into shipping carton: " + e.getMessage());
-                }
             }
         });
 

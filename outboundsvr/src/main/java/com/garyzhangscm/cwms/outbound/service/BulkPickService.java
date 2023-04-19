@@ -837,6 +837,22 @@ public class BulkPickService {
         return bulkPick;
     }
 
+    public BulkPick unassignUser(Long id, Long warehouseId) {
+        BulkPick bulkPick = findById(id);
+        // the bulk pick has to be released and
+        // there's already work task id attached to it
+        if (Objects.isNull(bulkPick.getWorkTaskId())) {
+
+            throw PickingException.raiseException("You can only unassign user to" +
+                    " the bulk pick that already released into the work task");
+        }
+
+        resourceServiceRestemplateClient.unassingUser(warehouseId,
+                bulkPick.getWorkTaskId());
+
+        return bulkPick;
+    }
+
     public void releaseBulkPick(BulkPick bulkPick) {
 
         saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));

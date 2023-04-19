@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.workorder.clients;
+package com.garyzhangscm.cwms.integration.clients;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.exception.ExceptionCode;
-import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.integration.exception.ExceptionCode;
+import com.garyzhangscm.cwms.integration.exception.GenericException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

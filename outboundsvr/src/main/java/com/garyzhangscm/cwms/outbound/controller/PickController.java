@@ -166,6 +166,13 @@ public class PickController {
         return pickService.assignToUser(id, warehouseId, userId);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/picks/{id}/unassign-user", method = RequestMethod.POST)
+    public Pick unassignUser(@PathVariable Long id,
+                             Long warehouseId) {
+        return pickService.unassignUser(id, warehouseId);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}/release", method = RequestMethod.POST)

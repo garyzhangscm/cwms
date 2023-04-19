@@ -71,7 +71,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/trailers/{id}");
-
+/**
         ResponseBodyWrapper<Trailer> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -80,6 +80,14 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Trailer>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+
+        return restTemplateProxy.exchange(
+                Trailer.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -89,7 +97,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/clients/{id}");
-
+/**
         ResponseBodyWrapper<Client> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -98,7 +106,14 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
 
+        return restTemplateProxy.exchange(
+                Client.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     @Cacheable(cacheNames = "OutboundService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
@@ -130,7 +145,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/suppliers/{id}");
-
+/**
         ResponseBodyWrapper<Supplier> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -139,6 +154,13 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Supplier>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Supplier.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -148,7 +170,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carriers/{id}");
-
+/**
         ResponseBodyWrapper<Carrier> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -157,6 +179,13 @@ public class CommonServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Carrier.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -166,7 +195,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/carrier-service-levels/{id}");
-
+/**
         ResponseBodyWrapper<CarrierServiceLevel> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -175,7 +204,13 @@ public class CommonServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<CarrierServiceLevel>>() {}).getBody();
 
         return responseBodyWrapper.getData();
-
+**/
+        return restTemplateProxy.exchange(
+                CarrierServiceLevel.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     @Cacheable(cacheNames = "OutboundService_Customer", unless="#result == null")
@@ -184,7 +219,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/customers/{id}");
-
+/**
         ResponseBodyWrapper<Customer> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -193,6 +228,14 @@ public class CommonServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Customer>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Customer.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     @Cacheable(cacheNames = "OutboundService_Customer", unless="#result == null")
     public Customer getCustomerByName(Long companyId, Long warehouseId, String name) {
@@ -268,7 +311,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures/{id}");
-
+/**
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -277,6 +320,13 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                UnitOfMeasure.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     public String getNextNumber(Long warehouseId, String variable) {
 
@@ -286,9 +336,8 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
 
-        try{
             logger.debug("We will try the rest template with OAuth first");
-
+/**
             ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.buildAndExpand(variable).toUriString(),
@@ -297,21 +346,15 @@ public class CommonServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
 
             return responseBodyWrapper.getData().getNextNumber();
-        }
-        catch (BeanCreationException ex) {
-            ex.printStackTrace();
-            logger.debug("We are not able to create the OAuth2 rest template bean, login by predefined name");
+**/
 
-            ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
-                    = autoLoginRestTemplate.exchange(
+            SystemControlledNumber systemControlledNumber = restTemplateProxy.exchange(
+                    SystemControlledNumber.class,
                     builder.buildAndExpand(variable).toUriString(),
                     HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
-
-            return responseBodyWrapper.getData().getNextNumber();
-
-        }
+                    null
+            );
+            return systemControlledNumber.getNextNumber();
     }
 
 
@@ -321,7 +364,7 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/trailers/appointments/{id}");
-
+/**
         ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(trailerAppointmentId).toUriString(),
@@ -330,6 +373,13 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<TrailerAppointment>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                TrailerAppointment.class,
+                builder.buildAndExpand(trailerAppointmentId).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     @Cacheable(cacheNames = "OutboundService_TrailerAppointment", unless="#result == null")
@@ -383,7 +433,7 @@ public class CommonServiceRestemplateClient {
             builder = builder.queryParam("description", URLEncoder.encode(trailerAppointmentDescription, "UTF-8") );
         }
 
-
+/**
         ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -392,6 +442,14 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<TrailerAppointment>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+
+**/
+        return restTemplateProxy.exchange(
+                TrailerAppointment.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public TrailerAppointment changeTrailerAppointmentStatus(Long trailerAppointmentId,
@@ -401,7 +459,7 @@ public class CommonServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/trailer-appointments/{id}/change-status")
                 .queryParam("status", trailerAppointmentStatus);
-
+/**
         ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(trailerAppointmentId).toUriString(),
@@ -410,15 +468,13 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<TrailerAppointment>>() {}).getBody();
 
         return responseBodyWrapper.getData();
-    }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
+**/
+        return restTemplateProxy.exchange(
+                TrailerAppointment.class,
+                builder.buildAndExpand(trailerAppointmentId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
 }

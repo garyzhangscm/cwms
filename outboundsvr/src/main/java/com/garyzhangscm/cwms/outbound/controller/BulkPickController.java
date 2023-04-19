@@ -107,6 +107,13 @@ public class BulkPickController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/{id}/unassign-user", method = RequestMethod.POST)
+    public BulkPick unassignUser(@PathVariable Long id,
+                                 Long warehouseId) {
+        return bulkPickService.unassignUser(id, warehouseId);
+    }
+
+    @BillableEndpoint
     @RequestMapping(value="/bulk-picks/{id}/release", method = RequestMethod.POST)
     public BulkPick releasePick(@PathVariable Long id,
                                  Long warehouseId) {
