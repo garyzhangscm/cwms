@@ -19,10 +19,20 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.WorkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -41,6 +51,11 @@ public class RestTemplateProxy {
     @Autowired
     @Qualifier("autoLoginRestTemplate")
     RestTemplate autoLoginRestTemplate;
+
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     public RestOperations getRestTemplate()  {
 
@@ -61,6 +76,38 @@ public class RestTemplateProxy {
         }
         else {
             return autoLoginRestTemplate;
+        }
+    }
+
+    public <T> T exchange(Class<T> t, String uri, HttpMethod method, HttpEntity entity) {
+
+        ResponseBodyWrapper response = getRestTemplate().exchange(
+                uri,
+                method,
+                entity,
+                ResponseBodyWrapper.class).getBody();
+
+        if (response.getResult() != 0) {
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(response.getMessage()));
+        }
+
+        try {
+
+            // response.getData() is of type linkedHashMap
+            // we will need to cast the data into json format , then
+            // cast the JSON back to the POJO
+            String json = objectMapper.writeValueAsString(response.getData());
+            // logger.debug("after cast to JSON: \n {}", json);
+
+            return objectMapper.readValue(json, t);
+            // logger.debug("resultT class is {}", resultT.getClass().getName());
+            // return resultT;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
         }
     }
 }

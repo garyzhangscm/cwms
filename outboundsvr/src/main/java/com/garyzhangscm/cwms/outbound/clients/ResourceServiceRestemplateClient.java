@@ -212,6 +212,7 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("userId", userId);
 
+        /**
         ResponseBodyWrapper<WorkTask> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                     builder.buildAndExpand(workTaskId).toUriString(),
@@ -220,6 +221,15 @@ public class ResourceServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+        WorkTask workTask = restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+        // return (WorkTask) obj;
+        return workTask;
     }
 
 
