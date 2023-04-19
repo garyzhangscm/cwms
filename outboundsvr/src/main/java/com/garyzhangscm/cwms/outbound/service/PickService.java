@@ -1842,6 +1842,23 @@ public class PickService {
     }
 
 
+    public Pick unassignUser(Long id, Long warehouseId) {
+        Pick pick = findById(id);
+        // the pick has to be released and
+        // there's already work task id attached to it
+
+        if (Objects.isNull(pick.getWorkTaskId())) {
+
+            throw PickingException.raiseException("You can only assign user to" +
+                    " the pick that already released into the work task");
+        }
+
+        resourceServiceRestemplateClient.unassingUser(warehouseId,
+                pick.getWorkTaskId());
+
+        return pick;
+    }
+
     /**
      * Get the next pick from the pick pool
      * 1. single pick

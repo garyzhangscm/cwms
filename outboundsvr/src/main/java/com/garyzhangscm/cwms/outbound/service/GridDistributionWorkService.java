@@ -330,7 +330,6 @@ public class GridDistributionWorkService {
             logger.debug(" There's no inventory at location {}", sourceLocationNumber);
             return ;
         }
-        try {
             Iterator<Inventory> inventoryIterator = inventories.iterator();
             while (inventoryIterator.hasNext()) {
                 Inventory inventory = inventoryIterator.next();
@@ -341,10 +340,6 @@ public class GridDistributionWorkService {
                 gridLocationConfigurationService.confirmGridDistributionWork(warehouseId, nextLocation, inventory);
 
             }
-        }
-        catch (IOException ex) {
-            throw GridException.raiseException("Can't get any inventory by id:" + sourceLocationNumber);
-        }
 
     }
 

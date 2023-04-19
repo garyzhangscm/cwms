@@ -29,6 +29,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -127,6 +128,17 @@ public class User extends AuditibleEntity<String>  {
     private WorkerType workerType;
 
 
+
+    @Transient
+    private String token;
+    @Transient
+    private String refreshToken;
+    @Transient
+    private String name;
+    @Transient
+    private Timestamp time;
+    @Transient
+    private int refreshIn;
 
 
     @Override
@@ -397,5 +409,41 @@ public class User extends AuditibleEntity<String>  {
 
     public void setType(UserType type) {
         this.type = type;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public int getRefreshIn() {
+        return refreshIn;
+    }
+
+    public void setRefreshIn(int refreshIn) {
+        this.refreshIn = refreshIn;
     }
 }

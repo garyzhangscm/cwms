@@ -84,3 +84,4 @@ cd ..
 cd QuickBook
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.7 --push .
 cd ..
+

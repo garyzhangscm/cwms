@@ -129,11 +129,25 @@ public class WorkTaskController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/unassign-user", method = RequestMethod.POST)
+    public WorkTask unassignUser(@PathVariable Long id,
+                               @RequestParam Long warehouseId) {
+        return workTaskService.unassignUser(id, warehouseId);
+    }
+
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/{id}/assign-role", method = RequestMethod.POST)
     public WorkTask assignRole(@PathVariable Long id,
                                @RequestParam Long warehouseId,
                                @RequestParam Long roleId) {
         return workTaskService.assignRole(id, warehouseId, roleId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/unassign-role", method = RequestMethod.POST)
+    public WorkTask unassignRole(@PathVariable Long id,
+                                 @RequestParam Long warehouseId) {
+        return workTaskService.unassignRole(id, warehouseId);
     }
 
     @BillableEndpoint

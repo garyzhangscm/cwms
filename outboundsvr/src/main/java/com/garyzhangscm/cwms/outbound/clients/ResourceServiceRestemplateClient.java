@@ -64,7 +64,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
-
+/**
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(warehouseId, type).toUriString(),
@@ -73,6 +73,13 @@ public class ResourceServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.buildAndExpand(warehouseId, type).toUriString(),
+                HttpMethod.POST,
+                reportData
+        );
 
     }
 
@@ -95,7 +102,7 @@ public class ResourceServiceRestemplateClient {
         if (Strings.isNotBlank(printerName)) {
             builder = builder.queryParam("printerName", URLEncoder.encode(printerName, "UTF-8") );
         }
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -104,6 +111,14 @@ public class ResourceServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.build(true).toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 
@@ -144,7 +159,7 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -153,6 +168,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
 
     }
 
@@ -164,7 +187,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/work-tasks")
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<WorkTask> responseBodyWrapper
                 = null;
         try {
@@ -180,6 +203,13 @@ public class ResourceServiceRestemplateClient {
 
         }
         return null;
+**/
+        return restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.toUriString(),
+                HttpMethod.PUT,
+                workTask
+        );
 
     }
 
@@ -222,16 +252,40 @@ public class ResourceServiceRestemplateClient {
 
         return responseBodyWrapper.getData();
          **/
-        WorkTask workTask = restTemplateProxy.exchange(
+        return restTemplateProxy.exchange(
                 WorkTask.class,
                 builder.buildAndExpand(workTaskId).toUriString(),
                 HttpMethod.POST,
                 null
         );
-        // return (WorkTask) obj;
-        return workTask;
     }
 
+
+    public WorkTask unassingUser(Long warehouseId, Long workTaskId)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks/{id}/unassign-user")
+                        .queryParam("warehouseId", warehouseId);
+
+        /**
+         ResponseBodyWrapper<WorkTask> responseBodyWrapper
+         = restTemplateProxy.getRestTemplate().exchange(
+         builder.buildAndExpand(workTaskId).toUriString(),
+         HttpMethod.POST,
+         null,
+         new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
+
+         return responseBodyWrapper.getData();
+         **/
+        return restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

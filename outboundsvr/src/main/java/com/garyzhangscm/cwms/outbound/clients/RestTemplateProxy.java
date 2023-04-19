@@ -26,13 +26,16 @@ import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.WorkTask;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -79,7 +82,17 @@ public class RestTemplateProxy {
         }
     }
 
-    public <T> T exchange(Class<T> t, String uri, HttpMethod method, HttpEntity entity) {
+    public <T> T exchange(Class<T> t, String uri, HttpMethod method,
+                          Object obj) {
+        HttpEntity entity = null;
+        try {
+            entity = Objects.isNull(obj) ?
+                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
 
         ResponseBodyWrapper response = getRestTemplate().exchange(
                 uri,
@@ -109,5 +122,13 @@ public class RestTemplateProxy {
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
                     GenericException.createDefaultData(e.getMessage()));
         }
+    }
+
+    private HttpEntity<String> getHttpEntity(String requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        return new HttpEntity<String>(requestBody, headers);
     }
 }

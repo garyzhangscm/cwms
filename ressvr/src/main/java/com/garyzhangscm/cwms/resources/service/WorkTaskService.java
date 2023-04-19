@@ -503,6 +503,24 @@ public class WorkTaskService{
         return saveOrUpdate(workTask);
     }
 
+    /**
+     * Assign the user to the work task
+     * @param workTaskId
+     * @param warehouseId
+     * @return
+     */
+    public WorkTask unassignUser(Long workTaskId, Long warehouseId) {
+        WorkTask workTask = findById(workTaskId);
+
+        if (WorkTaskStatus.WORKING.equals(workTask.getStatus())) {
+            throw RequestValidationFailException.raiseException(
+                    "someone is working on the work task " + workTask.getNumber());
+        }
+
+        workTask.setAssignedUser(null);
+
+        return saveOrUpdate(workTask);
+    }
 
     /**
      * Assign the role to the work task
@@ -513,10 +531,16 @@ public class WorkTaskService{
      */
     public WorkTask assignRole(Long workTaskId, Long warehouseId, Long roleId) {
         WorkTask workTask = findById(workTaskId);
-        if (!WorkTaskStatus.RELEASED.equals(workTask.getStatus())) {
+
+        if (WorkTaskStatus.WORKING.equals(workTask.getStatus())) {
             throw RequestValidationFailException.raiseException(
-                    "work task " + workTask.getNumber() + " is not in RELEASED status");
+                    "someone is working on the work task " + workTask.getNumber());
         }
+        else if (WorkTaskStatus.COMPLETE.equals(workTask.getStatus())) {
+            throw RequestValidationFailException.raiseException(
+                    "work task " + workTask.getNumber() + " is already completed!");
+        }
+
         Role role = roleService.findById(roleId);
 
         // first of all, make sure the role has the right to perform the work task
@@ -536,6 +560,28 @@ public class WorkTaskService{
         workTask.setAssignedWorkingTeam(null);
 
         return saveOrUpdate(workTask);
+    }
+
+
+    /**
+     * Assign the role to the work task
+     * @param workTaskId
+     * @param warehouseId
+     * @return
+     */
+    public WorkTask unassignRole(Long workTaskId, Long warehouseId) {
+        WorkTask workTask = findById(workTaskId);
+
+
+        if (WorkTaskStatus.WORKING.equals(workTask.getStatus())) {
+            throw RequestValidationFailException.raiseException(
+                    "someone is working on the work task " + workTask.getNumber());
+        }
+
+        workTask.setAssignedRole(null);
+
+        return saveOrUpdate(workTask);
+
     }
 
     /**
