@@ -489,11 +489,11 @@ public class WorkTaskService{
             logger.debug("The user {} doesn't have right to do the work task {} / {}",
                     user.getUsername(),
                     workTask.getNumber(),
-                    workTask.getOperationType());
+                    workTask.getOperationType().getName());
 
             throw RequestValidationFailException.raiseException(
                     "The user " + user.getUsername() +  " doesn't have right to do the work task " +
-                            workTask.getNumber() + " / " +  workTask.getOperationType());
+                            workTask.getNumber() + " / " +  workTask.getOperationType().getName());
         }
 
         workTask.setAssignedUser(user);
@@ -524,11 +524,11 @@ public class WorkTaskService{
             logger.debug("The role {} doesn't have right to do the work task {} / {}",
                     role.getName(),
                     workTask.getNumber(),
-                    workTask.getOperationType());
+                    workTask.getOperationType().getName());
 
             throw RequestValidationFailException.raiseException(
                     "The role " + role.getName() +  " doesn't have right to do the work task " +
-                            workTask.getNumber() + " / " +  workTask.getOperationType());
+                            workTask.getNumber() + " / " +  workTask.getOperationType().getName());
         }
 
         workTask.setAssignedUser(null);
