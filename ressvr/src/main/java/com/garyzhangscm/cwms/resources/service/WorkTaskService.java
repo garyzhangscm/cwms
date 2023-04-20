@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import java.time.ZonedDateTime;
@@ -297,7 +298,10 @@ public class WorkTaskService{
         return newWorkTask;
     }
 
-    private WorkTask releaseWorkTask(WorkTask workTask) {
+    public WorkTask releaseWorkTask(Long workTaskId) {
+        return releaseWorkTask(findById(workTaskId));
+    }
+    public WorkTask releaseWorkTask(WorkTask workTask) {
         // let's see if we have the work task configuration setup for this work task
 
         WorkTaskConfiguration workTaskConfiguration =
@@ -638,8 +642,18 @@ public class WorkTaskService{
                 null,
                 null);
 
+        logger.debug("get {} works that is in released status, let's see if they can be assigned to the user {}",
+                workTasks.size(),
+                user.getUsername());
         return workTasks.stream().filter(
-                workTask -> canAcknowledge(workTask, user)
+                workTask -> {
+                    boolean userCanAcknowledge = canAcknowledge(workTask, user);
+                    logger.debug("user {} can acknowledge task {}? {}",
+                            user.getUsername(),
+                            workTask.getNumber(),
+                            userCanAcknowledge);
+                    return  userCanAcknowledge;
+                }
         ).sorted(Comparator.comparing(WorkTask::getPriority)).collect(Collectors.toList());
     }
 
@@ -649,7 +663,9 @@ public class WorkTaskService{
      * @param currentLocationId
      * @return
      */
-    public WorkTask getNextWorkTask(Long warehouseId, Long currentLocationId, String rfCode) {
+    public synchronized WorkTask getNextWorkTask(Long warehouseId, Long currentLocationId,
+                                    String rfCode,
+                                    Boolean acknowledge, String username) {
         Warehouse warehouse = layoutServiceRestemplateClient.getWarehouseById(warehouseId);
 
         Location location = null;
@@ -668,8 +684,27 @@ public class WorkTaskService{
 
             }
         }
-        User user = userService.getCurrentUser(warehouse.getCompanyId());
-        return getNextWorkTask(warehouseId, user, location);
+        User user = null;
+        if (Strings.isNotBlank(username)) {
+            user = userService.findByUsername(warehouse.getCompanyId(), username, false);
+        }
+        else {
+            user = userService.getCurrentUser(warehouse.getCompanyId());
+
+        }
+        logger.debug("start to get the best next work for user {}, from the current location {}",
+                user.getUsername(),
+                Objects.isNull(location) ? "N/A" : location.getName());
+        WorkTask workTask = getNextWorkTask(warehouseId, user, location);
+
+        if (Objects.nonNull(workTask) && Boolean.TRUE.equals(acknowledge)) {
+            logger.debug("we will acknowledge the work task {} when return it to the user {}",
+                    workTask.getNumber(),
+                    user.getUsername());
+            acknowledgeWorkTask(warehouse, workTask, rfCode, user);
+        }
+        return workTask;
+
     }
 
     /**
@@ -694,11 +729,22 @@ public class WorkTaskService{
         // first of all, get all the valid work tasks that can be assigned to the user
         List<WorkTask> workTasks = getOpenWorkTaskForAcknowledge(warehouseId, user);
 
+        logger.debug("we get {} work tasks for the user {}",
+                workTasks.size(),
+                user.getUsername());
+
+
         // sort the work task by priority,
         // if both task has the same priority, then sort by distance between
         // the current location and the work's source location
         Collections.sort(
                 workTasks, (a, b) -> {
+
+                    // if the work task already skipped, then it will be added
+                    // to the back of the available works
+                    if (!a.getSkipCount().equals(b.getSkipCount())) {
+                        return a.getSkipCount().compareTo(b.getSkipCount());
+                    }
 
                     // if priority is not the same, sort by priority
                     if (!a.getPriority().equals(b.getPriority())) {
@@ -720,6 +766,7 @@ public class WorkTaskService{
         if (Objects.isNull(workTasks) || workTasks.isEmpty()) {
             return null;
         }
+        logger.debug("let's return first work task from the list, after sort by priority and proximity");
         return workTasks.get(0);
 
     }
@@ -754,10 +801,24 @@ public class WorkTaskService{
      * @param rfCode
      * @return
      */
-    public synchronized WorkTask acknowledgeWorkTask(Long warehouseId, Long id, String rfCode){
+    public synchronized WorkTask acknowledgeWorkTask(Long warehouseId, Long id,
+                                                     String rfCode, String username){
         WorkTask workTask = findById(id);
         Warehouse warehouse = layoutServiceRestemplateClient.getWarehouseById(warehouseId);
-        User user = userService.getCurrentUser(warehouse.getCompanyId());
+
+        User user = null;
+        if (Strings.isNotBlank(username)) {
+            user = userService.findByUsername(warehouse.getCompanyId(),
+                    username, false);
+        }
+        else {
+            user = userService.getCurrentUser(warehouse.getCompanyId());
+        }
+
+        return acknowledgeWorkTask(warehouse, workTask, rfCode, user);
+    }
+    public synchronized WorkTask acknowledgeWorkTask(Warehouse warehouse, WorkTask workTask,
+                                                     String rfCode, User user){
 
         if (!canAcknowledge(workTask, user)) {
             throw RequestValidationFailException.raiseException(
@@ -767,7 +828,7 @@ public class WorkTaskService{
 
         // reset the RF's current location according to the work task's source location
         // as the user start to process the work task by the RF
-        rfService.resetCurrentLocation(warehouseId, rfCode, workTask.getSourceLocationId());
+        rfService.resetCurrentLocation(warehouse.getId(), rfCode, workTask.getSourceLocationId());
 
         workTask.setStatus(WorkTaskStatus.WORKING);
         workTask.setCurrentUser(user);
@@ -786,6 +847,51 @@ public class WorkTaskService{
             workTask.setStatus(WorkTaskStatus.RELEASED);
             workTask.setCurrentUser(null);
             workTask.setStartTime(null);
+        }
+        return saveOrUpdate(workTask);
+    }
+
+    /**
+     * Complete the work task
+     * @param id
+     * @param warehouseId
+     * @return
+     */
+    public WorkTask completeWorkTask(Long id, Long warehouseId,
+                                     String username) {
+        if (Strings.isBlank(username)) {
+            username = userService.getCurrentUserName();
+        }
+        User user = null;
+        Warehouse warehouse = layoutServiceRestemplateClient.getWarehouseById(warehouseId);
+
+        if (Strings.isNotBlank(username)) {
+            user = userService.findByUsername(warehouse.getCompanyId(), username, false);
+        }
+        WorkTask workTask = findById(id);
+        workTask.setStatus(WorkTaskStatus.COMPLETE);
+        workTask.setCompleteTime(ZonedDateTime.now());
+        if (Objects.nonNull(user)) {
+            workTask.setCompleteUser(user);
+        }
+
+        return saveOrUpdate(workTask);
+    }
+
+    public WorkTask unacknowledgeWorkTask(Long id, Boolean skip) {
+        WorkTask workTask = findById(id);
+
+        workTask.setStatus(WorkTaskStatus.RELEASED);
+        workTask.setCurrentUser(null);
+        workTask.setStartTime(null);
+        // if the user explicitly state that the user needs to skip the
+        // current work task, then we will increase the skip count so that
+        // the work task will be put back to the back end of the list
+        if (Boolean.TRUE.equals(skip)) {
+
+            workTask.setSkipCount(
+                    Objects.nonNull(workTask.getSkipCount()) ? 0 : workTask.getSkipCount()
+                            + 1);
         }
         return saveOrUpdate(workTask);
     }

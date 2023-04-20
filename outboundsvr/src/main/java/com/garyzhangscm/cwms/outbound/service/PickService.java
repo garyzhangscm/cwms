@@ -687,6 +687,15 @@ public class PickService {
             // We can find the history in the cancelled pick table
             logger.debug("Remove the pick as there's nothing left for this pick {}", pick.getNumber());
             delete(pick);
+
+            // when we remove the pick, we may need to remove the work task, if there's any
+            if (Objects.nonNull(pick.getWorkTaskId())) {
+                resourceServiceRestemplateClient.cancelWorkTaskById(
+                        pick.getWarehouseId(),
+                        pick.getWorkTaskId()
+                );
+            }
+
             return pick;
         }
         else {
@@ -1418,6 +1427,13 @@ public class PickService {
         Pick newPick = findById(pick.getId());
         orderActivity.setQuantityByNewPick(newPick);
         orderActivityService.saveOrderActivity(orderActivity);
+        // if the pick work is fully picked and there's work task attached to it,
+        // let's complete the work task
+        if (newPick.getQuantity().equals(newPick.getPickedQuantity()) &&
+            Objects.nonNull(newPick.getWorkTaskId())) {
+            resourceServiceRestemplateClient.completeWorkTask(
+                    newPick.getWarehouseId(), newPick.getWorkTaskId());
+        }
         return newPick;
 
     }

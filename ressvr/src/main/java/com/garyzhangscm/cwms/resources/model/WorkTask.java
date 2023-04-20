@@ -40,6 +40,9 @@ public class WorkTask extends AuditibleEntity<String> {
     @Column(name = "priority")
     private Integer priority;
 
+    @Column(name = "skip_count")
+    private Integer skipCount = 0;
+
     @Column(name = "source_location_id")
     private Long sourceLocationId;
     @Transient
@@ -260,5 +263,13 @@ public class WorkTask extends AuditibleEntity<String> {
 
     public void setCompleteTime(ZonedDateTime completeTime) {
         this.completeTime = completeTime;
+    }
+
+    public Integer getSkipCount() {
+        return skipCount;
+    }
+
+    public void setSkipCount(Integer skipCount) {
+        this.skipCount = skipCount;
     }
 }

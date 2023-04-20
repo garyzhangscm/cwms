@@ -2090,5 +2090,7 @@
   "destinationLocationGroupType": "Destination Location Group Type",
   "workTaskType": "Work Task Type",
   "assign-operation-type": "Assign Operation Type",
-  "release": "Release"
+  "release": "Release",
+  "deassign-user":"Deassign User",
+  "deassign-user":"Deassign User"
 }
