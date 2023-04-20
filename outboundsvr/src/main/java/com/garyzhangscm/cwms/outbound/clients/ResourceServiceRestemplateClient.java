@@ -220,7 +220,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/work-tasks/{id}")
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<WorkTask> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.buildAndExpand(workTaskId).toUriString(),
@@ -229,9 +229,47 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
+
+    public WorkTask cancelWorkTaskById(Long warehouseId, Long workTaskId)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks/{id}")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.DELETE,
+                null
+        );
+
+    }
+    public WorkTask completeWorkTask(Long warehouseId, Long workTaskId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/work-tasks/{id}/complete")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                WorkTask.class,
+                builder.buildAndExpand(workTaskId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
 
     public WorkTask assingUser(Long warehouseId, Long workTaskId, Long userId)  {
 

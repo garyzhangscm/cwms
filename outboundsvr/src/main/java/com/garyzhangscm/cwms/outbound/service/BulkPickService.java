@@ -776,6 +776,14 @@ public class BulkPickService {
                 );
             }
         }
+        // if there's already a work task released for this bulk pick, then
+        // remove the work task as well
+        if (Objects.nonNull(bulkPick.getWorkTaskId())) {
+            resourceServiceRestemplateClient.cancelWorkTaskById(
+                    bulkPick.getWarehouseId(),
+                    bulkPick.getWorkTaskId()
+            );
+        }
 
         delete(bulkPick);
     }

@@ -151,11 +151,24 @@ public class WorkTaskController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/complete", method = RequestMethod.POST)
+    public WorkTask completeWorkTask(@PathVariable Long id,
+                                     @RequestParam(name = "username", required = false, defaultValue = "") String username,
+                                    @RequestParam Long warehouseId) {
+        return workTaskService.completeWorkTask(id, warehouseId, username);
+    }
+
+
+    @BillableEndpoint
     @RequestMapping(value="/work-tasks/next-work-task", method = RequestMethod.GET)
     public WorkTask getNextWorkTask(@RequestParam Long warehouseId,
                                     @RequestParam(name = "currentLocationId", required = false, defaultValue = "") Long currentLocationId,
-                                    @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
-        return workTaskService.getNextWorkTask(warehouseId, currentLocationId, rfCode);
+                                    @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode,
+                                    // whether we acknowledge it with the current user automatically
+                                    @RequestParam(name = "acknowledge", required = false, defaultValue = "true") Boolean acknowledge,
+                                    @RequestParam(name = "username", required = false, defaultValue = "") String username) {
+        return workTaskService.getNextWorkTask(warehouseId, currentLocationId, rfCode,
+                acknowledge, username);
     }
 
     @BillableEndpoint
@@ -163,8 +176,18 @@ public class WorkTaskController {
     public WorkTask acknowledgeWorkTask(
             @PathVariable Long id,
             @RequestParam Long warehouseId,
-            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
-        return workTaskService.acknowledgeWorkTask(warehouseId, id, rfCode);
+            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode,
+            @RequestParam(name = "username", required = false, defaultValue = "") String username) {
+        return workTaskService.acknowledgeWorkTask(warehouseId, id, rfCode, username);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/unacknowledge", method = RequestMethod.POST)
+    public WorkTask unacknowledgeWorkTask(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "skip", required = false, defaultValue = "false") Boolean skip) {
+        return workTaskService.unacknowledgeWorkTask(id, skip);
     }
 
     @BillableEndpoint
@@ -173,6 +196,14 @@ public class WorkTaskController {
             @PathVariable Long id,
             @RequestParam Long warehouseId) {
         return workTaskService.resetWorkTaskStatus(warehouseId, id);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-tasks/{id}/release", method = RequestMethod.POST)
+    public WorkTask releaseWorkTask(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        return workTaskService.releaseWorkTask(id);
     }
 
 }
