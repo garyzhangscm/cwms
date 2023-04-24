@@ -120,6 +120,8 @@ public class WorkTaskService{
                     if (StringUtils.isNotBlank(type)) {
                         predicates.add(criteriaBuilder.equal(root.get("type"), WorkTaskType.valueOf(type)));
                     }
+                    logger.debug("we will return the work tasks with status {}",
+                            Strings.isNotBlank(status) ? status : "N/A");
                     if (StringUtils.isNotBlank(status)) {
                         predicates.add(criteriaBuilder.equal(root.get("status"), WorkTaskStatus.valueOf(status)));
                     }
@@ -321,7 +323,10 @@ public class WorkTaskService{
                 logger.debug(">> fail to get priority");
                 return workTask;
             }
-            workTask.setStatus(WorkTaskStatus.RELEASED);
+            if (!workTask.getStatus().equals(WorkTaskStatus.COMPLETE)) {
+
+                workTask.setStatus(WorkTaskStatus.RELEASED);
+            }
             workTask.setPriority(priority);
             workTask.setOperationType(workTaskConfiguration.getOperationType());
             return saveOrUpdate(workTask);
@@ -740,6 +745,16 @@ public class WorkTaskService{
         Collections.sort(
                 workTasks, (a, b) -> {
 
+                    // if the work task is assigned to the current user, then we will always return
+                    // the work task first
+                    if (Objects.equals(a.getAssignedUser(), user)) {
+                        return -1;
+                    }
+                    else if (Objects.equals(b.getAssignedUser(),user)) {
+                        return 1;
+                    }
+
+
                     // if the work task already skipped, then it will be added
                     // to the back of the available works
                     if (!a.getSkipCount().equals(b.getSkipCount())) {
@@ -881,17 +896,27 @@ public class WorkTaskService{
     public WorkTask unacknowledgeWorkTask(Long id, Boolean skip) {
         WorkTask workTask = findById(id);
 
-        workTask.setStatus(WorkTaskStatus.RELEASED);
+        if (!workTask.getStatus().equals(WorkTaskStatus.COMPLETE)) {
+
+            workTask.setStatus(WorkTaskStatus.RELEASED);
+        }
         workTask.setCurrentUser(null);
         workTask.setStartTime(null);
+
+        logger.debug("we will reset the work task's status to RELEASE");
+        logger.debug("Skip the current work task {}? {}",
+                workTask.getNumber(), skip);
         // if the user explicitly state that the user needs to skip the
         // current work task, then we will increase the skip count so that
         // the work task will be put back to the back end of the list
         if (Boolean.TRUE.equals(skip)) {
 
+            logger.debug("Skip current work task and add the skip count by 1");
             workTask.setSkipCount(
-                    Objects.nonNull(workTask.getSkipCount()) ? 0 : workTask.getSkipCount()
+                    Objects.isNull(workTask.getSkipCount()) ? 0 : workTask.getSkipCount()
                             + 1);
+            logger.debug("Work task's new skip count is {}",
+                    workTask.getSkipCount());
         }
         return saveOrUpdate(workTask);
     }

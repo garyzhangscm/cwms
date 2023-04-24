@@ -675,9 +675,10 @@ public class InventoryServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/process-bulk-pick")
                         .queryParam("warehouseId", bulkPick.getWarehouseId())
-                        .queryParam("nextLocation", nextLocation.getId())
+                        .queryParam("nextLocationId", nextLocation.getId())
                         .queryParam("lpn", lpn);
 
+        /**
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                 = null;
         try {
@@ -691,6 +692,14 @@ public class InventoryServiceRestemplateClient {
         }
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchangeWithList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                bulkPick
+        );
     }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
