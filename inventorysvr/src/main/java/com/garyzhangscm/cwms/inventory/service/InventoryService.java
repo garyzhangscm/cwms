@@ -970,8 +970,11 @@ public class InventoryService {
     private Inventory convertFromWrapper(Long warehouseId,
                                          InventoryCSVWrapper inventoryCSVWrapper) {
         Inventory inventory = new Inventory();
+
         if (Strings.isBlank(inventoryCSVWrapper.getLpn())) {
             inventory.setLpn(commonServiceRestemplateClient.getNextLpn(warehouseId));
+            logger.debug("LPN is not passed in, use the system generated value: {}",
+                    inventory.getLpn());
         }
         else {
 
@@ -1803,6 +1806,11 @@ public class InventoryService {
         logger.debug("Start to add inventory with LPN {}",
                 Strings.isBlank(inventory.getLpn()) ? "N/A" : inventory.getLpn());
         // if inventory's LPN is not setup, get next LPN for it
+        // setup the inventory's client id necessary
+        if (Objects.nonNull(inventory.getItem().getClientId()) &&
+                Objects.isNull(inventory.getClientId())) {
+            inventory.setClientId(inventory.getItem().getClientId());
+        }
         if (Strings.isBlank(inventory.getLpn())) {
 
             inventory.setLpn(
@@ -3101,6 +3109,7 @@ public class InventoryService {
 
                     // we are half way through creating the inventory
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.5));
+
 
                     addInventory(username, inventory,
                             InventoryQuantityChangeType.INVENTORY_UPLOAD,

@@ -458,12 +458,21 @@ public class BulkPickService {
                     );
                 }
         );
+        logger.debug("we will bulk pick from the inventory candidate");
+        lpnWithQuantityMap.entrySet().forEach(
+                entry -> logger.debug("lpn: {}, quantity: {}",
+                        entry.getKey(), entry.getValue())
+        );
         // a temp container to temporary hold the picks for bulk
         List<Pick> picksForCurrentBulkGroup = new ArrayList<>();
         Long totalPickQuantity = 0l;
         for (Pick pick : pickCandidates) {
             totalPickQuantity += pick.getQuantity();
             picksForCurrentBulkGroup.add(pick);
+            logger.debug("start to process pick {} for bulk pick",
+                    pick.getNumber());
+            logger.debug("after adding current pick's quantity {}, the total quantity is {}",
+                    pick.getQuantity(), totalPickQuantity);
 
             // see if we have any LPN that has enough quantity
             // 1. exact match
@@ -476,11 +485,21 @@ public class BulkPickService {
                     break;
                 }
             }
+
+            logger.debug("Do have find an exact match with quantity {}? {}",
+                    totalPickQuantity,
+                    Strings.isBlank(matchedLPN) ? "N/A" : matchedLPN);
+
             if (Strings.isBlank(matchedLPN)) {
                 // no exact match, get LPN
                 for(Map.Entry<String, Long> lpnWithQuantityEntry : lpnWithQuantityMap.entrySet()) {
                     if (lpnWithQuantityEntry.getValue() < totalPickQuantity) {
                         matchedLPN = lpnWithQuantityEntry.getKey();
+
+                        logger.debug("we found a LPN that has more quantity ({}) than the required quantity {}? {}",
+                                lpnWithQuantityEntry.getValue(),
+                                totalPickQuantity,
+                                matchedLPN);
                         break;
                     }
                 }
@@ -513,6 +532,10 @@ public class BulkPickService {
                 // clear the pick list
                 totalPickQuantity = 0l;
                 picksForCurrentBulkGroup = new ArrayList<>();
+
+                // once we found the match, let's remove the LPN from the map so that the remaining
+                // picks will only look at the remaining LPNs
+                lpnWithQuantityMap.remove(matchedLPN);
             }
             else if (totalPickQuantity > lpnQuantity){
                 // OK, we found a LPN for all the picks in the list
@@ -544,6 +567,10 @@ public class BulkPickService {
                 totalPickQuantity = newPick.getQuantity();
                 picksForCurrentBulkGroup = new ArrayList<>();
                 picksForCurrentBulkGroup.add(newPick);
+
+                // once we found the match, let's remove the LPN from the map so that the remaining
+                // picks will only look at the remaining LPNs
+                lpnWithQuantityMap.remove(matchedLPN);
             }
 
         }
@@ -935,6 +962,12 @@ public class BulkPickService {
                 bulkPick.getWarehouseId(), newBulkPick, OrderActivityType.BULK_PICK_CONFIRM
         );
         orderActivityService.saveOrderActivity(orderActivity);
+        // complete the work task if any
+        if (Objects.nonNull(bulkPick.getWorkTaskId())) {
+            resourceServiceRestemplateClient.completeWorkTask(
+                    bulkPick.getWarehouseId(), bulkPick.getWorkTaskId()
+            );
+        }
         return newBulkPick;
 
     }
