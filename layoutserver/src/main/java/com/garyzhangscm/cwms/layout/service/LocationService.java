@@ -386,9 +386,10 @@ public class LocationService {
         location.setCountSequence(locationCSVWrapper.getCountSequence());
         location.setCapacity(locationCSVWrapper.getCapacity());
         location.setFillPercentage(locationCSVWrapper.getFillPercentage());
+
         location.setEnabled(
-                Strings.isBlank(locationCSVWrapper.getEnabled()) ? false :
-                    locationCSVWrapper.getEnabled().equals("1") || locationCSVWrapper.getEnabled().equalsIgnoreCase("true") ?
+                Strings.isBlank(locationCSVWrapper.getEnabled()) ? true :
+                    locationCSVWrapper.getEnabled().trim().equals("1") || locationCSVWrapper.getEnabled().trim().equalsIgnoreCase("true") ?
                             true : false
                 );
         location.setCurrentVolume(0.0);

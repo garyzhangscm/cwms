@@ -93,8 +93,11 @@ public class ClientService implements  TestDataInitiableService{
                         predicate = criteriaBuilder.and(predicate,criteriaBuilder.isNull(root.get("warehouseId")));
                     }
 
-                    // special handling for client id
 
+                    return addClientRestriction(predicate, clientRestriction,
+                            root, criteriaBuilder);
+                    // special handling for client id
+/**
                     // if there's no restriction for the client id, or it is not a 3pl environment,
                     // then put NO restriction on the query
                     if (Objects.isNull(clientRestriction) ||
@@ -117,7 +120,7 @@ public class ClientService implements  TestDataInitiableService{
                         }
                         return criteriaBuilder.and(predicate, criteriaBuilder.and(inClientIds));
                     }
-
+**/
 
                 }
                 ,
@@ -130,6 +133,53 @@ public class ClientService implements  TestDataInitiableService{
             removeDuplicatedRecords(clients);
         }
         return clients;
+    }
+
+    private Predicate addClientRestriction(Predicate predicate,
+                                           ClientRestriction clientRestriction,
+                                           Root<Client> root,
+                                           CriteriaBuilder criteriaBuilder) {
+        if (Objects.isNull(clientRestriction) ||
+                !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
+                Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
+            // not a 3pl warehouse, let's not put any restriction on the client
+            // (unless the client restriction is from the web request, which we already
+            // handled previously
+            return predicate;
+        }
+
+
+        // build the accessible client list predicated based on the
+        // client ID that the user has access
+        Predicate accessibleClientListPredicate;
+        if (clientRestriction.getClientAccesses().trim().isEmpty()) {
+            // the user can't access any client, then the user
+            // can only access the non 3pl data
+            accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+        }
+        else {
+            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+            for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
+                inClientIds.value(Long.parseLong(id));
+            }
+            accessibleClientListPredicate = criteriaBuilder.and(inClientIds);
+        }
+
+        if (Boolean.TRUE.equals(clientRestriction.getNonClientDataAccessible())) {
+            // the user can access the non 3pl data
+            return criteriaBuilder.and(predicate,
+                    criteriaBuilder.or(
+                            criteriaBuilder.isNull(root.get("clientId")),
+                            accessibleClientListPredicate));
+        }
+        else {
+
+            // the user can NOT access the non 3pl data
+            return criteriaBuilder.and(predicate,
+                    criteriaBuilder.and(
+                            criteriaBuilder.isNotNull(root.get("clientId")),
+                            accessibleClientListPredicate));
+        }
     }
     /**
      * Remove teh duplicated clients record. If we have 2 record with the same clients name

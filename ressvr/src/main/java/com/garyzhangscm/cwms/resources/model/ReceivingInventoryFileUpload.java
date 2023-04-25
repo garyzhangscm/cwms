@@ -36,7 +36,7 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "itemPackageType", "Item Package Type",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
 
@@ -50,7 +50,7 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(

@@ -1,7 +1,6 @@
-package com.garyzhangscm.cwms.resources;
+package com.garyzhangscm.cwms.adminserver;
 
-
-import com.garyzhangscm.cwms.resources.usercontext.UserContextInterceptor;
+import com.garyzhangscm.cwms.adminserver.usercontext.UserContextInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
