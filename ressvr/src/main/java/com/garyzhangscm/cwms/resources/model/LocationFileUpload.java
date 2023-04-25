@@ -101,7 +101,7 @@ public class LocationFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "enabled",  "Location is enabled or not",
-                Boolean.class, 100, false
+                Boolean.class, 100, true
         ));
     }
 

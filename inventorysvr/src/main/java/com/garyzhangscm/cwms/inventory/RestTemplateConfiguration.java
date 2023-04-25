@@ -33,7 +33,7 @@ public class RestTemplateConfiguration {
     // to initiate the http request
     @Bean
     @Qualifier("autoLoginRestTemplate")
-    public RestTemplate restTemplate() {
+    public RestTemplate autoLoginRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.setInterceptors(

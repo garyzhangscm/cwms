@@ -67,6 +67,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public Role disableRole(@PathVariable Long id) {
@@ -79,6 +88,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public Role enableRole(@PathVariable Long id) {
@@ -99,6 +117,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public ResponseBodyWrapper processMenus(@PathVariable Long id,
@@ -123,6 +150,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public ResponseBodyWrapper processOperationTypes(
@@ -145,6 +181,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public ResponseBodyWrapper processUsers(@PathVariable Long id,
@@ -161,6 +206,15 @@ public class RoleController {
             evict = {
                     @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
             }
     )
     public ResponseBodyWrapper processClients(@PathVariable Long id,
@@ -176,6 +230,21 @@ public class RoleController {
 
 
     @RequestMapping(value="/roles/{id}/permissions", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "CommonService_Role", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Role", allEntries = true),
+                    // Note: every time we changed a role, we will need to evict the user
+                    // cache as well since the user may have the role cached as well
+                    @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
+                    @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "ZuulService_isSystemAdmin", allEntries = true),
+            }
+    )
     public List<RolePermission> processPermissions(@PathVariable Long id,
                                                    @RequestParam Long companyId,
                                                    @RequestParam Long warehouseId,

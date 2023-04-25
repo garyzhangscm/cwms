@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.garyzhangscm.cwms.adminserver.usercontext.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -23,6 +24,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.*;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -31,6 +33,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 
 @SpringBootApplication
@@ -94,9 +97,7 @@ public class AdminserverApplication {
     public RestTemplate noTokenRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate;
-    }
-
-
+    } 
 
     @LoadBalanced
     @Bean
