@@ -14,6 +14,11 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
     private void setupColumns() {
 
         addColumn(new FileUploadTemplateColumn(
+                "client", "client",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
                 "receipt", "Receipt Number",
                 String.class, 100, false
         ));
@@ -21,7 +26,7 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "lpn", "LPN",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
