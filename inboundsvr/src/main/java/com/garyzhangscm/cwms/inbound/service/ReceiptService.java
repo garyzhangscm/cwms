@@ -1436,15 +1436,17 @@ public class ReceiptService {
                     // let's get the receipt and reciept line
                     // make sure all the necessary data exists
                     logger.debug("start to process inventory {}", inventoryCSVWrapper);
-
-                    // first make sure the LPN is a new LPN
-                    // validateNewLPN will return the error message if the LPN is not a new LPN
-                    String validateNewLPNResult = inventoryServiceRestemplateClient.validateNewLPN(warehouseId, inventoryCSVWrapper.getLpn());
-                    if (Strings.isNotBlank(validateNewLPNResult)) {
-                        throw ReceiptOperationException.raiseException(
-                                "can't receiving into an existing LPN " + inventoryCSVWrapper.getLpn()
-                                        + ", skip current line");
+                    if (Strings.isNotBlank(inventoryCSVWrapper.getLpn())) {
+                        // first make sure the LPN is a new LPN
+                        // validateNewLPN will return the error message if the LPN is not a new LPN
+                        String validateNewLPNResult = inventoryServiceRestemplateClient.validateNewLPN(warehouseId, inventoryCSVWrapper.getLpn());
+                        if (Strings.isNotBlank(validateNewLPNResult)) {
+                            throw ReceiptOperationException.raiseException(
+                                    "can't receiving into an existing LPN " + inventoryCSVWrapper.getLpn()
+                                            + ", skip current line");
+                        }
                     }
+
 
                     Client client = null;
                     if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
@@ -1471,6 +1473,13 @@ public class ReceiptService {
                             Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getReceipt());
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.4));
 
+                    if (Objects.isNull(receipt)) {
+                        throw ReceiptOperationException.raiseException(
+                                "can't find receipt by name " + inventoryCSVWrapper.getReceipt() +
+                                        (Objects.isNull(client) ?
+                                                ", without client " : ", for client " + client.getName())
+                                        + ", skip current line");
+                    }
                     logger.debug("got receipt by number {}", receipt.getNumber());
                     // get the first matched line that has enough open quantity
                     Optional<ReceiptLine> matchedReceiptLineOptional = receipt.getReceiptLines().stream().filter(
