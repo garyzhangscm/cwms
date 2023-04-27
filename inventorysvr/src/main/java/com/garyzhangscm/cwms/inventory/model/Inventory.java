@@ -19,10 +19,13 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -146,6 +150,12 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private String style;
 
 
+    // date used when we will need to sort the inventory based on fifo
+    @Column(name = "fifo_date")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime fifoDate;
 
     @OneToMany(
             mappedBy = "inventory",
@@ -205,6 +215,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setColor(getColor());
         inventory.setProductSize(getProductSize());
         inventory.setColor(getColor());
+        inventory.setFifoDate(getFifoDate());
 
         setQuantity(getQuantity() - newQuantity);
 
@@ -495,6 +506,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setCreateInventoryTransactionId(Long createInventoryTransactionId) {
         this.createInventoryTransactionId = createInventoryTransactionId;
+    }
+
+    public ZonedDateTime getFifoDate() {
+        return fifoDate;
+    }
+
+    public void setFifoDate(ZonedDateTime fifoDate) {
+        this.fifoDate = fifoDate;
     }
 
     public Boolean getInboundQCRequired() {

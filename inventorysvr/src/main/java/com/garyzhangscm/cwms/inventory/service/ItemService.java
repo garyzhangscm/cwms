@@ -1320,6 +1320,9 @@ public class ItemService {
         fileUploadResultsMap.put(fileUploadProgressKey, new ArrayList<>());
 
         List<ItemCSVWrapper> itemCSVWrappers = loadData(file);
+        itemCSVWrappers.forEach(
+                itemCSVWrapper -> itemCSVWrapper.trim()
+        );
 
         fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
 

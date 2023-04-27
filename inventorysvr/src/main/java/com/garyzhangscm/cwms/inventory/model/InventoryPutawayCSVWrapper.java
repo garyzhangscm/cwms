@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.Serializable;
 
@@ -46,6 +47,30 @@ public class InventoryPutawayCSVWrapper implements Serializable {
 
     private String destinationLocation;
 
+    public InventoryPutawayCSVWrapper trim() {
+
+        client = Strings.isBlank(client) ? "" :  client.trim();
+
+        lpn = Strings.isBlank(lpn) ? "" :  lpn.trim();
+
+        location = Strings.isBlank(location) ? "" :  location.trim();
+
+        item = Strings.isBlank(item) ? "" :  item.trim();
+
+        itemPackageType = Strings.isBlank(itemPackageType) ? "" :  itemPackageType.trim();
+
+        unitOfMeasure = Strings.isBlank(unitOfMeasure) ? "" :  unitOfMeasure.trim();
+
+        inventoryStatus = Strings.isBlank(inventoryStatus) ? "" :  inventoryStatus.trim();
+
+        color = Strings.isBlank(color) ? "" :  color.trim();
+        productSize = Strings.isBlank(productSize) ? "" :  productSize.trim();
+        style = Strings.isBlank(style) ? "" :  style.trim();
+
+        destinationLocation = Strings.isBlank(destinationLocation) ? "" :  destinationLocation.trim();
+
+        return this;
+    }
     @Override
     public String toString() {
         try {

@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.Serializable;
 
@@ -62,6 +63,33 @@ public class ItemUnitOfMeasureCSVWrapper implements Serializable {
 
     private Double handlingRateByUnit;
 
+    public ItemUnitOfMeasureCSVWrapper trim() {
+
+        client = Strings.isBlank(client) ? "" : client.trim();
+        item = Strings.isBlank(item) ? "" : item.trim();
+        itemDescription = Strings.isBlank(itemDescription) ? "" : itemDescription.trim();
+        itemFamily = Strings.isBlank(itemFamily) ? "" : itemFamily.trim();
+        trackingColorFlag = Strings.isBlank(trackingColorFlag) ? "" : trackingColorFlag.trim();
+        defaultColor = Strings.isBlank(defaultColor) ? "" : defaultColor.trim();
+        trackingProductSizeFlag = Strings.isBlank(trackingProductSizeFlag) ? "" : trackingProductSizeFlag.trim();
+        defaultProductSize = Strings.isBlank(defaultProductSize) ? "" : defaultProductSize.trim();
+        trackingStyleFlag = Strings.isBlank(trackingStyleFlag) ? "" : trackingStyleFlag.trim();
+        defaultStyle = Strings.isBlank(defaultStyle) ? "" : defaultStyle.trim();
+
+        itemPackageType = Strings.isBlank(itemPackageType) ? "" : itemPackageType.trim();
+        itemPackageTypeDescription = Strings.isBlank(itemPackageTypeDescription) ? "" : itemPackageTypeDescription.trim();
+        defaultItemPackageType = Strings.isBlank(defaultItemPackageType) ? "" : defaultItemPackageType.trim();
+
+        unitOfMeasure = Strings.isBlank(unitOfMeasure) ? "" : unitOfMeasure.trim();
+
+        defaultForInboundReceiving = Strings.isBlank(defaultForInboundReceiving) ? "" : defaultForInboundReceiving.trim();
+        defaultForWorkOrderReceiving = Strings.isBlank(defaultForWorkOrderReceiving) ? "" : defaultForWorkOrderReceiving.trim();
+        trackingLpn = Strings.isBlank(trackingLpn) ? "" : trackingLpn.trim();
+        caseFlag = Strings.isBlank(caseFlag) ? "" : caseFlag.trim();
+        defaultForDisplay = Strings.isBlank(defaultForDisplay) ? "" : defaultForDisplay.trim();
+
+        return this;
+    }
 
     @Override
     public String toString() {

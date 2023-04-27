@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -70,6 +71,30 @@ public class ItemCSVWrapper implements Serializable {
     private Double shippingRateByUnit;
 
     private Double handlingRateByUnit;
+
+    public ItemCSVWrapper trim() {
+
+        name = Strings.isBlank(name) ? "" : name.trim();
+
+        description = Strings.isBlank(description) ? "" : description.trim();
+
+        client = Strings.isBlank(client) ? "" : client.trim();
+        itemFamily = Strings.isBlank(itemFamily) ? "" : itemFamily.trim();
+
+        allocationRoundUpStrategyType = Strings.isBlank(allocationRoundUpStrategyType) ? "" : allocationRoundUpStrategyType.trim();
+
+        defaultColor = Strings.isBlank(defaultColor) ? "" : defaultColor.trim();
+
+        defaultProductSize = Strings.isBlank(defaultProductSize) ? "" : defaultProductSize.trim();
+
+        defaultStyle = Strings.isBlank(defaultStyle) ? "" : defaultStyle.trim();
+
+        imageUrl = Strings.isBlank(imageUrl) ? "" : imageUrl.trim();
+
+        thumbnailUrl = Strings.isBlank(thumbnailUrl) ? "" : thumbnailUrl.trim();
+
+        return this;
+    }
 
     @Override
     public String toString() {

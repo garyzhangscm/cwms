@@ -18,16 +18,11 @@
 
 package com.garyzhangscm.cwms.inventory.repository;
 
-import com.garyzhangscm.cwms.inventory.model.CycleCountRequest;
-import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
 import com.garyzhangscm.cwms.inventory.model.InventoryConfiguration;
-import com.garyzhangscm.cwms.inventory.model.InventoryConfigurationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
 public interface InventoryConfigurationRepository extends JpaRepository<InventoryConfiguration, Long>, JpaSpecificationExecutor<InventoryConfiguration> {

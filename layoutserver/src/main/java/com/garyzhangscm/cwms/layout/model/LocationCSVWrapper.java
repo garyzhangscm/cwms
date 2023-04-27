@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.layout.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 public class LocationCSVWrapper {
 
@@ -49,6 +50,17 @@ public class LocationCSVWrapper {
     private String enabled;
 
 
+    public LocationCSVWrapper trim() {
+
+        name = Strings.isBlank(name) ? "" : name.trim();
+
+        aisle = Strings.isBlank(aisle) ? "" : aisle.trim();
+
+        locationGroup = Strings.isBlank(locationGroup) ? "" : locationGroup.trim();
+
+        enabled = Strings.isBlank(enabled) ? "" : enabled.trim();
+        return this;
+    }
     @Override
     public String toString() {
         try {

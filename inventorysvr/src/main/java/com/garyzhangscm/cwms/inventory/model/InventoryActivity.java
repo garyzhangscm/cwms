@@ -110,6 +110,12 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     private Warehouse warehouse;
 
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
     /**
      * Activity type: Movement / Adjustment / Receiving / Picking / etc
      */
@@ -169,6 +175,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
                              String documentNumber, String comment,
                              String rfCode) {
         setLpn(inventory.getLpn());
+        setClientId(inventory.getClientId());
         setTransactionId(transactionId);
         setTransactionGroupId(transactionGroupId);
         setLocationId(inventory.getLocationId());
@@ -403,5 +410,21 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
 
     public void setTransactionGroupId(String transactionGroupId) {
         this.transactionGroupId = transactionGroupId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -121,12 +120,13 @@ public class InventoryActivityService{
                                            String endDate,
                                            String date,
                                            String username,
-                                           String rfCode) {
+                                           String rfCode,
+                                           ClientRestriction clientRestriction) {
         return findAll(warehouseId, itemName, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, pickIds, lpn,
                 inventoryActivityType, beginDateTime, endDateTime,
                 beginDate, endDate, date, username,
-                rfCode, true);
+                rfCode, clientRestriction, true);
     }
 
 
@@ -149,11 +149,15 @@ public class InventoryActivityService{
                                            String date,
                                            String username,
                                            String rfCode,
+                                           ClientRestriction clientRestriction,
                                            boolean includeDetails) {
         List<InventoryActivity> inventoryActivities =  inventoryActivityRepository.findAll(
                 (Root<InventoryActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
                     criteriaQuery.distinct(true);
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
                     if (!StringUtils.isBlank(itemName) || !StringUtils.isBlank(clientIds)) {
                         Join<InventoryActivity, Item> joinItem = root.join("item", JoinType.INNER);
                         if (!itemName.isEmpty()) {
@@ -269,7 +273,16 @@ public class InventoryActivityService{
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                    root, criteriaBuilder);
+
+
                 }
         );
 

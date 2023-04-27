@@ -48,7 +48,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -420,8 +423,12 @@ public class InventoryService {
                     // special handling for 3pl
                     Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
 
-                    return addClientRestriction(predicate, clientRestriction,
-                            root, criteriaBuilder);
+                    // return addClientRestriction(predicate, clientRestriction,
+                    //        root, criteriaBuilder);
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                root, criteriaBuilder);
 
 
                 }
@@ -998,6 +1005,13 @@ public class InventoryService {
         inventory.setStyle(inventoryCSVWrapper.getStyle());
 
         inventory.setWarehouseId(warehouseId);
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
+            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
+            if (Objects.nonNull(localDate)) {
+                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+            }
+        }
 
         // client
         if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
@@ -3226,6 +3240,9 @@ public class InventoryService {
 
 
         List<InventoryPutawayCSVWrapper> inventoryPutawayCSVWrappers = loadInventoryPutawayData(file);
+        inventoryPutawayCSVWrappers.forEach(
+                inventoryPutawayCSVWrapper -> inventoryPutawayCSVWrapper.trim()
+        );
         inventoryPutawayFileUploadProgress.put(fileUploadProgressKey, 10.0);
 
         logger.debug("get {} record from the file", inventoryPutawayCSVWrappers.size());
@@ -3799,15 +3816,27 @@ public class InventoryService {
                     " and distribute the quantity into those picks",
                     picks.size(), inventory.getQuantity());
             for (Pick pick : picks) {
-                if(pick.getQuantity().equals(inventory)) {
+                if(pick.getQuantity().equals(inventory.getQuantity())) {
                     // ok, this is the last inventory and pick
+                    logger.debug("the current inventory {} has exactly the same quantity: {} left" +
+                            "  for pick {}'s quantity: {}",
+                            inventory.getLpn(),
+                            inventory.getQuantity(),
+                            pick.getNumber(), pick.getQuantity());
                     inventory.setPickId(pick.getId());
                     inventories.add(inventory);
                 }
                 else {
                     Inventory newInventory = inventory.split(inventory.getLpn(), pick.getQuantity());
                     newInventory.setPickId(pick.getId());
-                    inventories.add(inventory);
+                    inventories.add(newInventory);
+                    logger.debug("we will have to split {} / {} into a new inventory {} /{} " +
+                            " , with new inventory's quantity {} and there's still {} left in the original invenotry",
+                            inventory.getId(), inventory.getLpn(),
+                            Objects.isNull(newInventory.getId()) ? "N/A" : newInventory.getId(),
+                            newInventory.getLpn(),
+                            newInventory.getQuantity(),
+                            inventory.getQuantity());
                 }
             }
         }
@@ -3815,8 +3844,10 @@ public class InventoryService {
 
         inventories.forEach(
                 resultInventory -> {
-                    logger.debug("inventory: lpn = {}, quantity = {}",
-                            resultInventory.getLpn(), resultInventory.getQuantity());
+                    logger.debug("inventory: lpn = {}, quantity = {}, assigned to the pick {}",
+                            resultInventory.getLpn(), resultInventory.getQuantity(),
+                            Objects.isNull(resultInventory.getPickId()) ? "N/A" :
+                                resultInventory.getPickId());
                 }
         );
         picks.forEach(

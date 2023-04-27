@@ -125,7 +125,7 @@ public class RestTemplateProxy {
         }
     }
 
-    public <T> List<T> exchangeWithList(Class<T> t, String uri, HttpMethod method,
+    public <T> List<T> exchangeList(Class<T> t, String uri, HttpMethod method,
                                 Object obj) {
         HttpEntity entity = null;
         try {

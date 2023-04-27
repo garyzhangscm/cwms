@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.resources.model;
 
+import java.time.ZonedDateTime;
+
 public class ReceivingInventoryFileUpload extends FileUploadType {
 
     public ReceivingInventoryFileUpload(){
@@ -57,6 +59,11 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
                 "inventoryStatus", "Inventory Status",
                 String.class, 100, true
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "fifoDate", "FIFO Date(yyyy-MM-dd)",
+                ZonedDateTime.class, 100, true
+        ));
+
 
         addColumn(new FileUploadTemplateColumn(
                 "color", "Color",

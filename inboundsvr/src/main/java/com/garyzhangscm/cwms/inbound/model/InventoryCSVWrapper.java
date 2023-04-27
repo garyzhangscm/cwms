@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.Serializable;
 
@@ -41,11 +42,30 @@ public class InventoryCSVWrapper implements Serializable {
 
     private String inventoryStatus;
 
+    private String fifoDate;
 
     private String color;
     private String productSize;
     private String style;
 
+    /**
+     * Trim empty space for string field
+     */
+    public InventoryCSVWrapper trim() {
+        receipt = Strings.isBlank(receipt) ? "" : receipt.trim();
+        client = Strings.isBlank(client) ? "" : client.trim();
+        lpn = Strings.isBlank(lpn) ? "" : lpn.trim();
+        location = Strings.isBlank(location) ? "" : location.trim();
+        item = Strings.isBlank(item) ? "" : item.trim();
+        itemPackageType = Strings.isBlank(itemPackageType) ? "" : itemPackageType.trim();
+        unitOfMeasure = Strings.isBlank(unitOfMeasure) ? "" : unitOfMeasure.trim();
+        inventoryStatus = Strings.isBlank(inventoryStatus) ? "" : inventoryStatus.trim();
+        fifoDate = Strings.isBlank(fifoDate) ? "" : fifoDate.trim();
+        color = Strings.isBlank(color) ? "" : color.trim();
+        productSize = Strings.isBlank(productSize) ? "" : productSize.trim();
+        style = Strings.isBlank(style) ? "" : style.trim();
+        return this;
+    }
     @Override
     public String toString() {
         try {
@@ -120,6 +140,13 @@ public class InventoryCSVWrapper implements Serializable {
         this.inventoryStatus = inventoryStatus;
     }
 
+    public String getFifoDate() {
+        return fifoDate;
+    }
+
+    public void setFifoDate(String fifoDate) {
+        this.fifoDate = fifoDate;
+    }
 
     public String getColor() {
         return color;

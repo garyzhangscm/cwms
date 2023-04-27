@@ -19,8 +19,11 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +31,7 @@ import javax.persistence.Column;
 import javax.persistence.Transient;
 import java.io.Serializable;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -73,6 +77,11 @@ public class Inventory implements Serializable {
 
     private Boolean inboundQCRequired = false;
 
+
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime fifoDate;
 
     private String color;
     private String productSize;
@@ -259,6 +268,14 @@ public class Inventory implements Serializable {
 
     public void setCustomerReturnOrderLineId(Long customerReturnOrderLineId) {
         this.customerReturnOrderLineId = customerReturnOrderLineId;
+    }
+
+    public ZonedDateTime getFifoDate() {
+        return fifoDate;
+    }
+
+    public void setFifoDate(ZonedDateTime fifoDate) {
+        this.fifoDate = fifoDate;
     }
 
     public String getColor() {

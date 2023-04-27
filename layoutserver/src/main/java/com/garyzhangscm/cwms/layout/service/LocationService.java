@@ -1049,6 +1049,9 @@ public class LocationService {
 
 
         List<LocationCSVWrapper> locationCSVWrappers = loadData(file);
+        locationCSVWrappers.forEach(
+                locationCSVWrapper -> locationCSVWrapper.trim()
+        );
         fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
 
         logger.debug("get {} record from the file", locationCSVWrappers.size());
