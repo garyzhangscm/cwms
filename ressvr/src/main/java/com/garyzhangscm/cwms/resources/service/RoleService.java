@@ -272,6 +272,7 @@ public class RoleService implements TestDataInitiableService{
 
         logger.debug("start to add role: \n{}", role);
         // assign the menu to the role
+        /**
         if (role.getMenuGroups().size() > 0) {
             role.getMenuGroups().forEach(menuGroup -> {
                 menuGroup.getMenuSubGroups().forEach(menuSubGroup -> {
@@ -283,6 +284,13 @@ public class RoleService implements TestDataInitiableService{
                     });
                 });
             });
+        }**/
+        // setup the role reference for the role menu so that the
+        // menu will be saved to the role when we save the role
+        if (role.getRoleMenus() != null && !role.getRoleMenus().isEmpty()) {
+            role.getRoleMenus().forEach(
+                    roleMenu -> roleMenu.setRole(role)
+            );
         }
         // setup the client access, if not done yet
         logger.debug("start to setup client access");

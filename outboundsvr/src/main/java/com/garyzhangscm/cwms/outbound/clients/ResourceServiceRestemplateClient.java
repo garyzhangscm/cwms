@@ -130,7 +130,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
-
+/**
         ResponseBodyWrapper<List<User>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -139,6 +139,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
 
         List<User> users = responseBodyWrapper.getData();
+**/
+        List<User> users =  restTemplateProxy.exchangeList(
+                User.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
         if (users.size() != 1) {
             return null;
@@ -325,6 +332,7 @@ public class ResourceServiceRestemplateClient {
         );
     }
 
+    /**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
@@ -332,5 +340,6 @@ public class ResourceServiceRestemplateClient {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }
+     **/
 
 }

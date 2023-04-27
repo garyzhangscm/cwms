@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 
 // Entity that will be persist in Common service
@@ -67,5 +70,49 @@ public class ClientRestriction extends  AuditibleEntity<String> implements Seria
 
     public void setAllClientAccess(Boolean allClientAccess) {
         this.allClientAccess = allClientAccess;
+    }
+    public <T> Predicate addClientRestriction(Predicate predicate,
+                                              Root<T> root,
+                                              CriteriaBuilder criteriaBuilder) {
+        if (!Boolean.TRUE.equals(getThreePartyLogisticsFlag()) ||
+                Boolean.TRUE.equals(getAllClientAccess())) {
+            // not a 3pl warehouse, let's not put any restriction on the client
+            // (unless the client restriction is from the web request, which we already
+            // handled previously
+            return predicate;
+        }
+
+
+        // build the accessible client list predicated based on the
+        // client ID that the user has access
+        Predicate accessibleClientListPredicate;
+        if (getClientAccesses().trim().isEmpty()) {
+            // the user can't access any client, then the user
+            // can only access the non 3pl data
+            accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+        }
+        else {
+            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+            for(String id : getClientAccesses().trim().split(",")) {
+                inClientIds.value(Long.parseLong(id));
+            }
+            accessibleClientListPredicate = criteriaBuilder.and(inClientIds);
+        }
+
+        if (Boolean.TRUE.equals(getNonClientDataAccessible())) {
+            // the user can access the non 3pl data
+            return criteriaBuilder.and(predicate,
+                    criteriaBuilder.or(
+                            criteriaBuilder.isNull(root.get("clientId")),
+                            accessibleClientListPredicate));
+        }
+        else {
+
+            // the user can NOT access the non 3pl data
+            return criteriaBuilder.and(predicate,
+                    criteriaBuilder.and(
+                            criteriaBuilder.isNotNull(root.get("clientId")),
+                            accessibleClientListPredicate));
+        }
     }
 }

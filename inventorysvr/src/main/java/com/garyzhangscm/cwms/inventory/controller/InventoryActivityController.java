@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.inventory.controller;
 
 
+import com.garyzhangscm.cwms.inventory.model.ClientRestriction;
+import com.garyzhangscm.cwms.inventory.model.ClientValidationEndpoint;
 import com.garyzhangscm.cwms.inventory.model.InventoryActivity;
 
 import com.garyzhangscm.cwms.inventory.service.InventoryActivityService;
@@ -33,6 +35,9 @@ import java.util.List;
 public class InventoryActivityController {
     @Autowired
     InventoryActivityService inventoryActivityService;
+
+
+    @ClientValidationEndpoint
     @RequestMapping(value="/inventory-activities", method = RequestMethod.GET)
     public List<InventoryActivity> findAllInventoryActivities(@RequestParam Long warehouseId,
                                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
@@ -54,11 +59,13 @@ public class InventoryActivityController {
                                                               @RequestParam(name="endDate", required = false, defaultValue = "") String endDate,
                                                               @RequestParam(name="date", required = false, defaultValue = "") String date,
                                                               @RequestParam(name="username", required = false, defaultValue = "") String username,
-                                                              @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode) {
+                                                              @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode,
+                                                              @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
+                                                              ClientRestriction clientRestriction) {
         return inventoryActivityService.findAll(warehouseId, itemName, clientIds, itemFamilyIds,inventoryStatusId,
                 locationName, locationId, locationGroupId, receiptId, pickIds, lpn,
                 inventoryActivityType,  beginDateTime, endDateTime, beginDate, endDate, date, username,
-                rfCode
+                rfCode, clientRestriction, includeDetails
         );
     }
 

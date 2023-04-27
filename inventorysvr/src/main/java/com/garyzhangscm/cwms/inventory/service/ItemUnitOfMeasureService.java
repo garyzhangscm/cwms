@@ -280,6 +280,9 @@ public class ItemUnitOfMeasureService {
 
         List<ItemUnitOfMeasureCSVWrapper> itemUnitOfMeasureCSVWrappers = loadData(file);
 
+        itemUnitOfMeasureCSVWrappers.forEach(
+                itemUnitOfMeasureCSVWrapper -> itemUnitOfMeasureCSVWrapper.trim()
+        );
 
         fileUploadProgressMap.put(fileUploadProgressKey, 10.0);
 

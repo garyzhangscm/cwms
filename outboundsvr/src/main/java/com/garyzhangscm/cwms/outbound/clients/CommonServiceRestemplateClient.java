@@ -123,7 +123,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
-
+/**
         ResponseBodyWrapper<List<Client>> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -132,12 +132,20 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
 
         List<Client> clients = responseBodyWrapper.getData();
+**/
+        List<Client> clients = restTemplateProxy.exchangeList(
+                Client.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (clients.size() == 0) {
             return null;
         }
         else {
             return clients.get(0);
         }
+
     }
     @Cacheable(cacheNames = "OutboundService_Supplier", unless="#result == null")
     public Supplier getSupplierById(Long id) {
@@ -254,6 +262,7 @@ public class CommonServiceRestemplateClient {
             if (Objects.nonNull(warehouseId)) {
                 builder = builder.queryParam("warehouseId", warehouseId);
             }
+            /**
             ResponseBodyWrapper<List<Customer>> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -263,6 +272,14 @@ public class CommonServiceRestemplateClient {
                     }).getBody();
 
             List<Customer> customers = responseBodyWrapper.getData();
+             **/
+
+            List<Customer> customers = restTemplateProxy.exchangeList(
+                    Customer.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.GET,
+                    null
+            );
             if (customers.size() == 0) {
                 return null;
             } else {
@@ -286,7 +303,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
-
+/**
         ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -295,7 +312,13 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
 
         List<UnitOfMeasure> unitOfMeasures = responseBodyWrapper.getData();
-
+**/
+        List<UnitOfMeasure> unitOfMeasures = restTemplateProxy.exchangeList(
+                UnitOfMeasure.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (unitOfMeasures.size() != 1) {
             return null;
         }
@@ -393,8 +416,7 @@ public class CommonServiceRestemplateClient {
             builder = builder.queryParam("number", number);
         }
 
-        try {
-
+/**
             ResponseBodyWrapper<List<TrailerAppointment>> responseBodyWrapper
                     = restTemplateProxy.getRestTemplate().exchange(
                     builder.toUriString(),
@@ -404,18 +426,21 @@ public class CommonServiceRestemplateClient {
 
             List<TrailerAppointment> trailerAppointments =
                     responseBodyWrapper.getData();
+
+**/
+            List<TrailerAppointment> trailerAppointments = restTemplateProxy.exchangeList(
+                TrailerAppointment.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                    null
+            );
+
             if (trailerAppointments.isEmpty() || trailerAppointments.size() > 1) {
                 return null;
             }
             else {
                 return trailerAppointments.get(0);
             }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            logger.debug("Error while get trailer by number {} / {}", warehouseId, number);
-            return null;
-        }
     }
     public TrailerAppointment addTrailerAppointment(Long warehouseId, String trailerNumber,
                                                     String trailerAppointmentNumber,

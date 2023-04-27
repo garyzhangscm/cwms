@@ -1,5 +1,9 @@
 package com.garyzhangscm.cwms.resources.model;
- 
+
+
+import org.exolab.castor.types.DateTime;
+
+import java.time.ZonedDateTime;
 
 public class InventoryFileUpload extends FileUploadType {
 
@@ -53,6 +57,11 @@ public class InventoryFileUpload extends FileUploadType {
                 "inventoryStatus", "Inventory Status",
                 String.class, 100, true
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "fifoDate", "FIFO Date(yyyy-MM-dd)",
+                ZonedDateTime.class, 100, true
+        ));
+
 
         addColumn(new FileUploadTemplateColumn(
                 "color", "Color",

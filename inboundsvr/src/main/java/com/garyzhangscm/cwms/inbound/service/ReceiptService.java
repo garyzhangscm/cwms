@@ -1321,6 +1321,10 @@ public class ReceiptService {
         receiptFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
 
         List<ReceiptLineCSVWrapper> receiptLineCSVWrappers = loadDataWithLine(localFile);
+        receiptLineCSVWrappers.forEach(
+                receiptLineCSVWrapper ->
+                        receiptLineCSVWrapper.trim()
+        );
         logger.debug("start to save {} receipt lines ", receiptLineCSVWrappers.size());
 
         receiptFileUploadProgress.put(fileUploadProgressKey, 10.0);
@@ -1422,7 +1426,7 @@ public class ReceiptService {
         List<InventoryCSVWrapper> inventoryCSVWrappers =
                 fileService.loadData(file, InventoryCSVWrapper.class).stream().filter(
                         inventoryCSVWrapper -> validateInventoryCSVWrapperForReceiving(inventoryCSVWrapper)
-                ).collect(Collectors.toList());
+                ).map(InventoryCSVWrapper::trim).collect(Collectors.toList());
 
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
 
@@ -1680,6 +1684,14 @@ public class ReceiptService {
         if (Objects.nonNull(inventoryStatus)) {
             inventory.setInventoryStatus(inventoryStatus);
         }
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
+            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
+            if (Objects.nonNull(localDate)) {
+                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+            }
+        }
+
 
         // location
         Location location = null;

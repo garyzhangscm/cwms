@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 public class ReceiptLineCSVWrapper {
     private String client;
@@ -36,6 +37,20 @@ public class ReceiptLineCSVWrapper {
 
     private String allowUnexpectedItem;
 
+    public ReceiptLineCSVWrapper trim() {
+
+        client = Strings.isBlank(client) ? "" : client.trim();
+        supplier = Strings.isBlank(supplier) ? "" : supplier.trim();
+        receipt = Strings.isBlank(receipt) ? "" : receipt.trim();
+        line = Strings.isBlank(line) ? "" : line.trim();
+        item = Strings.isBlank(item) ? "" : item.trim();
+        inventoryStatus = Strings.isBlank(inventoryStatus) ? "" : inventoryStatus.trim();
+        unitOfMeasure = Strings.isBlank(unitOfMeasure) ? "" : unitOfMeasure.trim();
+
+        allowUnexpectedItem = Strings.isBlank(allowUnexpectedItem) ? "" : allowUnexpectedItem.trim();
+
+        return this;
+    }
     @Override
     public String toString() {
         try {
