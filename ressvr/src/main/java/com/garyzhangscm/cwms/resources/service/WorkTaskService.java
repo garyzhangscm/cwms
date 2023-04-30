@@ -633,7 +633,30 @@ public class WorkTaskService{
      * @return
      */
     public List<WorkTask> getOpenWorkTaskForAcknowledge(Long warehouseId, User user) {
+        logger.debug("we will get the works that already acknowledged by the user");
         List<WorkTask> workTasks = findAll(warehouseId,
+                null,
+                null,
+                WorkTaskStatus.WORKING.toString(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                user.getUsername(),
+                null,
+                null);
+        if (!workTasks.isEmpty()) {
+            logger.debug("get {} works that is already acknowledged by the user {}",
+                    workTasks.size(),
+                    user.getUsername());
+
+            return workTasks.stream().sorted(Comparator.comparing(WorkTask::getPriority)).collect(Collectors.toList());
+        }
+
+        logger.debug("The user hasn't acknowledged anything yet, let's get all the released work");
+        workTasks = findAll(warehouseId,
                 null,
                 null,
                 WorkTaskStatus.RELEASED.toString(),
@@ -719,6 +742,19 @@ public class WorkTaskService{
      * @return
      */
     public boolean canAcknowledge(WorkTask workTask, User user) {
+        logger.debug("start to check if the user {} can acknowledge the work task {}",
+                user.getUsername(),
+                workTask.getNumber());
+        if (WorkTaskStatus.WORKING.equals(workTask.getStatus())) {
+            // if current work task is already acknowledged, then make sure
+            // it is acknowledged by the current user
+            logger.debug("current work task  {} is in working status and akkonwledged by {}" +
+                    ", let's check if it is already  assign to the current user {}",
+                    workTask.getNumber(),
+                    workTask.getCurrentUser(),
+                    user.getUsername());
+            return user.equals(workTask.getCurrentUser());
+        }
         return WorkTaskStatus.RELEASED.equals(workTask.getStatus()) &&
                 Objects.isNull(workTask.getCurrentUser()) &&
                 Objects.isNull(workTask.getCompleteUser()) &&

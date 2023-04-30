@@ -3827,8 +3827,15 @@ public class InventoryService {
                     inventories.add(inventory);
                 }
                 else {
-                    Inventory newInventory = inventory.split(inventory.getLpn(), pick.getQuantity());
+                    // note: Since we are split inventory for a new pick, we may need to generate a new LPN
+                    // as normally this means the new LPN most likely will have a different destination, other
+                    // than the original one
+                    String newLPN = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
+
+                    Inventory newInventory = inventory.split(newLPN, pick.getQuantity());
                     newInventory.setPickId(pick.getId());
+                    // let's save the inventory first
+                    newInventory = saveOrUpdate(newInventory);
                     inventories.add(newInventory);
                     logger.debug("we will have to split {} / {} into a new inventory {} /{} " +
                             " , with new inventory's quantity {} and there's still {} left in the original invenotry",

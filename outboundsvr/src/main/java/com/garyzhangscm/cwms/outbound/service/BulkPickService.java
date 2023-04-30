@@ -1020,7 +1020,7 @@ public class BulkPickService {
 
             logger.debug("inventory's item  {} doesn't match with the bulk pick's item {}",
                     itemId, bulkPick.getItemId());
-            return "inventory's item " + itemId + " doesn't match with the bulk pick's item "
+            return "inventory's item id " + itemId + " doesn't match with the bulk pick's item id "
                     + bulkPick.getItemId();
         }
 

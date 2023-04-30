@@ -2089,5 +2089,8 @@
   "assign-operation-type": "分配任务权限",
   "release": "释放",
   "deassign-user":"取消用户分配",
-  "unacknowledge":"Unacknowledge"
+  "unacknowledge":"Unacknowledge",
+  "menu.main.outbound.hualei-configuration": "华磊系统配置",
+  "hualei-product": "华磊产品",
+  "hualei-configuration": "华磊系统配置"
 }

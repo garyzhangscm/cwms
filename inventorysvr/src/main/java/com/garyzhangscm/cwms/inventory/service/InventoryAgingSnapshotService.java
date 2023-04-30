@@ -399,7 +399,7 @@ public class InventoryAgingSnapshotService {
                 ).collect(Collectors.toList());
 
         if (inventoryAgingSnapshots.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
         Collections.sort(inventoryAgingSnapshots, Comparator.comparing(InventoryAgingSnapshot::getStartTime));
