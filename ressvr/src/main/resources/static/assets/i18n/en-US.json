@@ -2092,5 +2092,8 @@
   "assign-operation-type": "Assign Operation Type",
   "release": "Release",
   "deassign-user":"Deassign User",
-  "unacknowledge":"Unacknowledge"
+  "unacknowledge":"Unacknowledge",
+  "menu.main.outbound.hualei-configuration": "Hualei Configuration",
+  "hualei-product": "Hualei Product",
+  "hualei-configuration": "Hualei Configuration"
 }

@@ -151,7 +151,8 @@ public class User extends AuditibleEntity<String>  {
             return Objects.equals(id, user.id);
         }
 
-        return username.equals(user.getUsername());
+        return companyId.equals(user.getCompanyId()) &&
+                username.equals(user.getUsername());
     }
 
     @Override
