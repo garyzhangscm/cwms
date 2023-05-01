@@ -76,6 +76,16 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     @Column(name = "default_order_returnsign")
     private String defaultOrderReturnSign;
 
+    // default invoice parameters
+    @Column(name = "default_hs_code")
+    private String defaultHsCode;
+    @Column(name = "default_invoice_title")
+    private String defaultInvoiceTitle;
+    @Column(name = "default_sku")
+    private String defaultSku;
+    @Column(name = "default_sku_code")
+    private String defaultSkuCode;
+
     @OneToMany(
             mappedBy = "hualeiConfiguration",
             cascade = CascadeType.ALL,
@@ -130,6 +140,14 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
 
     public void setDefaultCustomsClearance(String defaultCustomsClearance) {
         this.defaultCustomsClearance = defaultCustomsClearance;
+    }
+
+    public String getDefaultHsCode() {
+        return defaultHsCode;
+    }
+
+    public void setDefaultHsCode(String defaultHsCode) {
+        this.defaultHsCode = defaultHsCode;
     }
 
     public String getDefaultCustomsDeclaration() {
@@ -218,5 +236,29 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
 
     public void setPrintLabelEndpoint(String printLabelEndpoint) {
         this.printLabelEndpoint = printLabelEndpoint;
+    }
+
+    public String getDefaultInvoiceTitle() {
+        return defaultInvoiceTitle;
+    }
+
+    public void setDefaultInvoiceTitle(String defaultInvoiceTitle) {
+        this.defaultInvoiceTitle = defaultInvoiceTitle;
+    }
+
+    public String getDefaultSku() {
+        return defaultSku;
+    }
+
+    public void setDefaultSku(String defaultSku) {
+        this.defaultSku = defaultSku;
+    }
+
+    public String getDefaultSkuCode() {
+        return defaultSkuCode;
+    }
+
+    public void setDefaultSkuCode(String defaultSkuCode) {
+        this.defaultSkuCode = defaultSkuCode;
     }
 }

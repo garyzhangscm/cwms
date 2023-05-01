@@ -45,7 +45,8 @@ public class ShipmentRequestOrderVolumeParameters {
     @JsonProperty("volume_weight")
     private Double volumeWeight;
 
-    @OneToOne(mappedBy = "orderVolumeParam")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_parameters_id")
     @JsonIgnore
     private ShipmentRequestParameters shipmentRequestParameters;
 

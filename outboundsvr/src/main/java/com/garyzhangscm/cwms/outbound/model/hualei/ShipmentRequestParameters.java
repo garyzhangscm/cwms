@@ -100,18 +100,27 @@ public class ShipmentRequestParameters {
     @JsonProperty("weight")
     private Double weight;
 
-    @OneToOne(mappedBy = "shipmentRequestParameters")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_id")
     @JsonIgnore
     private ShipmentRequest shipmentRequest;
 
     @JsonProperty("orderVolumeParam")
-    @OneToOne
-    @JoinColumn(name="hualei_shipment_request_order_volume_parameters_id")
+    @OneToOne(
+            mappedBy = "shipmentRequestParameters",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     private ShipmentRequestOrderVolumeParameters orderVolumeParam;
 
     @JsonProperty("orderInvoiceParam")
-    @OneToOne
-    @JoinColumn(name="hualei_shipment_request_order_invoice_parameters_id")
+    @OneToOne(
+            mappedBy = "shipmentRequestParameters",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     private ShipmentRequestOrderInvoiceParameters orderInvoiceParam;
 
     @Override

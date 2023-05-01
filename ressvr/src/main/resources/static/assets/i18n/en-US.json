@@ -2112,5 +2112,8 @@
   "default-value": "Default Value",
   "productId": "Product Id",
   "shippingLabelFormat": "Shipping Label Format",
-  "ship-by-hualei": "Ship By Hualei"
+  "ship-by-hualei": "Ship By Hualei",
+  "hualeiShipmentRequest": "Hualei Shipment Request",
+  "showAddress": "Show Address",
+  "hideAddress": "Hide Address"
 }

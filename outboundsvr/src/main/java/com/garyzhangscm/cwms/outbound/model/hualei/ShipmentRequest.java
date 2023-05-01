@@ -25,13 +25,21 @@ public class ShipmentRequest {
     @Column(name = "get_tracking_number")
     private String getTrackingNumber;
 
+    @OneToOne(
+            mappedBy = "shipmentRequest",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     @JsonProperty("param")
-    @OneToOne
-    @JoinColumn(name="hualei_shipment_request_parameters_id")
     private ShipmentRequestParameters shipmentRequestParameters;
 
-    @OneToOne
-    @JoinColumn(name="hualei_shipment_response_id")
+    @OneToOne(
+            mappedBy = "shipmentRequest",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     private ShipmentResponse shipmentResponse;
 
     @JsonIgnore

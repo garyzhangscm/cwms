@@ -189,7 +189,7 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
             mappedBy = "order",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<ShipmentRequest> hualeiShipmentRequests = new ArrayList<>();
 
