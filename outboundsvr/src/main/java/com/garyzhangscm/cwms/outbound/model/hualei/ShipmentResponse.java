@@ -1,53 +1,117 @@
 package com.garyzhangscm.cwms.outbound.model.hualei;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.model.OrderLine;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "hualei_shipment_response")
 public class ShipmentResponse {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "hualei_shipment_response_id")
+    @JsonProperty(value="id")
+    private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+
+    @Column(name = "ack")
     @JsonProperty("ack")
     private String ack;
+
+    @Column(name = "attr1")
     @JsonProperty("attr1")
     private String attr1;
+
+    @Column(name = "attr2")
     @JsonProperty("attr2")
     private String attr2;
+
     @JsonProperty("childList")
+    @OneToMany(
+            mappedBy = "shipmentResponse",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
     private List<ShipmentResponseChild> childList = new ArrayList<>();
+
+    @Column(name = "delay_type")
     @JsonProperty("delay_type")
     private String delayType;
+
+    @Column(name = "is_change_numbers")
     @JsonProperty("is_changenumbers")
-    private String isChangenumbers;
+    private String isChangeNumbers;
+
+    @Column(name = "is_delay")
     @JsonProperty("is_delay")
     private String isDelay;
+
+    @Column(name = "is_remote")
     @JsonProperty("is_remote")
     private String isRemote;
+
+    @Column(name = "is_residential")
     @JsonProperty("is_residential")
     private String isResidential;
+
+    @Column(name = "message")
     @JsonProperty("message")
     private String message;
+
+    @Column(name = "order_id")
     @JsonProperty("order_id")
     private String orderId;
+
+    @Column(name = "order_private_code")
     @JsonProperty("order_privatecode")
-    private String orderPrivatecode;
+    private String orderPrivateCode;
+
+    @Column(name = "order_transfer_code")
     @JsonProperty("order_transfercode")
-    private String orderTransfercode;
+    private String orderTransferCode;
+
+    @Column(name = "order_price_trial_amount")
     @JsonProperty("orderpricetrial_amount")
-    private String orderpricetrialAmount;
+    private String orderPriceTrialAmount;
+
+    @Column(name = "order_price_trial_currency")
     @JsonProperty("orderpricetrial_currency")
-    private String orderpricetrialCurrency;
+    private String orderPriceTrialCurrency;
+
+    @Column(name = "post_customer_name")
     @JsonProperty("post_customername")
-    private String postCustomername;
+    private String postCustomerName;
+
+    @Column(name = "product_track_no_api_type")
     @JsonProperty("product_tracknoapitype")
-    private String productTracknoapitype;
+    private String productTrackNoApiType;
+
+    @Column(name = "reference_number")
     @JsonProperty("reference_number")
     private String referenceNumber;
+
+    @Column(name = "return_address")
     @JsonProperty("return_address")
     private String returnAddress;
+
+    @Column(name = "tracking_number")
     @JsonProperty("tracking_number")
     private String trackingNumber;
+
+    @OneToOne(mappedBy = "shipmentResponse")
+    @JsonIgnore
+    private ShipmentRequest shipmentRequest;
 
     @Override
     public String toString() {
@@ -99,12 +163,13 @@ public class ShipmentResponse {
         this.delayType = delayType;
     }
 
-    public String getIsChangenumbers() {
-        return isChangenumbers;
+
+    public ShipmentRequest getShipmentRequest() {
+        return shipmentRequest;
     }
 
-    public void setIsChangenumbers(String isChangenumbers) {
-        this.isChangenumbers = isChangenumbers;
+    public void setShipmentRequest(ShipmentRequest shipmentRequest) {
+        this.shipmentRequest = shipmentRequest;
     }
 
     public String getIsDelay() {
@@ -147,52 +212,76 @@ public class ShipmentResponse {
         this.orderId = orderId;
     }
 
-    public String getOrderPrivatecode() {
-        return orderPrivatecode;
+    public Long getId() {
+        return id;
     }
 
-    public void setOrderPrivatecode(String orderPrivatecode) {
-        this.orderPrivatecode = orderPrivatecode;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getOrderTransfercode() {
-        return orderTransfercode;
+    public Long getWarehouseId() {
+        return warehouseId;
     }
 
-    public void setOrderTransfercode(String orderTransfercode) {
-        this.orderTransfercode = orderTransfercode;
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
-    public String getOrderpricetrialAmount() {
-        return orderpricetrialAmount;
+    public String getIsChangeNumbers() {
+        return isChangeNumbers;
     }
 
-    public void setOrderpricetrialAmount(String orderpricetrialAmount) {
-        this.orderpricetrialAmount = orderpricetrialAmount;
+    public void setIsChangeNumbers(String isChangeNumbers) {
+        this.isChangeNumbers = isChangeNumbers;
     }
 
-    public String getOrderpricetrialCurrency() {
-        return orderpricetrialCurrency;
+    public String getOrderPrivateCode() {
+        return orderPrivateCode;
     }
 
-    public void setOrderpricetrialCurrency(String orderpricetrialCurrency) {
-        this.orderpricetrialCurrency = orderpricetrialCurrency;
+    public void setOrderPrivateCode(String orderPrivateCode) {
+        this.orderPrivateCode = orderPrivateCode;
     }
 
-    public String getPostCustomername() {
-        return postCustomername;
+    public String getOrderTransferCode() {
+        return orderTransferCode;
     }
 
-    public void setPostCustomername(String postCustomername) {
-        this.postCustomername = postCustomername;
+    public void setOrderTransferCode(String orderTransferCode) {
+        this.orderTransferCode = orderTransferCode;
     }
 
-    public String getProductTracknoapitype() {
-        return productTracknoapitype;
+    public String getOrderPriceTrialAmount() {
+        return orderPriceTrialAmount;
     }
 
-    public void setProductTracknoapitype(String productTracknoapitype) {
-        this.productTracknoapitype = productTracknoapitype;
+    public void setOrderPriceTrialAmount(String orderPriceTrialAmount) {
+        this.orderPriceTrialAmount = orderPriceTrialAmount;
+    }
+
+    public String getOrderPriceTrialCurrency() {
+        return orderPriceTrialCurrency;
+    }
+
+    public void setOrderPriceTrialCurrency(String orderPriceTrialCurrency) {
+        this.orderPriceTrialCurrency = orderPriceTrialCurrency;
+    }
+
+    public String getPostCustomerName() {
+        return postCustomerName;
+    }
+
+    public void setPostCustomerName(String postCustomerName) {
+        this.postCustomerName = postCustomerName;
+    }
+
+    public String getProductTrackNoApiType() {
+        return productTrackNoApiType;
+    }
+
+    public void setProductTrackNoApiType(String productTrackNoApiType) {
+        this.productTrackNoApiType = productTrackNoApiType;
     }
 
     public String getReferenceNumber() {
