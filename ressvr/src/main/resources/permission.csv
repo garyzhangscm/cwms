@@ -9,6 +9,7 @@ Outbound-Order,remove-order,Remove Order
 Outbound-Order,retrigger-order-confirm-integration,Retrigger Order Confirmation Integration
 Outbound-Order,upload-document,Upload Order Document
 Outbound-Order,ship-parcel,Shipping Parcel Package
+Outbound-Order,ship-by-hualei,Shipping By Hualei
 Outbound-Order,add-order-billable-activity-type,Add Order Billable Activity
 Outbound-Order,add-order-line-billable-activity-type,Add Order Line Billable Activity
 Outbound-Order,cancel-single-pick,Cancel Single Pick

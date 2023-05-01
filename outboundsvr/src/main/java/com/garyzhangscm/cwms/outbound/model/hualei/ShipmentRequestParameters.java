@@ -1,53 +1,117 @@
 package com.garyzhangscm.cwms.outbound.model.hualei;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "hualei_shipment_request_parameters")
 public class ShipmentRequestParameters {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "hualei_shipment_request_parameters_id")
+    @JsonProperty(value="id")
+    private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+    @Column(name = "cargo_type")
     @JsonProperty("cargo_type")
-    private String cargo_type;
+    private String cargoType;
+
+    @Column(name = "consignee_address")
     @JsonProperty("consignee_address")
-    private String consignee_address;
+    private String consigneeAddress;
+
+    @Column(name = "consignee_city")
     @JsonProperty("consignee_city")
-    private String consignee_city;
+    private String consigneeCity;
+
+    @Column(name = "consignee_name")
     @JsonProperty("consignee_name")
-    private String consignee_name;
+    private String consigneeName;
+
+    @Column(name = "consignee_postcode")
     @JsonProperty("consignee_postcode")
-    private String consignee_postcode;
+    private String consigneePostcode;
+
+    @Column(name = "consignee_state")
     @JsonProperty("consignee_state")
-    private String consignee_state;
+    private String consigneeState;
+
+    @Column(name = "consignee_telephone")
     @JsonProperty("consignee_telephone")
-    private String consignee_telephone;
+    private String consigneeTelephone;
+
+    @Column(name = "country")
     @JsonProperty("country")
     private String country;
+
+    @Column(name = "customer_id")
     @JsonProperty("customer_id")
-    private String customer_id;
+    private String customerId;
+
+    @Column(name = "customer_userid")
     @JsonProperty("customer_userid")
-    private String customer_userid;
+    private String customerUserid;
+
+    @Column(name = "customs_clearance")
     @JsonProperty("customs_clearance")
-    private String customs_clearance;
+    private String customsClearance;
+
+    @Column(name = "customs_declaration")
     @JsonProperty("customs_declaration")
-    private String customs_declaration;
+    private String customsDeclaration;
+
+    @Column(name = "duty_type")
     @JsonProperty("duty_type")
-    private String duty_type;
+    private String dutyType;
+
+    @Column(name = "ship_from")
     @JsonProperty("from")
-    private String from;
+    private String shipFrom;
+
+    @Column(name = "is_fba")
     @JsonProperty("is_fba")
-    private String is_fba;
+    private String isFba;
+
+    @Column(name = "order_customer_invoice_code")
     @JsonProperty("order_customerinvoicecode")
-    private String order_customerinvoicecode;
+    private String orderCustomerInvoiceCode;
+
+    @Column(name = "order_piece")
     @JsonProperty("order_piece")
-    private Integer order_piece;
+    private Integer orderPiece;
+
+    @Column(name = "order_return_sign")
     @JsonProperty("order_returnsign")
-    private String order_returnsign;
+    private String orderReturnSign;
+
+    @Column(name = "product_id")
     @JsonProperty("product_id")
-    private String product_id;
+    private String productId;
+
+    @Column(name = "weight")
     @JsonProperty("weight")
     private Double weight;
+
+    @OneToOne(mappedBy = "shipmentRequestParameters")
+    @JsonIgnore
+    private ShipmentRequest shipmentRequest;
+
     @JsonProperty("orderVolumeParam")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_order_volume_parameters_id")
     private ShipmentRequestOrderVolumeParameters orderVolumeParam;
+
     @JsonProperty("orderInvoiceParam")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_order_invoice_parameters_id")
     private ShipmentRequestOrderInvoiceParameters orderInvoiceParam;
 
     @Override
@@ -60,61 +124,85 @@ public class ShipmentRequestParameters {
         return null;
     }
 
-
-    public String getCargo_type() {
-        return cargo_type;
+    public Long getId() {
+        return id;
     }
 
-    public void setCargo_type(String cargo_type) {
-        this.cargo_type = cargo_type;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getConsignee_address() {
-        return consignee_address;
+    public Long getWarehouseId() {
+        return warehouseId;
     }
 
-    public void setConsignee_address(String consignee_address) {
-        this.consignee_address = consignee_address;
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
-    public String getConsignee_city() {
-        return consignee_city;
+    public String getCargoType() {
+        return cargoType;
     }
 
-    public void setConsignee_city(String consignee_city) {
-        this.consignee_city = consignee_city;
+    public void setCargoType(String cargoType) {
+        this.cargoType = cargoType;
     }
 
-    public String getConsignee_name() {
-        return consignee_name;
+
+    public String getConsigneeAddress() {
+        return consigneeAddress;
     }
 
-    public void setConsignee_name(String consignee_name) {
-        this.consignee_name = consignee_name;
+    public void setConsigneeAddress(String consigneeAddress) {
+        this.consigneeAddress = consigneeAddress;
     }
 
-    public String getConsignee_postcode() {
-        return consignee_postcode;
+    public String getConsigneeCity() {
+        return consigneeCity;
     }
 
-    public void setConsignee_postcode(String consignee_postcode) {
-        this.consignee_postcode = consignee_postcode;
+    public void setConsigneeCity(String consigneeCity) {
+        this.consigneeCity = consigneeCity;
     }
 
-    public String getConsignee_state() {
-        return consignee_state;
+    public String getConsigneeName() {
+        return consigneeName;
     }
 
-    public void setConsignee_state(String consignee_state) {
-        this.consignee_state = consignee_state;
+    public ShipmentRequest getShipmentRequest() {
+        return shipmentRequest;
     }
 
-    public String getConsignee_telephone() {
-        return consignee_telephone;
+    public void setShipmentRequest(ShipmentRequest shipmentRequest) {
+        this.shipmentRequest = shipmentRequest;
     }
 
-    public void setConsignee_telephone(String consignee_telephone) {
-        this.consignee_telephone = consignee_telephone;
+    public void setConsigneeName(String consigneeName) {
+        this.consigneeName = consigneeName;
+    }
+
+    public String getConsigneePostcode() {
+        return consigneePostcode;
+    }
+
+    public void setConsigneePostcode(String consigneePostcode) {
+        this.consigneePostcode = consigneePostcode;
+    }
+
+    public String getConsigneeState() {
+        return consigneeState;
+    }
+
+    public void setConsigneeState(String consigneeState) {
+        this.consigneeState = consigneeState;
+    }
+
+    public String getConsigneeTelephone() {
+        return consigneeTelephone;
+    }
+
+    public void setConsigneeTelephone(String consigneeTelephone) {
+        this.consigneeTelephone = consigneeTelephone;
     }
 
     public String getCountry() {
@@ -125,92 +213,94 @@ public class ShipmentRequestParameters {
         this.country = country;
     }
 
-    public String getCustomer_id() {
-        return customer_id;
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public void setCustomer_id(String customer_id) {
-        this.customer_id = customer_id;
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
-    public String getCustomer_userid() {
-        return customer_userid;
+    public String getCustomerUserid() {
+        return customerUserid;
     }
 
-    public void setCustomer_userid(String customer_userid) {
-        this.customer_userid = customer_userid;
+    public void setCustomerUserid(String customerUserid) {
+        this.customerUserid = customerUserid;
     }
 
-    public String getCustoms_clearance() {
-        return customs_clearance;
+    public String getCustomsClearance() {
+        return customsClearance;
     }
 
-    public void setCustoms_clearance(String customs_clearance) {
-        this.customs_clearance = customs_clearance;
+    public void setCustomsClearance(String customsClearance) {
+        this.customsClearance = customsClearance;
     }
 
-    public String getCustoms_declaration() {
-        return customs_declaration;
+    public String getCustomsDeclaration() {
+        return customsDeclaration;
     }
 
-    public void setCustoms_declaration(String customs_declaration) {
-        this.customs_declaration = customs_declaration;
+    public void setCustomsDeclaration(String customsDeclaration) {
+        this.customsDeclaration = customsDeclaration;
     }
 
-    public String getDuty_type() {
-        return duty_type;
+    public String getDutyType() {
+        return dutyType;
     }
 
-    public void setDuty_type(String duty_type) {
-        this.duty_type = duty_type;
+    public void setDutyType(String dutyType) {
+        this.dutyType = dutyType;
     }
 
-    public String getFrom() {
-        return from;
+    public String getShipFrom() {
+        return shipFrom;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
+    public void setShipFrom(String shipFrom) {
+        this.shipFrom = shipFrom;
     }
 
-    public String getIs_fba() {
-        return is_fba;
+    public String getIsFba() {
+        return isFba;
     }
 
-    public void setIs_fba(String is_fba) {
-        this.is_fba = is_fba;
+    public void setIsFba(String isFba) {
+        this.isFba = isFba;
     }
 
-    public String getOrder_customerinvoicecode() {
-        return order_customerinvoicecode;
+
+
+    public Integer getOrderPiece() {
+        return orderPiece;
     }
 
-    public void setOrder_customerinvoicecode(String order_customerinvoicecode) {
-        this.order_customerinvoicecode = order_customerinvoicecode;
+    public void setOrderPiece(Integer orderPiece) {
+        this.orderPiece = orderPiece;
     }
 
-    public Integer getOrder_piece() {
-        return order_piece;
+    public String getOrderCustomerInvoiceCode() {
+        return orderCustomerInvoiceCode;
     }
 
-    public void setOrder_piece(Integer order_piece) {
-        this.order_piece = order_piece;
+    public void setOrderCustomerInvoiceCode(String orderCustomerInvoiceCode) {
+        this.orderCustomerInvoiceCode = orderCustomerInvoiceCode;
     }
 
-    public String getOrder_returnsign() {
-        return order_returnsign;
+    public String getOrderReturnSign() {
+        return orderReturnSign;
     }
 
-    public void setOrder_returnsign(String order_returnsign) {
-        this.order_returnsign = order_returnsign;
+    public void setOrderReturnSign(String orderReturnSign) {
+        this.orderReturnSign = orderReturnSign;
     }
 
-    public String getProduct_id() {
-        return product_id;
+    public String getProductId() {
+        return productId;
     }
 
-    public void setProduct_id(String product_id) {
-        this.product_id = product_id;
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
     public Double getWeight() {

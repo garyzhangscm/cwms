@@ -2092,5 +2092,22 @@
   "unacknowledge":"Unacknowledge",
   "menu.main.outbound.hualei-configuration": "华磊系统配置",
   "hualei-product": "华磊产品",
-  "hualei-configuration": "华磊系统配置"
+  "hualei-configuration": "华磊系统配置",
+  "createOrderEndpoint": "创建订单地址",
+  "printLabelEndpoint": "打印标签地址",
+  "customerId": "Customer Id",
+  "customerUserid": "Customer User ID",
+  "cargoType": "Cargo Type",
+  "customsClearance": "Customer Clearance",
+  "customsDeclaration": "Customs Declaration",
+  "dutyType": "Duty Type",
+  "from": "From",
+  "isFba": "Is FBA",
+  "orderReturnSign": "Order Return Sign",
+  "credential": "登录信息",
+  "url": "URL",
+  "default-value": "默认值",
+  "productId": "产品Id",
+  "shippingLabelFormat": "快递单格式",
+  "ship-by-hualei": "华磊打单"
 }

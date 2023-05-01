@@ -2095,5 +2095,22 @@
   "unacknowledge":"Unacknowledge",
   "menu.main.outbound.hualei-configuration": "Hualei Configuration",
   "hualei-product": "Hualei Product",
-  "hualei-configuration": "Hualei Configuration"
+  "hualei-configuration": "Hualei Configuration",
+  "createOrderEndpoint": "Create Order Endpoint",
+  "printLabelEndpoint": "Print Label Endpoint",
+  "customerId": "Customer Id",
+  "customerUserid": "Customer User ID",
+  "cargoType": "Cargo Type",
+  "customsClearance": "Customer Clearance",
+  "customsDeclaration": "Customs Declaration",
+  "dutyType": "Duty Type",
+  "from": "From",
+  "isFba": "Is FBA",
+  "orderReturnSign": "Order Return Sign",
+  "credential": "Credential",
+  "url": "URL",
+  "default-value": "Default Value",
+  "productId": "Product Id",
+  "shippingLabelFormat": "Shipping Label Format",
+  "ship-by-hualei": "Ship By Hualei"
 }

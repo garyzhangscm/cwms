@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -183,6 +184,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
             fetch = FetchType.EAGER
     )
     private List<OrderLine> orderLines = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<ShipmentRequest> hualeiShipmentRequests = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "order",
@@ -753,5 +762,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setOrderBillableActivities(List<OrderBillableActivity> orderBillableActivities) {
         this.orderBillableActivities = orderBillableActivities;
+    }
+
+    public List<ShipmentRequest> getHualeiShipmentRequests() {
+        return hualeiShipmentRequests;
+    }
+
+    public void setHualeiShipmentRequests(List<ShipmentRequest> hualeiShipmentRequests) {
+        this.hualeiShipmentRequests = hualeiShipmentRequests;
     }
 }

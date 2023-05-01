@@ -20,7 +20,6 @@ package com.garyzhangscm.cwms.outbound.model.hualei;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
-import com.garyzhangscm.cwms.outbound.model.Order;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -82,5 +81,13 @@ public class HualeiShippingLabelFormatByProduct extends AuditibleEntity<String> 
 
     public void setShippingLabelFormat(ShippingLabelFormat shippingLabelFormat) {
         this.shippingLabelFormat = shippingLabelFormat;
+    }
+
+    public HualeiConfiguration getHualeiConfiguration() {
+        return hualeiConfiguration;
+    }
+
+    public void setHualeiConfiguration(HualeiConfiguration hualeiConfiguration) {
+        this.hualeiConfiguration = hualeiConfiguration;
     }
 }

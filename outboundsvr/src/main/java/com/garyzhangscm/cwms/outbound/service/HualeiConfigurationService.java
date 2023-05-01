@@ -82,11 +82,19 @@ public class HualeiConfigurationService {
 
 
     public HualeiConfiguration addHualeiConfiguration(HualeiConfiguration hualeiConfiguration) {
+        hualeiConfiguration.getHualeiShippingLabelFormatByProducts().forEach(
+                hualeiShippingLabelFormatByProduct ->
+                        hualeiShippingLabelFormatByProduct.setHualeiConfiguration(hualeiConfiguration)
+        );
         return saveOrUpdate(hualeiConfiguration);
     }
 
     public HualeiConfiguration changeHualeiConfiguration(Long id, HualeiConfiguration hualeiConfiguration) {
         hualeiConfiguration.setId(id);
+        hualeiConfiguration.getHualeiShippingLabelFormatByProducts().forEach(
+                hualeiShippingLabelFormatByProduct ->
+                        hualeiShippingLabelFormatByProduct.setHualeiConfiguration(hualeiConfiguration)
+        );
         return saveOrUpdate(hualeiConfiguration);
 
     }

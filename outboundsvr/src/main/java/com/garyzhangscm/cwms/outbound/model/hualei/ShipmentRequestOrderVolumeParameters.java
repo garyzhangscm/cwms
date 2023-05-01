@@ -1,22 +1,53 @@
 package com.garyzhangscm.cwms.outbound.model.hualei;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "hualei_shipment_request_order_volume_parameters")
 public class ShipmentRequestOrderVolumeParameters {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "hualei_shipment_request_order_volume_parameters_id")
+    @JsonProperty(value="id")
+    private Long id;
+
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
+
+    @Column(name = "box_no")
     @JsonProperty("box_no")
     private String boxNo;
+
+    @Column(name = "child_no")
     @JsonProperty("child_no")
     private String childNo;
+
+    @Column(name = "volume_height")
     @JsonProperty("volume_height")
     private Double volumeHeight;
+
+    @Column(name = "volume_length")
     @JsonProperty("volume_length")
     private Double volumeLength;
+
+    @Column(name = "volume_width")
     @JsonProperty("volume_width")
     private Double volumeWidth;
+
+    @Column(name = "volume_weight")
     @JsonProperty("volume_weight")
     private Double volumeWeight;
+
+    @OneToOne(mappedBy = "orderVolumeParam")
+    @JsonIgnore
+    private ShipmentRequestParameters shipmentRequestParameters;
 
     @Override
     public String toString() {
@@ -26,6 +57,14 @@ public class ShipmentRequestOrderVolumeParameters {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public ShipmentRequestParameters getShipmentRequestParameters() {
+        return shipmentRequestParameters;
+    }
+
+    public void setShipmentRequestParameters(ShipmentRequestParameters shipmentRequestParameters) {
+        this.shipmentRequestParameters = shipmentRequestParameters;
     }
 
     public String getBoxNo() {
@@ -74,5 +113,21 @@ public class ShipmentRequestOrderVolumeParameters {
 
     public void setVolumeWeight(Double volumeWeight) {
         this.volumeWeight = volumeWeight;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 }
