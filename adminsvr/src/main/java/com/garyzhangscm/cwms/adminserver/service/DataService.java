@@ -176,7 +176,8 @@ public class DataService {
         // 34. work-order-number / WO / 10 / 0 / true
         // 35. work-order-qc-sample-number	/ WQC / 10 / 0 / true
         // 36. work-task / WORK / 10 / 0 / true
-        // 36. bulk-pick-number / BPCK / 10 / 0 / true
+        // 37. bulk-pick-number / BPCK / 10 / 0 / true
+        // 38. hualei-order-customer-invoice-code/ Eulogia / 10 / 0 / true
 
 
         SystemControlledNumber[] systemControlledNumbers =
@@ -273,7 +274,9 @@ public class DataService {
                 new SystemControlledNumber(warehouseId, "work-task",
                         "WORK", "", 10, 0, true),
                 new SystemControlledNumber(warehouseId, "bulk-pick-number",
-                        "BPCK", "", 10, 0, true)
+                        "BPCK", "", 10, 0, true),
+                new SystemControlledNumber(warehouseId, "hualei-order-customer-invoice-code",
+                        "Eulogia", "", 10, 0, true)
         };
     }
 

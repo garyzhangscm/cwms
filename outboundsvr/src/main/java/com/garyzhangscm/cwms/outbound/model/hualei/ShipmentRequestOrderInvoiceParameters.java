@@ -52,7 +52,8 @@ public class ShipmentRequestOrderInvoiceParameters {
     @JsonProperty("sku_code")
     private String skuCode;
 
-    @OneToOne(mappedBy = "orderInvoiceParam")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_parameters_id")
     @JsonIgnore
     private ShipmentRequestParameters shipmentRequestParameters;
 

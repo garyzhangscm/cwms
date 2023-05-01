@@ -83,12 +83,50 @@ public class RestTemplateProxy {
         }
     }
 
-    public <T> T exchange(Class<T> t, String uri, HttpMethod method,
+    public <T> T exchangeWithHualei(Class<T> t, String uri, HttpMethod method,
                           Object obj) {
         HttpEntity entity = null;
         try {
             entity = Objects.isNull(obj) ?
                     null : getHttpEntity(objectMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+
+        String response = getRestTemplate().exchange(
+                uri,
+                method,
+                entity,
+                String.class).getBody();
+
+        logger.debug("get response from hualei: \n {}", response);
+        try {
+
+            // response.getData() is of type linkedHashMap
+            // we will need to cast the data into json format , then
+            // cast the JSON back to the POJO
+            // String json = objectMapper.writeValueAsString(response.getData());
+            // logger.debug("after cast to JSON: \n {}", json);
+
+            return objectMapper.readValue(response, t);
+            // logger.debug("resultT class is {}", resultT.getClass().getName());
+            // return resultT;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+    }
+    public <T> T exchange(Class<T> t, String uri, HttpMethod method,
+                          Object obj) {
+        HttpEntity entity = null;
+        try {
+            entity = Objects.isNull(obj) ?
+                    null :
+                    getHttpEntityForHualei(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
@@ -168,10 +206,20 @@ public class RestTemplateProxy {
         }
     }
 
+    private HttpEntity<String> getHttpEntityForHualei(String requestBody) {
+
+        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
+        return getHttpEntity(requestBody, mediaType);
+    }
     private HttpEntity<String> getHttpEntity(String requestBody) {
+
+        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
+        return getHttpEntity(requestBody, mediaType);
+    }
+
+    private HttpEntity<String> getHttpEntity(String requestBody, MediaType mediaType) {
         HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
+        headers.setContentType(mediaType);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }

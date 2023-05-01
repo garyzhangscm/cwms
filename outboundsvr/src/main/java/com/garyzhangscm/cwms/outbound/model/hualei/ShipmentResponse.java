@@ -41,7 +41,7 @@ public class ShipmentResponse {
             mappedBy = "shipmentResponse",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<ShipmentResponseChild> childList = new ArrayList<>();
 
@@ -109,7 +109,8 @@ public class ShipmentResponse {
     @JsonProperty("tracking_number")
     private String trackingNumber;
 
-    @OneToOne(mappedBy = "shipmentResponse")
+    @OneToOne
+    @JoinColumn(name="hualei_shipment_request_id")
     @JsonIgnore
     private ShipmentRequest shipmentRequest;
 
