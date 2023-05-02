@@ -46,6 +46,9 @@ public class HualeiShippingLabelFormatByProduct extends AuditibleEntity<String> 
     @Enumerated(EnumType.STRING)
     private ShippingLabelFormat shippingLabelFormat;
 
+    @Column(name = "tracking_info_url")
+    private String trackingInfoUrl;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hualei_configuration_id")
@@ -89,5 +92,13 @@ public class HualeiShippingLabelFormatByProduct extends AuditibleEntity<String> 
 
     public void setHualeiConfiguration(HualeiConfiguration hualeiConfiguration) {
         this.hualeiConfiguration = hualeiConfiguration;
+    }
+
+    public String getTrackingInfoUrl() {
+        return trackingInfoUrl;
+    }
+
+    public void setTrackingInfoUrl(String trackingInfoUrl) {
+        this.trackingInfoUrl = trackingInfoUrl;
     }
 }

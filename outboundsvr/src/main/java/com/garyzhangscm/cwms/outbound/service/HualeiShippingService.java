@@ -107,6 +107,12 @@ public class HualeiShippingService {
         shipmentRequest.setShipmentResponse(shipmentResponse);
         shipmentResponse.setShipmentRequest(shipmentRequest);
         shipmentResponse.setWarehouseId(warehouseId);
+        shipmentResponse.getChildList().forEach(
+                shipmentResponseChild -> {
+                    shipmentResponseChild.setShipmentResponse(shipmentResponse);
+                    shipmentResponseChild.setWarehouseId(warehouseId);
+                }
+        );
 
 
         shipmentRequest = hualeiShipmentRequestRepository.save(shipmentRequest);
