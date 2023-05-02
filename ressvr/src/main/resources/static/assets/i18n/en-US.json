@@ -2120,5 +2120,11 @@
   "invoiceTitle": "Invoice Title",
   "skuCode": "SKU Code",
   "sku": "SKU",
-  "requestTime": "Request Time"
+  "requestTime": "Request Time",
+  "configure": "Configure",
+  "create-order-url": "Create Order URL",
+  "print-label-url": "Print Label URL",
+  "current-address": "Current Address",
+  "local-cache-cleared": "Local Cache Cleared",
+  "trackingInfoUrl": "Tracking Number Query URL"
 }

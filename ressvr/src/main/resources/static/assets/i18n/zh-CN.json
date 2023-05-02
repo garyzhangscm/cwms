@@ -2117,5 +2117,11 @@
   "invoiceTitle": "发票抬头",
   "skuCode": "SKU 代码",
   "sku": "SKU",
-  "requestTime": "请求时间"
+  "requestTime": "请求时间",
+  "configure": "配置",
+  "create-order-url": "创建订单地址",
+  "print-label-url": "打印标签地址",
+  "current-address": "当前地址",
+  "local-cache-cleared": "本地缓存已经清空",
+  "trackingInfoUrl": "快递信息跟踪页面"
 }

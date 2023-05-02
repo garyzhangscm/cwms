@@ -47,21 +47,21 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     private String customerUserid;
 
 
-    @Column(name = "create_order_protocal")
-    private String protocal;
+    @Column(name = "create_order_protocol")
+    private String createOrderProtocol;
     @Column(name = "create_order_host")
-    private String host;
+    private String createOrderHost;
     @Column(name = "create_order_port")
-    private String port;
+    private String createOrderPort;
     @Column(name = "create_order_endpoint")
     private String createOrderEndpoint;
 
-    @Column(name = "print_label_protocal")
-    private String protocal;
+    @Column(name = "print_label_protocol")
+    private String printLabelProtocol;
     @Column(name = "print_label_host")
-    private String host;
+    private String printLabelHost;
     @Column(name = "print_label_port")
-    private String port;
+    private String printLabelPort;
     @Column(name = "print_label_endpoint")
     private String printLabelEndpoint;
 
@@ -195,28 +195,52 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
         this.defaultOrderReturnSign = defaultOrderReturnSign;
     }
 
-    public String getProtocal() {
-        return protocal;
+    public String getCreateOrderHost() {
+        return createOrderHost;
     }
 
-    public void setProtocal(String protocal) {
-        this.protocal = protocal;
+    public void setCreateOrderHost(String createOrderHost) {
+        this.createOrderHost = createOrderHost;
     }
 
-    public String getHost() {
-        return host;
+    public String getCreateOrderPort() {
+        return createOrderPort;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setCreateOrderPort(String createOrderPort) {
+        this.createOrderPort = createOrderPort;
     }
 
-    public String getPort() {
-        return port;
+    public String getCreateOrderProtocol() {
+        return createOrderProtocol;
     }
 
-    public void setPort(String port) {
-        this.port = port;
+    public void setCreateOrderProtocol(String createOrderProtocol) {
+        this.createOrderProtocol = createOrderProtocol;
+    }
+
+    public String getPrintLabelProtocol() {
+        return printLabelProtocol;
+    }
+
+    public void setPrintLabelProtocol(String printLabelProtocol) {
+        this.printLabelProtocol = printLabelProtocol;
+    }
+
+    public String getPrintLabelHost() {
+        return printLabelHost;
+    }
+
+    public void setPrintLabelHost(String printLabelHost) {
+        this.printLabelHost = printLabelHost;
+    }
+
+    public String getPrintLabelPort() {
+        return printLabelPort;
+    }
+
+    public void setPrintLabelPort(String printLabelPort) {
+        this.printLabelPort = printLabelPort;
     }
 
     public String getCreateOrderEndpoint() {

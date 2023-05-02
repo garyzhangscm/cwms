@@ -77,9 +77,9 @@ public class HualeiRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme(hualeiConfiguration.getProtocal())
-                        .host(hualeiConfiguration.getHost())
-                        .port(hualeiConfiguration.getPort())
+                        .scheme(hualeiConfiguration.getCreateOrderProtocol())
+                        .host(hualeiConfiguration.getCreateOrderHost())
+                        .port(hualeiConfiguration.getCreateOrderPort())
                         .path(hualeiConfiguration.getCreateOrderEndpoint());
 
         HttpEntity entity = null;
@@ -125,9 +125,9 @@ public class HualeiRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme(hualeiConfiguration.getProtocal())
-                        .host(hualeiConfiguration.getHost())
-                        .port(hualeiConfiguration.getPort())
+                        .scheme(hualeiConfiguration.getPrintLabelProtocol())
+                        .host(hualeiConfiguration.getPrintLabelHost())
+                        .port(hualeiConfiguration.getPrintLabelPort())
                         .path(hualeiConfiguration.getPrintLabelEndpoint())
                         .queryParam("PrintType", shippingLabelFormat)
                         .queryParam("order_id", hualeiOrderId);
