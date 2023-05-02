@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "hualei_shipment_request_order_volume_parameters")
-public class ShipmentRequestOrderVolumeParameters {
+public class ShipmentRequestOrderVolumeParameters  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +47,7 @@ public class ShipmentRequestOrderVolumeParameters {
     @JsonProperty("volume_weight")
     private Double volumeWeight;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name="hualei_shipment_request_parameters_id")
     @JsonIgnore
     private ShipmentRequestParameters shipmentRequestParameters;

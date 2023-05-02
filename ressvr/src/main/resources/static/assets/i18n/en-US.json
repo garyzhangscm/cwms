@@ -2115,5 +2115,10 @@
   "ship-by-hualei": "Ship By Hualei",
   "hualeiShipmentRequest": "Hualei Shipment Request",
   "showAddress": "Show Address",
-  "hideAddress": "Hide Address"
+  "hideAddress": "Hide Address",
+  "hsCode": "HS Code",
+  "invoiceTitle": "Invoice Title",
+  "skuCode": "SKU Code",
+  "sku": "SKU",
+  "requestTime": "Request Time"
 }

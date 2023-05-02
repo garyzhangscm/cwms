@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.HualeiRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -33,7 +35,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
@@ -41,6 +45,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,11 +99,19 @@ public class HualeiShippingService {
         logger.debug(shipmentRequest.toString());
 
         logger.debug("Save shipment request");
-        hualeiShipmentRequestRepository.save(shipmentRequest);
+        shipmentRequest = hualeiShipmentRequestRepository.save(shipmentRequest);
 
-        return hualeiRestemplateClient.sendHualeiShippingRequest(hualeiConfiguration,
+        ShipmentResponse shipmentResponse = hualeiRestemplateClient.sendHualeiShippingRequest(hualeiConfiguration,
                 shipmentRequest);
 
+        shipmentRequest.setShipmentResponse(shipmentResponse);
+        shipmentResponse.setShipmentRequest(shipmentRequest);
+        shipmentResponse.setWarehouseId(warehouseId);
+
+
+        shipmentRequest = hualeiShipmentRequestRepository.save(shipmentRequest);
+
+        return shipmentRequest.getShipmentResponse();
     }
 
     private ShipmentRequest generateHualeiShipmentRequest(Long warehouseId,
@@ -174,7 +187,7 @@ public class HualeiShippingService {
                 warehouseId, shippingCartonNumber, length, width, height, weight
         );
         orderVolumeParam.setShipmentRequestParameters(shipmentRequestParameters);
-        shipmentRequestParameters.setOrderVolumeParam(orderVolumeParam);
+        shipmentRequestParameters.addOrderVolumeParam(orderVolumeParam);
 
         ShipmentRequestOrderInvoiceParameters orderInvoiceParam
                 =  generateShipmentRequestOrderInvoiceParameters(
@@ -186,7 +199,7 @@ public class HualeiShippingService {
                 hualeiConfiguration.getDefaultSkuCode(),
                 weight);
         orderInvoiceParam.setShipmentRequestParameters(shipmentRequestParameters);
-        shipmentRequestParameters.setOrderInvoiceParam(orderInvoiceParam);
+        shipmentRequestParameters.addOrderInvoiceParam(orderInvoiceParam);
 
         return shipmentRequestParameters;
 
@@ -203,7 +216,7 @@ public class HualeiShippingService {
         shipmentRequestOrderInvoiceParameters.setBoxNo(shippingCartonNumber);
         shipmentRequestOrderInvoiceParameters.setHsCode(hsCode);
         shipmentRequestOrderInvoiceParameters.setInvoiceAmount(1.0);
-        shipmentRequestOrderInvoiceParameters.setInvoicePieces(1.0);
+        shipmentRequestOrderInvoiceParameters.setInvoicePieces(1);
         shipmentRequestOrderInvoiceParameters.setInvoiceTitle(invoiceTitle);
         shipmentRequestOrderInvoiceParameters.setInvoiceWeight(weight);
         shipmentRequestOrderInvoiceParameters.setSku(sku);
@@ -227,5 +240,30 @@ public class HualeiShippingService {
         shipmentRequestOrderVolumeParameters.setVolumeHeight(height);
         shipmentRequestOrderVolumeParameters.setVolumeWeight(weight);
         return shipmentRequestOrderVolumeParameters;
+    }
+
+
+    public File getShippingLabelFile(Long warehouseId,
+                                     Long orderId,
+                                     String productId,
+                                     String hualeiOrderId) {
+        // download from the web, we will need to get the response based on the order id
+        HualeiConfiguration hualeiConfiguration = hualeiConfigurationService.findByWarehouse(warehouseId);
+        HualeiShippingLabelFormatByProduct hualeiShippingLabelFormatByProduct =
+                hualeiConfiguration.getHualeiShippingLabelFormatByProducts().stream().filter(
+                        existingHualeiShippingLabelFormatByProduct -> existingHualeiShippingLabelFormatByProduct.getProductId().equalsIgnoreCase(productId)
+                ).findFirst()
+                        .orElseThrow(() -> ResourceNotFoundException.raiseException("Hualei configuration not found for product id " + productId));
+
+
+        File file = hualeiRestemplateClient.getHualeiShippingLabelFile(warehouseId, orderId,
+                hualeiConfiguration,
+                hualeiShippingLabelFormatByProduct.getShippingLabelFormat(), hualeiOrderId);
+
+        if (Objects.isNull(file)) {
+            throw OrderOperationException.raiseException("can't download the shipping label by order id " + hualeiOrderId);
+        }
+        return file;
+
     }
 }

@@ -26,8 +26,15 @@ import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import com.garyzhangscm.cwms.outbound.service.HualeiProductService;
 import com.garyzhangscm.cwms.outbound.service.HualeiShippingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 
@@ -49,5 +56,20 @@ public class HualeiShippingController {
                 productId, orderId, length, width, height, weight);
     }
 
+    @RequestMapping(value="/hualei/shipping/label", method = RequestMethod.GET)
+    public ResponseEntity<Resource> getShippingLabel(Long warehouseId,
+                                                     Long orderId,
+                                                     String productId,
+                                                     String hualeiOrderId) throws FileNotFoundException {
+
+        File reportResultFile = hualeiShippingService.getShippingLabelFile(warehouseId, orderId, productId, hualeiOrderId);
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(reportResultFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
+                .contentLength(reportResultFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 
 }

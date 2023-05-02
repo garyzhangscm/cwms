@@ -18,29 +18,41 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.outbound.model.Item;
+import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
+import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShippingLabelFormat;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
 import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
 import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
-import com.garyzhangscm.cwms.outbound.model.shipengine.RateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 
 @Component
@@ -49,11 +61,19 @@ public class HualeiRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(HualeiRestemplateClient.class);
 
 
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
+
+    @Value("${outbound.order.document.folder}")
+    private String orderDocumentFolder;
+
     public ShipmentResponse sendHualeiShippingRequest(HualeiConfiguration hualeiConfiguration,
-                                                      ShipmentRequest shipmentRequest) {
+                                                      ShipmentRequest shipmentRequest)   {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -62,24 +82,124 @@ public class HualeiRestemplateClient {
                         .port(hualeiConfiguration.getPort())
                         .path(hualeiConfiguration.getCreateOrderEndpoint());
 
-        ShipmentResponse response = restTemplateProxy.exchangeWithHualei(
-                ShipmentResponse.class,
-                builder.toUriString(),
-                HttpMethod.POST,
-                shipmentRequest
-        );
-
+        HttpEntity entity = null;
         try {
-            response.setMessage(
-                    java.net.URLDecoder.decode(response.getMessage(), StandardCharsets.UTF_8.name()));
+            entity = getHttpEntity(shipmentRequest);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData("can't process the hualei shipment request"));
+        }
+
+        String response = restTemplateProxy.getRestTemplate().exchange(
+                 builder.toUriString(),
+                 HttpMethod.POST,
+                 entity,
+                 String.class).getBody();
+
+        ShipmentResponse shipmentResponse = null;
+        try {
+            shipmentResponse = objectMapper.readValue(response, ShipmentResponse.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData("can't decode the response from hualei"));
+        }
+        try {
+            shipmentResponse.setMessage(
+                    java.net.URLDecoder.decode(shipmentResponse.getMessage(), StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
-        logger.debug("Get response from hualei: \n {}", response);
-        return response;
-
+        return shipmentResponse;
     }
 
+
+
+    public File getHualeiShippingLabelFile(Long warehouseId,
+                                           Long orderId,
+                                           HualeiConfiguration hualeiConfiguration,
+                                           ShippingLabelFormat shippingLabelFormat,
+                                           String hualeiOrderId)   {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(hualeiConfiguration.getProtocal())
+                        .host(hualeiConfiguration.getHost())
+                        .port(hualeiConfiguration.getPort())
+                        .path(hualeiConfiguration.getPrintLabelEndpoint())
+                        .queryParam("PrintType", shippingLabelFormat)
+                        .queryParam("order_id", hualeiOrderId);
+
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                byte[].class);
+
+        logger.debug("get response with status {}", response.getStatusCode());
+
+        if(response.getStatusCode().equals(HttpStatus.OK))
+        {
+            byte[] shippingLabelFile = response.getBody();
+            String fileName = response.getHeaders().getContentDisposition().getFilename();
+
+            logger.debug("start to download file {} with size {}",
+                    fileName, shippingLabelFile.length);
+
+            String directory = getUploadOrderDocumentFilePath(warehouseId, orderId) + fileName;
+            logger.debug("save to folder and file {}",
+                    directory);
+            Path path = Paths.get(directory);
+            try {
+                Files.write(path, shippingLabelFile);
+                logger.debug("shipping label saved!");
+                return path.toFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                        GenericException.createDefaultData("can't save file to " + directory));
+            }
+
+        }
+
+        return null;
+    }
+
+    private String getUploadOrderDocumentFilePath(Long warehouseId, Long orderId) {
+
+        if (!orderDocumentFolder.endsWith("/")) {
+            return orderDocumentFolder + "/" + warehouseId + "/" + orderId + "/";
+        }
+        else  {
+
+            return orderDocumentFolder + warehouseId + "/" + orderId + "/";
+        }
+    }
+
+    private HttpEntity<LinkedMultiValueMap<String, String>> getHttpEntity(ShipmentRequest shipmentRequest) throws JsonProcessingException {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+
+        LinkedMultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("param", objectMapper.writeValueAsString(shipmentRequest.getShipmentRequestParameters()));
+        // parameters.add("param", getParameters(shipmentRequest));
+        parameters.add("getTrackingNumber", shipmentRequest.getGetTrackingNumber());
+
+        HttpEntity<LinkedMultiValueMap<String, String>> requestEntity =
+                new HttpEntity<>(parameters, headers);
+
+        return requestEntity;
+    }
 
 }
