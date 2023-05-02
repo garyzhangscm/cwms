@@ -47,16 +47,21 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     private String customerUserid;
 
 
-    @Column(name = "protocal")
+    @Column(name = "create_order_protocal")
     private String protocal;
-    @Column(name = "host")
+    @Column(name = "create_order_host")
     private String host;
-    @Column(name = "port")
+    @Column(name = "create_order_port")
     private String port;
-
     @Column(name = "create_order_endpoint")
     private String createOrderEndpoint;
 
+    @Column(name = "print_label_protocal")
+    private String protocal;
+    @Column(name = "print_label_host")
+    private String host;
+    @Column(name = "print_label_port")
+    private String port;
     @Column(name = "print_label_endpoint")
     private String printLabelEndpoint;
 

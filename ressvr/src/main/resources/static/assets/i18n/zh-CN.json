@@ -2112,5 +2112,10 @@
   "ship-by-hualei": "华磊打单",
   "hualeiShipmentRequest": "华磊快递单",
   "showAddress": "显示地址",
-  "hideAddress": "隐藏地址"
+  "hideAddress": "隐藏地址",
+  "hsCode": "HS 代码",
+  "invoiceTitle": "发票抬头",
+  "skuCode": "SKU 代码",
+  "sku": "SKU",
+  "requestTime": "请求时间"
 }

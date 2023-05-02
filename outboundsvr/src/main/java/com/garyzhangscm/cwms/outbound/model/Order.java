@@ -191,6 +191,7 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
+    @OrderBy("createdTime desc")
     private List<ShipmentRequest> hualeiShipmentRequests = new ArrayList<>();
 
     @OneToMany(

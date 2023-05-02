@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.WorkTask;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -83,50 +87,13 @@ public class RestTemplateProxy {
         }
     }
 
-    public <T> T exchangeWithHualei(Class<T> t, String uri, HttpMethod method,
-                          Object obj) {
-        HttpEntity entity = null;
-        try {
-            entity = Objects.isNull(obj) ?
-                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
-                    GenericException.createDefaultData(e.getMessage()));
-        }
-
-        String response = getRestTemplate().exchange(
-                uri,
-                method,
-                entity,
-                String.class).getBody();
-
-        logger.debug("get response from hualei: \n {}", response);
-        try {
-
-            // response.getData() is of type linkedHashMap
-            // we will need to cast the data into json format , then
-            // cast the JSON back to the POJO
-            // String json = objectMapper.writeValueAsString(response.getData());
-            // logger.debug("after cast to JSON: \n {}", json);
-
-            return objectMapper.readValue(response, t);
-            // logger.debug("resultT class is {}", resultT.getClass().getName());
-            // return resultT;
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
-                    GenericException.createDefaultData(e.getMessage()));
-        }
-    }
     public <T> T exchange(Class<T> t, String uri, HttpMethod method,
                           Object obj) {
         HttpEntity entity = null;
         try {
             entity = Objects.isNull(obj) ?
                     null :
-                    getHttpEntityForHualei(objectMapper.writeValueAsString(obj));
+                    getHttpEntity(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
@@ -206,18 +173,10 @@ public class RestTemplateProxy {
         }
     }
 
-    private HttpEntity<String> getHttpEntityForHualei(String requestBody) {
-
-        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
-        return getHttpEntity(requestBody, mediaType);
-    }
     private HttpEntity<String> getHttpEntity(String requestBody) {
 
         MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
-        return getHttpEntity(requestBody, mediaType);
-    }
 
-    private HttpEntity<String> getHttpEntity(String requestBody, MediaType mediaType) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());

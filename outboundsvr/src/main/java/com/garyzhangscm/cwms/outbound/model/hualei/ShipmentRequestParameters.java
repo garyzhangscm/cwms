@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "hualei_shipment_request_parameters")
-public class ShipmentRequestParameters {
+public class ShipmentRequestParameters  extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -106,22 +110,22 @@ public class ShipmentRequestParameters {
     private ShipmentRequest shipmentRequest;
 
     @JsonProperty("orderVolumeParam")
-    @OneToOne(
+    @OneToMany(
             mappedBy = "shipmentRequestParameters",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private ShipmentRequestOrderVolumeParameters orderVolumeParam;
+    private List<ShipmentRequestOrderVolumeParameters> orderVolumeParams = new ArrayList<>();
 
     @JsonProperty("orderInvoiceParam")
-    @OneToOne(
+    @OneToMany(
             mappedBy = "shipmentRequestParameters",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private ShipmentRequestOrderInvoiceParameters orderInvoiceParam;
+    private List<ShipmentRequestOrderInvoiceParameters> orderInvoiceParams = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -320,19 +324,25 @@ public class ShipmentRequestParameters {
         this.weight = weight;
     }
 
-    public ShipmentRequestOrderVolumeParameters getOrderVolumeParam() {
-        return orderVolumeParam;
+    public List<ShipmentRequestOrderVolumeParameters> getOrderVolumeParams() {
+        return orderVolumeParams;
     }
 
-    public void setOrderVolumeParam(ShipmentRequestOrderVolumeParameters orderVolumeParam) {
-        this.orderVolumeParam = orderVolumeParam;
+    public void setOrderVolumeParams(List<ShipmentRequestOrderVolumeParameters> orderVolumeParams) {
+        this.orderVolumeParams = orderVolumeParams;
+    }
+    public void addOrderVolumeParam(ShipmentRequestOrderVolumeParameters orderVolumeParam) {
+        this.orderVolumeParams.add(orderVolumeParam);
     }
 
-    public ShipmentRequestOrderInvoiceParameters getOrderInvoiceParam() {
-        return orderInvoiceParam;
+    public List<ShipmentRequestOrderInvoiceParameters> getOrderInvoiceParams() {
+        return orderInvoiceParams;
     }
 
-    public void setOrderInvoiceParam(ShipmentRequestOrderInvoiceParameters orderInvoiceParam) {
-        this.orderInvoiceParam = orderInvoiceParam;
+    public void setOrderInvoiceParams(List<ShipmentRequestOrderInvoiceParameters> orderInvoiceParams) {
+        this.orderInvoiceParams = orderInvoiceParams;
+    }
+    public void addOrderInvoiceParam(ShipmentRequestOrderInvoiceParameters orderInvoiceParam) {
+        this.orderInvoiceParams.add(orderInvoiceParam);
     }
 }
