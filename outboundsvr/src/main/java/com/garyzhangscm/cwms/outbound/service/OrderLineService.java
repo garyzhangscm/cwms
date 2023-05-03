@@ -69,6 +69,8 @@ public class OrderLineService{
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private HualeiShippingService hualeiShippingService;
 
     @Value("${fileupload.test-data.order_lines:order_lines}")
     String testDataFile;
@@ -274,7 +276,87 @@ public class OrderLineService{
 
  **/
     public OrderLine save(OrderLine orderLine) {
-        return orderLineRepository.save(orderLine);
+        boolean newOrderLineFlag = false;
+        if (Objects.isNull(orderLine.getId())) {
+            newOrderLineFlag = true;
+        }
+        OrderLine newOrderLine = orderLineRepository.save(orderLine);
+
+        // see if we will need to auto request shipping label
+        logger.debug("for new order line, let's see if we will need to automatically print shipping label " +
+                        " when creating the new order {}, line {}",
+                newOrderLine.getNumber(), newOrderLine.getNumber());
+        logger.debug("newOrderLineFlag?: {}", newOrderLineFlag);
+        logger.debug("newOrderLine.getAutoRequestShippingLabel()?: {}",
+                Boolean.TRUE.equals(newOrderLine.getAutoRequestShippingLabel()));
+        if (newOrderLineFlag && Boolean.TRUE.equals(newOrderLine.getAutoRequestShippingLabel())) {
+            logger.debug("start a new thread to request the shipping label as it may take a while");
+            new Thread(() -> autoRequestShippingLabel(orderLine)).start();
+        }
+
+        return newOrderLine;
+    }
+
+    /**
+     * Automatically print the shipping label
+     * NOW only works for hualei
+     * @param orderLine
+     */
+    private void autoRequestShippingLabel(OrderLine orderLine) {
+
+        // for now we only support hualei system so we will need to make sure the order line has
+        // hualei's product id setup
+        if (Strings.isBlank(orderLine.getHualeiProductId())) {
+            logger.debug("skip the order {} / line {} as it doesn't have the hualei product id setup ",
+                    orderLine.getOrderNumber(), orderLine.getNumber());
+            return;
+        }
+        // we will always assume there's one package per carton(item's case UOM)
+        Item item = Objects.isNull(orderLine.getItem()) ?
+                inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()) :
+                orderLine.getItem();
+
+        if (Objects.isNull(item)) {
+            throw OrderOperationException.raiseException("can't automatically request a shipping label as we can't " +
+                    "find the item with id  " + orderLine.getItemId() + " for order " +
+                    orderLine.getOrderNumber() + ", line " + orderLine.getNumber());
+        }
+        // get the case UOM from the default item package type
+        if (Objects.isNull(item.getDefaultItemPackageType())) {
+            throw OrderOperationException.raiseException("can't automatically request a shipping label as we can't " +
+                    " find the default item package type for item " + item.getName());
+        }
+        ItemUnitOfMeasure caseItemUnitOfMeasure = item.getDefaultItemPackageType().getItemUnitOfMeasures().stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst()
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("can't automatically request a shipping label as we can't " +
+                        " find the case Unit of Measure from the default Item Pacakge Type of item " + item.getName()));
+
+        logger.debug("start to automatically request a hualei shipping label by parameters");
+        logger.debug("warehouse id: {}", orderLine.getWarehouseId());
+        logger.debug("product id: {}", orderLine.getHualeiProductId());
+        logger.debug("order number: {}", orderLine.getOrder().getNumber());
+        logger.debug("length: {}", caseItemUnitOfMeasure.getLength());
+        logger.debug("width: {}", caseItemUnitOfMeasure.getWidth());
+        logger.debug("height: {}", caseItemUnitOfMeasure.getHeight());
+        logger.debug("weight: {}", caseItemUnitOfMeasure.getWeight());
+        logger.debug("item name: {}", item.getName());
+        logger.debug("quantity: {}", caseItemUnitOfMeasure.getQuantity());
+        logger.debug("item price: {}", item.getUnitCost());
+        hualeiShippingService.sendHualeiShippingRequest(
+                orderLine.getWarehouseId(),
+                orderLine.getHualeiProductId(),
+                orderLine.getOrder(),
+                caseItemUnitOfMeasure.getLength(),
+                caseItemUnitOfMeasure.getWidth(),
+                caseItemUnitOfMeasure.getHeight(),
+                caseItemUnitOfMeasure.getWeight(),
+                (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity()),
+                item.getName(),
+                caseItemUnitOfMeasure.getQuantity(),
+                item.getUnitCost()
+        );
+
     }
 
     public OrderLine saveOrUpdate(OrderLine orderLine) {
@@ -395,8 +477,19 @@ public class OrderLineService{
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 
+        orderLine.setHualeiProductId(orderLineCSVWrapper.getHualeiProductId());
+        orderLine.setAutoRequestShippingLabel(
+                Strings.isBlank(orderLineCSVWrapper.getAutoRequestShippingLabel()) ?
+                        false
+                        :
+                        orderLineCSVWrapper.getAutoRequestShippingLabel().equals("1") ||
+                                orderLineCSVWrapper.getAutoRequestShippingLabel().equalsIgnoreCase("true")
+
+        );
 
         orderLine.setWarehouseId(warehouseId);
+
+
 
         if (Objects.nonNull(order)) {
             orderLine.setOrder(order);

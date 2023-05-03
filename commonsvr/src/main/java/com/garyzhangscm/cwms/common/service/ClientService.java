@@ -155,10 +155,10 @@ public class ClientService implements  TestDataInitiableService{
         if (clientRestriction.getClientAccesses().trim().isEmpty()) {
             // the user can't access any client, then the user
             // can only access the non 3pl data
-            accessibleClientListPredicate = criteriaBuilder.isNull(root.get("clientId"));
+            accessibleClientListPredicate = criteriaBuilder.isNull(root.get("id"));
         }
         else {
-            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("id"));
             for(String id : clientRestriction.getClientAccesses().trim().split(",")) {
                 inClientIds.value(Long.parseLong(id));
             }
@@ -169,7 +169,7 @@ public class ClientService implements  TestDataInitiableService{
             // the user can access the non 3pl data
             return criteriaBuilder.and(predicate,
                     criteriaBuilder.or(
-                            criteriaBuilder.isNull(root.get("clientId")),
+                            criteriaBuilder.isNull(root.get("id")),
                             accessibleClientListPredicate));
         }
         else {
@@ -177,7 +177,7 @@ public class ClientService implements  TestDataInitiableService{
             // the user can NOT access the non 3pl data
             return criteriaBuilder.and(predicate,
                     criteriaBuilder.and(
-                            criteriaBuilder.isNotNull(root.get("clientId")),
+                            criteriaBuilder.isNotNull(root.get("id")),
                             accessibleClientListPredicate));
         }
     }

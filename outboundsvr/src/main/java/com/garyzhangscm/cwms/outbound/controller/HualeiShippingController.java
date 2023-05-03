@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
 import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import com.garyzhangscm.cwms.outbound.service.HualeiProductService;
 import com.garyzhangscm.cwms.outbound.service.HualeiShippingService;
@@ -45,15 +46,20 @@ public class HualeiShippingController {
     private HualeiShippingService hualeiShippingService;
 
     @RequestMapping(value="/hualei/shipping", method = RequestMethod.POST)
-    public ShipmentResponse sendHualeiRequest(Long warehouseId,
-                                              String productId, // hualei product id
-                                              Long orderId,
-                                              double length,
-                                              double width,
-                                              double height,
-                                              double weight) {
+    public ShipmentRequest[] sendHualeiRequest(Long warehouseId,
+                                               String productId, // hualei product id
+                                               Long orderId,
+                                               double length,
+                                               double width,
+                                               double height,
+                                               double weight,
+                                               @RequestParam(name = "packageCount", required = false, defaultValue = "1") Integer packageCount,
+                                               @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
+                                               @RequestParam(name = "quantity", required = false, defaultValue = "1") Long quantity,
+                                               @RequestParam(name = "unitCost", required = false, defaultValue = "1.0") Double unitCost) {
         return hualeiShippingService.sendHualeiShippingRequest(warehouseId,
-                productId, orderId, length, width, height, weight);
+                productId, orderId, length, width, height, weight, packageCount,
+                itemName, quantity, unitCost);
     }
 
     @RequestMapping(value="/hualei/shipping/label", method = RequestMethod.GET)

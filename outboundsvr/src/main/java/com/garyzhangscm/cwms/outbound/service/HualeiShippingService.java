@@ -26,12 +26,16 @@ import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.model.FileUploadResult;
 import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.OrderLineCSVWrapper;
 import com.garyzhangscm.cwms.outbound.model.OrderStatus;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import com.garyzhangscm.cwms.outbound.repository.HualeiProductRepository;
 import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentRequestRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.codehaus.jackson.map.ser.std.ObjectArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,58 +70,108 @@ public class HualeiShippingService {
     @Autowired
     private HualeiShipmentRequestRepository hualeiShipmentRequestRepository;
 
-    public ShipmentResponse sendHualeiShippingRequest(Long warehouseId,
-                                                      String productId, // hualei product id
-                                                      Long orderId,
-                                                      double length,
-                                                      double width,
-                                                      double height,
-                                                      double weight) {
+    public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
+                                                       String productId, // hualei product id
+                                                       Long orderId,
+                                                       double length,
+                                                       double width,
+                                                       double height,
+                                                       double weight,
+                                                       int packageCount,
+                                                       String itemName,
+                                                       Long quantity,
+                                                       Double unitCost) {
 
         return sendHualeiShippingRequest(
                 warehouseId, productId, orderService.findById(orderId),
-                length, width, height, weight);
+                length, width, height, weight, packageCount,
+                itemName, quantity, unitCost);
     }
-    public ShipmentResponse sendHualeiShippingRequest(Long warehouseId,
-                                                      String productId, // hualei product id
-                                                      Order order,
-                                                      double length,
-                                                      double width,
-                                                      double height,
-                                                      double weight) {
+    public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
+                                                       String productId, // hualei product id
+                                                       Order order,
+                                                       double length,
+                                                       double width,
+                                                       double height,
+                                                       double weight,
+                                                       int packageCount,
+                                                       String itemName,
+                                                       Long quantity,
+                                                       Double unitCost) {
         HualeiConfiguration hualeiConfiguration =
                 hualeiConfigurationService.findByWarehouse(warehouseId);
+
         if (Objects.isNull(hualeiConfiguration)) {
             throw OrderOperationException.raiseException("hualei system is not setup");
         }
 
-        ShipmentRequest shipmentRequest = generateHualeiShipmentRequest(
-                warehouseId, productId, hualeiConfiguration, order, length, width, height, weight
-        );
+        // setup the default value if the value is not passed in
+        if (length <= 1) {
+            length = 1;
+        }
+        if (width <= 1) {
+            width = 1;
+        }
+        if (height <= 1) {
+            height = 1;
+        }
+        if (weight <= 1) {
+            weight = 1;
+        }
+        if (Strings.isBlank(itemName)) {
+            itemName = hualeiConfiguration.getDefaultSku();
+        }
+        if (Objects.isNull(quantity) || quantity <= 1) {
+            quantity = 1l;
+        }
+        if (Objects.isNull(unitCost) || unitCost <= 1) {
+            unitCost = 1.0;
+        }
 
-        logger.debug("start to send hualei shipment request: \n{}");
-        logger.debug(shipmentRequest.toString());
 
-        logger.debug("Save shipment request");
-        shipmentRequest = hualeiShipmentRequestRepository.save(shipmentRequest);
+        ShipmentRequest[] shipmentRequests = new ShipmentRequest[packageCount];
 
-        ShipmentResponse shipmentResponse = hualeiRestemplateClient.sendHualeiShippingRequest(hualeiConfiguration,
-                shipmentRequest);
+        // init identical shipment request and save it.
+        // we will send the request and get the response in a separate thread
+        for (int i = 0; i < packageCount; i++) {
 
-        shipmentRequest.setShipmentResponse(shipmentResponse);
-        shipmentResponse.setShipmentRequest(shipmentRequest);
-        shipmentResponse.setWarehouseId(warehouseId);
-        shipmentResponse.getChildList().forEach(
-                shipmentResponseChild -> {
-                    shipmentResponseChild.setShipmentResponse(shipmentResponse);
-                    shipmentResponseChild.setWarehouseId(warehouseId);
-                }
-        );
+            shipmentRequests[i] =
+                    hualeiShipmentRequestRepository.save(
+                            generateHualeiShipmentRequest(
+                                warehouseId, productId, hualeiConfiguration, order, length, width, height, weight,
+                                    itemName, quantity, unitCost
+                            )
+                    );
+        }
+
+        // start a new thread to request the label one by one
+        new Thread(() -> {
+            for (int i = 0; i < packageCount; i++) {
+                    ShipmentRequest shipmentRequest = shipmentRequests[i];
+                    logger.debug("start to send #{} hualei shipment request: \n{}",
+                            i, shipmentRequest);
+
+                    ShipmentResponse shipmentResponse = hualeiRestemplateClient.sendHualeiShippingRequest(hualeiConfiguration,
+                            shipmentRequest);
 
 
-        shipmentRequest = hualeiShipmentRequestRepository.save(shipmentRequest);
+                    shipmentRequest.setShipmentResponse(shipmentResponse);
+                    shipmentResponse.setShipmentRequest(shipmentRequest);
+                    shipmentResponse.setWarehouseId(warehouseId);
+                    shipmentResponse.getChildList().forEach(
+                            shipmentResponseChild -> {
+                                shipmentResponseChild.setShipmentResponse(shipmentResponse);
+                                shipmentResponseChild.setWarehouseId(warehouseId);
+                            }
+                    );
+                    logger.debug("save hualei's shipment response\n {}", shipmentResponse);
 
-        return shipmentRequest.getShipmentResponse();
+                    hualeiShipmentRequestRepository.save(shipmentRequest);
+            }
+        }).start();
+
+
+        return shipmentRequests;
     }
 
     private ShipmentRequest generateHualeiShipmentRequest(Long warehouseId,
@@ -127,17 +181,22 @@ public class HualeiShippingService {
                                                           double length,
                                                           double width,
                                                           double height,
-                                                          double weight) {
+                                                          double weight,
+                                                          String itemName,
+                                                          Long quantity,
+                                                          Double unitCost) {
         ShipmentRequest shipmentRequest = new ShipmentRequest();
 
         shipmentRequest.setWarehouseId(warehouseId);
         shipmentRequest.setGetTrackingNumber("1");
+        shipmentRequest.setStatus(ShipmentRequestStatus.REQUESTED);
         shipmentRequest.setOrder(order);
 
         ShipmentRequestParameters shipmentRequestParameters =
                 generateShipmentRequestParameters(
                         warehouseId, productId, hualeiConfiguration, order,
-                        length, width, height, weight
+                        length, width, height, weight,
+                        itemName, quantity, unitCost
                 );
         shipmentRequestParameters.setShipmentRequest(shipmentRequest);
         shipmentRequest.setShipmentRequestParameters(shipmentRequestParameters);
@@ -153,7 +212,10 @@ public class HualeiShippingService {
                                                                         double length,
                                                                         double width,
                                                                         double height,
-                                                                        double weight) {
+                                                                        double weight,
+                                                                        String itemName,
+                                                                        Long quantity,
+                                                                        Double unitCost) {
         ShipmentRequestParameters shipmentRequestParameters = new ShipmentRequestParameters();
         shipmentRequestParameters.setWarehouseId(warehouseId);
 
@@ -179,6 +241,7 @@ public class HualeiShippingService {
         shipmentRequestParameters.setOrderCustomerInvoiceCode(
                 commonServiceRestemplateClient.getNextNumber(warehouseId, "hualei-order-customer-invoice-code")
         );
+        // order piece: how many boxes in the orderVolumeParam
         shipmentRequestParameters.setOrderPiece(1);
         shipmentRequestParameters.setOrderReturnSign(hualeiConfiguration.getDefaultOrderReturnSign());
         shipmentRequestParameters.setProductId(productId);
@@ -197,13 +260,12 @@ public class HualeiShippingService {
 
         ShipmentRequestOrderInvoiceParameters orderInvoiceParam
                 =  generateShipmentRequestOrderInvoiceParameters(
-                warehouseId,
-                shippingCartonNumber,
-                hualeiConfiguration.getDefaultHsCode(),
-                hualeiConfiguration.getDefaultInvoiceTitle(),
-                hualeiConfiguration.getDefaultSku(),
-                hualeiConfiguration.getDefaultSkuCode(),
-                weight);
+                        warehouseId,
+                        shippingCartonNumber,
+                        hualeiConfiguration.getDefaultHsCode(),
+                        weight,
+                        itemName, quantity, unitCost
+                    );
         orderInvoiceParam.setShipmentRequestParameters(shipmentRequestParameters);
         shipmentRequestParameters.addOrderInvoiceParam(orderInvoiceParam);
 
@@ -213,20 +275,20 @@ public class HualeiShippingService {
 
     private ShipmentRequestOrderInvoiceParameters generateShipmentRequestOrderInvoiceParameters(
             Long warehouseId,
-            String shippingCartonNumber, String hsCode, String invoiceTitle,
-            String sku, String skuCode, double weight) {
+            String shippingCartonNumber, String hsCode, double weight,
+            String itemName, Long quantity, Double unitCost) {
 
         ShipmentRequestOrderInvoiceParameters shipmentRequestOrderInvoiceParameters =
                 new ShipmentRequestOrderInvoiceParameters();
         shipmentRequestOrderInvoiceParameters.setWarehouseId(warehouseId);
         shipmentRequestOrderInvoiceParameters.setBoxNo(shippingCartonNumber);
         shipmentRequestOrderInvoiceParameters.setHsCode(hsCode);
-        shipmentRequestOrderInvoiceParameters.setInvoiceAmount(1.0);
-        shipmentRequestOrderInvoiceParameters.setInvoicePieces(1);
-        shipmentRequestOrderInvoiceParameters.setInvoiceTitle(invoiceTitle);
+        shipmentRequestOrderInvoiceParameters.setInvoiceAmount(quantity * unitCost);
+        shipmentRequestOrderInvoiceParameters.setInvoicePieces(quantity.intValue());
+        shipmentRequestOrderInvoiceParameters.setInvoiceTitle(itemName);
         shipmentRequestOrderInvoiceParameters.setInvoiceWeight(weight);
-        shipmentRequestOrderInvoiceParameters.setSku(sku);
-        shipmentRequestOrderInvoiceParameters.setSkuCode(skuCode);
+        shipmentRequestOrderInvoiceParameters.setSku(itemName);
+        shipmentRequestOrderInvoiceParameters.setSkuCode(itemName);
 
         return shipmentRequestOrderInvoiceParameters;
     }
