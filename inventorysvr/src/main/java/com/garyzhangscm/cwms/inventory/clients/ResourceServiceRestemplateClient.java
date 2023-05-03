@@ -51,12 +51,6 @@ public class ResourceServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "InventoryService_User")
@@ -65,7 +59,7 @@ public class ResourceServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/users/{id}");
-
+/**
         ResponseBodyWrapper<User> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -74,6 +68,14 @@ public class ResourceServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                User.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
     @Cacheable(cacheNames = "InventoryService_User")
@@ -84,7 +86,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
-
+/**
         ResponseBodyWrapper<List<User>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -93,6 +95,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
 
         List<User> users = responseBodyWrapper.getData();
+ **/
+        List<User> users = restTemplateProxy.exchangeList(
+                User.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
 
         if (users.size() != 1) {
             return null;
@@ -109,7 +119,7 @@ public class ResourceServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/roles/{id}");
-
+/**
         ResponseBodyWrapper<Role> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -118,6 +128,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Role>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Role.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -131,7 +149,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/roles")
                         .queryParam("name", name)
                         .queryParam("companyId", companyId);
-
+/**
         ResponseBodyWrapper<List<Role>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -140,6 +158,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Role>>>() {}).getBody();
 
         List<Role> roles = responseBodyWrapper.getData();
+ **/
+        List<Role> roles = restTemplateProxy.exchangeList(
+                Role.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
 
         if (roles.size() != 1) {
             return null;
@@ -154,14 +180,13 @@ public class ResourceServiceRestemplateClient {
 
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                        Report reportData, String locale )
-            throws JsonProcessingException {
+                                        Report reportData, String locale ) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
-
+/**
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(warehouseId, type).toUri(),
@@ -170,7 +195,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
 
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.buildAndExpand(warehouseId, type).toUriString(),
+                HttpMethod.POST,
+                reportData
+        );
     }
 
 
@@ -184,7 +216,7 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -193,15 +225,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
-    }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
     }
 }

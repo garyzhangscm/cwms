@@ -46,13 +46,7 @@ import java.util.List;
 public class ResourceServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
-
-    @Autowired
-    OAuth2RestOperations restTemplate;
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
+ 
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
