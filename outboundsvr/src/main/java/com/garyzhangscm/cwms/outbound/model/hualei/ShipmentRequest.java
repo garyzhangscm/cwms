@@ -36,6 +36,10 @@ public class ShipmentRequest  extends AuditibleEntity<String> implements Seriali
     @JsonProperty("param")
     private ShipmentRequestParameters shipmentRequestParameters;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private ShipmentRequestStatus status;
+
     @OneToOne(
             mappedBy = "shipmentRequest",
             cascade = CascadeType.ALL,
@@ -105,5 +109,13 @@ public class ShipmentRequest  extends AuditibleEntity<String> implements Seriali
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+
+    public ShipmentRequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ShipmentRequestStatus status) {
+        this.status = status;
     }
 }

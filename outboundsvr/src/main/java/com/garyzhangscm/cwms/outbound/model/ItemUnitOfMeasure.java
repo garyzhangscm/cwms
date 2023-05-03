@@ -40,6 +40,8 @@ public class ItemUnitOfMeasure implements Serializable {
     private Double height;
     private Boolean trackingLpn;
 
+    private Boolean caseFlag;
+
 
     public Long getId() {
         return id;
@@ -120,5 +122,13 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setTrackingLpn(Boolean trackingLpn) {
         this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
     }
 }

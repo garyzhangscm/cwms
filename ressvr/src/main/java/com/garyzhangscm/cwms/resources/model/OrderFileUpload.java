@@ -155,6 +155,14 @@ public class OrderFileUpload extends FileUploadType {
                 "style", "Style",
                 String.class, 100, true
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "hualeiProductId", "Hualei Product Id",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "autoRequestShippingLabel", "Auto Request Shipping Label",
+                Boolean.class, 10, true
+        ));
 
     }
 

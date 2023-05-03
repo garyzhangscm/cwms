@@ -2126,5 +2126,7 @@
   "print-label-url": "Print Label URL",
   "current-address": "Current Address",
   "local-cache-cleared": "Local Cache Cleared",
-  "trackingInfoUrl": "Tracking Number Query URL"
+  "trackingInfoUrl": "Tracking Number Query URL",
+  "packageCount": "Package Count",
+  "caseQuantity": "Case Quantity"
 }

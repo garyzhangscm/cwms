@@ -185,6 +185,7 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     )
     private List<OrderLine> orderLines = new ArrayList<>();
 
+    // hualei related field
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
@@ -193,6 +194,7 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     )
     @OrderBy("createdTime desc")
     private List<ShipmentRequest> hualeiShipmentRequests = new ArrayList<>();
+
 
     @OneToMany(
             mappedBy = "order",

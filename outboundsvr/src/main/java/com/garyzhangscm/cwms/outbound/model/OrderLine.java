@@ -101,6 +101,15 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "non_allocatable")
     private Boolean nonAllocatable;
 
+
+    // product id if shipped by hualei. This is
+    // related to the carrier that ship the package
+    @Column(name="hualei_product_id")
+    private String hualeiProductId;
+
+    @Column(name = "auto_request_shipping_label")
+    private Boolean autoRequestShippingLabel;
+
     @JsonIgnore
     @OneToMany(
             mappedBy = "orderLine",
@@ -267,6 +276,14 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
         this.warehouse = warehouse;
     }
 
+    public Boolean getAutoRequestShippingLabel() {
+        return autoRequestShippingLabel;
+    }
+
+    public void setAutoRequestShippingLabel(Boolean autoRequestShippingLabel) {
+        this.autoRequestShippingLabel = autoRequestShippingLabel;
+    }
+
     public Long getCarrierId() {
         return carrierId;
     }
@@ -381,6 +398,14 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setProductSize(String productSize) {
         this.productSize = productSize;
+    }
+
+    public String getHualeiProductId() {
+        return hualeiProductId;
+    }
+
+    public void setHualeiProductId(String hualeiProductId) {
+        this.hualeiProductId = hualeiProductId;
     }
 
     public String getStyle() {

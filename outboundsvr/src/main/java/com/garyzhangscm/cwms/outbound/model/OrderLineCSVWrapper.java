@@ -22,6 +22,8 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
+
 public class OrderLineCSVWrapper {
     private String client;
     private String order;
@@ -70,6 +72,10 @@ public class OrderLineCSVWrapper {
     private String color;
     private String productSize;
     private String style;
+
+
+    private String hualeiProductId;
+    private String autoRequestShippingLabel;
 
     @Override
     public String toString() {
@@ -160,6 +166,22 @@ public class OrderLineCSVWrapper {
 
     public void setBillToCustomerSameAsShipToCustomer(String billToCustomerSameAsShipToCustomer) {
         this.billToCustomerSameAsShipToCustomer = billToCustomerSameAsShipToCustomer;
+    }
+
+    public String getHualeiProductId() {
+        return hualeiProductId;
+    }
+
+    public void setHualeiProductId(String hualeiProductId) {
+        this.hualeiProductId = hualeiProductId;
+    }
+
+    public String getAutoRequestShippingLabel() {
+        return autoRequestShippingLabel;
+    }
+
+    public void setAutoRequestShippingLabel(String autoRequestShippingLabel) {
+        this.autoRequestShippingLabel = autoRequestShippingLabel;
     }
 
     public String getBillToCustomer() {

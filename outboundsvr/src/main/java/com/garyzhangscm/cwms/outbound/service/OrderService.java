@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
+import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -536,6 +538,7 @@ public class OrderService {
                 Strings.isBlank(username) ? newOrder.getCreatedBy() : username);
         return newOrder;
     }
+
 
     /**
      * Check if we can modify an existing order
