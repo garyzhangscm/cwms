@@ -37,10 +37,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Objects;
 
 @Component
 public class RestTemplateProxy {
+
 
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateProxy.class);
 
@@ -83,7 +85,8 @@ public class RestTemplateProxy {
         HttpEntity entity = null;
         try {
             entity = Objects.isNull(obj) ?
-                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
+                    null :
+                    getHttpEntity(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
@@ -120,10 +123,55 @@ public class RestTemplateProxy {
         }
     }
 
+    public <T> List<T> exchangeList(Class<T> t, String uri, HttpMethod method,
+                                    Object obj) {
+        HttpEntity entity = null;
+        try {
+            entity = Objects.isNull(obj) ?
+                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+
+        ResponseBodyWrapper response = getRestTemplate().exchange(
+                uri,
+                method,
+                entity,
+                ResponseBodyWrapper.class).getBody();
+
+        if (response.getResult() != 0) {
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(response.getMessage()));
+        }
+
+        try {
+
+            // response.getData() is of type linkedHashMap
+            // we will need to cast the data into json format , then
+            // cast the JSON back to the POJO
+            String json = objectMapper.writeValueAsString(response.getData());
+            // logger.debug("after cast to JSON: \n {}", json);
+
+            return objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, t));
+            // logger.debug("resultT class is {}", resultT.getClass().getName());
+            // return resultT;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+    }
+
     private HttpEntity<String> getHttpEntity(String requestBody) {
+
+        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
+
         HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
+        headers.setContentType(mediaType);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }

@@ -18,15 +18,11 @@
 
 package com.garyzhangscm.cwms.inventory.clients;
 
-import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.Pick;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -39,9 +35,9 @@ public class OutbuondServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
 
-    @Autowired
-    OAuth2RestOperations restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     // @Cacheable(cacheNames = "InventoryService_Pick", unless="#result == null")
     public Pick getPickById(Long id) {
@@ -50,7 +46,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks/{id}");
-
+/**
         ResponseBodyWrapper<Pick> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -59,34 +55,17 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
 
-    }
-
-    public List<Pick> getOpenPicksBySourceLocationIdAndItemId(Long warehouseId,
-                                                              Long sourceLocationId, Long itemId,
-                                                              Long inventoryStatusId) {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/picks")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("sourceLocationId", sourceLocationId)
-                        .queryParam("itemId", itemId)
-                        .queryParam("inventoryStatusId", inventoryStatusId)
-                        .queryParam("loadDetails", false)
-                        .queryParam("openPickOnly", true);
-
-        ResponseBodyWrapper<List<Pick>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
+        return restTemplateProxy.exchange(
+                Pick.class,
+                builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
+                null
+        );
     }
+
+
 
     public Pick unpick(Long pickId, Long unpickQuantity) {
 
@@ -95,7 +74,7 @@ public class OutbuondServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks/{id}/unpick")
                         .queryParam("unpickQuantity", unpickQuantity);
-
+/**
         ResponseBodyWrapper<Pick> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(pickId).toUriString(),
@@ -104,6 +83,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Pick.class,
+                builder.buildAndExpand(pickId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 
@@ -116,13 +103,20 @@ public class OutbuondServiceRestemplateClient {
                         .queryParam("pickId", pickId)
                         .queryParam("destinationLocationId", destinationLocationId)
                         .queryParam("quantity", quantity);
-
+/**
         restTemplate.exchange(
                 builder.buildAndExpand(pickId).toUriString(),
                 HttpMethod.POST,
                 null,
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
+**/
 
+        restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(pickId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 
@@ -135,7 +129,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -144,6 +138,14 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                Pick.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
@@ -153,6 +155,7 @@ public class OutbuondServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
                         .queryParam("newItemId", newItemId);
+        /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -161,6 +164,14 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 

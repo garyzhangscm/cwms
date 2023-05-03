@@ -18,24 +18,17 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 
 import org.springframework.http.HttpMethod;
 
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 
@@ -47,11 +40,7 @@ import java.util.Objects;
 public class WarehouseLayoutServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
-    @Autowired
-    OAuth2RestOperations restTemplate;
-    @Autowired
-    @Qualifier("autoLoginRestTemplate")
-    RestTemplate autoLoginRestTemplate;
+
     @Autowired
     CommonServiceRestemplateClient commonServiceRestemplateClient;
 
@@ -149,7 +138,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locations/packing-stations")
                         .queryParam("warehouseId", warehouseId);
 
-
+/**
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -158,6 +147,14 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 
         List<Location> locations = responseBodyWrapper.getData();
+ **/
+
+        List<Location> locations = restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (locations.size() == 0) {
             return null;
         }
@@ -185,7 +182,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
 
-
+/**
         ResponseBodyWrapper<Location[]> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -194,13 +191,21 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {}).getBody();
 
         Location[] locations = responseBodyWrapper.getData();
-        logger.debug(">> Get {} locations by name: {}", locations.length, name);
-        if (locations.length != 1) {
-            logger.debug("getLocationByName / {} return {} locations. Error!!!", name, locations.length);
+ **/
+
+        List<Location> locations = restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+        logger.debug(">> Get {} locations by name: {}", locations.size(), name);
+        if (locations.size() != 1) {
+            logger.debug("getLocationByName / {} return {} locations. Error!!!", name, locations.size());
             return null;
         }
         else {
-            return locations[0];
+            return locations.get(0);
         }
     }
 
@@ -213,7 +218,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("locationGroupIds", String.valueOf(locationGroupId))
                         .queryParam("warehouseId", warehouseId);
 
-
+/**
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -222,6 +227,14 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -260,7 +273,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         logger.debug("Start to get warehouse by name: {}, /n >> {}",
                 name, builder.toUriString());
-
+/**
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -270,6 +283,14 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
         List<Warehouse> warehouses = responseBodyWrapper.getData();
+**/
+
+        List<Warehouse> warehouses =  restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
         if (warehouses.size() != 1) {
             return null;
@@ -346,7 +367,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locationgroups")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<LocationGroup[]> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -355,14 +376,21 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup[]>>() {}).getBody();
 
         LocationGroup[] locationGroups = responseBodyWrapper.getData();
+**/
 
-        if (locationGroups.length != 1) {
-            logger.debug("getLocationGroupByName / {} return {} location groups. Error!!!", name, locationGroups.length);
+        List<LocationGroup> locationGroups =  restTemplateProxy.exchangeList(
+                LocationGroup.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+        if (locationGroups.size() != 1) {
+            logger.debug("getLocationGroupByName / {} return {} location groups. Error!!!", name, locationGroups.size());
             return null;
         }
         else {
 
-            return locationGroups[0];
+            return locationGroups.get(0);
         }
     }
     @Cacheable(cacheNames = "OutboundService_LocationGroupType", unless="#result == null")
@@ -396,7 +424,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/locationgrouptypes")
                         .queryParam("name", name);
-
+/**
         ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -405,14 +433,20 @@ public class WarehouseLayoutServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType[]>>() {}).getBody();
 
         LocationGroupType[] locationGroupTypes = responseBodyWrapper.getData();
-
-        if (locationGroupTypes.length != 1) {
-            logger.debug("getLocationGroupTypeByName / {} return {} location group types. Error!!!", name, locationGroupTypes.length);
+**/
+        List<LocationGroupType> locationGroupTypes =  restTemplateProxy.exchangeList(
+                LocationGroupType.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+        if (locationGroupTypes.size() != 1) {
+            logger.debug("getLocationGroupTypeByName / {} return {} location group types. Error!!!", name, locationGroupTypes.size());
             return null;
         }
         else {
 
-            return locationGroupTypes[0];
+            return locationGroupTypes.get(0);
         }
     }
 
@@ -466,42 +500,13 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("pendingPalletQuantity", pendingPalletQuantity);
 
 
-        if (Objects.nonNull(restTemplate.getAccessToken())) {
-/**
-            ResponseBodyWrapper<Location> responseBodyWrapper
-                    = restTemplate.exchange(
-                    builder.buildAndExpand(locationId).toUriString(),
-                    HttpMethod.PUT,
-                    null,
-                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
+        return restTemplateProxy.exchange(
+                Location.class,
+                builder.buildAndExpand(locationId).toUriString(),
+                HttpMethod.PUT,
+                null
+        );
 
-            return responseBodyWrapper.getData();
-**/
-            return restTemplateProxy.exchange(
-                    Location.class,
-                    builder.buildAndExpand(locationId).toUriString(),
-                    HttpMethod.PUT,
-                    null
-            );
-        }
-        else {
-            /**
-            ResponseBodyWrapper<Location> responseBodyWrapper
-                    = autoLoginRestTemplate.exchange(
-                    builder.buildAndExpand(locationId).toUriString(),
-                    HttpMethod.PUT,
-                    null,
-                    new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
-
-            return responseBodyWrapper.getData();
-**/
-            return restTemplateProxy.exchange(
-                    Location.class,
-                    builder.buildAndExpand(locationId).toUriString(),
-                    HttpMethod.PUT,
-                    null
-            );
-        }
     }
 
 
@@ -512,7 +517,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .path("/api/layout/locations/dock")
                         .queryParam("empty", true)
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -521,6 +526,13 @@ public class WarehouseLayoutServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     public Location checkInTrailerAtDockLocations(Long dockLocationId, Long trailerId) {
@@ -591,7 +603,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .queryParam("minEmptyCapacity", replenishmentSize)
                         .queryParam("pickableLocationOnly", true)
                         .queryParam("maxResultCount", 1);
-
+/**
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -600,6 +612,14 @@ public class WarehouseLayoutServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 
         List<Location> locations = responseBodyWrapper.getData();
+ **/
+        List<Location> locations = restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (locations.size() == 0) {
             throw ResourceNotFoundException.raiseException(
                     "Can't find suitable empty location from group: " + locationGroup.getName()
@@ -717,7 +737,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         if (Objects.nonNull(clearReservedVolume)) {
             builder = builder.queryParam("clearReservedVolume", clearReservedVolume);
         }
-
+/**
         ResponseBodyWrapper<List<Location>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -726,6 +746,15 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Location>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
     }
 
 

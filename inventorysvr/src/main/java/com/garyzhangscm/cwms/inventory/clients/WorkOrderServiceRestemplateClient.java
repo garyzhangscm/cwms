@@ -19,16 +19,13 @@
 package com.garyzhangscm.cwms.inventory.clients;
 
 
-import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -42,8 +39,7 @@ public class WorkOrderServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderServiceRestemplateClient.class);
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
 
     @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
@@ -52,7 +48,7 @@ public class WorkOrderServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/{id}");
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -61,6 +57,14 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -74,7 +78,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/qc-samples")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("number", number);
-
+/**
         ResponseBodyWrapper<List<WorkOrderQCSample>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -84,6 +88,14 @@ public class WorkOrderServiceRestemplateClient {
 
         List<WorkOrderQCSample> workOrderQCSamples =
                 responseBodyWrapper.getData();
+ **/
+
+        List<WorkOrderQCSample> workOrderQCSamples =  restTemplateProxy.exchangeList(
+                WorkOrderQCSample.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (workOrderQCSamples.size() != 1) {
             return null;
         }
@@ -97,7 +109,7 @@ public class WorkOrderServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/qc-samples/{id}");
-
+/**
         ResponseBodyWrapper<WorkOrderQCSample> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -106,15 +118,16 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderQCSample>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
 
-    }
+        return restTemplateProxy.exchange(
+                WorkOrderQCSample.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
 
-    public WorkOrderMaterialConsumeTiming inventoryDeliveredForWorkOrderLine(Long workOrderLineId,
-                                                                             Long quantityBeingPicked,
-                                                                             Long deliveredLocationId) {
-        return inventoryDeliveredForWorkOrderLine(workOrderLineId, quantityBeingPicked,
-                deliveredLocationId, null);
     }
 
     /**
@@ -140,6 +153,7 @@ public class WorkOrderServiceRestemplateClient {
         if (Objects.nonNull(inventoryId)) {
             builder = builder.queryParam("inventoryId", inventoryId);
         }
+        /**
         ResponseBodyWrapper<WorkOrderMaterialConsumeTiming> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderLineId).toUriString(),
@@ -148,6 +162,15 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrderMaterialConsumeTiming>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                WorkOrderMaterialConsumeTiming.class,
+                builder.buildAndExpand(workOrderLineId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
 
     }
 
@@ -157,7 +180,7 @@ public class WorkOrderServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/{id}/add-qc-quantity")
                         .queryParam("qcQuantity", qcQuantity);
-
+/**
         ResponseBodyWrapper<WorkOrder> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderId).toUriString(),
@@ -166,6 +189,15 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                WorkOrder.class,
+                builder.buildAndExpand(workOrderId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
     }
 
     public ReportHistory printLPNLabel(Long workOrderId, String lpn, Long quantity, String printerName) {
@@ -180,7 +212,7 @@ public class WorkOrderServiceRestemplateClient {
         if (Strings.isNotBlank(printerName)) {
             builder = builder.queryParam("printerName", printerName);
         }
-
+/**
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(workOrderId).toUriString(),
@@ -189,6 +221,15 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.buildAndExpand(workOrderId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
     }
 
 
@@ -200,6 +241,7 @@ public class WorkOrderServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
                         .queryParam("newItemId", newItemId);
+        /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -208,6 +250,15 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
 
     }
 }

@@ -18,13 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.commons.lang.StringUtils;
@@ -34,13 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -56,15 +45,6 @@ public class InventoryServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
 
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
-
-    @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
 
     @Autowired
     private RestTemplateProxy restTemplateProxy;
