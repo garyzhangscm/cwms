@@ -53,13 +53,16 @@ public class HualeiShippingController {
                                                double width,
                                                double height,
                                                double weight,
+                                               @RequestParam(name = "lengthUnit", required = false, defaultValue = "") String lengthUnit,
+                                               @RequestParam(name = "weightUnit", required = false, defaultValue = "") String weightUnit,
                                                @RequestParam(name = "packageCount", required = false, defaultValue = "1") Integer packageCount,
                                                @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
                                                @RequestParam(name = "quantity", required = false, defaultValue = "1") Long quantity,
                                                @RequestParam(name = "unitCost", required = false, defaultValue = "1.0") Double unitCost) {
         return hualeiShippingService.sendHualeiShippingRequest(warehouseId,
                 productId, orderId, length, width, height, weight, packageCount,
-                itemName, quantity, unitCost);
+                itemName, quantity, unitCost,
+                lengthUnit, weightUnit);
     }
 
     @RequestMapping(value="/hualei/shipping/label", method = RequestMethod.GET)

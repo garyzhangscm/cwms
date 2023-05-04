@@ -91,6 +91,12 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     @Column(name = "default_sku_code")
     private String defaultSkuCode;
 
+
+    @Column(name = "weight_unit")
+    private String weightUnit;
+    @Column(name = "length_unit")
+    private String lengthUnit;
+
     @OneToMany(
             mappedBy = "hualeiConfiguration",
             cascade = CascadeType.ALL,
@@ -289,5 +295,21 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
 
     public void setDefaultSkuCode(String defaultSkuCode) {
         this.defaultSkuCode = defaultSkuCode;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
     }
 }

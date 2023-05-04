@@ -69,6 +69,8 @@ public class HualeiShippingService {
     private HualeiRestemplateClient hualeiRestemplateClient;
     @Autowired
     private HualeiShipmentRequestRepository hualeiShipmentRequestRepository;
+    @Autowired
+    private UnitService unitService;
 
     public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
                                                        String productId, // hualei product id
@@ -80,12 +82,15 @@ public class HualeiShippingService {
                                                        int packageCount,
                                                        String itemName,
                                                        Long quantity,
-                                                       Double unitCost) {
+                                                       Double unitCost,
+                                                       String lengthUnit,
+                                                       String weightUnit) {
 
         return sendHualeiShippingRequest(
                 warehouseId, productId, orderService.findById(orderId),
                 length, width, height, weight, packageCount,
-                itemName, quantity, unitCost);
+                itemName, quantity, unitCost,
+                lengthUnit, weightUnit);
     }
     public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
                                                        String productId, // hualei product id
@@ -97,7 +102,9 @@ public class HualeiShippingService {
                                                        int packageCount,
                                                        String itemName,
                                                        Long quantity,
-                                                       Double unitCost) {
+                                                       Double unitCost,
+                                                       String lengthUnit,
+                                                       String weightUnit) {
         HualeiConfiguration hualeiConfiguration =
                 hualeiConfigurationService.findByWarehouse(warehouseId);
 
@@ -118,6 +125,8 @@ public class HualeiShippingService {
         if (weight <= 1) {
             weight = 1;
         }
+
+
         if (Strings.isBlank(itemName)) {
             itemName = hualeiConfiguration.getDefaultSku();
         }
@@ -139,7 +148,8 @@ public class HualeiShippingService {
                     hualeiShipmentRequestRepository.save(
                             generateHualeiShipmentRequest(
                                 warehouseId, productId, hualeiConfiguration, order, length, width, height, weight,
-                                    itemName, quantity, unitCost
+                                    itemName, quantity, unitCost,
+                                    lengthUnit, weightUnit
                             )
                     );
         }
@@ -184,7 +194,9 @@ public class HualeiShippingService {
                                                           double weight,
                                                           String itemName,
                                                           Long quantity,
-                                                          Double unitCost) {
+                                                          Double unitCost,
+                                                          String lengthUnit,
+                                                          String weightUnit) {
         ShipmentRequest shipmentRequest = new ShipmentRequest();
 
         shipmentRequest.setWarehouseId(warehouseId);
@@ -196,7 +208,8 @@ public class HualeiShippingService {
                 generateShipmentRequestParameters(
                         warehouseId, productId, hualeiConfiguration, order,
                         length, width, height, weight,
-                        itemName, quantity, unitCost
+                        itemName, quantity, unitCost,
+                        lengthUnit, weightUnit
                 );
         shipmentRequestParameters.setShipmentRequest(shipmentRequest);
         shipmentRequest.setShipmentRequestParameters(shipmentRequestParameters);
@@ -215,7 +228,9 @@ public class HualeiShippingService {
                                                                         double weight,
                                                                         String itemName,
                                                                         Long quantity,
-                                                                        Double unitCost) {
+                                                                        Double unitCost,
+                                                                        String lengthUnit,
+                                                                        String weightUnit) {
         ShipmentRequestParameters shipmentRequestParameters = new ShipmentRequestParameters();
         shipmentRequestParameters.setWarehouseId(warehouseId);
 
@@ -253,7 +268,10 @@ public class HualeiShippingService {
 
         ShipmentRequestOrderVolumeParameters orderVolumeParam
                 =  generateShipmentRequestOrderVolumeParameters(
-                warehouseId, shippingCartonNumber, length, width, height, weight
+                warehouseId, shippingCartonNumber, length, width, height, weight,
+                lengthUnit, weightUnit,
+                hualeiConfiguration.getLengthUnit(),
+                hualeiConfiguration.getWeightUnit()
         );
         orderVolumeParam.setShipmentRequestParameters(shipmentRequestParameters);
         shipmentRequestParameters.addOrderVolumeParam(orderVolumeParam);
@@ -295,7 +313,9 @@ public class HualeiShippingService {
 
     private ShipmentRequestOrderVolumeParameters generateShipmentRequestOrderVolumeParameters(
             Long warehouseId, String shippingCartonNumber,
-            double length, double width, double height, double weight) {
+            double length, double width, double height, double weight,
+            String lengthUnit, String weightUnit,
+            String requiredLengthUnit, String requiredWeightUnit) {
         ShipmentRequestOrderVolumeParameters shipmentRequestOrderVolumeParameters =
                 new ShipmentRequestOrderVolumeParameters();
 
@@ -303,10 +323,22 @@ public class HualeiShippingService {
         shipmentRequestOrderVolumeParameters.setBoxNo(shippingCartonNumber);
         shipmentRequestOrderVolumeParameters.setChildNo(shippingCartonNumber);
 
-        shipmentRequestOrderVolumeParameters.setVolumeLength(length);
-        shipmentRequestOrderVolumeParameters.setVolumeWidth(width);
-        shipmentRequestOrderVolumeParameters.setVolumeHeight(height);
-        shipmentRequestOrderVolumeParameters.setVolumeWeight(weight);
+        // convert the length / width / height and weight based on the
+        // pass in unit and required unit.
+        // if the length unit passed in match with the length unit required,
+        // then
+
+        shipmentRequestOrderVolumeParameters.setVolumeLength(
+                unitService.convertLength(warehouseId, length, lengthUnit, requiredLengthUnit));
+        shipmentRequestOrderVolumeParameters.setVolumeWidth(
+                unitService.convertLength(warehouseId, width, lengthUnit, requiredLengthUnit));
+        shipmentRequestOrderVolumeParameters.setVolumeHeight(
+                unitService.convertLength(warehouseId, height, lengthUnit, requiredLengthUnit));
+        shipmentRequestOrderVolumeParameters.setLengthUnit(requiredLengthUnit);
+
+        shipmentRequestOrderVolumeParameters.setVolumeWeight(
+                unitService.convertWeight(warehouseId, weight, lengthUnit, requiredWeightUnit));
+        shipmentRequestOrderVolumeParameters.setWeightUnit(requiredWeightUnit);
         return shipmentRequestOrderVolumeParameters;
     }
 

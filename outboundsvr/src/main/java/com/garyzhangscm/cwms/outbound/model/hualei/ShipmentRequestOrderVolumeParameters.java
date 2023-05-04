@@ -43,9 +43,17 @@ public class ShipmentRequestOrderVolumeParameters  extends AuditibleEntity<Strin
     @JsonProperty("volume_width")
     private Double volumeWidth;
 
+    @Column(name = "length_unit")
+    @JsonProperty("length_unit")
+    private String lengthUnit;
+
     @Column(name = "volume_weight")
     @JsonProperty("volume_weight")
     private Double volumeWeight;
+
+    @Column(name = "weight_unit")
+    @JsonProperty("weight_unit")
+    private String weightUnit;
 
     @ManyToOne
     @JoinColumn(name="hualei_shipment_request_parameters_id")
@@ -132,5 +140,21 @@ public class ShipmentRequestOrderVolumeParameters  extends AuditibleEntity<Strin
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
     }
 }
