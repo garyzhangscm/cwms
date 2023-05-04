@@ -354,7 +354,9 @@ public class OrderLineService{
                 (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity()),
                 item.getName(),
                 caseItemUnitOfMeasure.getQuantity(),
-                item.getUnitCost()
+                item.getUnitCost(),
+                caseItemUnitOfMeasure.getLengthUnit(),
+                caseItemUnitOfMeasure.getWeightUnit()
         );
 
     }

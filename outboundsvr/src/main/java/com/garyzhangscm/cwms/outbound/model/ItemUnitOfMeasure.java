@@ -34,10 +34,15 @@ public class ItemUnitOfMeasure implements Serializable {
     private Long quantity;
 
     private Double weight;
+    private String weightUnit;
+
 
     private Double length;
+    private String lengthUnit;
     private Double width;
+    private String widthUnit;
     private Double height;
+    private String heightUnit;
     private Boolean trackingLpn;
 
     private Boolean caseFlag;
@@ -130,5 +135,37 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setCaseFlag(Boolean caseFlag) {
         this.caseFlag = caseFlag;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
     }
 }

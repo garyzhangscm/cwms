@@ -2125,5 +2125,7 @@
   "local-cache-cleared": "本地缓存已经清空",
   "trackingInfoUrl": "快递信息跟踪页面",
   "packageCount": "包裹数量",
-  "caseQuantity": "每箱数量"
+  "caseQuantity": "每箱数量",
+  "lengthUnit": "长度单位",
+  "weightUnit": "重量单位"
 }

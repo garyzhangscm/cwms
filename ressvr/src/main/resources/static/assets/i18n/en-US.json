@@ -2128,5 +2128,7 @@
   "local-cache-cleared": "Local Cache Cleared",
   "trackingInfoUrl": "Tracking Number Query URL",
   "packageCount": "Package Count",
-  "caseQuantity": "Case Quantity"
+  "caseQuantity": "Case Quantity",
+  "lengthUnit": "Length Unit",
+  "weightUnit": "Weight Unit"
 }
