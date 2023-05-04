@@ -46,6 +46,10 @@ public class ShipmentRequestOrderInvoiceParameters  extends AuditibleEntity<Stri
     @JsonProperty("invoice_weight")
     private Double invoiceWeight;
 
+    @Column(name = "weight_unit")
+    @JsonProperty("weight_unit")
+    private String weightUnit;
+
     @Column(name = "sku")
     @JsonProperty("sku")
     private String sku;
@@ -155,5 +159,13 @@ public class ShipmentRequestOrderInvoiceParameters  extends AuditibleEntity<Stri
 
     public void setSkuCode(String skuCode) {
         this.skuCode = skuCode;
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
     }
 }
