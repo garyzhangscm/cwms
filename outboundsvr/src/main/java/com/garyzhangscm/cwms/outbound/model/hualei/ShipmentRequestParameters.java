@@ -104,6 +104,10 @@ public class ShipmentRequestParameters  extends AuditibleEntity<String> implemen
     @JsonProperty("weight")
     private Double weight;
 
+    @Column(name = "weight_unit")
+    @JsonProperty("weight_unit")
+    private String weightUnit;
+
     @OneToOne
     @JoinColumn(name="hualei_shipment_request_id")
     @JsonIgnore
@@ -344,5 +348,13 @@ public class ShipmentRequestParameters  extends AuditibleEntity<String> implemen
     }
     public void addOrderInvoiceParam(ShipmentRequestOrderInvoiceParameters orderInvoiceParam) {
         this.orderInvoiceParams.add(orderInvoiceParam);
+    }
+
+    public String getWeightUnit() {
+        return weightUnit;
+    }
+
+    public void setWeightUnit(String weightUnit) {
+        this.weightUnit = weightUnit;
     }
 }

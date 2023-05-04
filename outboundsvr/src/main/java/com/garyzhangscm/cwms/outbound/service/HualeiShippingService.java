@@ -260,11 +260,19 @@ public class HualeiShippingService {
         shipmentRequestParameters.setOrderPiece(1);
         shipmentRequestParameters.setOrderReturnSign(hualeiConfiguration.getDefaultOrderReturnSign());
         shipmentRequestParameters.setProductId(productId);
-        shipmentRequestParameters.setWeight(weight);
+
+
+        shipmentRequestParameters.setWeight(
+                unitService.convertWeight(warehouseId, weight, weightUnit, hualeiConfiguration.getWeightUnit()));
+        shipmentRequestParameters.setWeightUnit(hualeiConfiguration.getWeightUnit());
+        // shipmentRequestParameters.setWeight(weight);
 
 
         String shippingCartonNumber =
                 commonServiceRestemplateClient.getNextNumber(warehouseId, "shipping-cartonization-number");
+
+        // convert the length / width / height and weight based on the
+        // current unit used in the system and the required unit by hualei
 
         ShipmentRequestOrderVolumeParameters orderVolumeParam
                 =  generateShipmentRequestOrderVolumeParameters(
@@ -282,7 +290,9 @@ public class HualeiShippingService {
                         shippingCartonNumber,
                         hualeiConfiguration.getDefaultHsCode(),
                         weight,
-                        itemName, quantity, unitCost
+                        itemName, quantity, unitCost,
+                        weightUnit,
+                        hualeiConfiguration.getWeightUnit()
                     );
         orderInvoiceParam.setShipmentRequestParameters(shipmentRequestParameters);
         shipmentRequestParameters.addOrderInvoiceParam(orderInvoiceParam);
@@ -294,7 +304,8 @@ public class HualeiShippingService {
     private ShipmentRequestOrderInvoiceParameters generateShipmentRequestOrderInvoiceParameters(
             Long warehouseId,
             String shippingCartonNumber, String hsCode, double weight,
-            String itemName, Long quantity, Double unitCost) {
+            String itemName, Long quantity, Double unitCost,
+            String weightUnit, String requiredWeightUnit) {
 
         ShipmentRequestOrderInvoiceParameters shipmentRequestOrderInvoiceParameters =
                 new ShipmentRequestOrderInvoiceParameters();
@@ -304,7 +315,12 @@ public class HualeiShippingService {
         shipmentRequestOrderInvoiceParameters.setInvoiceAmount(quantity * unitCost);
         shipmentRequestOrderInvoiceParameters.setInvoicePieces(quantity.intValue());
         shipmentRequestOrderInvoiceParameters.setInvoiceTitle(itemName);
-        shipmentRequestOrderInvoiceParameters.setInvoiceWeight(weight);
+
+        shipmentRequestOrderInvoiceParameters.setInvoiceWeight(
+                unitService.convertWeight(warehouseId, weight, weightUnit, requiredWeightUnit));
+        shipmentRequestOrderInvoiceParameters.setWeightUnit(requiredWeightUnit);
+
+
         shipmentRequestOrderInvoiceParameters.setSku(itemName);
         shipmentRequestOrderInvoiceParameters.setSkuCode(itemName);
 
@@ -337,7 +353,7 @@ public class HualeiShippingService {
         shipmentRequestOrderVolumeParameters.setLengthUnit(requiredLengthUnit);
 
         shipmentRequestOrderVolumeParameters.setVolumeWeight(
-                unitService.convertWeight(warehouseId, weight, lengthUnit, requiredWeightUnit));
+                unitService.convertWeight(warehouseId, weight, weightUnit, requiredWeightUnit));
         shipmentRequestOrderVolumeParameters.setWeightUnit(requiredWeightUnit);
         return shipmentRequestOrderVolumeParameters;
     }
