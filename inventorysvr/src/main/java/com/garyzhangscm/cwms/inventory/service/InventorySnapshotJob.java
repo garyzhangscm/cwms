@@ -19,25 +19,26 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.model.*;
+import com.garyzhangscm.cwms.inventory.model.Company;
+import com.garyzhangscm.cwms.inventory.model.InventorySnapshotConfiguration;
+import com.garyzhangscm.cwms.inventory.model.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
 @Component
-public class InventoryAgingSnapshotJob {
+public class InventorySnapshotJob {
 
-    private static final Logger logger = LoggerFactory.getLogger(InventoryAgingSnapshotJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(InventorySnapshotJob.class);
     @Autowired
-    private InventoryAgingSnapshotService inventoryAgingSnapshotService;
+    private InventorySnapshotService inventorySnapshotService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -48,32 +49,32 @@ public class InventoryAgingSnapshotJob {
 
 
     @Scheduled(cron = "0 0 0-23 * * ?")
-    public void generateInventoryAgingSnapshot() {
-        logger.debug("start to automatically generate the inventory aging snapshot");
+    public void generateInventorySnapshot() {
+        logger.debug("start to automatically generate the inventory snapshot");
         List<Company> companies
                 = warehouseLayoutServiceRestemplateClient.getAllCompanies();
         companies.forEach(
-                company -> generateInventoryAgingSnapshot(company)
+                company -> generateInventorySnapshot(company)
         );
     }
-    public void generateInventoryAgingSnapshot(Company company) {
+    public void generateInventorySnapshot(Company company) {
         warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId())
                 .forEach(
-                        warehouse -> generateInventoryAgingSnapshot(company, warehouse)
+                        warehouse -> generateInventorySnapshot(company, warehouse)
                 );
     }
-    public void generateInventoryAgingSnapshot(Company company, Warehouse warehouse) {
+    public void generateInventorySnapshot(Company company, Warehouse warehouse) {
         if (!isTimingForSnapshot(warehouse)) {
-            logger.debug("current time: {} is not setup for inventory aging snapshot");
+            logger.debug("current time: {} is not setup for inventory snapshot");
             return;
         }
 
-        logger.debug("start to generate inventory aging snapshot for warehouse {} / {}, id: {}",
+        logger.debug("start to generate inventory snapshot for warehouse {} / {}, id: {}",
                 company.getName(),
                 warehouse.getName(),
                 warehouse.getId());
 
-        inventoryAgingSnapshotService.generateInventoryAgingSnapshot(warehouse.getId());
+        inventorySnapshotService.generateInventorySnapshot(warehouse.getId());
 
     }
 
@@ -87,14 +88,14 @@ public class InventoryAgingSnapshotJob {
         }
         // get the timing from the configuration. It is saved as hour in UTC
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
-        logger.debug("start to compare current hour vs inventory aging configuration {}, {}, {}",
+        logger.debug("start to compare current hour vs inventory snapshot configuration {}, {}, {}",
                 now.getHour(),
-                inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming1(),
-                inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming2(),
-                inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming3());
+                inventorySnapshotConfiguration.getInventorySnapshotTiming1(),
+                inventorySnapshotConfiguration.getInventorySnapshotTiming2(),
+                inventorySnapshotConfiguration.getInventorySnapshotTiming3());
 
-        return now.getHour() == inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming1() ||
-                now.getHour() == inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming2() ||
-                now.getHour() == inventorySnapshotConfiguration.getInventoryAgingSnapshotTiming3();
+        return now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming1() ||
+                now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming2() ||
+                now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming3();
     }
 }

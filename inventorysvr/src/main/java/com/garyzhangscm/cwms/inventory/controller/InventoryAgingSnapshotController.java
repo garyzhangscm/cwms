@@ -74,6 +74,14 @@ public class InventoryAgingSnapshotController {
         return inventoryAgingSnapshotService.getClientInventoryAgingSnapshotGroupByLPN(warehouseId, clientId, startTime, endTime);
     }
 
+    @RequestMapping(value="/inventory-aging-snapshots/by-client/billing/group-by-lpn", method = RequestMethod.GET)
+    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPNForBilling(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name="endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
+            @RequestParam Long clientId) {
+        return inventoryAgingSnapshotService.getClientInventoryAgingSnapshotGroupByLPNForBilling(warehouseId, clientId, startTime, endTime);
+    }
 
 
 }

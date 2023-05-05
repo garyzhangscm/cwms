@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.inventory.DynamicSchedulingConfig;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
@@ -27,21 +26,18 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventorySnapshotConfigurationRepository;
-import com.garyzhangscm.cwms.inventory.repository.InventorySnapshotRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -75,8 +71,8 @@ public class InventorySnapshotConfigurationService implements TestDataInitiableS
     // when we change the inventory snapshot or location utilization snapshot
     // schedule
 
-    @Autowired
-    private DynamicSchedulingConfig dynamicSchedulingConfig;
+    // @Autowired
+    // private DynamicSchedulingConfig dynamicSchedulingConfig;
 
     @Value("${fileupload.test-data.inventory-snapshot-configuration:inventory-snapshot-configuration}")
     String testDataFile;
@@ -92,15 +88,17 @@ public class InventorySnapshotConfigurationService implements TestDataInitiableS
 
 
     public InventorySnapshotConfiguration save(InventorySnapshotConfiguration inventorySnapshotConfiguration) {
+        return inventorySnapshotConfigurationRepository.save(inventorySnapshotConfiguration);
+        /***
         InventorySnapshotConfiguration newInventorySnapshotConfiguration =
                 inventorySnapshotConfigurationRepository.save(inventorySnapshotConfiguration);
-
         if (Objects.nonNull(dynamicSchedulingConfig.getCurrentScheduledTaskRegistrar())) {
             logger.debug("We already have setup the dynamic scheduling config, let's refresh it");
 
             dynamicSchedulingConfig.configureTasks(dynamicSchedulingConfig.getCurrentScheduledTaskRegistrar());
         }
         return newInventorySnapshotConfiguration;
+         **/
     }
 
     public InventorySnapshotConfiguration saveOrUpdate(InventorySnapshotConfiguration inventorySnapshotConfiguration) {

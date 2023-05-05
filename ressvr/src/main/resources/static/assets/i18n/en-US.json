@@ -2130,5 +2130,7 @@
   "packageCount": "Package Count",
   "caseQuantity": "Case Quantity",
   "lengthUnit": "Length Unit",
-  "weightUnit": "Weight Unit"
+  "weightUnit": "Weight Unit",
+  "inventory-aging-snapshot.configuration.cron": "Inventory Aging Snapshot Schedule",
+  "inventory-aging-snapshot.created.result": "Inventory Aging Snapshot {{batchNumber}} start processing，Please allow the system to take several minutes to create the snapshot and query the result from the Inventory Aging Snapshot page"
 }
