@@ -383,6 +383,84 @@ public class InventoryAgingSnapshotService {
         inventoryAgingSnapshotRepository.deleteById(id);
     }
 
+    /**
+     * This method will return the LPNs with maximum age at at certain time range so that the warehouse can
+     * use the age number for billing
+     * @param warehouseId
+     * @param clientId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public ClientInventoryAgingSnapshot getClientInventoryAgingSnapshotGroupByLPNForBilling(Long warehouseId, Long clientId,
+                                                                                        ZonedDateTime startTime,
+                                                                                        ZonedDateTime endTime) {
+
+        ClientInventoryAgingSnapshot resultClientInventoryAgingSnapshot = new ClientInventoryAgingSnapshot();
+        resultClientInventoryAgingSnapshot.setClientId(clientId);
+        resultClientInventoryAgingSnapshot.setWarehouseId(warehouseId);
+
+        List<ClientInventoryAgingSnapshot> clientInventoryAgingSnapshots = findAll(warehouseId,
+                InventoryAgingSnapshotStatus.DONE.toString(), null,
+                startTime,
+                endTime).stream()
+                .map(inventoryAgingSnapshot -> inventoryAgingSnapshot.getClientInventoryAgingSnapshots()
+                )
+                .flatMap(List::stream).filter(
+                        clientInventoryAgingSnapshot -> clientId.equals(clientInventoryAgingSnapshot.getClientId())
+                ).collect(Collectors.toList());
+
+        if (clientInventoryAgingSnapshots.isEmpty()) {
+            return resultClientInventoryAgingSnapshot;
+        }
+
+
+        // make sure we will only have one record per LPN with the maximun age
+        // key: LPN
+        // value: InventoryAgingByLPN
+        Map<String, InventoryAgingByLPN> inventoryAgingByLPNMap = new HashMap<>();
+        clientInventoryAgingSnapshots.forEach(
+                clientInventoryAgingSnapshot -> {
+                    clientInventoryAgingSnapshot.getInventoryAgingSnapshotDetails().forEach(
+                            inventoryAgingSnapshotDetail -> {
+                                // see if we already have the LPN saved in the map
+
+                                InventoryAgingByLPN inventoryAgingByLPN = inventoryAgingByLPNMap.getOrDefault(
+                                        inventoryAgingSnapshotDetail.getLpn(),
+                                        new InventoryAgingByLPN(inventoryAgingSnapshotDetail.getLpn()));
+                                // if the one that already saved has less age, then update it with the one with more age
+                                if (inventoryAgingByLPN.getAgeInDays() < inventoryAgingSnapshotDetail.getAgeInDays()) {
+                                    inventoryAgingByLPN.setAgeInDays(inventoryAgingSnapshotDetail.getAgeInDays());
+                                    inventoryAgingByLPN.setAgeInWeeks(inventoryAgingSnapshotDetail.getAgeInWeeks());
+                                }
+                                // add the quantity so we will always keep track of the total quantity of the LPN
+                                inventoryAgingByLPN.setQuantity(inventoryAgingByLPN.getQuantity() + inventoryAgingSnapshotDetail.getQuantity());
+                                inventoryAgingByLPNMap.put(inventoryAgingByLPN.getLpn(), inventoryAgingByLPN);
+                            }
+                    );
+                }
+        );
+
+        logger.debug("========  Get   inventory aging group by LPN    ==========");
+        logger.debug("=======    Time Range {} - {}",
+                startTime, endTime);
+
+        resultClientInventoryAgingSnapshot.setInventoryAgingByLPNS(
+                new ArrayList<>(inventoryAgingByLPNMap.values())
+        );
+
+        logger.debug("========  Get   inventory aging group by LPN    ==========");
+        logger.debug("=======    Time Range {} - {}",
+                startTime, endTime);
+        resultClientInventoryAgingSnapshot.getInventoryAgingByLPNS().forEach(
+                inventoryAgingByLPN -> logger.debug(">>  LPN : {}, quantity: {}, age in days: {}, age in weeks: {}",
+                        inventoryAgingByLPN.getLpn(), inventoryAgingByLPN.getQuantity(),
+                        inventoryAgingByLPN.getAgeInDays(), inventoryAgingByLPN.getAgeInWeeks())
+        );
+        return resultClientInventoryAgingSnapshot;
+
+    }
+
     public List<ClientInventoryAgingSnapshot> getClientInventoryAgingSnapshotGroupByLPN(Long warehouseId, Long clientId,
                                                                                   ZonedDateTime startTime,
                                                                                   ZonedDateTime endTime) {

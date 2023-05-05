@@ -19,18 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.Serializable; 
 
 public class InventoryAgingByLPN implements Serializable {
 

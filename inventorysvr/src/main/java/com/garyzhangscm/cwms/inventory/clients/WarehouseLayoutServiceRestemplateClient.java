@@ -74,6 +74,39 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    public List<Company> getAllCompanies() {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies");
+
+        return restTemplateProxy.exchangeList(
+                Company.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
+    public List<Warehouse> getWarehouseByCompany(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId);
+
+        logger.debug("Start to get warehouse by companyId: {}, /n >> {}",
+                companyId, builder.toUriString());
+
+        return restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
+
     @Cacheable(cacheNames = "InventoryService_Location", unless="#result == null")
     public Location getLocationById(Long id) {
         logger.debug("Will get location by id {}", id);

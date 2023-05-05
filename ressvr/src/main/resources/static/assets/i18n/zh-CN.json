@@ -2127,5 +2127,7 @@
   "packageCount": "包裹数量",
   "caseQuantity": "每箱数量",
   "lengthUnit": "长度单位",
-  "weightUnit": "重量单位"
+  "weightUnit": "重量单位",
+  "inventory-aging-snapshot.configuration.cron": "库龄快照",
+  "inventory-aging-snapshot.created.result": "库龄快照 {{batchNumber}} 开始创建，请等待一段时间后到库存快照界面查看或者下载"
 }

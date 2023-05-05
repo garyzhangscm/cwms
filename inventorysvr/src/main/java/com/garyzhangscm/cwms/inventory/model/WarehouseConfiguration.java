@@ -41,8 +41,8 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     private Boolean reuseLPNAfterShippedFlag;
 
 
-    private Boolean locationUtilizationSnapshotEnabled;
-    private Boolean inventoryAgingSnapshotEnabled;
+    // private Boolean locationUtilizationSnapshotEnabled;
+    // private Boolean inventoryAgingSnapshotEnabled;
 
 
     public Long getId() {
@@ -108,7 +108,7 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     public void setReuseLPNAfterShippedFlag(Boolean reuseLPNAfterShippedFlag) {
         this.reuseLPNAfterShippedFlag = reuseLPNAfterShippedFlag;
     }
-
+/**
     public Boolean getLocationUtilizationSnapshotEnabled() {
         return locationUtilizationSnapshotEnabled;
     }
@@ -124,4 +124,5 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     public void setInventoryAgingSnapshotEnabled(Boolean inventoryAgingSnapshotEnabled) {
         this.inventoryAgingSnapshotEnabled = inventoryAgingSnapshotEnabled;
     }
+ **/
 }

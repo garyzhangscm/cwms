@@ -75,9 +75,9 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     private Boolean billingRequestEnabledFlag;
 
     @Column(name = "location_utilization_snapshot_enabled")
-    private Boolean locationUtilizationSnapshotEnabled;
+    private Boolean locationUtilizationSnapshotEnabled = false;
     @Column(name = "inventory_aging_snapshot_enabled")
-    private Boolean inventoryAgingSnapshotEnabled;
+    private Boolean inventoryAgingSnapshotEnabled = false;
 
 
     // define week days
