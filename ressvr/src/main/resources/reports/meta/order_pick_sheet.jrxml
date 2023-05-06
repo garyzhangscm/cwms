@@ -27,6 +27,8 @@
 	<field name="color" class="java.lang.String"/>
 	<field name="productSize" class="java.lang.String"/>
 	<field name="style" class="java.lang.String"/>
+	<field name="quantityByUOM" class="java.lang.String"/>
+	<field name="inventoryAttribute" class="java.lang.String"/>
 	<variable name="lineNumber" class="java.lang.Integer" incrementType="Group" incrementGroup="pickNumberGroup" calculation="Count"/>
 	<group name="pickNumberGroup">
 		<groupExpression><![CDATA[$F{number}]]></groupExpression>
@@ -120,7 +122,7 @@
 				</reportElement>
 			</rectangle>
 			<rectangle>
-				<reportElement x="220" y="0" width="70" height="20" uuid="b3c815d0-7076-4fb7-bfb4-e7b096e50c3c">
+				<reportElement x="220" y="0" width="120" height="20" uuid="0ee38e7c-ee2b-4226-812c-2d0d75b59e59">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -128,15 +130,7 @@
 				</reportElement>
 			</rectangle>
 			<rectangle>
-				<reportElement x="290" y="0" width="100" height="20" uuid="0ee38e7c-ee2b-4226-812c-2d0d75b59e59">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-			</rectangle>
-			<rectangle>
-				<reportElement x="390" y="0" width="70" height="20" uuid="9aba802c-7639-41f8-a85b-b492f3f1b97d">
+				<reportElement x="340" y="0" width="120" height="20" uuid="9aba802c-7639-41f8-a85b-b492f3f1b97d">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -161,7 +155,7 @@
 				<textFieldExpression><![CDATA[$R{lineNumber}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="290" y="0" width="100" height="20" uuid="160d7854-4092-485d-8090-d71d609ca52f">
+				<reportElement x="220" y="0" width="120" height="20" uuid="160d7854-4092-485d-8090-d71d609ca52f">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -177,20 +171,13 @@
 				<textFieldExpression><![CDATA[$R{itemName}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="390" y="0" width="70" height="20" uuid="8b3edbc6-ddb4-4066-85fc-78c2488055d2">
+				<reportElement x="340" y="0" width="120" height="20" uuid="8b3edbc6-ddb4-4066-85fc-78c2488055d2">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="SimSun"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pick.quantity}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="220" y="0" width="70" height="20" uuid="3959d9ac-cfb1-493c-b0b6-ff4d82e918f7"/>
-				<textElement textAlignment="Center">
-					<font fontName="SimSun"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{unitOfMeasure}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="460" y="0" width="110" height="20" uuid="80a646e1-7650-4570-9e1c-8d6c58132b36">
@@ -223,7 +210,7 @@
 				</reportElement>
 			</rectangle>
 			<rectangle>
-				<reportElement x="390" y="0" width="70" height="40" uuid="74e70bb0-de5e-4c7b-9a6b-0be1824b08bf">
+				<reportElement x="340" y="0" width="120" height="40" uuid="74e70bb0-de5e-4c7b-9a6b-0be1824b08bf">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -231,15 +218,7 @@
 				</reportElement>
 			</rectangle>
 			<rectangle>
-				<reportElement x="290" y="0" width="100" height="40" uuid="3684ddb6-201e-4cb6-a38a-a3ddd5703854">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-			</rectangle>
-			<rectangle>
-				<reportElement x="220" y="0" width="70" height="40" uuid="02afc549-a2e3-48c3-84fb-6cba42a721d1">
+				<reportElement x="220" y="0" width="120" height="40" uuid="3684ddb6-201e-4cb6-a38a-a3ddd5703854">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -258,27 +237,20 @@
 				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="290" y="0" width="100" height="20" uuid="f2409e70-54bb-47e2-a1e2-c871142aecc6">
+				<reportElement x="220" y="0" width="120" height="20" uuid="f2409e70-54bb-47e2-a1e2-c871142aecc6">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{sourceLocation.name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="220" y="0" width="70" height="20" uuid="13e8708d-c6d5-4f3d-976b-0b995da20df7">
+				<reportElement x="340" y="0" width="120" height="40" uuid="33bcf606-6dc9-4450-9c53-3a434336d26c">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{defaultPickableStockUomName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityByUOM}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="390" y="0" width="70" height="20" uuid="33bcf606-6dc9-4450-9c53-3a434336d26c">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
-			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="50" y="0" width="170" height="20" uuid="0d4111f4-8dae-49ad-8af4-79e989307ee9">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -294,11 +266,11 @@
 				<textFieldExpression><![CDATA[$F{item.description}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="290" y="20" width="100" height="20" uuid="f7b0d4cf-724d-486f-82ec-cac6f8abb215">
+				<reportElement x="220" y="20" width="120" height="20" uuid="f7b0d4cf-724d-486f-82ec-cac6f8abb215">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{color} +"    " + $F{productSize} +"    " +  $F{style}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{inventoryAttribute}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

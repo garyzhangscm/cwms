@@ -174,6 +174,12 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name="style")
     private String style = "";
 
+    // for report purpose
+    @Transient
+    private String inventoryAttribute = "";
+    @Transient
+    private String quantityByUOM = "";
+
     @JsonIgnore
     public Double getSize() {
 
@@ -567,5 +573,21 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setWorkTask(WorkTask workTask) {
         this.workTask = workTask;
+    }
+
+    public String getInventoryAttribute() {
+        return inventoryAttribute;
+    }
+
+    public void setInventoryAttribute(String inventoryAttribute) {
+        this.inventoryAttribute = inventoryAttribute;
+    }
+
+    public String getQuantityByUOM() {
+        return quantityByUOM;
+    }
+
+    public void setQuantityByUOM(String quantityByUOM) {
+        this.quantityByUOM = quantityByUOM;
     }
 }

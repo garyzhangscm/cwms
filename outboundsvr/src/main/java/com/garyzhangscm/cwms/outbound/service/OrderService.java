@@ -1322,6 +1322,67 @@ public class OrderService {
 
         // set data to be all picks
         List<Pick> picks = pickService.findByOrder(order);
+
+        // Setup display field
+        picks.forEach(
+                pick -> {
+                    // set the inventory attribute in one string
+                    StringBuilder inventoryAttribute = new StringBuilder()
+                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
+                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle());
+                    pick.setInventoryAttribute(inventoryAttribute.toString());
+
+                    // setup the quantity by UOM from the pickable inventory in the source location
+                    List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                            pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+                            pick.getColor(), pick.getProductSize(), pick.getStyle());
+
+                    StringBuilder pickQuantityByUOM = new StringBuilder();
+                    pickQuantityByUOM.append(pick.getQuantity());
+
+                    if (pickableInventory != null && !pickableInventory.isEmpty() &&
+                            Objects.nonNull(pickableInventory.get(0).getItemPackageType())) {
+                        // get the information from the first inventory of the list
+                        // we will assume all the pickable inventory in the same location
+                        // has the same item UOM information. If the location is mixed with
+                        // different package type, the warehouse may have some difficulty for picking
+                        ItemUnitOfMeasure stockItemUnitOfMeasure =
+                                pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                        ItemUnitOfMeasure caseItemUnitOfMeasure =
+                                pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
+
+                        if (Objects.nonNull(stockItemUnitOfMeasure) &&
+                                Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+
+                            pickQuantityByUOM.append(" ")
+                                    .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+                        }
+                        // if the item package type has case UOM defined, show the quantity in case UOM as well.
+                        if (Objects.nonNull(caseItemUnitOfMeasure) &&
+                                Objects.nonNull(caseItemUnitOfMeasure.getUnitOfMeasure())) {
+
+                            Long caseQuantity = pick.getQuantity() / caseItemUnitOfMeasure.getQuantity();
+                            Long leftOverQuantity = pick.getQuantity() % caseItemUnitOfMeasure.getQuantity();
+
+                            pickQuantityByUOM.append(" (").append(caseQuantity).append(" ")
+                                    .append(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
+                            if (leftOverQuantity > 0) {
+                                pickQuantityByUOM.append(", ").append(leftOverQuantity);
+                                if (Objects.nonNull(stockItemUnitOfMeasure) &&
+                                        Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+                                    pickQuantityByUOM.append(" ")
+                                            .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+                                }
+                            }
+                            pickQuantityByUOM.append(")");
+                        }
+                    }
+                    pick.setQuantityByUOM(pickQuantityByUOM.toString());
+                }
+        );
+
+
         report.setData(picks);
     }
 
