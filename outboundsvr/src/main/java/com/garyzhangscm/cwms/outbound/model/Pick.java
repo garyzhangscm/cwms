@@ -166,13 +166,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
 
     @Column(name="color")
-    private String color;
+    private String color = "";
 
     @Column(name="product_size")
-    private String productSize;
+    private String productSize = "";
 
     @Column(name="style")
-    private String style;
+    private String style = "";
 
     @JsonIgnore
     public Double getSize() {

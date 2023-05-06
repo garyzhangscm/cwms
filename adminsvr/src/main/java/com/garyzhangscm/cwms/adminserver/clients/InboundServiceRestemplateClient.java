@@ -19,31 +19,16 @@
 package com.garyzhangscm.cwms.adminserver.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.BillableActivity;
 import com.garyzhangscm.cwms.adminserver.model.wms.Inventory;
-import com.garyzhangscm.cwms.adminserver.model.wms.Location;
 import com.garyzhangscm.cwms.adminserver.model.wms.PutawayConfiguration;
 import com.garyzhangscm.cwms.adminserver.model.wms.Receipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.ZonedDateTime;
@@ -55,38 +40,14 @@ public class InboundServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(InboundServiceRestemplateClient.class);
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    // private OAuth2RestOperations restTemplate;
-    RestTemplate restTemplate;
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Cacheable(cacheNames = "AdminService_Receipt", unless="#result == null")
-    public Receipt getReceiptById(Long id) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
-                        .path("/api/inbound/receipts/{id}");
-
-        ResponseBodyWrapper<Receipt> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(id).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
+    private RestTemplateProxy restTemplateProxy;
 
     public Receipt checkInReceipt(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inbound/receipts/{id}/check-in");
-
+/**
         ResponseBodyWrapper<Receipt> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -95,6 +56,13 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                Receipt.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.PUT,
+                null
+        );
 
     }
 
@@ -106,7 +74,7 @@ public class InboundServiceRestemplateClient {
                         .path("/api/inbound/receipts")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", receiptNumber);
-
+/**
         ResponseBodyWrapper<List<Receipt>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -115,6 +83,14 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Receipt>>>() {}).getBody();
 
         List<Receipt> receipts = responseBodyWrapper.getData();
+**/
+        List<Receipt> receipts =  restTemplateProxy.exchangeList(
+                Receipt.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (receipts.size() == 0) {
             return null;
         }
@@ -129,7 +105,7 @@ public class InboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inbound/putaway-configuration");
-
+/**
         ResponseBodyWrapper<PutawayConfiguration> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -138,6 +114,14 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<PutawayConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                PutawayConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                putawayConfiguration
+        );
+
     }
 
     public List<PutawayConfiguration> getPutawayConfigurationByItemFamily(Long warehouseId, String itemFamilyName) {
@@ -148,7 +132,7 @@ public class InboundServiceRestemplateClient {
                         .path("/api/inbound/putaway-configuration")
                         .queryParam("itemFamilyName", itemFamilyName)
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<List<PutawayConfiguration>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -157,6 +141,14 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<PutawayConfiguration>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                PutawayConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     public Inventory receive(Long receiptId, Long receiptLineId,
                              Inventory inventory) throws JsonProcessingException {
@@ -165,7 +157,7 @@ public class InboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inbound/receipts/{receiptId}/lines/{receiptLineId}/receive");
-
+/**
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(receiptId, receiptLineId).toUriString(),
@@ -174,6 +166,14 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(receiptId, receiptLineId).toUriString(),
+                HttpMethod.POST,
+                inventory
+        );
     }
 
     public Receipt completeReceipt(Long receiptId) throws JsonProcessingException {
@@ -182,7 +182,7 @@ public class InboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inbound/receipts/{id}/complete");
-
+/**
         ResponseBodyWrapper<Receipt> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(receiptId).toUriString(),
@@ -191,6 +191,13 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Receipt>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Receipt.class,
+                builder.buildAndExpand(receiptId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public Inventory allocateLocationForPutaway(Inventory inventory) throws JsonProcessingException {
@@ -199,7 +206,7 @@ public class InboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulservice")
                         .path("/api/inbound/putaway-configuration/allocate-location");
-
+/**
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -208,6 +215,13 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                inventory
+        );
     }
 
     public PutawayConfiguration addPutawayConfiguration(
@@ -217,7 +231,7 @@ public class InboundServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inbound/putaway-configuration");
-
+/**
         ResponseBodyWrapper<PutawayConfiguration> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -226,6 +240,13 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<PutawayConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                PutawayConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.PUT,
+                putawayConfiguration
+        );
 
     }
 
@@ -241,7 +262,7 @@ public class InboundServiceRestemplateClient {
                         .queryParam("startTime", startTime)
                         .queryParam("endTime", endTime)
                         .queryParam("includeLineActivity", includeLineActivity);
-
+/**
         ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -250,19 +271,15 @@ public class InboundServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<BillableActivity>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return  restTemplateProxy.exchangeList(
+                BillableActivity.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-
-
-
-
 
 }
