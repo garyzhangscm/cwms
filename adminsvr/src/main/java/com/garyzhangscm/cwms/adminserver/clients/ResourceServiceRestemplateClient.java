@@ -20,24 +20,14 @@ package com.garyzhangscm.cwms.adminserver.clients;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.User;
-import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -51,16 +41,8 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
-
-
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    // private OAuth2RestOperations restTemplate;
-    RestTemplate restTemplate;
-
-    @Autowired
-    @Qualifier("getObjMapper")
-    private ObjectMapper objectMapper;
+    private RestTemplateProxy restTemplateProxy;
 
 
     public void initData(String warehouseName) {
@@ -80,7 +62,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/test-data/init/" + dataName)
                         .queryParam("warehouseName", warehouseName);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -89,7 +71,13 @@ public class ResourceServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
-
+**/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     private List<String> getDataNames() {
@@ -97,7 +85,7 @@ public class ResourceServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/test-data");
-
+/**
         ResponseBodyWrapper<List<String>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -106,6 +94,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<String>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+   **/
+        return restTemplateProxy.exchangeList(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -116,7 +111,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -125,6 +120,15 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
+
 
     }
 
@@ -134,7 +138,7 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/users/is-system-admin")
                         .queryParam("username", username);
-
+/**
         ResponseBodyWrapper<Boolean> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -143,6 +147,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Boolean>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                Boolean.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -152,7 +163,7 @@ public class ResourceServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/users");
-
+/**
         ResponseBodyWrapper<User> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -161,35 +172,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
 
         return responseBodyWrapper.getData();
-
-
-    }
-
-
-    @Cacheable(cacheNames = "AdminService_UserByName", unless="#result == null")
-    public User getUserByUsername(Long companyId, String username) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/resource/users")
-                        .queryParam("username", username)
-                        .queryParam("companyId", companyId);
-
-        ResponseBodyWrapper<List<User>> responseBodyWrapper
-                = restTemplate.exchange(
+**/
+        return restTemplateProxy.exchange(
+                User.class,
                 builder.toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
-
-        List<User> users = responseBodyWrapper.getData();
-
-        if (users.size() != 1) {
-            return null;
-        }
-        else {
-            return users.get(0);
-        }
+                HttpMethod.PUT,
+                user
+        );
 
     }
 
@@ -201,7 +190,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/users-by-token")
                         .queryParam("username", username)
                         .queryParam("token", token);
-
+/**
         ResponseBodyWrapper<User> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -210,6 +199,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                User.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
 
     }
@@ -220,7 +216,7 @@ public class ResourceServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/warehouses/{id}");
-
+/**
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -229,18 +225,14 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Warehouse.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
-
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-
 
 }

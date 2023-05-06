@@ -884,7 +884,9 @@ public class ShipmentService {
         warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
 
         // after we complete, see if we can complete the wave that related to this shipment
-        shipment.getShipmentLines().forEach(
+        shipment.getShipmentLines().stream().filter(
+                shipmentLine -> Objects.nonNull(shipmentLine.getWave())
+        ).forEach(
                 shipmentLine -> waveService.resetWaveStatus(shipmentLine.getWave())
         );
     }

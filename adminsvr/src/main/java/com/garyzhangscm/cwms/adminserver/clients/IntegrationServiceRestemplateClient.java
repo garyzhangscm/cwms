@@ -21,17 +21,12 @@ package com.garyzhangscm.cwms.adminserver.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -57,12 +52,15 @@ public class IntegrationServiceRestemplateClient {
     // private OAuth2RestOperations restTemplate;
     RestTemplate restTemplate;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
+
     public <T> IntegrationData sendData(String subUrl, T data) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/integration-data/" + subUrl);
-
+/**
         ResponseBodyWrapper<IntegrationData> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -71,7 +69,14 @@ public class IntegrationServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<IntegrationData>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
 
+        return restTemplateProxy.exchange(
+                IntegrationData.class,
+                builder.toUriString(),
+                HttpMethod.PUT,
+                data
+        );
     }
     public List<IntegrationData> getDataByParams(String subUrl, Map<String, String> params) {
 
@@ -84,7 +89,7 @@ public class IntegrationServiceRestemplateClient {
             builder.queryParam(key, value);
         });
 
-
+/**
         ResponseBodyWrapper<List<IntegrationData>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -95,6 +100,14 @@ public class IntegrationServiceRestemplateClient {
         logger.debug("get IntegrationData by params {}\n{}", params, responseBodyWrapper.getData());
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                IntegrationData.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     public IntegrationData getData(String subUrl, Long id) {
         UriComponentsBuilder builder =
@@ -102,7 +115,7 @@ public class IntegrationServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/integration/integration-data/" + subUrl + "/" + id);
 
-
+/**
         ResponseBodyWrapper<IntegrationData> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -113,98 +126,14 @@ public class IntegrationServiceRestemplateClient {
         // logger.debug("get IntegrationData by id {}\n{}", id, responseBodyWrapper.getData());
 
         return responseBodyWrapper.getData();
+ **/
 
-    }
-
-    public IntegrationData sendItemFamilyData(ItemFamily itemFamily) throws JsonProcessingException {
-
-        return sendData("item-families", itemFamily);
-
-    }
-
-    public IntegrationData sendClientData(Client client) throws JsonProcessingException {
-
-        return sendData("clients", client);
-
-    }
-
-    public IntegrationData sendSupplierData(Supplier supplier) throws JsonProcessingException {
-
-        return sendData("suppliers", supplier);
-
-    }
-
-    public IntegrationData sendCustomerData(Customer customer) throws JsonProcessingException {
-
-        return sendData("customers", customer);
-
-    }
-
-    public IntegrationData sendReceiptData(Receipt receipt) throws JsonProcessingException {
-
-        return sendData("receipts", receipt);
-
-    }
-
-    public IntegrationData sendItemData(Item item) throws JsonProcessingException {
-
-        return sendData("items", item);
-
-    }
-
-    public IntegrationData getItemData(Long id)  {
-
-        return getData("items", id);
-
-    }
-
-    public IntegrationData getItemFamilyData(Long id)  {
-
-        return getData("item-families", id);
-
-    }
-    public IntegrationData getSupplierData(Long id)  {
-
-        return getData("suppliers", id);
-
-    }
-    public IntegrationData getCustomerData(Long id)  {
-
-        return getData("customers", id);
-
-    }
-    public IntegrationData getClientData(Long id)  {
-
-        return getData("clients", id);
-
-    }
-
-    public String clearData(String warehouseName) {
-        Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName).getId();
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/resource/test-data/clear")
-                        .queryParam("warehouseId", warehouseId);
-
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
+        return restTemplateProxy.exchange(
+                IntegrationData.class,
                 builder.toUriString(),
-                HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                HttpMethod.GET,
+                null
+        );
 
     }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-
 }

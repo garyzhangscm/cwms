@@ -19,23 +19,15 @@
 package com.garyzhangscm.cwms.adminserver.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.model.BillableActivity;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.ZonedDateTime;
@@ -47,16 +39,12 @@ public class OutbuondServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
 
-    @Autowired
-    // OAuth2RestOperations restTemplate;
-    RestTemplate restTemplate;
-    @Autowired
-    @Qualifier("getObjMapper")
-    private ObjectMapper objectMapper;
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "AdminService_Order", unless="#result == null")
     public Order getOrderByNumber(Long warehouseId, String orderNumber) {
@@ -67,7 +55,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/orders")
                         .queryParam("number", orderNumber)
                         .queryParam("warehouseId", warehouseId);
-
+/**
         ResponseBodyWrapper<List<Order>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -76,33 +64,20 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Order>>>() {}).getBody();
 
         List<Order> orders = responseBodyWrapper.getData();
+   **/
+
+        List<Order> orders = restTemplateProxy.exchangeList(
+                Order.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (orders.size() != 1) {
             return null;
         }
         return orders.get(0);
 
     }
-
-
-    // @Cacheable(cacheNames = "AdminService_Pick", unless="#result == null")
-    public Pick getPickById(Long id) {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/picks/{id}");
-
-        ResponseBodyWrapper<Pick> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(id).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-
     public List<Pick> getPicksByOrder(Long warehouseId, Order order) {
 
         UriComponentsBuilder builder =
@@ -111,7 +86,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("orderId", order.getId());
-
+/**
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -120,6 +95,13 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchangeList(
+                Pick.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -132,7 +114,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("shortAllocationId", shortAllocation.getId());
-
+/**
         ResponseBodyWrapper<List<Pick>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -141,6 +123,13 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Pick>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+   **/
+       return restTemplateProxy.exchangeList(
+                Pick.class,
+               builder.toUriString(),
+               HttpMethod.GET,
+                null
+        );
 
     }
     public List<ShortAllocation> getShortAllocationsByOrder(Long warehouseId, Order order) {
@@ -151,7 +140,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/shortAllocations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("orderId", order.getId());
-
+/**
         ResponseBodyWrapper<List<ShortAllocation>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -160,44 +149,13 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<ShortAllocation>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
-
-    }
-
-    public Pick unpick(Long pickId, Long unpickQuantity) {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/picks/{id}/unpick")
-                        .queryParam("unpickQuantity", unpickQuantity);
-
-        ResponseBodyWrapper<Pick> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(pickId).toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-
-    public void refreshPickMovement(Long pickId, Long destinationLocationId,Long quantity) {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/pick-movement/refresh")
-                        .queryParam("pickId", pickId)
-                        .queryParam("destinationLocationId", destinationLocationId)
-                        .queryParam("quantity", quantity);
-
-        restTemplate.exchange(
-                builder.buildAndExpand(pickId).toUriString(),
-                HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
+**/
+        return restTemplateProxy.exchangeList(
+                ShortAllocation.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -207,6 +165,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/orders/{id}/allocate");
+        /**
         ResponseBodyWrapper<Order> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.buildAndExpand(order.getId()).toUriString(),
@@ -215,6 +174,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Order>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                Order.class,
+                builder.buildAndExpand(order.getId()).toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
     public AllocationConfiguration createAllocationConfiguration(AllocationConfiguration allocationConfiguration) throws JsonProcessingException {
@@ -223,6 +190,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/allocation-configuration");
+        /**
         ResponseBodyWrapper<AllocationConfiguration> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.toUriString(),
@@ -231,6 +199,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<AllocationConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                AllocationConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                allocationConfiguration
+        );
 
     }
 
@@ -243,7 +219,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/allocation-configuration")
                         .queryParam("warehouseId", warehouse.getId())
                         .queryParam("itemFamilyId", itemFamily.getId());
-
+/**
         ResponseBodyWrapper<List<AllocationConfiguration>> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.toUriString(),
@@ -252,24 +228,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<AllocationConfiguration>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
 
-    }
-
-    public PickableUnitOfMeasure addPickableUnitOfMeasure(PickableUnitOfMeasure pickableUnitOfMeasure) throws JsonProcessingException {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/pickable-unit-of-measures");
-        ResponseBodyWrapper<PickableUnitOfMeasure> responseBodyWrapper =
-                restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        getHttpEntity(objectMapper.writeValueAsString(pickableUnitOfMeasure)),
-                        new ParameterizedTypeReference<ResponseBodyWrapper<PickableUnitOfMeasure>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
+        return restTemplateProxy.exchangeList(
+                AllocationConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     public AllocationConfiguration addPickableUnitOfMeasure(AllocationConfiguration allocationConfiguration,
@@ -279,7 +245,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/allocation-configuration/{id}/pickable-unit-of-measures");
-
+/**
         ResponseBodyWrapper<AllocationConfiguration> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.buildAndExpand(allocationConfiguration.getId()).toUriString(),
@@ -288,6 +254,13 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<AllocationConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                AllocationConfiguration.class,
+                builder.buildAndExpand(allocationConfiguration.getId()).toUriString(),
+                HttpMethod.POST,
+                pickableUnitOfMeasure
+        );
 
     }
 
@@ -299,7 +272,7 @@ public class OutbuondServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/picks/{id}/confirm")
                         .queryParam("quantity", confirmQuantity);
-
+/**
         ResponseBodyWrapper<Pick> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.buildAndExpand(pick.getId()).toUriString(),
@@ -308,6 +281,13 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchange(
+                Pick.class,
+                builder.buildAndExpand(pick.getId()).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
     public Pick confirmPick(Pick pick) {
 
@@ -322,7 +302,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/orders/{id}/complete");
-
+/**
         ResponseBodyWrapper<Order> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.buildAndExpand(order.getId()).toUriString(),
@@ -331,6 +311,13 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Order>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+   **/
+        return restTemplateProxy.exchange(
+                Order.class,
+                builder.buildAndExpand(order.getId()).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public List<Inventory> getPickedInventoryByOrder(Long warehouseId, Order order) {
@@ -345,6 +332,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/emergency-replenishment-configuration");
+        /**
         ResponseBodyWrapper<EmergencyReplenishmentConfiguration> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.toUriString(),
@@ -353,6 +341,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<EmergencyReplenishmentConfiguration>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchange(
+                EmergencyReplenishmentConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                configuration
+        );
     }
 
     public List<EmergencyReplenishmentConfiguration> getEmergencyReplenishmentConfiguration(Warehouse warehouse, ItemFamily itemFamily) {
@@ -363,6 +359,7 @@ public class OutbuondServiceRestemplateClient {
                         .path("/api/outbound/emergency-replenishment-configuration")
                         .queryParam("warehouseId", warehouse.getId())
                         .queryParam("itemFamilyId", itemFamily.getId());
+        /**
         ResponseBodyWrapper<List<EmergencyReplenishmentConfiguration>> responseBodyWrapper =
                 restTemplate.exchange(
                         builder.toUriString(),
@@ -371,6 +368,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<EmergencyReplenishmentConfiguration>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+         **/
+
+        return restTemplateProxy.exchangeList(
+                EmergencyReplenishmentConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
 
@@ -386,7 +391,7 @@ public class OutbuondServiceRestemplateClient {
                         .queryParam("startTime", startTime)
                         .queryParam("endTime", endTime)
                         .queryParam("includeLineActivity", includeLineActivity);
-
+/**
         ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -395,16 +400,14 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<BillableActivity>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchangeList(
+                BillableActivity.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-
-
 }
