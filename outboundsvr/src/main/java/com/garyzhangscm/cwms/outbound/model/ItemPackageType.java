@@ -159,6 +159,15 @@ public class ItemPackageType implements Serializable {
         }
         return stockItemUnitOfMeasure;
     }
+    public ItemUnitOfMeasure getCaseItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
+    }
 
     public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
         this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
