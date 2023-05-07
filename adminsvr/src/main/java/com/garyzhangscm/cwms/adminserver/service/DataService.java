@@ -538,10 +538,18 @@ public class DataService {
                     for (SystemControlledNumber systemControlledNumber : systemControlledNumbers) {
                         logger.debug("let's check if the system controller number: {} is defined for warehouse {}",
                                 systemControlledNumber.getVariable(), warehouse.getName());
-                        String nextNumber =
-                                commonServiceRestemplateClient.getNextNumber(warehouse.getId(),
-                                        systemControlledNumber.getVariable()
-                                );
+                        String nextNumber = "";
+                        try {
+                            nextNumber =
+                                    commonServiceRestemplateClient.getNextNumber(warehouse.getId(),
+                                            systemControlledNumber.getVariable()
+                                    );
+                        }
+                        catch (Exception exception) {
+                            // ignore the error if the variable is not defined yet
+                            exception.printStackTrace();
+                            continue;
+                        }
 
                         logger.debug("system controller number: {} for warehouse {}, value? {}",
                                 systemControlledNumber.getVariable(),
