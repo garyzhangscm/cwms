@@ -993,14 +993,17 @@ public class ItemService {
     public boolean isItemRemovable(Item item) {
         // Check if we have inventory that is using this item package type
 
-        if (inventoryService.
+        List<Inventory> inventories = inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), null,
                         null,null,null,null,null, null,
                         null,null,null,null,
                         null,null,null,null, null,null,null,
                         null,null,null,
                         false, null)
-                .size() > 0) {
+                .stream().filter(
+                        existingInventory -> Objects.equals(item.getClientId(), existingInventory.getClientId())
+                ).collect(Collectors.toList());
+        if (inventories.size() > 0) {
             logger.debug("There's inventory attached to this item  {}  , can't remove it",
                     item.getName());
 
