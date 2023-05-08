@@ -113,6 +113,15 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "non_allocatable")
     private Boolean nonAllocatable;
 
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
     // product id if shipped by hualei. This is
     // related to the carrier that ship the package
     @Column(name="hualei_product_id")
@@ -167,6 +176,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         else {
             setAutoRequestShippingLabel(false);
         }
+        setColor(orderLine.getColor());
+        setProductSize(orderLine.getProductSize());
+        setStyle(orderLine.getStyle());
 
         setStatus(IntegrationStatus.PENDING);
         setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
@@ -204,7 +216,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
                 "number", "itemId",  "expectedQuantity",  "inventoryStatusId",
                 "carrierId", "carrierServiceLevelId",
                 "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable",
-                "hualeiProductId", "autoRequestShippingLabel"
+                "hualeiProductId", "autoRequestShippingLabel",
+                "color","productSize","style"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -390,6 +403,30 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setInventoryStatusName(String inventoryStatusName) {
         this.inventoryStatusName = inventoryStatusName;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 
     @Override

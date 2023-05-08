@@ -56,6 +56,9 @@ public class OrderLine implements Serializable {
     private String quickbookTxnLineID;
     private Boolean nonAllocatable = false;
 
+    private String color;
+    private String productSize;
+    private String style;
 
     private String hualeiProductId;
 
@@ -131,6 +134,30 @@ public class OrderLine implements Serializable {
 
     public void setInventoryStatusId(Long inventoryStatusId) {
         this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 
     public Long getCarrierId() {

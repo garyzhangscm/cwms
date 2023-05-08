@@ -423,6 +423,12 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         }
         return shipmentLine.getOrderLine().getOrder().getClient();
     }
+    public Long getClientId() {
+        if (shipmentLine == null) {
+            return null;
+        }
+        return shipmentLine.getShipment().getClientId();
+    }
 
     public PickType getPickType() {
         return pickType;

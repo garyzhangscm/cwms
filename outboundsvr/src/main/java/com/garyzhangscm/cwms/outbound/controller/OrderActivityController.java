@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.model.ClientRestriction;
+import com.garyzhangscm.cwms.outbound.model.ClientValidationEndpoint;
 import com.garyzhangscm.cwms.outbound.model.OrderActivity;
 import com.garyzhangscm.cwms.outbound.service.OrderActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ public class OrderActivityController {
     @Autowired
     private OrderActivityService orderActivityService;
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/order-activities", method = RequestMethod.GET)
     public List<OrderActivity> findAllOrderActivities(@RequestParam Long warehouseId,
                                                       @RequestParam(name="beginDateTime", required = false, defaultValue = "") String beginDateTime,
@@ -47,10 +50,12 @@ public class OrderActivityController {
                                                       @RequestParam(name="shipmentLineNumber", required = false, defaultValue = "") String shipmentLineNumber,
                                                       @RequestParam(name="pickNumber", required = false, defaultValue = "") String pickNumber,
                                                       @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+                                                      @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                                       @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                                       @RequestParam(name="shipmentLineId", required = false, defaultValue = "") Long shipmentLineId,
                                                       @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
-                                                      @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId) {
+                                                      @RequestParam(name="shortAllocationId", required = false, defaultValue = "") Long shortAllocationId,
+                                                      ClientRestriction clientRestriction) {
         return orderActivityService.findAll(warehouseId,
                 beginDateTime,
                 endDateTime,
@@ -65,7 +70,7 @@ public class OrderActivityController {
                 pickId,
                 shortAllocationId,
                 username,
-                rfCode
+                rfCode, clientId, clientRestriction
         );
     }
 

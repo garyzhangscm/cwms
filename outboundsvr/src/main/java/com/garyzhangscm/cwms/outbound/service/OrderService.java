@@ -130,7 +130,8 @@ public class OrderService {
                                Long customerId,
                                Long clientId,
                                Long trailerAppointmentId,
-                               Boolean loadDetails, ClientRestriction clientRestriction) {
+                               Boolean loadDetails,
+                               ClientRestriction clientRestriction) {
 
         List<Order> orders =  orderRepository.findAll(
                 (Root<Order> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -225,7 +226,16 @@ public class OrderService {
                         Join<Shipment, Stop> joinStop = joinShipment.join("stop", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinStop.get("trailerAppointmentId"), trailerAppointmentId));
                     }
+                    Predicate[] p = new Predicate[predicates.size()];
 
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                    root, criteriaBuilder);
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -273,6 +283,7 @@ public class OrderService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
+ **/
 
                 },
                 Sort.by(Sort.Direction.DESC, "createdTime")
@@ -2473,4 +2484,26 @@ public class OrderService {
         }
     }
 
+    public List<OrderQueryWrapper> getOrdersForQuery(Long warehouseId, String number,
+                                                     String status,
+                                                     ClientRestriction clientRestriction) {
+
+        List<Order> orders = findAll(warehouseId, number,
+                status, null, null, null,
+                null, null, null, null,
+                null, null, null, null,
+                true, clientRestriction);
+
+        return orders.stream().map(order -> convertForQuery(order)).collect(Collectors.toList());
+    }
+
+    /**
+     * Convert the order to the POJO for return of query request
+     * @param order
+     * @return
+     */
+    private OrderQueryWrapper convertForQuery(Order order) {
+        return new OrderQueryWrapper(order);
+
+    }
 }

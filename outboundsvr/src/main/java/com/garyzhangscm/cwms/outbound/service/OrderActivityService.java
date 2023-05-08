@@ -86,7 +86,9 @@ public class OrderActivityService {
                                 Long pickId,
                                 Long shortAllocationId,
                                 String username,
-                                       String rfCode) {
+                                       String rfCode,
+                                       Long clientId,
+                                       ClientRestriction clientRestriction) {
 
         return orderActivityRepository.findAll(
                 (Root<OrderActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -108,6 +110,12 @@ public class OrderActivityService {
                         predicates.add(criteriaBuilder.between(root.get("activityDateTime"), begin, end));
                     }
 
+
+                    if (Objects.nonNull(clientId)) {
+
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("clientId"), clientId));
+                    }
                     // query by order
                     if (Objects.nonNull(orderId)) {
 
@@ -217,8 +225,16 @@ public class OrderActivityService {
 
 
                     }
+
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                    root, criteriaBuilder);
                 }
                 ,
                 Sort.by(Sort.Direction.DESC, "activityDateTime")

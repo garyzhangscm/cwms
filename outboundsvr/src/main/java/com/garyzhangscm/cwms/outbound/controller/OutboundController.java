@@ -18,18 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -37,6 +33,8 @@ public class OutboundController {
 
     private static final Logger logger = LoggerFactory.getLogger(OutboundController.class);
 
+    @Autowired
+    private OrderService orderService;
     @Autowired
     OrderLineService orderLineService;
     @Autowired
@@ -87,4 +85,16 @@ public class OutboundController {
 
         return ResponseBodyWrapper.success("success");
     }
+
+
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/query/orders", method = RequestMethod.GET)
+    public List<OrderQueryWrapper> getOrders(@RequestParam Long warehouseId,
+                                             @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                             @RequestParam(name="status", required = false, defaultValue = "") String status,
+                                             ClientRestriction clientRestriction) {
+       return orderService.getOrdersForQuery(warehouseId, number, status, clientRestriction);
+    }
+
 }
