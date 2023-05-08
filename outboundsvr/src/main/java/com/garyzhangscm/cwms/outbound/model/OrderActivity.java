@@ -64,6 +64,12 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     private OrderActivityType orderActivityType;
 
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
     // transaction quantity
     @Column(name = "quantity")
     private Long quantity;
@@ -228,12 +234,17 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     public OrderActivity withOrder(Order order) {
         setOrder(order);
         setOrderNumber(order.getNumber());
+        setClientId(order.getClientId());
 
         return this;
     }
     public OrderActivity withOrderLine(OrderLine orderLine) {
         setOrderLine(orderLine);
         setOrderLineNumber(orderLine.getNumber());
+        if (Objects.nonNull(orderLine.getOrder())) {
+
+            setClientId(orderLine.getOrder().getClientId());
+        }
 
         setOldOrderLineExpectedQuantity(orderLine.getExpectedQuantity());
         setOldOrderLineOpenQuantity(orderLine.getOpenQuantity());
@@ -250,6 +261,10 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     public OrderActivity setQuantityByNewOrderLine(OrderLine orderLine) {
 
+        if (Objects.nonNull(orderLine.getOrder())) {
+
+            setClientId(orderLine.getOrder().getClientId());
+        }
         setNewOrderLineExpectedQuantity(orderLine.getExpectedQuantity());
         setNewOrderLineOpenQuantity(orderLine.getOpenQuantity());
         setNewOrderLineInProcessQuantity(orderLine.getInprocessQuantity());
@@ -260,6 +275,7 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     public OrderActivity withShipment(Shipment shipment) {
         setShipment(shipment);
+        setClientId(shipment.getClientId());
 
         if (Objects.isNull(shipment)) {
             return this;
@@ -272,6 +288,11 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
         if (Objects.isNull(shipmentLine)) {
             return this;
+        }
+
+        if (Objects.nonNull(shipmentLine.getShipment())) {
+
+            setClientId(shipmentLine.getShipment().getClientId());
         }
         setShipmentLineNumber(shipmentLine.getNumber());
 
@@ -292,6 +313,10 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     public OrderActivity setQuantityByNewShipmentLine(ShipmentLine shipmentLine) {
 
+        if (Objects.nonNull(shipmentLine.getShipment())) {
+
+            setClientId(shipmentLine.getShipment().getClientId());
+        }
         setNewShipmentLineQuantity(shipmentLine.getQuantity());
         setNewShipmentLineOpenQuantity(shipmentLine.getOpenQuantity());
         setNewShipmentLineInProcessQuantity(shipmentLine.getInprocessQuantity());
@@ -306,6 +331,10 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         if (Objects.isNull(pick)) {
             return this;
         }
+        if (Objects.nonNull(pick.getClient())) {
+
+        }
+        setClientId(pick.getClientId());
         setPickNumber(pick.getNumber());
         setOldPickQuantity(pick.getQuantity());
         setOldPickPickedQuantity(pick.getPickedQuantity());
@@ -336,6 +365,7 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         if (Objects.isNull(shortAllocation)) {
             return this;
         }
+        setClientId(shortAllocation.getClientId());
         setOldShortAllocationQuantity(shortAllocation.getQuantity());
         setOldShortAllocationOpenQuantity(shortAllocation.getOpenQuantity());
         setOldShortAllocationInProcessQuantity(shortAllocation.getInprocessQuantity());
@@ -676,6 +706,22 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
 
     public void setOldPickPickedQuantity(Long oldPickPickedQuantity) {
         this.oldPickPickedQuantity = oldPickPickedQuantity;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public Long getNewPickPickedQuantity() {

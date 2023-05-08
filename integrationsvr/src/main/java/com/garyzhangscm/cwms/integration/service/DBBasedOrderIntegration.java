@@ -242,6 +242,19 @@ public class DBBasedOrderIntegration {
             // default the category to SALES ORDER
             order.setCategory(OrderCategory.SALES_ORDER.name());
         }
+
+        if (Objects.isNull(order.getClientId()) &&
+                Strings.isNotBlank(dbBasedOrder.getClientName())) {
+            Client client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(), dbBasedOrder.getClientName()
+            );
+            if (Objects.nonNull(client)) {
+                logger.debug("get client id {} from name {}",
+                        client.getId(), dbBasedOrder.getClientName());
+                order.setClientId(client.getId());
+
+            }
+        }
         for(OrderLine orderLine : order.getOrderLines()) {
             // Get the matched order line and setup the missing field
             // for

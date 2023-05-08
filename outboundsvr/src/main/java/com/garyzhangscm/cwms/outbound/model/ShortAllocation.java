@@ -234,6 +234,19 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
         this.lastAllocationDatetime = lastAllocationDatetime;
     }
 
+    public Client getClient() {
+        if (shipmentLine == null) {
+            return null;
+        }
+        return shipmentLine.getOrderLine().getOrder().getClient();
+    }
+    public Long getClientId() {
+        if (shipmentLine == null) {
+            return null;
+        }
+        return shipmentLine.getShipment().getClientId();
+    }
+
     public void setOrderNumber(String orderNumber) {
         this.orderNumber = orderNumber;
     }
