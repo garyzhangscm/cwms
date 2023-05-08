@@ -113,6 +113,14 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "non_allocatable")
     private Boolean nonAllocatable;
 
+    // product id if shipped by hualei. This is
+    // related to the carrier that ship the package
+    @Column(name="hualei_product_id")
+    private String hualeiProductId;
+
+    @Column(name = "auto_request_shipping_label")
+    private Boolean autoRequestShippingLabel;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -148,8 +156,17 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         setCarrierServiceLevelId(orderLine.getCarrierServiceLevelId());
         setCarrierServiceLevelName(orderLine.getCarrierServiceLevelName());
 
-
         setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
+
+        setHualeiProductId(orderLine.getHualeiProductId());
+        if (Objects.nonNull(orderLine.getAutoRequestShippingLabel())) {
+            setAutoRequestShippingLabel(
+                    orderLine.getAutoRequestShippingLabel()
+            );
+        }
+        else {
+            setAutoRequestShippingLabel(false);
+        }
 
         setStatus(IntegrationStatus.PENDING);
         setCreatedTime(ZonedDateTime.now(ZoneId.of("UTC")));
@@ -186,7 +203,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         String[] fieldNames = {
                 "number", "itemId",  "expectedQuantity",  "inventoryStatusId",
                 "carrierId", "carrierServiceLevelId",
-                "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable"
+                "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable",
+                "hualeiProductId", "autoRequestShippingLabel"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -461,5 +479,21 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setNonAllocatable(Boolean nonAllocatable) {
         this.nonAllocatable = nonAllocatable;
+    }
+
+    public String getHualeiProductId() {
+        return hualeiProductId;
+    }
+
+    public void setHualeiProductId(String hualeiProductId) {
+        this.hualeiProductId = hualeiProductId;
+    }
+
+    public Boolean getAutoRequestShippingLabel() {
+        return autoRequestShippingLabel;
+    }
+
+    public void setAutoRequestShippingLabel(Boolean autoRequestShippingLabel) {
+        this.autoRequestShippingLabel = autoRequestShippingLabel;
     }
 }
