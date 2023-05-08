@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 
@@ -54,6 +55,11 @@ public class OrderLine implements Serializable {
     private String carrierServiceLevelName;
     private String quickbookTxnLineID;
     private Boolean nonAllocatable = false;
+
+
+    private String hualeiProductId;
+
+    private Boolean autoRequestShippingLabel = false;
 
     public Long getId() {
         return id;
@@ -197,5 +203,21 @@ public class OrderLine implements Serializable {
 
     public void setNonAllocatable(Boolean nonAllocatable) {
         this.nonAllocatable = nonAllocatable;
+    }
+
+    public String getHualeiProductId() {
+        return hualeiProductId;
+    }
+
+    public void setHualeiProductId(String hualeiProductId) {
+        this.hualeiProductId = hualeiProductId;
+    }
+
+    public Boolean getAutoRequestShippingLabel() {
+        return autoRequestShippingLabel;
+    }
+
+    public void setAutoRequestShippingLabel(Boolean autoRequestShippingLabel) {
+        this.autoRequestShippingLabel = autoRequestShippingLabel;
     }
 }

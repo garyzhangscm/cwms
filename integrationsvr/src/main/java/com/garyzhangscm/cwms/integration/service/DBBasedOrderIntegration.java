@@ -238,6 +238,10 @@ public class DBBasedOrderIntegration {
                 order.setBillToCustomerId(customer.getId());
             }
         }
+        if (Strings.isBlank(dbBasedOrder.getCategory())) {
+            // default the category to SALES ORDER
+            order.setCategory(OrderCategory.SALES_ORDER.name());
+        }
         for(OrderLine orderLine : order.getOrderLines()) {
             // Get the matched order line and setup the missing field
             // for
@@ -314,11 +318,25 @@ public class DBBasedOrderIntegration {
 
         // 3. inventory status ID
         if(Objects.isNull(orderLine.getInventoryStatusId())) {
-            orderLine.setInventoryStatusId(
-                    inventoryServiceRestemplateClient.getInventoryStatusByName(
-                            warehouse.getId(), dbBasedOrderLine.getInventoryStatusName()
-                    ).getId()
-            );
+            if (Strings.isBlank(dbBasedOrderLine.getInventoryStatusName())) {
+                // if both inventory status id and name is null, then get the available inventory status
+                InventoryStatus inventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(warehouse.getId());
+                if(Objects.nonNull(inventoryStatus)) {
+                    orderLine.setInventoryStatusId(inventoryStatus.getId());
+                }
+                else {
+                    throw ResourceNotFoundException.raiseException("No inventory status is specified and can't find the default" +
+                            " inventory status for Available inventory");
+                }
+            }
+            else {
+
+                orderLine.setInventoryStatusId(
+                        inventoryServiceRestemplateClient.getInventoryStatusByName(
+                                warehouse.getId(), dbBasedOrderLine.getInventoryStatusName()
+                        ).getId()
+                );
+            }
         }
 
 
@@ -326,7 +344,7 @@ public class DBBasedOrderIntegration {
         // Carrier is optional and may be different from the order's carrier info
         Carrier carrier = null;
         if(Objects.isNull(orderLine.getCarrierId()) &&
-                Objects.nonNull(dbBasedOrderLine.getCarrierName())) {
+                Strings.isNotBlank(dbBasedOrderLine.getCarrierName())) {
             carrier = commonServiceRestemplateClient.getCarrierByName(
                     warehouse.getId(),
                     dbBasedOrderLine.getCarrierName());
@@ -336,7 +354,7 @@ public class DBBasedOrderIntegration {
         // 5. carrier service level id
         // Carrier service level is optional and may be different from the order's carrier info
         if(Objects.isNull(orderLine.getCarrierServiceLevelId()) &&
-                Objects.nonNull(dbBasedOrderLine.getCarrierServiceLevelName())) {
+                Strings.isNotBlank(dbBasedOrderLine.getCarrierServiceLevelName())) {
             if (Objects.isNull(carrier) ) {
                 // If carrier is not setup yet by the above step, let's try
                 // to get by carrier id
@@ -350,6 +368,10 @@ public class DBBasedOrderIntegration {
                     }
                 });
             }
+        }
+
+        if (Objects.isNull(orderLine.getAutoRequestShippingLabel())) {
+            orderLine.setAutoRequestShippingLabel(false);
         }
     }
 
