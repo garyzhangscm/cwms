@@ -185,6 +185,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     )
     private List<OrderLine> orderLines = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "order",
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ParcelPackage> parcelPackages = new ArrayList<>();
+
     // hualei related field
     @OneToMany(
             mappedBy = "order",
@@ -757,6 +764,14 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setQuickbookCustomerListId(String quickbookCustomerListId) {
         this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public List<ParcelPackage> getParcelPackages() {
+        return parcelPackages;
+    }
+
+    public void setParcelPackages(List<ParcelPackage> parcelPackages) {
+        this.parcelPackages = parcelPackages;
     }
 
     public List<OrderBillableActivity> getOrderBillableActivities() {

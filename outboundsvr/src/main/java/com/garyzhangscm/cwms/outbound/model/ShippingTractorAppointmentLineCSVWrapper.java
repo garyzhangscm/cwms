@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 public class ShippingTractorAppointmentLineCSVWrapper extends AuditibleEntity<String>{
 
+    private String client;
     private String trailer;
     private String number;
     private String description;
@@ -19,6 +20,14 @@ public class ShippingTractorAppointmentLineCSVWrapper extends AuditibleEntity<St
     private String driverLastName;
 
     private String driverPhone;
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
 
     public String getTrailer() {
         return trailer;

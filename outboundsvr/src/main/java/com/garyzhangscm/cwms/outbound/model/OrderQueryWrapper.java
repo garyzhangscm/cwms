@@ -78,6 +78,7 @@ public class OrderQueryWrapper implements Serializable {
     private Client client;
 
     private List<OrderLineQueryWrapper> orderLines = new ArrayList<>();
+    private List<ParcelPackage> parcelPackages = new ArrayList<>();
 
     public OrderQueryWrapper() {}
 
@@ -89,7 +90,7 @@ public class OrderQueryWrapper implements Serializable {
                 "shipToAddressLine1", "shipToAddressLine2", "shipToAddressLine3", "shipToAddressPostcode",
                 "billToContactorFirstname", "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty", "billToAddressCity",
                 "billToAddressLine1", "billToAddressLine2", "billToAddressLine3", "billToAddressPostcode",
-                "completeTime", "supplier","client"
+                "completeTime", "supplier","client", "parcelPackages"
 
         };
 
@@ -358,5 +359,13 @@ public class OrderQueryWrapper implements Serializable {
 
     public void setOrderLines(List<OrderLineQueryWrapper> orderLines) {
         this.orderLines = orderLines;
+    }
+
+    public List<ParcelPackage> getParcelPackages() {
+        return parcelPackages;
+    }
+
+    public void setParcelPackages(List<ParcelPackage> parcelPackages) {
+        this.parcelPackages = parcelPackages;
     }
 }

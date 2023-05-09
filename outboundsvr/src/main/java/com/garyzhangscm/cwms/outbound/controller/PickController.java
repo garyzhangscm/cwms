@@ -68,7 +68,7 @@ public class PickController {
 
         logger.debug("Start to find pick by: {}", listId);
         if (StringUtils.isNotBlank(containerId)) {
-            return pickService.getPicksByContainer(warehouseId, containerId);
+            return pickService.getPicksByContainer(warehouseId, clientId, containerId);
         }
         return pickService.findAll(warehouseId, clientId, number, orderId, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
