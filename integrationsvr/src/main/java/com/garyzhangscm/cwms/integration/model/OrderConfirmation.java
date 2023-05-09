@@ -21,6 +21,9 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -39,6 +42,9 @@ public class OrderConfirmation implements Serializable {
 
     private String quickbookTxnID;
 
+    private Long clientId;
+
+    private Client client;
 
     private List<OrderLineConfirmation> orderLines = new ArrayList<>();
 
@@ -135,5 +141,21 @@ public class OrderConfirmation implements Serializable {
 
     public void setQuickbookTxnID(String quickbookTxnID) {
         this.quickbookTxnID = quickbookTxnID;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

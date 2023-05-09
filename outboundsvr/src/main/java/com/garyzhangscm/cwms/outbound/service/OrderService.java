@@ -94,6 +94,9 @@ public class OrderService {
     private IntegrationService integrationService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private PickReleaseService pickReleaseService;
+
 
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
@@ -953,12 +956,69 @@ public class OrderService {
                         .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
                         .collect(Collectors.toList());
 
-        // logger.debug("After allocation, we get the following result: \n {}", allocationResults);
-
-        // return findById(orderId);
+        postAllocationProcess(allocationResults);
         return order;
 
     }
+
+    /**
+     * Post allocation process. For pick allocate by order, we will only have single pick
+     * we will only have list pick and bulk pick when allocate by wave
+     * release the pick
+     * @param allocationResults
+     */
+    private void postAllocationProcess(List<AllocationResult> allocationResults) {
+
+
+        releaseSinglePicks(allocationResults);
+
+    }
+
+    /**
+     * Release the picks of the wave, which are not in any group of
+     * @param allocationResults
+     */
+    private void releaseSinglePicks(List<AllocationResult> allocationResults) {
+        // let's get any pick that is
+        // 1. not in any group
+        // 2. in PENDING status
+        // and then release
+        allocationResults.stream().map(
+                allocationResult ->  allocationResult.getPicks()
+        ).flatMap(List::stream)
+                .filter(pick -> {
+
+                    logger.debug("check if we will need to release the pick {}",
+                            pick.getNumber());
+                    logger.debug("pick.getStatus().equals(PickStatus.PENDING): {}",
+                            pick.getStatus().equals(PickStatus.PENDING));
+                    logger.debug("Objects.isNull(pick.getBulkPick()): {}",
+                            Objects.isNull(pick.getBulkPick()));
+                    logger.debug("Objects.isNull(pick.getCartonization()): {}", Objects.isNull(pick.getCartonization()) );
+                    logger.debug("Objects.isNull(pick.getPickList()): {}", Objects.isNull(pick.getPickList()));
+                    logger.debug("Objects.isNull(pick.getWorkTaskId()): {}", Objects.isNull(pick.getWorkTaskId()));
+                    logger.debug("pick.getPickedQuantity() == 0: {}", pick.getPickedQuantity() == 0);
+                    return pick.getStatus().equals(PickStatus.PENDING) &&
+                            Objects.isNull(pick.getBulkPick()) &&
+                            Objects.isNull(pick.getCartonization()) &&
+                            Objects.isNull(pick.getPickList()) &&
+                            Objects.isNull(pick.getWorkTaskId()) &&
+                            pick.getPickedQuantity() == 0;
+                })
+                .forEach(
+                        pick -> {
+                            pick = pickReleaseService.releasePick(pick);
+                            logger.debug("pick {} is released? {}, work task id: {}",
+                                    pick.getNumber(),
+                                    PickStatus.RELEASED.equals(pick.getStatus()),
+                                    pick.getWorkTaskId());
+                            pickService.saveOrUpdate(pick, false);
+                        }
+                );
+
+    }
+
+
     @Transactional
     public Order stage(Long orderId, boolean ignoreUnfinishedPicks) {
         Order order = findById(orderId);
