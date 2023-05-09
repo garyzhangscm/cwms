@@ -236,4 +236,8 @@ public class CarrierService implements  TestDataInitiableService{
         );
         return saveOrUpdate(carrier);
     }
+
+    public void removeCarrier(Long id) {
+        carrierRepository.deleteById(id);
+    }
 }

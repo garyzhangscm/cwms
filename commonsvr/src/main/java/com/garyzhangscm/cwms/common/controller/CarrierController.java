@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
+import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
@@ -74,8 +75,30 @@ public class CarrierController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/carriers")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Carrier", allEntries = true),
+            }
+    )
     public void deleteCarriers(@RequestParam(name = "carrier_ids", required = false, defaultValue = "") String carrierIds) {
         carrierService.delete(carrierIds);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/carriers/{id}", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Carrier", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Carrier", allEntries = true),
+            }
+    )
+    public ResponseBodyWrapper<String> removeCarrier(@PathVariable Long id,
+                                             @RequestParam Long warehouseId) {
+        carrierService.removeCarrier(id);
+        return ResponseBodyWrapper.success("carrier with id " + id + " is removed");
     }
 
 

@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.model.hualei;
 
 import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
+import com.garyzhangscm.cwms.outbound.model.Carrier;
+import com.garyzhangscm.cwms.outbound.model.CarrierServiceLevel;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -47,6 +49,19 @@ public class HualeiProduct extends AuditibleEntity<String> implements Serializab
 
     @Column(name = "description")
     private String description;
+
+
+    @Column(name = "carrier_id")
+    private Long carrierId;
+
+    @Transient
+    private Carrier carrier;
+
+    @Column(name = "carrier_service_level_id")
+    private Long carrierServiceLevelId;
+
+    @Transient
+    private CarrierServiceLevel carrierServiceLevel;
 
     public Long getId() {
         return id;
@@ -86,5 +101,37 @@ public class HualeiProduct extends AuditibleEntity<String> implements Serializab
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getCarrierId() {
+        return carrierId;
+    }
+
+    public void setCarrierId(Long carrierId) {
+        this.carrierId = carrierId;
+    }
+
+    public Carrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(Carrier carrier) {
+        this.carrier = carrier;
+    }
+
+    public Long getCarrierServiceLevelId() {
+        return carrierServiceLevelId;
+    }
+
+    public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
+        this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public CarrierServiceLevel getCarrierServiceLevel() {
+        return carrierServiceLevel;
+    }
+
+    public void setCarrierServiceLevel(CarrierServiceLevel carrierServiceLevel) {
+        this.carrierServiceLevel = carrierServiceLevel;
     }
 }

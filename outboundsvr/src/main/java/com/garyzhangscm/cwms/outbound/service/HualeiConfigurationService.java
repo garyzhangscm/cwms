@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.BulkPickConfiguration;
 import com.garyzhangscm.cwms.outbound.model.PickType;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
+import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
 import com.garyzhangscm.cwms.outbound.repository.BulkPickConfigurationRepository;
 import com.garyzhangscm.cwms.outbound.repository.HualeiConfigurationRepository;
 import org.apache.logging.log4j.util.Strings;
@@ -36,6 +37,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -45,16 +47,55 @@ public class HualeiConfigurationService {
     @Autowired
     private HualeiConfigurationRepository hualeiConfigurationRepository;
 
+    @Autowired
+    private HualeiProductService hualeiProductService;
+
     public HualeiConfiguration findById(Long id) {
-        return hualeiConfigurationRepository.findById(id)
+        HualeiConfiguration hualeiConfiguration =  hualeiConfigurationRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("Hualei configuration not found by id: " + id));
 
+        loadAttribute(hualeiConfiguration);
+        return hualeiConfiguration;
     }
 
     public HualeiConfiguration findByWarehouse(Long warehouseId) {
-        return hualeiConfigurationRepository.findByWarehouseId(warehouseId);
+        HualeiConfiguration hualeiConfiguration =
+                hualeiConfigurationRepository.findByWarehouseId(warehouseId);
+        if (Objects.nonNull(hualeiConfiguration)) {
+            loadAttribute(hualeiConfiguration);
+        }
+        return hualeiConfiguration;
     }
 
+    public void loadAttribute(HualeiConfiguration hualeiConfiguration) {
+        // load the tracking number query URL from the carrier
+        logger.debug("Start to load the tracking number query url for hualei configuration of warehouse {}",
+                hualeiConfiguration.getWarehouseId());
+        hualeiConfiguration.getHualeiShippingLabelFormatByProducts().forEach(
+                hualeiShippingLabelFormatByProduct -> {
+
+                    HualeiProduct hualeiProduct = hualeiProductService.findByProductId(
+                            hualeiConfiguration.getWarehouseId(),
+                            hualeiShippingLabelFormatByProduct.getProductId()
+                    );
+                    logger.debug("get product by id {} ? {} ",
+                            hualeiShippingLabelFormatByProduct.getProductId(),
+                        Objects.isNull(hualeiProduct) ? "No" : "Yes");
+                    logger.debug("Objects.nonNull(hualeiProduct): {} ", Objects.nonNull(hualeiProduct));
+                    logger.debug("Objects.nonNull(hualeiProduct.getCarrier()): {} ", Objects.nonNull(hualeiProduct.getCarrier()));
+
+                    if (Objects.nonNull(hualeiProduct) && Objects.nonNull(hualeiProduct.getCarrier())) {
+                        hualeiShippingLabelFormatByProduct.setTrackingInfoUrl(
+                                hualeiProduct.getCarrier().getTrackingInfoUrl()
+                        );
+                        logger.debug("setup the tracking number {}  from carrier {}",
+                                hualeiProduct.getCarrier().getTrackingInfoUrl(),
+                                hualeiProduct.getCarrier().getName());
+
+                    }
+                }
+        );
+    }
 
 
     public HualeiConfiguration save(HualeiConfiguration hualeiConfiguration) {
@@ -86,7 +127,9 @@ public class HualeiConfigurationService {
                 hualeiShippingLabelFormatByProduct ->
                         hualeiShippingLabelFormatByProduct.setHualeiConfiguration(hualeiConfiguration)
         );
-        return saveOrUpdate(hualeiConfiguration);
+        HualeiConfiguration newHualeiConfiguration = saveOrUpdate(hualeiConfiguration);
+        loadAttribute(newHualeiConfiguration);
+        return newHualeiConfiguration;
     }
 
     public HualeiConfiguration changeHualeiConfiguration(Long id, HualeiConfiguration hualeiConfiguration) {
@@ -95,7 +138,9 @@ public class HualeiConfigurationService {
                 hualeiShippingLabelFormatByProduct ->
                         hualeiShippingLabelFormatByProduct.setHualeiConfiguration(hualeiConfiguration)
         );
-        return saveOrUpdate(hualeiConfiguration);
+        HualeiConfiguration newHualeiConfiguration =  saveOrUpdate(hualeiConfiguration);
+        loadAttribute(newHualeiConfiguration);
+        return newHualeiConfiguration;
 
     }
 }
