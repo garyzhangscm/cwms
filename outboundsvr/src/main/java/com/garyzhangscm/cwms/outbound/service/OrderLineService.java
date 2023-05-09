@@ -466,7 +466,8 @@ public class OrderLineService{
     }
      **/
 
-    private OrderLine convertFromWrapper(Long warehouseId, OrderLineCSVWrapper orderLineCSVWrapper,
+    private OrderLine convertFromWrapper(Long warehouseId, Long clientId,
+                                         OrderLineCSVWrapper orderLineCSVWrapper,
                                          Order order) {
 
         OrderLine orderLine = new OrderLine();
@@ -497,7 +498,7 @@ public class OrderLineService{
             orderLine.setOrder(order);
         }
         else if (Strings.isNotBlank(orderLineCSVWrapper.getOrder())) {
-            order = orderService.findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
+            order = orderService.findByNumber(warehouseId, clientId, orderLineCSVWrapper.getOrder());
             orderLine.setOrder(order);
         }
         if (!StringUtils.isBlank(orderLineCSVWrapper.getItem())) {
@@ -674,10 +675,10 @@ public class OrderLineService{
         orderLineRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
 
-    public void saveOrderLineData(Long warehouseId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
+    public void saveOrderLineData(Long warehouseId, Long clientId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
 
         saveOrUpdate(
-                convertFromWrapper(warehouseId, orderLineCSVWrapper, order)
+                convertFromWrapper(warehouseId, clientId, orderLineCSVWrapper, order)
         );
     }
 }

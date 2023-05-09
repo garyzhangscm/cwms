@@ -50,6 +50,16 @@ public class UnitService {
 
         return commonServiceRestemplateClient.getAllUnits(warehouseId);
     }
+
+    public double convertLength(Long warehouseId,
+                                double length,
+                                String sourceUnitName) {
+        Unit lengthBaseUnit = getLengthBaseUnit(warehouseId);
+        if (Objects.isNull(lengthBaseUnit)) {
+            return length;
+        }
+        return convertLength(warehouseId, length, sourceUnitName, lengthBaseUnit.getName());
+    }
     public double convertLength(Long warehouseId,
                                 double length,
                                 String sourceUnitName,
@@ -59,6 +69,15 @@ public class UnitService {
                 Strings.isBlank(sourceUnitName) ? "N/A" : sourceUnitName,
                 Strings.isBlank(destinationUnitName) ? "N/A" : destinationUnitName);
         return convert(warehouseId, length, UnitType.LENGTH, sourceUnitName, destinationUnitName);
+    }
+    public double convertWeight(Long warehouseId,
+                                double weight,
+                                String sourceUnitName) {
+        Unit weightBaseUnit = getWeightBaseUnit(warehouseId);
+        if (Objects.isNull(weightBaseUnit)) {
+            return weight;
+        }
+        return convertWeight(warehouseId, weight, sourceUnitName, weightBaseUnit.getName());
     }
     public double convertWeight(Long warehouseId,
                                 double weight,
@@ -111,6 +130,22 @@ public class UnitService {
 
     }
 
+    public Unit getLengthBaseUnit(Long warehouseId) {
+        return getBaseUnit(warehouseId, UnitType.LENGTH);
+    }
+    public Unit getWeightBaseUnit(Long warehouseId) {
+        return getBaseUnit(warehouseId, UnitType.WEIGHT);
+    }
+    public Unit getVolumeBaseUnit(Long warehouseId) {
+        return getBaseUnit(warehouseId, UnitType.VOLUME);
+    }
+    public Unit getBaseUnit(Long warehouseId, UnitType unitType) {
+        List<Unit> units = getAllUnits(warehouseId).stream().filter(
+                unit -> unit.getType().equals(unitType)
+        ).collect(Collectors.toList());
+
+        return getBaseUnit(units);
+    }
     /**
      * Get the base unit from a list of unit of same type
      * @param units

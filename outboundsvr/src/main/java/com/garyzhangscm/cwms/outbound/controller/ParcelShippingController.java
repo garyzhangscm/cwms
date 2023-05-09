@@ -29,7 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -44,6 +47,10 @@ public class ParcelShippingController {
 
     @Autowired
     private ParcelPackageService parcelPackageService;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private OrderDocumentService orderDocumentService;
 
     @RequestMapping(value="/parcel/ship-engine/rate", method = RequestMethod.GET)
     public ResponseBodyWrapper getShipEngineRate(@RequestParam Long warehouseId) throws JsonProcessingException {
@@ -82,5 +89,61 @@ public class ParcelShippingController {
                                                   @RequestParam(name = "orderNumber", required = false) String orderNumber,
                                                   @RequestParam(name = "trackingCode", required = false) String trackingCode) {
         return parcelPackageService.findAll(warehouseId, orderId, orderNumber, trackingCode);
+    }
+
+    @RequestMapping(value="/parcel/packages", method = RequestMethod.PUT)
+    public ParcelPackage addParcelPackage(@RequestParam Long warehouseId,
+                                          @RequestParam Long orderId,
+                                          @RequestParam ParcelPackage parcelPackage) {
+        return parcelPackageService.addParcelPackage(warehouseId, orderId, parcelPackage);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/parcel/packages/upload")
+    public ResponseBodyWrapper uploadParcelPackage(Long warehouseId,
+                                                         @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        File localFile = fileService.saveFile(file);
+        try {
+            fileService.validateCSVFile(warehouseId, "parcel-packages", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
+        String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
+        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/parcel/packages/upload/progress")
+    public ResponseBodyWrapper getParcelPackageFileUploadProgress(Long warehouseId,
+                                                                        String key) {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",parcelPackageService.getFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/parcel/packages/upload/result")
+    public List<FileUploadResult> getParcelPackageFileUploadResult(Long warehouseId,
+                                                                         String key) {
+
+
+        return parcelPackageService.getFileUploadResult(warehouseId, key);
+    }
+
+    @RequestMapping(value="/parcel/packages/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeParcelPackage(@RequestParam Long warehouseId,
+                                                           @PathVariable Long id) {
+        parcelPackageService.removeParcelPackage(warehouseId, id);
+
+        return ResponseBodyWrapper.success("parcel package with id " + id + " is removed!");
+    }
+
+    @RequestMapping(value="/parcel/packages/{warehouseId}/{orderId}/labels/upload", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> uploadParcelLabel(@PathVariable Long warehouseId,
+                                                         @PathVariable Long orderId,
+                                                         @RequestParam("file") MultipartFile file) throws IOException {
+
+        return ResponseBodyWrapper.success(orderDocumentService.uploadOrderDocument(warehouseId, orderId, file));
     }
 }

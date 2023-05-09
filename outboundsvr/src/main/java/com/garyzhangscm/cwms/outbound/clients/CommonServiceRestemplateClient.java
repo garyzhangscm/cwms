@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -148,6 +149,29 @@ public class CommonServiceRestemplateClient {
         );
 
     }
+    @Cacheable(cacheNames = "OutboundService_Carrier", unless="#result == null")
+    public Carrier getCarrierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/carriers")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+
+
+        List<Carrier> carriers = restTemplateProxy.exchangeList(
+                Carrier.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+        if (carriers.size() == 0) {
+            return null;
+        }
+        else {
+            return carriers.get(0);
+        }
+    }
 
     @Cacheable(cacheNames = "OutboundService_Carrier", unless="#result == null")
     public Carrier getCarrierById(Long id) {
@@ -172,6 +196,30 @@ public class CommonServiceRestemplateClient {
                 null
         );
 
+    }
+    @Cacheable(cacheNames = "OutboundService_CarrierServiceLevel", unless="#result == null")
+    public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) throws UnsupportedEncodingException {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/carrier-service-levels")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+
+
+        List<CarrierServiceLevel> carrierServiceLevels =
+                restTemplateProxy.exchangeList(
+                        CarrierServiceLevel.class,
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        null
+                );
+        if (carrierServiceLevels.size() == 0) {
+            return null;
+        }
+        else {
+            return carrierServiceLevels.get(0);
+        }
     }
 
     @Cacheable(cacheNames = "OutboundService_CarrierServiceLevel", unless="#result == null")

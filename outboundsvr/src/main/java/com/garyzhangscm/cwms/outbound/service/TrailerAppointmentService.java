@@ -335,6 +335,11 @@ public class TrailerAppointmentService {
                     : shippingTractorAppointmentLineCSVWrappers) {
                 shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
 
+                Client client = Strings.isNotBlank(shippingTractorAppointmentLineCSVWrapper.getClient()) ?
+                        commonServiceRestemplateClient.getClientByName(warehouseId, shippingTractorAppointmentLineCSVWrapper.getClient())
+                        : null;
+                Long clientId = Objects.isNull(client) ? null : client.getId();
+
                 logger.debug("start to process line \n{}", shippingTractorAppointmentLineCSVWrapper);
                 try {
                     if (Strings.isBlank(shippingTractorAppointmentLineCSVWrapper.getLine())) {
@@ -383,7 +388,7 @@ public class TrailerAppointmentService {
                         // if order line is not passed in, let's group the whole order into the trailer appointment
                         // it will automatically skip the line that already in other trailer appointment
 
-                        attachOrderToTrailerAppointment(warehouseId, trailerAppointment,
+                        attachOrderToTrailerAppointment(warehouseId, clientId, trailerAppointment,
                                 shippingTractorAppointmentLineCSVWrapper.getStopSequence(),
                                 shippingTractorAppointmentLineCSVWrapper.getOrder());
 
@@ -451,11 +456,12 @@ public class TrailerAppointmentService {
     }
 
     private Shipment attachOrderToTrailerAppointment(Long warehouseId,
+                                                 Long clientId,
                                                  TrailerAppointment trailerAppointment,
                                                  Integer stopSequence,
                                                  String orderNumber) {
 
-        Order order = orderService.findByNumber(warehouseId, orderNumber);
+        Order order = orderService.findByNumber(warehouseId, clientId, orderNumber);
         if (Objects.isNull(order)) {
             throw OrderOperationException.raiseException("can't find order by number " + orderNumber);
         }

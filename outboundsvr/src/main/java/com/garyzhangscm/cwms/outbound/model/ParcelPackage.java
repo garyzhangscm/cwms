@@ -19,12 +19,16 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.easypost.model.Shipment;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.garyzhangscm.cwms.outbound.model.hualei.*;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "parcel_package")
@@ -39,6 +43,7 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private Order order;
 
     @Column(name = "warehouse_id")
@@ -87,6 +92,7 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
 
     public ParcelPackage() {}
 
+    // get parcel package from easy post system
     public ParcelPackage(Long warehouseId, Order order, Shipment easyPostShipment) {
         this.warehouseId = warehouseId;
         this.order = order;
@@ -114,6 +120,107 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
         labelUrl = easyPostShipment.getPostageLabel().getLabelUrl();
 
         insurance = easyPostShipment.getInsurance();
+
+    }
+
+    public ParcelPackage(Long warehouseId, Order order, Carrier carrier,
+                         CarrierServiceLevel carrierServiceLevel,
+                         String trackingCode, double length, double width,
+                         double height, double weight,
+                         Integer deliveryDays, Double rate
+                         ) {
+        this.warehouseId = warehouseId;
+        this.order = order;
+        // shipment ID is the business key for the package
+        this.shipmentId = trackingCode;
+
+        this.trackingCode = trackingCode;
+
+        trackingUrl = Objects.nonNull(carrier) && Strings.isNotBlank(carrier.getTrackingInfoUrl()) ?
+            carrier.getTrackingInfoUrl() + trackingCode : "";
+        status = "";
+        shipmentId = "";
+
+
+        this.length = length;
+        this.width = width;
+        this.height = height;
+        this.weight = weight;
+
+
+        this.carrier = Objects.nonNull(carrier) ? carrier.getName() : "";
+        this.service = Objects.nonNull(carrierServiceLevel) ? carrier.getName() : "";
+
+        this.deliveryDays = deliveryDays;
+        this.rate = rate;
+
+        labelResolution = 0;
+        labelSize = "";
+        labelUrl = "";
+
+        insurance = "";
+
+    }
+    // get parcel package from hualei system
+    public ParcelPackage(Long warehouseId, Order order, Carrier carrier,
+                         CarrierServiceLevel carrierServiceLevel,
+                         HualeiConfiguration hualeiConfiguration,
+                         HualeiShippingLabelFormatByProduct hualeiShippingLabelFormatByProduct,
+                         String trackingCode,
+                         String hualeiOrderId,
+                         double length,
+                         double width,
+                         double height,
+                         double weight) {
+        this.warehouseId = warehouseId;
+        this.order = order;
+
+        this.trackingCode = trackingCode;
+        // shipment ID is the business key for the package
+        this.shipmentId = trackingCode;
+
+        trackingUrl = Objects.nonNull(hualeiShippingLabelFormatByProduct) ?
+                        hualeiShippingLabelFormatByProduct.getTrackingInfoUrl() + trackingCode
+                        : "";
+
+        this.length = length;
+        this.width = width;
+        this.height = height;
+        this.weight = weight;
+
+        // we will assume there's only one package per shipment
+        /**
+        if (Objects.nonNull(shipmentResponse.getShipmentRequest()) &&
+            Objects.nonNull(shipmentResponse.getShipmentRequest().getShipmentRequestParameters()) &&
+            Objects.nonNull(shipmentResponse.getShipmentRequest().getShipmentRequestParameters().getOrderVolumeParams()) &&
+                !shipmentResponse.getShipmentRequest().getShipmentRequestParameters().getOrderVolumeParams().isEmpty()) {
+
+            ShipmentRequestOrderVolumeParameters shipmentRequestOrderVolumeParameters =
+                    shipmentResponse.getShipmentRequest().getShipmentRequestParameters().getOrderVolumeParams().get(0);
+            length = Double.valueOf(shipmentRequestOrderVolumeParameters.getVolumeLength());
+            width = Double.valueOf(shipmentRequestOrderVolumeParameters.getVolumeWidth());
+            height = Double.valueOf(shipmentRequestOrderVolumeParameters.getVolumeHeight());
+            weight = Double.valueOf(shipmentRequestOrderVolumeParameters.getVolumeWeight());
+        }
+         **/
+
+        this.carrier = Objects.nonNull(carrier) ? carrier.getName() : "";
+        service = Objects.nonNull(carrierServiceLevel) ? carrierServiceLevel.getName() : "";
+
+        deliveryDays = 0;
+        rate = 0.0;
+
+        labelResolution = 0;
+        labelSize = Objects.nonNull(hualeiShippingLabelFormatByProduct) ?
+                       hualeiShippingLabelFormatByProduct.getShippingLabelFormat().name() : "";
+        labelUrl = Objects.nonNull(hualeiShippingLabelFormatByProduct) ?
+                   (hualeiConfiguration.getPrintLabelProtocol() + "://" + hualeiConfiguration.getPrintLabelHost() +
+                        ":" + hualeiConfiguration.getPrintLabelPort() + "/" + hualeiConfiguration.getPrintLabelEndpoint() +
+                        "?PrintType=" + hualeiShippingLabelFormatByProduct.getShippingLabelFormat().name() +
+                        "&order_id=" + hualeiOrderId)
+                        : "";
+
+        insurance = "0";
 
     }
 

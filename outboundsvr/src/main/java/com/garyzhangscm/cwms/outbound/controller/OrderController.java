@@ -21,10 +21,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.service.FileService;
-import com.garyzhangscm.cwms.outbound.service.OrderBillableActivityService;
-import com.garyzhangscm.cwms.outbound.service.OrderLineService;
-import com.garyzhangscm.cwms.outbound.service.OrderService;
+import com.garyzhangscm.cwms.outbound.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -256,9 +253,10 @@ public class OrderController {
 
     @RequestMapping(method=RequestMethod.POST, value="/orders/validate-new-order-number")
     public ResponseBodyWrapper<String> validateNewOrderNumber(@RequestParam Long warehouseId,
-                                                                    @RequestParam String orderNumber)  {
+                                                              @RequestParam String orderNumber,
+                                                              @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId)  {
 
-        return ResponseBodyWrapper.success(orderService.validateNewOrderNumber(warehouseId, orderNumber));
+        return ResponseBodyWrapper.success(orderService.validateNewOrderNumber(warehouseId, clientId, orderNumber));
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/retrigger-order-confirm-integration")
@@ -366,6 +364,6 @@ public class OrderController {
         return orderBillableActivityService.changeOrderBillableActivity(orderBillableActivity);
     }
 
-
+ 
 
 }

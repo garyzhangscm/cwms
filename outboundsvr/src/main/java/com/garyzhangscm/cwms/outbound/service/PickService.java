@@ -446,7 +446,7 @@ public class PickService {
      * @param containerId
      * @return
      */
-    public List<Pick> getPicksByContainer(Long warehouseId, String containerId) {
+    public List<Pick> getPicksByContainer(Long warehouseId, Long clientId, String containerId) {
         // check if the container id is a pick work number
 
         if (Objects.nonNull(findByNumber(containerId, false))) {
@@ -454,8 +454,8 @@ public class PickService {
         }
 
         // Check if the container id is a order number
-        if (Objects.nonNull(orderService.findByNumber(warehouseId, containerId, false))) {
-            return findByOrder(orderService.findByNumber(warehouseId, containerId));
+        if (Objects.nonNull(orderService.findByNumber(warehouseId, clientId, containerId, false))) {
+            return findByOrder(orderService.findByNumber(warehouseId, clientId, containerId));
         }
         // Check if the container id is a shipment number
         if (Objects.nonNull(shipmentService.findByNumber(containerId, false))) {

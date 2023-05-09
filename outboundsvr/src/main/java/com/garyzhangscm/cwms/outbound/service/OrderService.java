@@ -103,6 +103,9 @@ public class OrderService {
     private Map<String, Double> fileUploadProgress = new ConcurrentHashMap<>();
     private Map<String, List<FileUploadResult>> fileUploadResultMap = new ConcurrentHashMap<>();
 
+
+
+
     public Order findById(Long id, boolean loadDetails) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("order not found by id: " + id));
@@ -367,17 +370,29 @@ public class OrderService {
         ).collect(Collectors.toList());
 
     }
-
+/**
     public Order findByNumber(Long warehouseId, String number, boolean loadDetails) {
-        Order order = orderRepository.findByWarehouseIdAndNumber(warehouseId, number);
+        return findByNumber(warehouseId, null, number, loadDetails);
+    }
+ **/
+    public Order findByNumber(Long warehouseId, Long clientId, String number, boolean loadDetails) {
+        Order order = Objects.isNull(clientId) ?
+                orderRepository.findByWarehouseIdAndNumber(warehouseId, number)
+                :
+                orderRepository.findByWarehouseIdAndClientIdAndNumber(warehouseId, clientId, number);
+
         if (order != null && loadDetails) {
             loadOrderAttribute(order);
         }
         return order;
     }
-
+/**
     public Order findByNumber(Long warehouseId, String number) {
         return findByNumber(warehouseId, number, true);
+    }
+   **/
+    public Order findByNumber(Long warehouseId, Long clientId, String number) {
+        return findByNumber(warehouseId, clientId, number, true);
     }
 
 
@@ -581,8 +596,8 @@ public class OrderService {
     }
     public Order saveOrUpdate(Order order, boolean loadDetails) {
         if (Objects.isNull(order.getId()) &&
-                Objects.nonNull(findByNumber(order.getWarehouseId(),order.getNumber(), false))) {
-            order.setId(findByNumber(order.getWarehouseId(),order.getNumber(), false).getId());
+                Objects.nonNull(findByNumber(order.getWarehouseId(), order.getClientId(), order.getNumber(), false))) {
+            order.setId(findByNumber(order.getWarehouseId(), order.getClientId(), order.getNumber(), false).getId());
         }
         return save(order, loadDetails);
     }
@@ -2278,9 +2293,9 @@ public class OrderService {
         delete(order);
     }
 
-    public String validateNewOrderNumber(Long warehouseId, String orderNumber) {
+    public String validateNewOrderNumber(Long warehouseId, Long clientId,  String orderNumber) {
         Order order =
-                findByNumber(warehouseId, orderNumber, false);
+                findByNumber(warehouseId, clientId, orderNumber, false);
 
         return Objects.isNull(order) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
@@ -2396,7 +2411,12 @@ public class OrderService {
 
                 try {
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
-                    Order order = findByNumber(warehouseId, orderLineCSVWrapper.getOrder());
+                    Client client = Strings.isNotBlank(orderLineCSVWrapper.getClient()) ?
+                            commonServiceRestemplateClient.getClientByName(warehouseId, orderLineCSVWrapper.getClient())
+                            : null;
+                    Long clientId = Objects.isNull(client) ? null : client.getId();
+
+                    Order order = findByNumber(warehouseId, clientId, orderLineCSVWrapper.getOrder());
                     if (Objects.isNull(order)) {
                         logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
                         // the order is not created yet, let's
@@ -2413,7 +2433,7 @@ public class OrderService {
                             orderLineCSVWrapper.getItem(),
                             orderLineCSVWrapper.getExpectedQuantity(),
                             order.getNumber());
-                    orderLineService.saveOrderLineData(warehouseId, order, orderLineCSVWrapper);
+                    orderLineService.saveOrderLineData(warehouseId, clientId, order, orderLineCSVWrapper);
 
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 1));
 
@@ -2422,7 +2442,7 @@ public class OrderService {
                     );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            orderLineCSVWrappers.toString(),
+                            orderLineCSVWrapper.toString(),
                             "success", ""
                     ));
                     fileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
@@ -2432,14 +2452,14 @@ public class OrderService {
 
                     ex.printStackTrace();
                     logger.debug("Error while process receiving order upload file record: {}, \n error message: {}",
-                            orderLineCSVWrappers,
+                            orderLineCSVWrapper,
                             ex.getMessage());
                     List<FileUploadResult> fileUploadResults = fileUploadResultMap.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
                     );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            orderLineCSVWrappers.toString(),
+                            orderLineCSVWrapper.toString(),
                             "fail", ex.getMessage()
                     ));
                     fileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
@@ -2566,4 +2586,7 @@ public class OrderService {
         return new OrderQueryWrapper(order);
 
     }
+
+
+
 }

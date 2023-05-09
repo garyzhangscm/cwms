@@ -26,10 +26,7 @@ import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.outbound.model.FileUploadResult;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.OrderLineCSVWrapper;
-import com.garyzhangscm.cwms.outbound.model.OrderStatus;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import com.garyzhangscm.cwms.outbound.repository.HualeiProductRepository;
 import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentRequestRepository;
@@ -74,7 +71,7 @@ public class HualeiShippingService {
     @Autowired
     private HualeiProductService hualeiProductService;
     @Autowired
-    private OrderParcelTrackingService orderParcelTrackingService;
+    private ParcelPackageService parcelPackageService;
 
     public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
                                                        String productId, // hualei product id
@@ -161,6 +158,10 @@ public class HualeiShippingService {
         }
 
         // start a new thread to request the label one by one
+        double finalLength = length;
+        double finalWidth = width;
+        double finalHeight = height;
+        double finalWeight = weight;
         new Thread(() -> {
             for (int i = 0; i < packageCount; i++) {
                     ShipmentRequest shipmentRequest = shipmentRequests[i];
@@ -182,8 +183,12 @@ public class HualeiShippingService {
                     );
                     logger.debug("save hualei's shipment response\n {}", shipmentResponse);
 
-                    saveTrackingNumber(order, shipmentResponse.getTrackingNumber(),
-                            hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId());
+                    if (Strings.isBlank(shipmentResponse.getMessage())) {
+                        // if message is empty, then we don't have any error
+                        saveTrackingNumber(warehouseId, order, productId, shipmentResponse,
+                                hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId(),
+                                finalLength, finalWidth, finalHeight, lengthUnit, finalWeight, weightUnit);
+                    }
                     hualeiShipmentRequestRepository.save(shipmentRequest);
             }
         }).start();
@@ -192,16 +197,38 @@ public class HualeiShippingService {
         return shipmentRequests;
     }
 
-    private void saveTrackingNumber(Order order, String trackingNumber,
+    private void saveTrackingNumber(Long warehouseId,
+                                    Order order,
+                                    String productId,
+                                    ShipmentResponse shipmentResponse,
                                     Long carrierId,
-                                    Long carrierServiceLevelId) {
+                                    Long carrierServiceLevelId,
+                                    double length,
+                                    double width,
+                                    double height,
+                                    String lengthUnit,
+                                    double weight,
+                                    String weightUnit) {
 
         logger.debug("start to add tracking number {} for order {}, with carrier id {}, " +
                 "service level id {}",
-                trackingNumber, order.getNumber(), carrierId, carrierServiceLevelId);
+                shipmentResponse.getTrackingNumber(),
+                order.getNumber(), carrierId, carrierServiceLevelId);
+        logger.debug("volume: {} x {} x {}, weight: {}",
+                unitService.convertLength(warehouseId, length, lengthUnit),
+                unitService.convertLength(warehouseId, width, lengthUnit),
+                unitService.convertLength(warehouseId, height, lengthUnit),
+                unitService.convertWeight(warehouseId, weight, weightUnit)
+                );
 
-        orderParcelTrackingService.addTracking(order, trackingNumber,
-                carrierId, carrierServiceLevelId);
+        parcelPackageService.addTracking(warehouseId, order, productId,
+                carrierId, carrierServiceLevelId,
+                shipmentResponse.getTrackingNumber(), shipmentResponse.getOrderId(),
+                unitService.convertLength(warehouseId, length, lengthUnit),
+                unitService.convertLength(warehouseId, weight, lengthUnit),
+                unitService.convertLength(warehouseId, height, lengthUnit),
+                unitService.convertWeight(warehouseId, weight, weightUnit)
+                );
     }
 
     private ShipmentRequest generateHualeiShipmentRequest(Long warehouseId,
