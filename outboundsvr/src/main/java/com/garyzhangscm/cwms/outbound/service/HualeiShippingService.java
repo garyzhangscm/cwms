@@ -71,6 +71,10 @@ public class HualeiShippingService {
     private HualeiShipmentRequestRepository hualeiShipmentRequestRepository;
     @Autowired
     private UnitService unitService;
+    @Autowired
+    private HualeiProductService hualeiProductService;
+    @Autowired
+    private OrderParcelTrackingService orderParcelTrackingService;
 
     public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
                                                        String productId, // hualei product id
@@ -111,6 +115,8 @@ public class HualeiShippingService {
         if (Objects.isNull(hualeiConfiguration)) {
             throw OrderOperationException.raiseException("hualei system is not setup");
         }
+
+        HualeiProduct hualeiProduct = hualeiProductService.findByProductId(warehouseId, productId);
 
         // setup the default value if the value is not passed in
         if (length <= 1) {
@@ -176,12 +182,26 @@ public class HualeiShippingService {
                     );
                     logger.debug("save hualei's shipment response\n {}", shipmentResponse);
 
+                    saveTrackingNumber(order, shipmentResponse.getTrackingNumber(),
+                            hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId());
                     hualeiShipmentRequestRepository.save(shipmentRequest);
             }
         }).start();
 
 
         return shipmentRequests;
+    }
+
+    private void saveTrackingNumber(Order order, String trackingNumber,
+                                    Long carrierId,
+                                    Long carrierServiceLevelId) {
+
+        logger.debug("start to add tracking number {} for order {}, with carrier id {}, " +
+                "service level id {}",
+                trackingNumber, order.getNumber(), carrierId, carrierServiceLevelId);
+
+        orderParcelTrackingService.addTracking(order, trackingNumber,
+                carrierId, carrierServiceLevelId);
     }
 
     private ShipmentRequest generateHualeiShipmentRequest(Long warehouseId,
