@@ -64,6 +64,11 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
     @Column(name = "quickbook_txnid")
     private String quickbookTxnID;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
 
     @OneToMany(
             mappedBy = "order",
@@ -92,6 +97,9 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
         setWarehouseName(orderConfirmation.getWarehouseName());
         setQuickbookCustomerListId(orderConfirmation.getQuickbookCustomerListId());
         setQuickbookTxnID(orderConfirmation.getQuickbookTxnID());
+
+        setClientId(orderConfirmation.getClientId());
+        setClient(orderConfirmation.getClient());
 
 
         orderConfirmation.getOrderLines().forEach(orderLineConfirmation -> {
@@ -215,5 +223,21 @@ public class DBBasedOrderConfirmation extends AuditibleEntity<String> implements
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

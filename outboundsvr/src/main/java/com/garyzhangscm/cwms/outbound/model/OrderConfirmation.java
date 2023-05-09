@@ -42,6 +42,10 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
 
     private String quickbookTxnID;
 
+    private Long clientId;
+
+    private Client client;
+
     private List<OrderLineConfirmation> orderLines = new ArrayList<>();
 
 
@@ -53,6 +57,8 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
         setQuickbookTxnID(order.getQuickbookTxnID());
         setQuickbookCustomerListId(order.getQuickbookCustomerListId());
 
+        setClient(order.getClient());
+        setClientId(order.getClientId());
 
         if (Objects.nonNull(order.getWarehouse())) {
             this.warehouseName = order.getWarehouse().getName();
@@ -78,6 +84,9 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
             logger.debug("FAIL to setup the quickbook related information when complete the order" +
                     ", as the order is not setup on the shipment");
         }
+
+        setClientId(shipment.getClientId());
+        setClient(shipment.getClient());
 
 
         if (Objects.nonNull(shipment.getWarehouse())) {
@@ -186,5 +195,21 @@ public class OrderConfirmation  extends AuditibleEntity<String> implements Seria
 
     public void setQuickbookCustomerListId(String quickbookCustomerListId) {
         this.quickbookCustomerListId = quickbookCustomerListId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }
