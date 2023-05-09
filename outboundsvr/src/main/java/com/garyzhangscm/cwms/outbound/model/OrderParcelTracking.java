@@ -65,6 +65,22 @@ public class OrderParcelTracking extends AuditibleEntity<String> implements Seri
     @Transient
     private CarrierServiceLevel carrierServiceLevel;
 
+    public OrderParcelTracking() {}
+    public OrderParcelTracking(Order order,
+                               String trackingNumber,
+                               Long carrierId,
+                               Long carrierServiceLevelId) {
+
+
+        setOrder(order);
+        setTrackingNumber(trackingNumber);
+
+        setCarrierId(carrierId);
+        setCarrierServiceLevelId(carrierServiceLevelId);
+
+        setWarehouseId(order.getWarehouseId());
+
+    }
     public Long getId() {
         return id;
     }

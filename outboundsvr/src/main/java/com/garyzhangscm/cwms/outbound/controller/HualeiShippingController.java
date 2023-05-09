@@ -19,12 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
 import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
-import com.garyzhangscm.cwms.outbound.service.HualeiProductService;
 import com.garyzhangscm.cwms.outbound.service.HualeiShippingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -36,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.List;
 
 
 @RestController
