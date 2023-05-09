@@ -16,40 +16,42 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.model.hualei;
+package com.garyzhangscm.cwms.outbound.model;
 
-import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
-import com.garyzhangscm.cwms.outbound.model.Carrier;
-import com.garyzhangscm.cwms.outbound.model.CarrierServiceLevel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Table(name = "hualei_product")
-public class HualeiProduct extends AuditibleEntity<String> implements Serializable {
+@Table(name = "outbound_order_parcel_tracking")
+public class OrderParcelTracking extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "hualei_product_id")
+    @Column(name = "outbound_order_parcel_tracking_id")
     @JsonProperty(value="id")
     private Long id;
 
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(name = "product_id")
-    private String productId;
+    @Column(name = "tracking_number")
+    private String trackingNumber;
 
-    @Column(name = "name")
-    private String name;
+    @Transient
+    private String orderNumber;
 
-    @Column(name = "description")
-    private String description;
-
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "outbound_order_id")
+    private Order order;
 
     @Column(name = "carrier_id")
     private Long carrierId;
@@ -79,28 +81,24 @@ public class HualeiProduct extends AuditibleEntity<String> implements Serializab
         this.warehouseId = warehouseId;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getTrackingNumber() {
+        return trackingNumber;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
     }
 
-    public String getName() {
-        return name;
+    public String getOrderNumber() {
+        return Objects.isNull(order) ? "" : order.getNumber();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Order getOrder() {
+        return order;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public Long getCarrierId() {

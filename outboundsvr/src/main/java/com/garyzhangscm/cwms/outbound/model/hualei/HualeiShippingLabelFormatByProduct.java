@@ -46,7 +46,7 @@ public class HualeiShippingLabelFormatByProduct extends AuditibleEntity<String> 
     @Enumerated(EnumType.STRING)
     private ShippingLabelFormat shippingLabelFormat;
 
-    @Column(name = "tracking_info_url")
+    @Transient
     private String trackingInfoUrl;
 
     @JsonIgnore

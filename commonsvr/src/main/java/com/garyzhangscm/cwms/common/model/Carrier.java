@@ -31,6 +31,8 @@ public class Carrier extends AuditibleEntity<String> {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "tracking_info_url")
+    private String trackingInfoUrl;
 
     @Column(name = "contactor_firstname")
     private String contactorFirstname;
@@ -248,5 +250,13 @@ public class Carrier extends AuditibleEntity<String> {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getTrackingInfoUrl() {
+        return trackingInfoUrl;
+    }
+
+    public void setTrackingInfoUrl(String trackingInfoUrl) {
+        this.trackingInfoUrl = trackingInfoUrl;
     }
 }

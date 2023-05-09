@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.model.Pick;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
 import com.garyzhangscm.cwms.outbound.repository.HualeiProductRepository;
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -47,6 +50,8 @@ public class HualeiProductService  {
 
     @Autowired
     private HualeiProductRepository hualeiProductRepository;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     public HualeiProduct findById(Long id) {
         return hualeiProductRepository.findById(id)
@@ -59,7 +64,7 @@ public class HualeiProductService  {
                                        String productId,
                                        String name,
                                        String description) {
-        return hualeiProductRepository.findAll(
+        List<HualeiProduct> hualeiProducts = hualeiProductRepository.findAll(
                 (Root<HualeiProduct> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -99,11 +104,49 @@ public class HualeiProductService  {
                 Sort.by(Sort.Direction.ASC, "name")
         );
 
+        if (!hualeiProducts.isEmpty()) {
+            loadAttribute(hualeiProducts);
+        }
+        return hualeiProducts;
+
+    }
+
+
+    public void loadAttribute(List<HualeiProduct> hualeiProducts) {
+        for (HualeiProduct hualeiProduct : hualeiProducts) {
+            loadAttribute(hualeiProduct);
+        }
+    }
+
+    public void loadAttribute(HualeiProduct hualeiProduct) {
+        if (Objects.nonNull(hualeiProduct.getCarrierId()) &&
+               Objects.isNull(hualeiProduct.getCarrier()))  {
+            hualeiProduct.setCarrier(
+                    commonServiceRestemplateClient.getCarrierById(
+                            hualeiProduct.getCarrierId()
+                    )
+            );
+        }
+
+        if (Objects.nonNull(hualeiProduct.getCarrierServiceLevelId()) &&
+                Objects.isNull(hualeiProduct.getCarrierServiceLevel()))  {
+            hualeiProduct.setCarrierServiceLevel(
+                    commonServiceRestemplateClient.getCarrierServiceLevelById(
+                            hualeiProduct.getCarrierServiceLevelId()
+                    )
+            );
+        }
     }
 
     public HualeiProduct findByProductId(Long warehouseId, String productId) {
 
-        return hualeiProductRepository.findByWarehouseIdAndProductId(warehouseId, productId);
+        HualeiProduct hualeiProduct =
+                hualeiProductRepository.findByWarehouseIdAndProductId(warehouseId, productId);
+
+        if (Objects.nonNull(hualeiProduct)) {
+            loadAttribute(hualeiProduct);
+        }
+        return hualeiProduct;
     }
 
     public HualeiProduct save(HualeiProduct hualeiProduct) {

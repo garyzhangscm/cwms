@@ -12,6 +12,8 @@ public class Carrier {
     private String name;
 
     private String description;
+    private String trackingInfoUrl;
+
 
 
     private String contactorFirstname;
@@ -137,5 +139,13 @@ public class Carrier {
 
     public void setCarrierServiceLevels(List<CarrierServiceLevel> carrierServiceLevels) {
         this.carrierServiceLevels = carrierServiceLevels;
+    }
+
+    public String getTrackingInfoUrl() {
+        return trackingInfoUrl;
+    }
+
+    public void setTrackingInfoUrl(String trackingInfoUrl) {
+        this.trackingInfoUrl = trackingInfoUrl;
     }
 }
