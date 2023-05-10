@@ -108,6 +108,64 @@ public class OrderIntegrationDataController {
                 number,  startTime, endTime, date, statusList, id);
     }
 
+    @RequestMapping(value="/order-confirmations/last-minute", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getLastMinuteIntegrationOrderConfirmationData(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "minutes", required = false, defaultValue = "1") int minutes) {
+        ZonedDateTime endTime = ZonedDateTime.now();
+        ZonedDateTime startTime = endTime.minusMinutes(minutes);
+
+        logger.debug("start to get order confirmation from {} - {}",
+                startTime, endTime);
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, null,
+                null,  startTime, endTime, null, null, null);
+    }
+    @RequestMapping(value="/order-confirmations/last-hour", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getLastHourIntegrationOrderConfirmationData(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "hours", required = false, defaultValue = "1") int hours) {
+        ZonedDateTime endTime = ZonedDateTime.now();
+        ZonedDateTime startTime = endTime.minusHours(hours);
+        logger.debug("start to get order confirmation from {} - {}",
+                startTime, endTime);
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, null,
+                null,  startTime, endTime, null, null, null);
+    }
+    @RequestMapping(value="/order-confirmations/last-day", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getLastDayIntegrationOrderConfirmationData(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "days", required = false, defaultValue = "1") int days) {
+
+        ZonedDateTime endTime = ZonedDateTime.now();
+        ZonedDateTime startTime = endTime.minusDays(days);
+        logger.debug("start to get order confirmation from {} - {}",
+                startTime, endTime);
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, null,
+                null,  startTime, endTime, null, null, null);
+    }
+    @RequestMapping(value="/order-confirmations/last-week", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getLastWeekIntegrationOrderConfirmationData(
+            @RequestParam Long warehouseId) {
+        ZonedDateTime endTime = ZonedDateTime.now();
+        ZonedDateTime startTime = endTime.minusDays(7);
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, null,
+                null,  startTime, endTime, null, null, null);
+    }
+    @RequestMapping(value="/order-confirmations/last-month", method = RequestMethod.GET)
+    public List<? extends IntegrationOrderConfirmationData> getLastMonthIntegrationOrderConfirmationData(
+            @RequestParam Long warehouseId) {
+        ZonedDateTime endTime = ZonedDateTime.now();
+        ZonedDateTime startTime = endTime.minusDays(30);
+
+        return integrationDataService.getIntegrationOrderConfirmationData(warehouseId, null,
+                null,  startTime, endTime, null, null, null);
+    }
+
+
     @RequestMapping(value="/order-confirmations/{id}", method = RequestMethod.GET)
     public IntegrationOrderConfirmationData getIntegrationOrderConfirmationData(@PathVariable Long id) {
 
