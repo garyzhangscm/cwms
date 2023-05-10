@@ -96,15 +96,24 @@ public class OrderDocumentController {
                 .body(resource);
     }
 
-    @RequestMapping(value="/orders/{warehouseId}/{orderId}/documents/download/{fileName}", method = RequestMethod.GET)
+    @RequestMapping(value="/orders/{warehouseId}/{orderId}/documents/{action}/{fileName}", method = RequestMethod.GET)
     public ResponseEntity<Resource> downloadOrderDocumentFile(@PathVariable Long warehouseId,
                                                               @PathVariable Long orderId,
+                                                              @PathVariable String action,
                                                               @PathVariable String fileName)
             throws FileNotFoundException {
 
         File orderDocumentFile = orderDocumentService.getFile(warehouseId, orderId, fileName);
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(orderDocumentFile));
+        if (action.equalsIgnoreCase("preview")) {
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline;fileName=" + orderDocumentFile.getName())
+                    .contentLength(orderDocumentFile.length())
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+        }
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment;fileName=" + orderDocumentFile.getName())
                 .contentLength(orderDocumentFile.length())

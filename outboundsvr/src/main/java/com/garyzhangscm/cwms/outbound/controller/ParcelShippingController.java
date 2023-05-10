@@ -94,7 +94,7 @@ public class ParcelShippingController {
     @RequestMapping(value="/parcel/packages", method = RequestMethod.PUT)
     public ParcelPackage addParcelPackage(@RequestParam Long warehouseId,
                                           @RequestParam Long orderId,
-                                          @RequestParam ParcelPackage parcelPackage) {
+                                          @RequestBody ParcelPackage parcelPackage) {
         return parcelPackageService.addParcelPackage(warehouseId, orderId, parcelPackage);
     }
 
