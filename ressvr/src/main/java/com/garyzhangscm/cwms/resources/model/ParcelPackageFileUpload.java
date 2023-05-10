@@ -4,10 +4,10 @@ public class ParcelPackageFileUpload extends FileUploadType {
 
     public ParcelPackageFileUpload(){
         super("parcel-packages", "Parcel Packages",
-                "outbound/orders/parcel-tracking-numbers/upload",
+                "outbound/parcel/packages/upload",
                 "resource/assets/file-templates/parcel-packages.csv",
-                "outbound/orders/parcel-tracking-numbers/upload/progress",
-                "outbound/orders/parcel-tracking-numbers/upload/result");
+                "outbound/parcel/packages/upload/progress",
+                "outbound/parcel/packages/upload/result");
         setupColumns();
     }
 

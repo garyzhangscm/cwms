@@ -22,11 +22,17 @@ import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 @Repository
 public interface HualeiConfigurationRepository extends JpaRepository<HualeiConfiguration, Long>, JpaSpecificationExecutor<HualeiConfiguration> {
 
     HualeiConfiguration findByWarehouseId(Long warehouseId);
+
+    @Query("select hualei from HualeiConfiguration hualei ")
+    List<HualeiConfiguration> listHualeiEnabledWarehouse();
 }

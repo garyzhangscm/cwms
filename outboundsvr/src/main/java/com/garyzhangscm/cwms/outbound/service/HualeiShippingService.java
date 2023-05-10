@@ -18,38 +18,24 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.HualeiRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
-import com.garyzhangscm.cwms.outbound.repository.HualeiProductRepository;
 import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentRequestRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.map.ser.std.ObjectArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -427,6 +413,15 @@ public class HualeiShippingService {
             throw OrderOperationException.raiseException("can't download the shipping label by order id " + hualeiOrderId);
         }
         return file;
+
+    }
+
+    public List<HualeiTrackResponseData> refreshHualeiPackageStatus(String[] trackingNumberArray, HualeiConfiguration hualeiConfiguration) {
+
+        String trackingNumbers = Arrays.stream(trackingNumberArray).filter(trackingNumber -> Strings.isNotBlank(trackingNumber))
+                .collect(Collectors.joining(","));
+        return hualeiRestemplateClient.refreshHualeiPackageStatus(trackingNumbers, hualeiConfiguration);
+
 
     }
 }

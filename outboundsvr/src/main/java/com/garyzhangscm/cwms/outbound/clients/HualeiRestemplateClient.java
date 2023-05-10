@@ -28,15 +28,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShippingLabelFormat;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
+import com.garyzhangscm.cwms.outbound.model.User;
+import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 
-import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +52,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -183,6 +184,47 @@ public class HualeiRestemplateClient {
 
             return orderDocumentFolder + warehouseId + "/" + orderId + "/";
         }
+    }
+
+    public List<HualeiTrackResponseData> refreshHualeiPackageStatus(String trackingNumbers, HualeiConfiguration hualeiConfiguration) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(hualeiConfiguration.getGetPackageStatusProtocol())
+                        .host(hualeiConfiguration.getGetPackageStatusHost())
+                        .port(hualeiConfiguration.getGetPackageStatusPort())
+                        .path(hualeiConfiguration.getGetPackageStatusEndpoint())
+                        .queryParam("documentCode", trackingNumbers);
+
+
+        String response = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                String.class).getBody();
+        logger.debug("get response for tracking Hualei tracking number \n{}",
+                response);
+
+        /**
+        List<HualeiTrackResponse> trackResponses =  restTemplateProxy.exchangeList(
+                HualeiTrackResponse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+         **/
+
+        List<HualeiTrackResponse> trackResponses = null;
+        try {
+            trackResponses = objectMapper.readValue(response,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, HualeiTrackResponse.class));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw OrderOperationException.raiseException("fail to get tracking number status from hualei");
+        }
+
+        return trackResponses.stream().map(HualeiTrackResponse::getData)
+                .flatMap(List::stream).collect(Collectors.toList());
     }
 
     private HttpEntity<LinkedMultiValueMap<String, String>> getHttpEntity(ShipmentRequest shipmentRequest) throws JsonProcessingException {

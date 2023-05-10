@@ -2134,5 +2134,6 @@
   "inventory-aging-snapshot.configuration.cron": "Inventory Aging Snapshot Schedule",
   "inventory-aging-snapshot.created.result": "Inventory Aging Snapshot {{batchNumber}} start processing，Please allow the system to take several minutes to create the snapshot and query the result from the Inventory Aging Snapshot page",
   "fifoDate": "Fifo Date",
-  "summary": "Summary"
+  "summary": "Summary",
+  "get-package-status-url": "Get Package Status URL"
 }
