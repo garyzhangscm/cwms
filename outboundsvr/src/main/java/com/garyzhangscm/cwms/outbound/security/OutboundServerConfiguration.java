@@ -26,6 +26,7 @@ public class OutboundServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/hualei/shipping/label").permitAll()
                 .antMatchers(HttpMethod.GET, "/orders/documents/*/download").permitAll()
                 .antMatchers(HttpMethod.GET, "/orders/*/*/documents/download/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/orders/*/*/documents/preview/**").permitAll()
                 .anyRequest()
                 .authenticated();
     }

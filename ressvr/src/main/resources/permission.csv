@@ -28,6 +28,7 @@ Util-File-Upload,inventory,Inventory
 Util-File-Upload,itemUnitOfMeasure,Item Unit of Measure
 Util-File-Upload,locations,Warehouse Locations
 Util-File-Upload,orders,Order
+Util-File-Upload,parcel-packages,Parcel Package
 Util-File-Upload,putaway-inventories,Putaway Inventory
 Util-File-Upload,receipts,Receipt
 Util-File-Upload,receiving-inventories,Receiving Inventory
