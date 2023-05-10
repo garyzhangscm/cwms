@@ -54,8 +54,18 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
 
     @Column(name = "tracking_url")
     private String trackingUrl;
+
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ParcelPackageStatus status;
+
+    @Column(name = "request_system")
+    @Enumerated(EnumType.STRING)
+    private ParcelPackageRequestSystem requestSystem;
+
+    @Column(name = "status_description")
+    private String statusDescription;
+
     @Column(name = "shipment_id")
     private String shipmentId;
 
@@ -100,8 +110,10 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
         trackingCode = easyPostShipment.getTrackingCode();
 
         trackingUrl = easyPostShipment.getTracker().getPublicUrl();
-        status = easyPostShipment.getStatus();
+        statusDescription = easyPostShipment.getStatus();
+        status = ParcelPackageStatus.REQUESTED;
         shipmentId = easyPostShipment.getId();
+        this.requestSystem = ParcelPackageRequestSystem.EASY_POST;
 
 
         length = Double.valueOf(easyPostShipment.getParcel().getLength());
@@ -127,19 +139,21 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
                          CarrierServiceLevel carrierServiceLevel,
                          String trackingCode, double length, double width,
                          double height, double weight,
-                         Integer deliveryDays, Double rate
+                         Integer deliveryDays, Double rate,
+                         ParcelPackageRequestSystem requestSystem
                          ) {
         this.warehouseId = warehouseId;
         this.order = order;
-        // shipment ID is the business key for the package
-        this.shipmentId = trackingCode;
 
         this.trackingCode = trackingCode;
 
         trackingUrl = Objects.nonNull(carrier) && Strings.isNotBlank(carrier.getTrackingInfoUrl()) ?
             carrier.getTrackingInfoUrl() + trackingCode : "";
-        status = "";
-        shipmentId = "";
+        status = ParcelPackageStatus.REQUESTED;
+        statusDescription = "";
+        // shipment ID is the business key for the package
+        this.shipmentId = trackingCode;
+        this.requestSystem = requestSystem;
 
 
         this.length = length;
@@ -171,13 +185,17 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
                          double length,
                          double width,
                          double height,
-                         double weight) {
+                         double weight,
+                         ParcelPackageRequestSystem requestSystem) {
         this.warehouseId = warehouseId;
         this.order = order;
 
         this.trackingCode = trackingCode;
         // shipment ID is the business key for the package
         this.shipmentId = trackingCode;
+        statusDescription = "";
+        status = ParcelPackageStatus.REQUESTED;
+        this.requestSystem = requestSystem;
 
         trackingUrl = Objects.nonNull(hualeiShippingLabelFormatByProduct) ?
                         hualeiShippingLabelFormatByProduct.getTrackingInfoUrl() + trackingCode
@@ -264,12 +282,20 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
         this.trackingUrl = trackingUrl;
     }
 
-    public String getStatus() {
+    public ParcelPackageStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ParcelPackageStatus status) {
         this.status = status;
+    }
+
+    public String getStatusDescription() {
+        return statusDescription;
+    }
+
+    public void setStatusDescription(String statusDescription) {
+        this.statusDescription = statusDescription;
     }
 
     public String getShipmentId() {
@@ -378,5 +404,13 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
 
     public void setInsurance(String insurance) {
         this.insurance = insurance;
+    }
+
+    public ParcelPackageRequestSystem getRequestSystem() {
+        return requestSystem;
+    }
+
+    public void setRequestSystem(ParcelPackageRequestSystem requestSystem) {
+        this.requestSystem = requestSystem;
     }
 }

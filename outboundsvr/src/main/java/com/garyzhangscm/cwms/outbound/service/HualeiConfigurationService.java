@@ -58,6 +58,9 @@ public class HualeiConfigurationService {
         return hualeiConfiguration;
     }
 
+    public List<HualeiConfiguration> listHualeiEnabledWarehouse() {
+        return hualeiConfigurationRepository.listHualeiEnabledWarehouse();
+    }
     public HualeiConfiguration findByWarehouse(Long warehouseId) {
         HualeiConfiguration hualeiConfiguration =
                 hualeiConfigurationRepository.findByWarehouseId(warehouseId);

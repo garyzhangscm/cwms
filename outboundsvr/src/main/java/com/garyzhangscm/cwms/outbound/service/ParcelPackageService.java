@@ -26,16 +26,14 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiShippingLabelFormatByProduct;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
+import com.garyzhangscm.cwms.outbound.model.hualei.HualeiTrackResponseData;
 import com.garyzhangscm.cwms.outbound.repository.ParcelPackageRepository;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
 import java.io.File;
@@ -60,6 +58,8 @@ public class ParcelPackageService  {
     private UserService userService;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private HualeiShippingService hualeiShippingService;
 
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
@@ -128,7 +128,9 @@ public class ParcelPackageService  {
     public List<ParcelPackage> findAll(Long warehouseId,
                                        Long orderId,
                                        String orderNumber,
-                                       String trackingCode) {
+                                       String trackingCode,
+                                       Boolean undeliveredPackageOnly,
+                                       ParcelPackageRequestSystem requestSystem) {
 
         List<ParcelPackage> cartons =  parcelPackageRepository.findAll(
                 (Root<ParcelPackage> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -151,6 +153,13 @@ public class ParcelPackageService  {
                         predicates.add(criteriaBuilder.equal(root.get("trackingCode"), trackingCode));
 
                     }
+                    if (Boolean.TRUE.equals(undeliveredPackageOnly)) {
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"), ParcelPackageStatus.DELIVERED));
+                    }
+                    if (Objects.nonNull(requestSystem)) {
+                        predicates.add(criteriaBuilder.equal(root.get("requestSystem"), requestSystem));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -162,12 +171,12 @@ public class ParcelPackageService  {
         return cartons;
     }
 
-    public void updateTracker(String trackingCode, String status) {
+    public void updateTracker(String trackingCode, String statusDescription) {
         ParcelPackage parcelPackage = findByTrackingCode(trackingCode);
         if (Objects.nonNull(parcelPackage)) {
             logger.debug("we found a package with tracking code {}, let's update its status to {}",
-                    trackingCode, status);
-            parcelPackage.setStatus(status);
+                    trackingCode, statusDescription);
+            parcelPackage.setStatusDescription(statusDescription);
             saveOrUpdate(parcelPackage);
         }
         else {
@@ -176,6 +185,21 @@ public class ParcelPackageService  {
         }
     }
 
+    /**
+     * Add tracking information from hualei system
+     * @param warehouseId
+     * @param order
+     * @param productId
+     * @param carrierId
+     * @param carrierServiceLevelId
+     * @param trackingCode
+     * @param hualeiOrderId
+     * @param length
+     * @param width
+     * @param height
+     * @param weight
+     * @return
+     */
     public ParcelPackage addTracking(Long warehouseId,
                                      Order order,
                                      String productId,
@@ -204,7 +228,8 @@ public class ParcelPackageService  {
                 warehouseId, order, carrier, carrierServiceLevel,
                 hualeiConfiguration, hualeiShippingLabelFormatByProduct,
                 trackingCode, hualeiOrderId,
-                length, width, height, weight
+                length, width, height, weight,
+                ParcelPackageRequestSystem.HUALEI
         );
 
         return saveOrUpdate(parcelPackage);
@@ -230,7 +255,8 @@ public class ParcelPackageService  {
                 parcelPackageCSVWrapper.getHeight(),
                 parcelPackageCSVWrapper.getWeight(),
                 parcelPackageCSVWrapper.getDeliveryDays(),
-                parcelPackageCSVWrapper.getRate()
+                parcelPackageCSVWrapper.getRate(),
+                ParcelPackageRequestSystem.MANUAL
         );
 
         return saveOrUpdate(parcelPackage);
@@ -394,4 +420,73 @@ public class ParcelPackageService  {
         parcelPackageRepository.deleteById(id);
     }
 
+    /**
+     * Refresh the status of the hualei packages
+     */
+    public void refreshHualeiPackageStatus() {
+        List<HualeiConfiguration> hualeiConfigurations = hualeiConfigurationService.listHualeiEnabledWarehouse();
+        hualeiConfigurations.stream().filter(
+                hualeiConfiguration -> Strings.isNotBlank(hualeiConfiguration.getGetPackageStatusProtocol()) &&
+                        Strings.isNotBlank(hualeiConfiguration.getGetPackageStatusHost()) &&
+                        Strings.isNotBlank(hualeiConfiguration.getGetPackageStatusPort()) &&
+                                Strings.isNotBlank(hualeiConfiguration.getGetPackageStatusEndpoint())
+        ).forEach(
+                hualeiConfiguration -> refreshHualeiPackageStatusByWarehouse(hualeiConfiguration)
+        );
+    }
+
+    private void refreshHualeiPackageStatusByWarehouse(HualeiConfiguration hualeiConfiguration) {
+        logger.debug("start to refresh hualei package status for warehouse id {}",
+                hualeiConfiguration.getWarehouseId());
+        List<ParcelPackage> parcelPackages = findAll(hualeiConfiguration.getWarehouseId(),
+                null, null, null, true, ParcelPackageRequestSystem.HUALEI);
+
+        logger.debug("find {} packages that is shipped by hualei and not delivered yet",
+                parcelPackages.size());
+        logger.debug("we will fetch in batch, 20 packages in one batch");
+        int count = 0;
+        String[] trackingNumberArray = new String[20];
+
+        // save the response of the package status from hualei
+        List<HualeiTrackResponseData> hualeiTrackResponseDataList = new ArrayList<>();
+
+        for (ParcelPackage parcelPackage : parcelPackages) {
+            // add current package to the array
+            trackingNumberArray[count] = parcelPackage.getTrackingCode();
+            if (count == 19) {
+                // ok, we already have 20 packages in the array, let's request the
+                // status from hualei
+                hualeiTrackResponseDataList.addAll(
+                        hualeiShippingService.refreshHualeiPackageStatus(trackingNumberArray, hualeiConfiguration)
+                );
+            }
+            count = (count + 1) % 20;
+            // clear the old batch of tracking numbers
+            if (count == 0) {
+                trackingNumberArray = new String[20];
+            }
+        }
+        if (count > 0) {
+
+            hualeiTrackResponseDataList.addAll(
+                hualeiShippingService.refreshHualeiPackageStatus(trackingNumberArray, hualeiConfiguration));
+        }
+
+        hualeiTrackResponseDataList.forEach(
+                hualeiTrackResponseData -> {
+                    logger.debug("start to set tracking number {}'s status to {}",
+                            hualeiTrackResponseData.getTrackingNumber(),
+                            hualeiTrackResponseData.getTrackContent());
+
+                    ParcelPackage parcelPackage = findByTrackingCode(
+                            hualeiConfiguration.getWarehouseId(),
+                            hualeiTrackResponseData.getTrackingNumber()
+                    );
+                    if (Objects.nonNull(parcelPackage)) {
+                        parcelPackage.setStatusDescription(hualeiTrackResponseData.getTrackContent());
+                    }
+                    saveOrUpdate(parcelPackage);
+                }
+        );
+    }
 }

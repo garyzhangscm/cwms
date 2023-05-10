@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,8 +88,13 @@ public class ParcelShippingController {
     public List<ParcelPackage> findParcelPackages(@RequestParam Long warehouseId,
                                                   @RequestParam(name = "orderId", required = false) Long orderId,
                                                   @RequestParam(name = "orderNumber", required = false) String orderNumber,
-                                                  @RequestParam(name = "trackingCode", required = false) String trackingCode) {
-        return parcelPackageService.findAll(warehouseId, orderId, orderNumber, trackingCode);
+                                                  @RequestParam(name = "trackingCode", required = false) String trackingCode,
+                                                  @RequestParam(name = "undeliveredPackageOnly", required = false) Boolean undeliveredPackageOnly,
+                                                  @RequestParam(name = "requestSystem", required = false, defaultValue = "") String requestSystemName) {
+        ParcelPackageRequestSystem requestSystem =
+                Strings.isBlank(requestSystemName) ? null : ParcelPackageRequestSystem.valueOf(requestSystemName);
+        return parcelPackageService.findAll(warehouseId, orderId, orderNumber, trackingCode,
+                undeliveredPackageOnly, requestSystem);
     }
 
     @RequestMapping(value="/parcel/packages", method = RequestMethod.PUT)

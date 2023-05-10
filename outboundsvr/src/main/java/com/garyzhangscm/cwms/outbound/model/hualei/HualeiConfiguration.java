@@ -66,6 +66,15 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     private String printLabelEndpoint;
 
 
+    @Column(name = "get_package_status_protocol")
+    private String getPackageStatusProtocol;
+    @Column(name = "get_package_status_host")
+    private String getPackageStatusHost;
+    @Column(name = "get_package_status_port")
+    private String getPackageStatusPort;
+    @Column(name = "get_package_status_endpoint")
+    private String getPackageStatusEndpoint;
+
     @Column(name = "default_cargo_type")
     private String defaultCargoType;
     @Column(name = "default_customs_clearance")
@@ -167,6 +176,38 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
 
     public void setDefaultCustomsDeclaration(String defaultCustomsDeclaration) {
         this.defaultCustomsDeclaration = defaultCustomsDeclaration;
+    }
+
+    public String getGetPackageStatusProtocol() {
+        return getPackageStatusProtocol;
+    }
+
+    public void setGetPackageStatusProtocol(String getPackageStatusProtocol) {
+        this.getPackageStatusProtocol = getPackageStatusProtocol;
+    }
+
+    public String getGetPackageStatusHost() {
+        return getPackageStatusHost;
+    }
+
+    public void setGetPackageStatusHost(String getPackageStatusHost) {
+        this.getPackageStatusHost = getPackageStatusHost;
+    }
+
+    public String getGetPackageStatusPort() {
+        return getPackageStatusPort;
+    }
+
+    public void setGetPackageStatusPort(String getPackageStatusPort) {
+        this.getPackageStatusPort = getPackageStatusPort;
+    }
+
+    public String getGetPackageStatusEndpoint() {
+        return getPackageStatusEndpoint;
+    }
+
+    public void setGetPackageStatusEndpoint(String getPackageStatusEndpoint) {
+        this.getPackageStatusEndpoint = getPackageStatusEndpoint;
     }
 
     public String getDefaultDutyType() {

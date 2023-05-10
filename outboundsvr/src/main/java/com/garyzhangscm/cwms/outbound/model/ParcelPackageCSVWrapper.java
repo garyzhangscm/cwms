@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 
 public class ParcelPackageCSVWrapper  implements Serializable {
@@ -40,6 +43,17 @@ public class ParcelPackageCSVWrapper  implements Serializable {
     private Double rate;
 
     private String insurance;
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public String getClient() {
         return client;
