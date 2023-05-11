@@ -31,6 +31,9 @@ public class ReceiptLine {
     private Long warehouseId;
     private String warehouseName;
 
+    private Long companyId;
+    private String companyCode;
+
     private Long itemId;
     private String itemName;
     private Item item;
@@ -120,5 +123,21 @@ public class ReceiptLine {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }

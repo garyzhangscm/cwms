@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.integration.model;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.Column;
 import java.io.Serializable;
 
@@ -53,25 +56,23 @@ public class ItemUnitOfMeasure implements Serializable {
     private Long companyId;
     private String companyCode;
 
+
+    private Boolean defaultForInboundReceiving = false;
+    private Boolean defaultForWorkOrderReceiving = false;
+    private Boolean trackingLpn = false;
+    private Boolean defaultForDisplay = false;
+    private Boolean caseFlag = false;
+
     @Override
     public String toString() {
-        return "ItemUnitOfMeasure{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", itemPackageTypeId=" + itemPackageTypeId +
-                ", itemPackageTypeName='" + itemPackageTypeName + '\'' +
-                ", unitOfMeasureId=" + unitOfMeasureId +
-                ", unitOfMeasureName='" + unitOfMeasureName + '\'' +
-                ", quantity=" + quantity +
-                ", weight=" + weight +
-                ", length=" + length +
-                ", width=" + width +
-                ", height=" + height +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 
     public Long getId() {
         return id;
@@ -199,5 +200,45 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
+    }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getDefaultForDisplay() {
+        return defaultForDisplay;
+    }
+
+    public void setDefaultForDisplay(Boolean defaultForDisplay) {
+        this.defaultForDisplay = defaultForDisplay;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
     }
 }

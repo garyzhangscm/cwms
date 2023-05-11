@@ -95,6 +95,9 @@ public class DBBasedReceiptLine extends AuditibleEntity<String> implements Seria
         setWarehouseId(receiptLine.getWarehouseId());
         setWarehouseName(receiptLine.getWarehouseName());
 
+        setCompanyId(receiptLine.getCompanyId());
+        setCompanyCode(receiptLine.getCompanyCode());
+
         setItemId(receiptLine.getItemId());
         setItemName(receiptLine.getItemName());
 

@@ -135,6 +135,8 @@ public class DBBasedReceipt extends AuditibleEntity<String> implements Serializa
         setNumber(receipt.getNumber());
         setWarehouseId(receipt.getWarehouseId());
         setWarehouseName(receipt.getWarehouseName());
+        setCompanyId(receipt.getCompanyId());
+        setCompanyCode(receipt.getCompanyCode());
 
         setClientId(receipt.getClientId());
         setClientName(receipt.getClientName());

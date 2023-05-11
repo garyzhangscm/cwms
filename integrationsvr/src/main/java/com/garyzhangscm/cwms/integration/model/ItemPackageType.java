@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.Column;
 import java.io.Serializable;
@@ -56,21 +58,14 @@ public class ItemPackageType implements Serializable {
 
     @Override
     public String toString() {
-        return "ItemPackageType{" +
-                "id=" + id +
-                ", itemId=" + itemId +
-                ", itemName='" + itemName + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", clientId=" + clientId +
-                ", clientName='" + clientName + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierName='" + supplierName + '\'' +
-                ", itemUnitOfMeasures=" + itemUnitOfMeasures +
-                ", warehouseId=" + warehouseId +
-                ", warehouseName='" + warehouseName + '\'' +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 
     public Long getId() {
         return id;
