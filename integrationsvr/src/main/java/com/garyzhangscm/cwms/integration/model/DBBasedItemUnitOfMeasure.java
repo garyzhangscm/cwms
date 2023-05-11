@@ -95,6 +95,26 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
     @Column(name = "height")
     private Double height;
 
+    @Column(name = "default_for_inbound_receiving")
+    private Boolean defaultForInboundReceiving = false;
+
+    @Column(name = "default_for_work_order_receiving")
+    private Boolean defaultForWorkOrderReceiving = false;
+
+    // whether we will need to tracking LPN at this level
+    @Column(name = "tracking_lpn")
+    private Boolean trackingLpn = false;
+
+    // whether we will display at this UOM level
+    @Column(name = "default_for_display")
+    private Boolean defaultForDisplay = false;
+
+    // whether this is a case(box)
+    // we may calculate the size of the inventory based on the
+    // case UOM
+    @Column(name = "case_flag")
+    private Boolean caseFlag = false;
+
 
     @Column(name = "company_id")
     private Long companyId;
@@ -159,7 +179,12 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
                 "quantity","weight",
                 "length","width","height",
                 "warehouseId","warehouseName",
-                "companyId","companyCode"
+                "companyId","companyCode",
+                "defaultForInboundReceiving",
+                "defaultForWorkOrderReceiving",
+                "trackingLpn",
+                "defaultForDisplay",
+                "caseFlag"
         };
 
         ObjectCopyUtil.copyValue( this, itemUnitOfMeasure,  fieldNames);
@@ -175,7 +200,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
         if (!attachedToItemPackageTypeTransaction) {
             logger.debug("Will get item by company id {}, warehouse id {}, item name: {}",
                     companyId, warehouseId, getItemName());
-            if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+            if (Objects.isNull(getItemId()) && Strings.isNotBlank(getItemName())) {
                 Long clientId = null;
                 if (Objects.nonNull(getClientId())) {
                     clientId = getClientId();
@@ -202,7 +227,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
             logger.debug("Will get item package type by id by company id {}, warehouse id {}, item id: {}, package type name {}",
                     companyId, warehouseId, getItemId(), getItemPackageTypeName());
 
-            if (Objects.isNull(getItemPackageTypeId()) && Objects.nonNull(getItemPackageTypeName())) {
+            if (Objects.isNull(getItemPackageTypeId()) && Strings.isNotBlank(getItemPackageTypeName())) {
                 itemUnitOfMeasure.setItemPackageTypeId(
                         inventoryServiceRestemplateClient.getItemPackageTypeByName(
                                 companyId,
@@ -212,7 +237,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
                 );
             }
         }
-        if (Objects.isNull(getUnitOfMeasureId()) && Objects.nonNull(getUnitOfMeasureName())) {
+        if (Objects.isNull(getUnitOfMeasureId()) && Strings.isNotBlank(getUnitOfMeasureName())) {
             itemUnitOfMeasure.setUnitOfMeasureId(
                     commonServiceRestemplateClient.getUnitOfMeasureByName(
                             companyId, warehouseId, getUnitOfMeasureName()
@@ -235,7 +260,13 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
                 "unitOfMeasureId", "unitOfMeasureName",
                 "quantity","weight",
                 "length","width","height",
-                "warehouseId","warehouseName"
+                "warehouseId","warehouseName",
+                "companyId", "companyCode",
+                "defaultForInboundReceiving",
+                "defaultForWorkOrderReceiving",
+                "trackingLpn",
+                "defaultForDisplay",
+                "caseFlag"
         };
 
         ObjectCopyUtil.copyValue(  itemUnitOfMeasure, this,  fieldNames);
@@ -420,7 +451,7 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
 
     public String getItemPackageTypeReference() {
         return Objects.isNull(itemPackageType) ? "N/A" :
-                Objects.isNull(itemPackageType.getName()) ? "NULL/NAME" : itemPackageType.getName();
+                Strings.isBlank(itemPackageType.getName()) ? "NULL/NAME" : itemPackageType.getName();
     }
 
     public Long getClientId() {
@@ -437,5 +468,45 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
+    }
+
+    public Boolean getDefaultForInboundReceiving() {
+        return defaultForInboundReceiving;
+    }
+
+    public void setDefaultForInboundReceiving(Boolean defaultForInboundReceiving) {
+        this.defaultForInboundReceiving = defaultForInboundReceiving;
+    }
+
+    public Boolean getDefaultForWorkOrderReceiving() {
+        return defaultForWorkOrderReceiving;
+    }
+
+    public void setDefaultForWorkOrderReceiving(Boolean defaultForWorkOrderReceiving) {
+        this.defaultForWorkOrderReceiving = defaultForWorkOrderReceiving;
+    }
+
+    public Boolean getTrackingLpn() {
+        return trackingLpn;
+    }
+
+    public void setTrackingLpn(Boolean trackingLpn) {
+        this.trackingLpn = trackingLpn;
+    }
+
+    public Boolean getDefaultForDisplay() {
+        return defaultForDisplay;
+    }
+
+    public void setDefaultForDisplay(Boolean defaultForDisplay) {
+        this.defaultForDisplay = defaultForDisplay;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
     }
 }

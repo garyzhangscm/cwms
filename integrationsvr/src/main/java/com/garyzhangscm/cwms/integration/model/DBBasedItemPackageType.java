@@ -180,7 +180,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
         if (!attachedToItemTransaction) {
             // ok this is a standalone transaction to create / modify the item package type
             // we will need to make sure the item already exists
-            if (Objects.isNull(getItemId()) && Objects.nonNull(getItemName())) {
+            if (Objects.isNull(getItemId()) && Strings.isNotBlank(getItemName())) {
 
                 Long clientId = null;
                 if (Objects.nonNull(getClientId())) {
@@ -204,7 +204,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
 
         }
 
-        if (Objects.isNull(getClientId()) && Objects.nonNull(getClientName())) {
+        if (Objects.isNull(getClientId()) && Strings.isNotBlank(getClientName())) {
             itemPackageType.setClientId(
                     commonServiceRestemplateClient.getClientByName(
                             warehouseId, getClientName()
@@ -212,7 +212,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
             );
         }
 
-        if (Objects.isNull(getSupplierId()) && Objects.nonNull(getSupplierName())) {
+        if (Objects.isNull(getSupplierId()) && Strings.isNotBlank(getSupplierName())) {
             itemPackageType.setSupplierId(
                     commonServiceRestemplateClient.getSupplierByName(
                             warehouseId, getSupplierName()
@@ -235,7 +235,7 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
 
     public String getItemReference() {
         return Objects.isNull(item) ? "N/A" :
-                Objects.isNull(item.getName()) ? "NULL/NAME" : item.getName();
+                Strings.isBlank(item.getName()) ? "NULL/NAME" : item.getName();
     }
 
     public DBBasedItemPackageType() {}
@@ -247,7 +247,8 @@ public class DBBasedItemPackageType extends AuditibleEntity<String> implements S
                 "name","description",
                 "clientId","clientName",
                 "supplierId","supplierName",
-                "warehouseId","warehouseName"
+                "warehouseId","warehouseName",
+                "companyId", "companyCode"
         };
 
         ObjectCopyUtil.copyValue(itemPackageType, this,   fieldNames);

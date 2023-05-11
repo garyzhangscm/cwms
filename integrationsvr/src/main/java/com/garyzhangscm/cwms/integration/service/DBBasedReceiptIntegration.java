@@ -219,8 +219,17 @@ public class DBBasedReceiptIntegration {
 
     private void setupMissingField(Receipt receipt, DBBasedReceipt dbBasedReceipt) throws UnsupportedEncodingException {
 
+        if (Objects.isNull(receipt.getClientId()) &&
+                Strings.isNotBlank(dbBasedReceipt.getClientName())) {
+            receipt.setClientId(
+                    commonServiceRestemplateClient.getClientByName(
+                            receipt.getWarehouseId(),
+                            dbBasedReceipt.getClientName()
+                    ).getId()
+            );
+        }
         if (Objects.isNull(receipt.getSupplierId()) &&
-               Objects.nonNull(dbBasedReceipt.getSupplierName())) {
+               Strings.isNotBlank(dbBasedReceipt.getSupplierName())) {
             receipt.setSupplierId(
 
                     commonServiceRestemplateClient.getSupplierByName(

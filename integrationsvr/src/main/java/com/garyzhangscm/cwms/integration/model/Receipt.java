@@ -37,6 +37,9 @@ public class Receipt {
 
     private Warehouse warehouse;
 
+    private Long companyId;
+    private String companyCode;
+
     private Long clientId;
     private String clientName;
 
@@ -134,5 +137,21 @@ public class Receipt {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyCode() {
+        return companyCode;
+    }
+
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 }
