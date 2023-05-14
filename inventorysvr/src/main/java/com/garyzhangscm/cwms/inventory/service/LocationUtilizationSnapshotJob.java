@@ -99,8 +99,14 @@ public class LocationUtilizationSnapshotJob {
                 inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming2(),
                 inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming3());
 
-        return now.getHour() == inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming1() ||
-                now.getHour() == inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming2() ||
-                now.getHour() == inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming3();
+        return (Objects.nonNull(inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming1()) &&
+                now.getHour() ==  inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming1())
+                ||
+                (Objects.nonNull(inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming2()) &&
+                        now.getHour() ==  inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming2())
+                ||
+                (Objects.nonNull(inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming3()) &&
+                        now.getHour() ==  inventorySnapshotConfiguration.getLocationUtilizationSnapshotTiming3());
+
     }
 }
