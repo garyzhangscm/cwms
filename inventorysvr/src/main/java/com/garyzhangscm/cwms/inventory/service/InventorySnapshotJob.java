@@ -58,12 +58,18 @@ public class InventorySnapshotJob {
         );
     }
     public void generateInventorySnapshot(Company company) {
+        logger.debug("see if we will need to generate inventory snapshot for company {} / {}",
+                company.getId(), company.getName());
         warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId())
                 .forEach(
                         warehouse -> generateInventorySnapshot(company, warehouse)
                 );
     }
     public void generateInventorySnapshot(Company company, Warehouse warehouse) {
+
+        logger.debug("see if we will need to generate inventory snapshot for warehouse {} / {} from company {} / {}",
+                warehouse.getId(), warehouse.getName(),
+                company.getId(), company.getName());
         if (!isTimingForSnapshot(warehouse)) {
             logger.debug("current time: {} is not setup for inventory snapshot");
             return;
@@ -88,14 +94,20 @@ public class InventorySnapshotJob {
         }
         // get the timing from the configuration. It is saved as hour in UTC
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
-        logger.debug("start to compare current hour vs inventory snapshot configuration {}, {}, {}",
+        logger.debug("start to compare current hour {} vs inventory snapshot configuration {}, {}, {}",
                 now.getHour(),
                 inventorySnapshotConfiguration.getInventorySnapshotTiming1(),
                 inventorySnapshotConfiguration.getInventorySnapshotTiming2(),
                 inventorySnapshotConfiguration.getInventorySnapshotTiming3());
 
-        return now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming1() ||
-                now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming2() ||
-                now.getHour() == inventorySnapshotConfiguration.getInventorySnapshotTiming3();
+        return (Objects.nonNull(inventorySnapshotConfiguration.getInventorySnapshotTiming1()) &&
+                now.getHour() ==  inventorySnapshotConfiguration.getInventorySnapshotTiming1())
+                ||
+                (Objects.nonNull(inventorySnapshotConfiguration.getInventorySnapshotTiming2()) &&
+                        now.getHour() ==  inventorySnapshotConfiguration.getInventorySnapshotTiming2())
+                ||
+                (Objects.nonNull(inventorySnapshotConfiguration.getInventorySnapshotTiming3()) &&
+                        now.getHour() ==  inventorySnapshotConfiguration.getInventorySnapshotTiming3());
+        
     }
 }
