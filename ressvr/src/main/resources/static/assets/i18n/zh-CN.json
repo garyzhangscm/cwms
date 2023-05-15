@@ -2132,5 +2132,6 @@
   "inventory-aging-snapshot.created.result": "库龄快照 {{batchNumber}} 开始创建，请等待一段时间后到库存快照界面查看或者下载",
   "fifoDate": "入库日期",
   "summary": "总计",
-  "get-package-status-url": "包裹状态地址"
+  "get-package-status-url": "包裹状态地址",
+  "getPackageStatusEndpoint": "包裹状态地址"
 }

@@ -34,6 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -122,11 +125,12 @@ public class UnitService {
                 baseUnit : getUnitByName(units, destinationUnitName);
 
         double result = sourceValue * sourceUnit.getRatio() / destinationUnit.getRatio();
+        BigDecimal resultBigDecimal = new BigDecimal(result).setScale(2, RoundingMode.HALF_UP);
 
         logger.debug("value {} is convert from source unit {} to destination unit {}, result is {}",
                 sourceValue, sourceUnit.getName(), destinationUnit.getName(),
                 result);
-        return result;
+        return resultBigDecimal.doubleValue();
 
     }
 

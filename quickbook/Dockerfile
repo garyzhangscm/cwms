@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/quickbook-v1.10.jar /usr/local/service/
+ADD target/quickbook-v1.11.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/quickbook-v1.10.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/quickbook-v1.11.jar"]
