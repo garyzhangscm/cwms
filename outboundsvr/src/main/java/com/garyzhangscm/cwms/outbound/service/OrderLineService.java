@@ -302,7 +302,7 @@ public class OrderLineService{
      * NOW only works for hualei
      * @param orderLine
      */
-    private void autoRequestShippingLabel(OrderLine orderLine) {
+    public void autoRequestShippingLabel(OrderLine orderLine) {
 
         // for now we only support hualei system so we will need to make sure the order line has
         // hualei's product id setup
