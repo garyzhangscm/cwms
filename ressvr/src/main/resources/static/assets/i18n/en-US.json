@@ -2136,5 +2136,6 @@
   "fifoDate": "Fifo Date",
   "summary": "Summary",
   "get-package-status-url": "Get Package Status URL",
-  "getPackageStatusEndpoint": "Get Package Status Endpoint"
+  "getPackageStatusEndpoint": "Get Package Status Endpoint",
+  "menu.mobile.inventory.partialInventoryMove": "Partial Inventory Move"
 }

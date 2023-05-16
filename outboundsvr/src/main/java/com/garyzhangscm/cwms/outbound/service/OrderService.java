@@ -19,34 +19,24 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.*;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
 import com.garyzhangscm.cwms.outbound.repository.OrderRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.Transient;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -55,7 +45,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Service
@@ -565,6 +554,19 @@ public class OrderService {
         }
         sendAlertForOrder(order, newOrderFlag,
                 Strings.isBlank(username) ? newOrder.getCreatedBy() : username);
+        // for new order, let's see if we will need to request shippping label for it
+
+        if (newOrderFlag) {
+            newOrder.getOrderLines().stream().filter(
+                    orderLine -> Boolean.TRUE.equals(orderLine.getAutoRequestShippingLabel())
+            ).forEach(
+                    orderLine -> {
+                        logger.debug("start a new thread to request the shipping label as it may take a while");
+                        new Thread(() -> orderLineService.autoRequestShippingLabel(orderLine)).start();
+                    }
+            );
+        }
+
         return newOrder;
     }
 
