@@ -137,9 +137,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png,true,false
 "Inventory Putaway",menu.mobile.inventory.inventoryPutaway,inventory_putaway,4,Mobile-Menu-Inventory,Mobile-Inventory-InventoryPutaway,menu_inventory_putaway.png,true,false
 "Inventory Lost And Found",menu.mobile.inventory.inventoryLF,inventory_lost_and_found,5,Mobile-Menu-Inventory,Mobile-Inventory-InventoryLF,menu_inventory_lf.png,true,false
-"Inventory QC",menu.mobile.inventory.qc,inventory_qc,4,Mobile-Menu-Inventory,Mobile-Inventory-QC,menu_inventory_qc.png,true,false
-"Item Sampling",menu.mobile.inventory.item-sampling,item_sampling,5,Mobile-Menu-Inventory,Mobile-Inventory-Item-Sampling,menu_inventory_item_sampling.png,true,false
-"Partial Inventory Move",menu.mobile.inventory.partialInventoryMove,partial_inventory_move,6,Mobile-Menu-Inventory,Mobile-Inventory-PartialInventoryMove,menu_inventory_putaway.png,true,false
+"Inventory QC",menu.mobile.inventory.qc,inventory_qc,6,Mobile-Menu-Inventory,Mobile-Inventory-QC,menu_inventory_qc.png,true,false
+"Item Sampling",menu.mobile.inventory.item-sampling,item_sampling,7,Mobile-Menu-Inventory,Mobile-Inventory-Item-Sampling,menu_inventory_item_sampling.png,true,false
+"Partial Inventory Move",menu.mobile.inventory.partialInventoryMove,partial_inventory_move,8,Mobile-Menu-Inventory,Mobile-Inventory-PartialInventoryMove,menu_inventory_putaway.png,true,false
 "Pick By Work Order",menu.mobile.work-order.pick-by-work-order,pick_by_work_order,1,Mobile-Menu-WorkOrder,Mobile-WorkOrder-PickByWorkOrder,menu_workorder_pick.png,true,false
 "Produce",menu.mobile.work-order.produce,work_order_produce,2,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Produce,menu_workorder_produce.png,true,false
 "Work Order QC",menu.mobile.work-order.qc,work_order_qc,3,Mobile-Menu-WorkOrder,Mobile-WorkOrder-QC,menu_work_order_qc.png,true,false

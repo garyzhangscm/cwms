@@ -1239,6 +1239,141 @@ public class InventoryService {
     }
 
     /**
+     * Move invenory by specify the LPN, item name and quantity. this is the method mainly to support partial
+     * movement
+     * @param warehouseId
+     * @param lpn
+     * @param itemName
+     * @param quantity
+     * @param unitOfMeasureName
+     * @param destination
+     * @param pickId
+     * @param immediateMove
+     * @param destinationLpn
+     * @return
+     */
+    public List<Inventory> moveInventory(Long warehouseId,
+                                         Long clientId,
+                                         String lpn,
+                                         String itemName,
+                                         Long quantity,
+                                         String unitOfMeasureName,
+                                         Location destination,
+                                         Long pickId,
+                                         boolean immediateMove,
+                                         String destinationLpn) {
+        // let's get the inventory by LPN , item name, quantity and unti of measure
+        // then move one by one
+        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+
+        if (Strings.isBlank(itemName) || Objects.isNull(quantity)) {
+            // if item or quantity is not specified, we will move the whole LPN
+            return inventories.stream().map(inventory -> moveInventory(
+                    inventory, destination, pickId, immediateMove,
+                    destinationLpn
+            )).collect(Collectors.toList());
+
+        }
+
+
+        inventories = inventories.stream().filter(
+                inventory -> {
+
+                    logger.debug("start to check if inventory {} meet the required client: {}, item name {}, unit of measure name: {}",
+                            clientId, itemName, unitOfMeasureName);
+                    logger.debug("client id match?: {}", Objects.isNull(clientId) ||  Objects.equals(clientId, inventory.getClientId()));
+                    logger.debug("item name match?: {}", inventory.getItem().getName().equalsIgnoreCase(itemName) );
+                    logger.debug("item unit of measure match?: {}",
+                            ( Strings.isBlank(unitOfMeasureName) ||
+                                    inventory.getItemPackageType().getItemUnitOfMeasures().stream().anyMatch(
+                                            itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(unitOfMeasureName)
+                                    ) ) );
+                    // if client id is passed in, make sure the required client id matches with the inventory's client id
+                    return (Objects.isNull(clientId) ||  Objects.equals(clientId, inventory.getClientId()))
+                            &&
+                            inventory.getItem().getName().equalsIgnoreCase(itemName)
+                            &&
+                            ( Strings.isBlank(unitOfMeasureName) ||
+                                    inventory.getItemPackageType().getItemUnitOfMeasures().stream().anyMatch(
+                                            itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(unitOfMeasureName)
+                                    )
+                            );
+                }
+        ).collect(Collectors.toList());
+        // ok, then we will only return the inventory's up to the specific quantity
+        // since we are sure the item name is specified, let's get the item and
+        // all the unit of measure so that we know the actual we will need to move
+        // based on the passed in quantity and unit of measure
+        if (inventories.isEmpty()) {
+            throw InventoryException.raiseException("Can't move inventory as there's no inventory match " +
+                    "LPN: " + lpn + ", item : " + itemName);
+        }
+        long quantityToBeMoved = 0l;
+        if (Strings.isBlank(unitOfMeasureName)) {
+            quantityToBeMoved = quantity;
+        }
+        else {
+            long unitOfMeasureQuantity = inventories.get(0).getItemPackageType().getItemUnitOfMeasures().stream()
+                    .filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(unitOfMeasureName))
+                    .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity()).findFirst().orElse(1);
+            quantityToBeMoved = unitOfMeasureQuantity * quantity;
+        }
+
+        logger.debug("start to move {} of item {} from LPN {}, based on the request {} {}",
+                quantityToBeMoved, itemName, lpn, quantity, unitOfMeasureName);
+
+        List<Inventory> fullyMovedInventory = new ArrayList<>();
+        // we should only have one partial moved inventory if possible, which is the last one
+        Inventory partiallyMovedInventory = null;
+        long partiallyMovedQuanttiy = 0;
+        for (Inventory inventory : inventories) {
+            if (inventory.getQuantity() > quantityToBeMoved) {
+                // current inventory is enough for the moved quantity, let's marked it as
+                // partially moved and end the loop
+                partiallyMovedInventory = inventory;
+                partiallyMovedQuanttiy = quantityToBeMoved;
+                break;
+            }
+            else if (inventory.getQuantity() == quantityToBeMoved) {
+                // currnet invenotry is just enough for the quantity to be moved, let's add
+                // the inventory as fully moved inventory and stop here
+                fullyMovedInventory.add(inventory);
+                break;
+            }
+            else {
+                // current invenotry is not enough for the quantity to be mvoed, let's
+                // add the inventory as need to be fully moved and continue
+                fullyMovedInventory.add(inventory);
+                quantityToBeMoved -= inventory.getQuantity();
+            }
+        }
+        List<Inventory> movedInventory = fullyMovedInventory.stream().map(
+                inventory -> moveInventory(
+                        inventory, destination, pickId, immediateMove,
+                        destinationLpn
+                )).collect(Collectors.toList());
+
+        // see if we will need to partially move the inventory
+        if (Objects.nonNull(partiallyMovedInventory) && partiallyMovedQuanttiy > 0) {
+            // ok, we may need to split the right quantity from the invenotry and then
+            // move the new LPN
+            // for split inventory, the return list will contain 2 inventories, the first one
+            // is the original inventory with remaining quantity and the second one is the
+            // the split inventory with split quantity
+            List<Inventory> splitInventories = splitInventory(partiallyMovedInventory, "", partiallyMovedQuanttiy);
+            movedInventory.add(
+                    moveInventory(
+                            splitInventories.get(1), destination, pickId, immediateMove,
+                            destinationLpn
+                    )
+            );
+        }
+
+        return movedInventory;
+
+    }
+
+    /**
      * Move the inventory into the new location, either immediately confirm the movement, or generate a work
      * so we can assign the movement work to someone to finish it.
      * @param inventory Inventory to be moved

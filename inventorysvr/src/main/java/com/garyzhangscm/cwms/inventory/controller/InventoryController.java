@@ -381,6 +381,30 @@ public class InventoryController {
         return inventoryService.moveInventory(id, location , pickId, immediateMove, destinationLpn);
     }
 
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/move")
+    public List<Inventory> moveInventory(@RequestParam Long warehouseId,
+                                   @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
+                                   @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                   @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
+                                   @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
+                                   @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
+                                   @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                   @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                   @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
+                                   @RequestParam(name="unitOfMeasureName", required = false, defaultValue = "") String unitOfMeasureName,
+                                   @RequestBody Location location) {
+
+
+        // if the inventory id is passed in, then we will only move the specific inventory
+        if (Objects.nonNull(inventoryId)) {
+
+            return List.of(inventoryService.moveInventory(inventoryId, location , pickId, immediateMove, destinationLpn));
+        }
+        else {
+            return inventoryService.moveInventory(warehouseId, clientId, lpn, itemName, quantity, unitOfMeasureName,  location , pickId, immediateMove, destinationLpn);
+        }
+    }
 
     /**
      * Split the inventory into 2,
