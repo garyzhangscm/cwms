@@ -943,6 +943,10 @@ public class InventoryService {
      currentLocalDateTime = LocalDateTime.now();
 
      if (inventory.getPickId() != null) {
+         logger.debug("start to get pick by {} from LPN {} / {}",
+                 inventory.getPickId(),
+                 inventory.getId(),
+                 inventory.getLpn());
         inventory.setPick(outbuondServiceRestemplateClient.getPickById(inventory.getPickId()));
      }
 
@@ -954,6 +958,10 @@ public class InventoryService {
      currentLocalDateTime = LocalDateTime.now();
 
      if (inventory.getAllocatedByPickId() != null) {
+         logger.debug("start to get allocated pick by {} from LPN {} / {}",
+                 inventory.getPickId(),
+                 inventory.getId(),
+                 inventory.getLpn());
         inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
      }
      logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the allocated by pick for LPN {}",
@@ -1231,6 +1239,7 @@ public class InventoryService {
         }
         return moveInventory(inventory, destination, null, true, null);
     }
+
     public Inventory moveInventory(Long inventoryId, Location destination, Long pickId, boolean immediateMove,
                                    String destinationLpn) {
         return moveInventory(findById(inventoryId), destination, pickId, immediateMove,

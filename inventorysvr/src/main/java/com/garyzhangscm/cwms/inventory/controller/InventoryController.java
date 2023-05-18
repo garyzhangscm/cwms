@@ -20,10 +20,12 @@ package com.garyzhangscm.cwms.inventory.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,8 @@ public class InventoryController {
     private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
     @Autowired
     InventoryService inventoryService;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Autowired
     FileService fileService;
@@ -402,7 +406,7 @@ public class InventoryController {
             return List.of(inventoryService.moveInventory(inventoryId, location , pickId, immediateMove, destinationLpn));
         }
         else {
-            return inventoryService.moveInventory(warehouseId, clientId, lpn, itemName, quantity, unitOfMeasureName,  location , pickId, immediateMove, destinationLpn);
+            return inventoryService.moveInventory(warehouseId, clientId, lpn, itemName, quantity, unitOfMeasureName, location , pickId, immediateMove, destinationLpn);
         }
     }
 
