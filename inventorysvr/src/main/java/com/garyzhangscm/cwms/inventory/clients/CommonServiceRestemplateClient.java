@@ -450,33 +450,6 @@ public class CommonServiceRestemplateClient {
         );
     }
 
-    public WorkTask addWorkTask(WorkTask workTask) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/work-tasks");
-/**
-        ResponseBodyWrapper<WorkTask> responseBodyWrapper
-                = null;
-        try {
-            responseBodyWrapper = restTemplate.exchange(
-                    builder.toUriString(),
-                    HttpMethod.POST,
-                    getHttpEntity(objectMapper.writeValueAsString(workTask)),
-                    new ParameterizedTypeReference<ResponseBodyWrapper<WorkTask>>() {}).getBody();
-        } catch (JsonProcessingException e) {
-            throw InventoryException.raiseException("Can't add the work task due to JsonProcessingException: " + e.getMessage());
-        }
-
-        return responseBodyWrapper.getData();
- **/
-        return restTemplateProxy.exchange(
-                WorkTask.class,
-                builder.toUriString(),
-                HttpMethod.POST,
-                workTask
-        );
-    }
 
     public String getNextNumber(Long warehouseId, String variable) {
 
