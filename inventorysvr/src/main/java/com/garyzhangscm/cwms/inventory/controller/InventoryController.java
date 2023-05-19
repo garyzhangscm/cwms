@@ -406,7 +406,8 @@ public class InventoryController {
             return List.of(inventoryService.moveInventory(inventoryId, location , pickId, immediateMove, destinationLpn));
         }
         else {
-            return inventoryService.moveInventory(warehouseId, clientId, lpn, itemName, quantity, unitOfMeasureName, location , pickId, immediateMove, destinationLpn);
+            return inventoryService.moveInventory(warehouseId, clientId, lpn, itemName, quantity, unitOfMeasureName, location ,
+                    pickId, immediateMove, destinationLpn);
         }
     }
 

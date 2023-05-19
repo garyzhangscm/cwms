@@ -4,5 +4,7 @@ public enum PickStatus {
     PENDING,
     INPROCESS,
     CANCELLED,
-    COMPLETED
+    COMPLETED,
+    HOLD,
+    RELEASED
 }

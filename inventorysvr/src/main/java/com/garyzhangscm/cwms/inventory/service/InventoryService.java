@@ -1394,6 +1394,9 @@ public class InventoryService {
     @Transactional
     public Inventory moveInventory(Inventory inventory, Location destination, Long pickId, boolean immediateMove,
                                    String destinationLpn) {
+        logger.debug("start to move LPN {} to location {}, immediate move? {}",
+                inventory.getLpn(), Objects.nonNull(destination) ? destination.getName() : "N/A",
+                immediateMove);
         if (immediateMove) {
             return processImmediateMoveInventory(inventory, destination, pickId, destinationLpn);
         }
@@ -1923,7 +1926,7 @@ public class InventoryService {
         WorkTask workTask = WorkTask.createInventoryMovementWorkTask(
                 inventory, destinationLocation
         );
-        commonServiceRestemplateClient.addWorkTask(workTask);
+        // commonServiceRestemplateClient.addWorkTask(workTask);
         return inventory;
     }
     private Inventory allocateLocation(Inventory inventory, Location destinationLocation){
