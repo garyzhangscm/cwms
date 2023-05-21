@@ -85,8 +85,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "receipt_id")
     private Long receiptId;
 
+    @Transient
+    private Receipt receipt;
+
     @Column(name = "receipt_line_id")
     private Long receiptLineId;
+
+    @Transient
+    private ReceiptLine receiptLine;
 
     // if the inventory is received from the customer return
     @Column(name = "customer_return_order_id")
@@ -551,5 +557,21 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setCustomerReturnOrderLineId(Long customerReturnOrderLineId) {
         this.customerReturnOrderLineId = customerReturnOrderLineId;
+    }
+
+    public Receipt getReceipt() {
+        return receipt;
+    }
+
+    public void setReceipt(Receipt receipt) {
+        this.receipt = receipt;
+    }
+
+    public ReceiptLine getReceiptLine() {
+        return receiptLine;
+    }
+
+    public void setReceiptLine(ReceiptLine receiptLine) {
+        this.receiptLine = receiptLine;
     }
 }
