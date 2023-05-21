@@ -1392,19 +1392,26 @@ public class WorkOrderService implements TestDataInitiableService {
                     inventory.getWorkOrderId(), inventory.getCreateInventoryTransactionId());
             if (Objects.nonNull(inventory.getWorkOrderId()) &&
                     Objects.nonNull(inventory.getCreateInventoryTransactionId())) {
-                WorkOrderProduceTransaction workOrderProduceTransaction =
-                        workOrderProduceTransactionService.findById(inventory.getCreateInventoryTransactionId());
-                logger.debug("Found right work order produce transaction by id {} ? {}",
-                        inventory.getCreateInventoryTransactionId(),
-                        Objects.nonNull(workOrderProduceTransaction));
-                if (Objects.nonNull(workOrderProduceTransaction)) {
-                    logger.debug("Add a new reverse production transaction");
-                    workOrderReverseProductionInventoryService.save(new WorkOrderReverseProductionInventory(
-                            workOrderProduceTransaction, inventory.getLpn(), inventory.getQuantity()
-                    ));
-                    // we will put the quantity back
-                    logger.debug("will return the consumed quantity back, only if we can ");
-                    processReverseProductionQuantity(workOrderProduceTransaction, inventory.getQuantity());
+                try {
+
+                    WorkOrderProduceTransaction workOrderProduceTransaction =
+                            workOrderProduceTransactionService.findById(inventory.getCreateInventoryTransactionId());
+                    logger.debug("Found right work order produce transaction by id {} ? {}",
+                            inventory.getCreateInventoryTransactionId(),
+                            Objects.nonNull(workOrderProduceTransaction));
+                    if (Objects.nonNull(workOrderProduceTransaction)) {
+                        logger.debug("Add a new reverse production transaction");
+                        workOrderReverseProductionInventoryService.save(new WorkOrderReverseProductionInventory(
+                                workOrderProduceTransaction, inventory.getLpn(), inventory.getQuantity()
+                        ));
+                        // we will put the quantity back
+                        logger.debug("will return the consumed quantity back, only if we can ");
+                        processReverseProductionQuantity(workOrderProduceTransaction, inventory.getQuantity());
+                    }
+                }
+                catch (Exception exception) {
+                    exception.printStackTrace();
+                    logger.debug("Ignore workOrderProduceTransaction error when we reverse production");
                 }
             }
         }
