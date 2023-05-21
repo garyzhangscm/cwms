@@ -78,6 +78,7 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     private Long expectedQuantity;
 
 
+
     // Specific the inventory status that
     // user ordered. For example, when return
     // to vendor, we may return DAMAGED inventory
@@ -130,6 +131,10 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "auto_request_shipping_label")
     private Boolean autoRequestShippingLabel;
 
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -166,6 +171,7 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         setCarrierServiceLevelName(orderLine.getCarrierServiceLevelName());
 
         setQuickbookTxnLineID(orderLine.getQuickbookTxnLineID());
+        setAllocateByReceiptNumber(orderLine.getAllocateByReceiptNumber());
 
         setHualeiProductId(orderLine.getHualeiProductId());
         if (Objects.nonNull(orderLine.getAutoRequestShippingLabel())) {
@@ -217,7 +223,8 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
                 "carrierId", "carrierServiceLevelId",
                 "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable",
                 "hualeiProductId", "autoRequestShippingLabel",
-                "color","productSize","style"
+                "color","productSize","style",
+                "allocateByReceiptNumber"
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -463,6 +470,14 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setCarrierServiceLevelId(Long carrierServiceLevelId) {
         this.carrierServiceLevelId = carrierServiceLevelId;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 
     @Override

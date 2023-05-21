@@ -110,6 +110,10 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "auto_request_shipping_label")
     private Boolean autoRequestShippingLabel;
 
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
+
     @JsonIgnore
     @OneToMany(
             mappedBy = "orderLine",
@@ -422,5 +426,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setOrderLineBillableActivities(List<OrderLineBillableActivity> orderLineBillableActivities) {
         this.orderLineBillableActivities = orderLineBillableActivities;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 }

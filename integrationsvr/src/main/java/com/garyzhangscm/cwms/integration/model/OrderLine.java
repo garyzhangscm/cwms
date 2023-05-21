@@ -64,6 +64,8 @@ public class OrderLine implements Serializable {
 
     private Boolean autoRequestShippingLabel = false;
 
+    private String allocateByReceiptNumber;
+
     public Long getId() {
         return id;
     }
@@ -134,6 +136,14 @@ public class OrderLine implements Serializable {
 
     public void setInventoryStatusId(Long inventoryStatusId) {
         this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 
     public String getColor() {
