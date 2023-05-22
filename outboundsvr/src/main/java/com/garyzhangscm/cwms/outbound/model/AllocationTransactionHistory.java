@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.util.Strings;
@@ -26,9 +25,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -119,6 +115,20 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
     @Column(name = "message")
     private String message;
 
+
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
+
     public static class Builder implements Serializable{
 
         private Long warehouseId;
@@ -157,36 +167,22 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         private String username;
         private String message;
 
+
+        private String color;
+        private String productSize;
+        private String style;
+        private String allocateByReceiptNumber;
+
         @Override
         public String toString() {
-            return "{\"Builder\":{"
-                    + "\"warehouseId\":\"" + warehouseId + "\""
-                    + ", \"number\":\"" + number + "\""
-                    + ", \"transactionGroupId\":\"" + transactionGroupId + "\""
-                    + ", \"orderNumber\":\"" + orderNumber + "\""
-                    + ", \"shipmentLine\":" + shipmentLine
-                    + ", \"workOrderNumber\":\"" + workOrderNumber + "\""
-                    + ", \"workOrderId\":\"" + workOrderId + "\""
-                    + ", \"workOrder\":" + workOrder
-                    + ", \"itemName\":\"" + itemName + "\""
-                    + ", \"itemId\":\"" + itemId + "\""
-                    + ", \"item\":" + item
-                    + ", \"locationName\":\"" + locationName + "\""
-                    + ", \"locationId\":\"" + locationId + "\""
-                    + ", \"location\":" + location
-                    + ", \"totalRequiredQuantity\":\"" + totalRequiredQuantity + "\""
-                    + ", \"currentRequiredQuantity\":\"" + currentRequiredQuantity + "\""
-                    + ", \"totalInventoryQuantity\":\"" + totalInventoryQuantity + "\""
-                    + ", \"totalAvailableQuantity\":\"" + totalAvailableQuantity + "\""
-                    + ", \"totalAllocatedQuantity\":\"" + totalAllocatedQuantity + "\""
-                    + ", \"alreadyAllocatedQuantity\":\"" + alreadyAllocatedQuantity + "\""
-                    + ", \"isSkippedFlag\":\"" + isSkippedFlag + "\""
-                    + ", \"isAllocatedByLPNFlag\":\"" + isAllocatedByLPNFlag + "\""
-                    + ", \"isRoundUpFlag\":\"" + isRoundUpFlag + "\""
-                    + ", \"username\":\"" + username + "\""
-                    + ", \"message\":\"" + message + "\""
-                    + "}}";
+            try {
+                return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
+
 
         public Builder(Long warehouseId, String number,
                        String transactionGroupId) {
@@ -215,6 +211,12 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
 
         public Builder shipmentLine(ShipmentLine shipmentLine) {
             this.shipmentLine = shipmentLine;
+            if(Objects.nonNull(shipmentLine)) {
+                this.color = shipmentLine.getOrderLine().getColor();
+                this.style = shipmentLine.getOrderLine().getStyle();
+                this.productSize = shipmentLine.getOrderLine().getProductSize();
+                this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
+            }
             return this;
         }
 
@@ -358,6 +360,11 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         username = builder.username;
         message = builder.message;
 
+        color = builder.color;
+        style = builder.style;
+        productSize = builder.productSize;
+        allocateByReceiptNumber = builder.allocateByReceiptNumber;
+
 
     }
 
@@ -431,6 +438,38 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         return Strings.isNotBlank(itemName) ?
                 itemName :
                 Objects.nonNull(item) ? item.getName() : "";
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 
     public void setItemName(String itemName) {

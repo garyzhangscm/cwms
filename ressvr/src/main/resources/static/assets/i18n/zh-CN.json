@@ -2136,5 +2136,6 @@
   "getPackageStatusEndpoint": "包裹状态地址",
   "menu.mobile.inventory.partialInventoryMove": "零散库存移动",
   "menu.mobile.inbound.reverse-receiving": "冲消收货",
-  "menu.mobile.work-order.reverse-production": "冲消完工入库"
+  "menu.mobile.work-order.reverse-production": "冲消完工入库",
+  "allocateByReceiptNumber": "指定入库单分配"
 }

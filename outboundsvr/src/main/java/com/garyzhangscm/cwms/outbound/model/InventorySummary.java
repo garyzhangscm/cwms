@@ -23,10 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InventorySummary implements Serializable {
 
@@ -56,6 +53,7 @@ public class InventorySummary implements Serializable {
     private String color;
     private String productSize;
     private String style;
+    private String allocateByReceiptNumber;
 
     public InventorySummary(){}
 
@@ -216,5 +214,13 @@ public class InventorySummary implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 }

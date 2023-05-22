@@ -2139,5 +2139,6 @@
   "getPackageStatusEndpoint": "Get Package Status Endpoint",
   "menu.mobile.inventory.partialInventoryMove": "Partial Inventory Move",
   "menu.mobile.inbound.reverse-receiving": "Reverse Receiving",
-  "menu.mobile.work-order.reverse-production": "Reverse Production"
+  "menu.mobile.work-order.reverse-production": "Reverse Production",
+  "allocateByReceiptNumber": "Allocate By Receipt"
 }

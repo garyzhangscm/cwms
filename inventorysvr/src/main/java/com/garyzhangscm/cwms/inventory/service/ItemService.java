@@ -996,7 +996,7 @@ public class ItemService {
         List<Inventory> inventories = inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), null,
                         null,null,null,null,null, null,
-                        null,null,null,null,
+                        null,null,null,null,null,
                         null,null,null,null, null,null,null,
                         null,null,null,
                         false, null)

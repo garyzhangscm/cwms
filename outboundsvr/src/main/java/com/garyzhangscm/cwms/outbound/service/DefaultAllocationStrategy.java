@@ -71,17 +71,33 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         List<Pick> existingPicks =
                         pickService.getOpenPicksByItemIdAndSourceLocation(item.getId(), sourceLocation);
+        // filter out the picks and leave the ones that match with the current allocation request.
+        // as the inventory that returned below are those match with the current allocation request. We
+        // will make the criteria the same so that we can calculate the available quantity based on
+        // the existing pick and existing inventory
+        existingPicks = existingPicks.stream().filter(
+                pick -> (Strings.isBlank(allocationRequest.getColor()) || allocationRequest.getColor().equalsIgnoreCase(pick.getColor())) &&
+                        (Strings.isBlank(allocationRequest.getStyle()) || allocationRequest.getStyle().equalsIgnoreCase(pick.getStyle())) &&
+                        (Strings.isBlank(allocationRequest.getProductSize()) || allocationRequest.getProductSize().equalsIgnoreCase(pick.getProductSize())) &&
+                        (Strings.isBlank(allocationRequest.getAllocateByReceiptNumber()) || allocationRequest.getAllocateByReceiptNumber().equalsIgnoreCase(pick.getAllocateByReceiptNumber()))
+
+        ).collect(Collectors.toList());
 
         // Let's get all the pickable inventory and existing picks to the trace file
         logger.debug("We have {} existing picks against this item, let's future filter out by inventory attribute", existingPicks.size());
 
 
         existingPicks.stream().forEach(pick -> {
-            logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}",
+            logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}, " +
+                            "attribute: color = {}, style = {}, production size = {}, allocate by receipt number = {}",
                     pick.getNumber(), pick.getSourceLocation().getName(),
                     Objects.isNull(pick.getDestinationLocation()) ?
                     "N/A" : pick.getDestinationLocation().getName(),
-                    pick.getQuantity(), pick.getPickedQuantity());
+                    pick.getQuantity(), pick.getPickedQuantity(),
+                    pick.getColor(),
+                    pick.getStyle(),
+                    pick.getProductSize(),
+                    pick.getAllocateByReceiptNumber());
         });
 
         List<Inventory> pickableInventory
@@ -90,7 +106,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
                 allocationRequest.getColor(),
                 allocationRequest.getProductSize(),
-                allocationRequest.getStyle());
+                allocationRequest.getStyle(),
+                allocationRequest.getAllocateByReceiptNumber());
 
         // for manual pick, we will filter out the inventory to specific LPN
         if (Boolean.TRUE.equals(allocationRequest.isManualAllocation()) &&
@@ -111,7 +128,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         logger.debug("We have inventory snapshot for allocation:");
         inventorySummaries.stream().forEach(inventorySummary -> {
-            logger.debug("Inventory location: {},  quantity: {}",
+            logger.debug("Inventory location: {},  quantity: {}, ",
                     inventorySummary.getLocation().getName(),
                     inventorySummary.getQuantity());
         });
@@ -833,6 +850,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     .append("Color: ").append(inventorySummary.getColor())
                     .append("Product Size: ").append(inventorySummary.getProductSize())
                     .append("Style: ").append(inventorySummary.getStyle())
+                    .append("allocate by receipt number: ").append(inventorySummary.getAllocateByReceiptNumber())
                     .append(", Total Quantity: ").append(inventorySummary.getQuantity())
                     .append(", inventory: \n");
             Iterator<Map.Entry<String, List<Inventory>>> lpnIterator = inventorySummary.getInventories().entrySet().iterator();
@@ -1033,6 +1051,9 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             return false;
         }
         if (Strings.isNotBlank(pick.getStyle()) && !pick.getStyle().equalsIgnoreCase(inventorySummary.getStyle())) {
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getAllocateByReceiptNumber()) && !pick.getAllocateByReceiptNumber().equalsIgnoreCase(inventorySummary.getAllocateByReceiptNumber())) {
             return false;
         }
         return true;

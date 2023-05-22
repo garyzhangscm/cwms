@@ -345,11 +345,13 @@ public class ShortAllocationService {
         shortAllocation.setWarehouseId(shipmentLine.getWarehouseId());
         shortAllocation.setAllocationCount(0L);
 
+
         if (Objects.nonNull(allocationRequest)) {
 
             shortAllocation.setColor(allocationRequest.getColor());
             shortAllocation.setProductSize(allocationRequest.getProductSize());
             shortAllocation.setStyle(allocationRequest.getStyle());
+            shortAllocation.setAllocateByReceiptNumber(allocationRequest.getAllocateByReceiptNumber());
         }
 
         return save(shortAllocation);
