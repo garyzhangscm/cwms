@@ -110,9 +110,6 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "auto_request_shipping_label")
     private Boolean autoRequestShippingLabel;
 
-    // only allocate inventory that received by certain receipt
-    @Column(name = "allocate_by_receipt_number")
-    private String allocateByReceiptNumber;
 
     @JsonIgnore
     @OneToMany(
@@ -161,6 +158,9 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name="style")
     private String style;
 
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
 
     @Override
     public String toString() {

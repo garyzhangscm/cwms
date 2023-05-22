@@ -139,11 +139,12 @@ public class InventoryController {
                                                    @RequestParam(name = "color", defaultValue = "", required = false) String color,
                                                    @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
                                                    @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                                   @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
         return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style);
+                color, productSize, style, receiptNumber);
     }
 
 

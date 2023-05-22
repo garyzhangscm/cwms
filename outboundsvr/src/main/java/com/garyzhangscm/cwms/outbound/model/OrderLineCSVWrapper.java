@@ -77,6 +77,9 @@ public class OrderLineCSVWrapper {
     private String hualeiProductId;
     private String autoRequestShippingLabel;
 
+
+    private String allocateByReceiptNumber;
+
     @Override
     public String toString() {
         try {
@@ -286,6 +289,14 @@ public class OrderLineCSVWrapper {
 
     public void setBillToContactorFirstname(String billToContactorFirstname) {
         this.billToContactorFirstname = billToContactorFirstname;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 
     public String getBillToContactorLastname() {

@@ -596,17 +596,7 @@ public class InventoryService {
                                                    Long inventoryStatusId,
                                                    boolean includeDetails) {
         return findPickableInventories(itemId, inventoryStatusId, null, null,
-                null, null, null, includeDetails);
-    }
-    public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
-                                                   Long locationId,
-                                                   String lpn,
-                                                   String color,
-                                                   String productSize,
-                                                   String style) {
-        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, true);
+                null, null, null, null, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -615,6 +605,18 @@ public class InventoryService {
                                                    String color,
                                                    String productSize,
                                                    String style,
+                                                   String receiptNumber) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+                color, productSize, style, receiptNumber, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   String lpn,
+                                                   String color,
+                                                   String productSize,
+                                                   String style,
+                                                   String receiptNumber,
                                                    boolean includeDetails) {
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
@@ -634,7 +636,7 @@ public class InventoryService {
                     }
                     return inventory;
                 }).filter(this::isLocationPickable)
-                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style))
+                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style, receiptNumber))
                 .filter(inventory -> {
                     // if LPN is passed in, only return the inventory that match with the LPN
                     if(Strings.isNotBlank(lpn)) {
@@ -656,7 +658,8 @@ public class InventoryService {
         return pickableInventories;
     }
 
-    private boolean inventoryAttributeMatch(Inventory inventory, String color, String productSize, String style) {
+    private boolean inventoryAttributeMatch(Inventory inventory, String color, String productSize,
+                                            String style, String receiptNumber) {
         if (Strings.isNotBlank(color) && !color.equalsIgnoreCase(inventory.getColor())) {
             return false;
         }
@@ -665,6 +668,21 @@ public class InventoryService {
         }
         if (Strings.isNotBlank(style) && !style.equalsIgnoreCase(inventory.getStyle())) {
             return false;
+        }
+        if (Strings.isNotBlank(receiptNumber)) {
+            if (Objects.nonNull(inventory.getReceiptId()) && Objects.isNull(inventory.getReceipt())) {
+                inventory.setReceipt(
+                        inboundServiceRestemplateClient.getReceiptById(
+                                inventory.getReceiptId()
+                        )
+                );
+            }
+            if(Objects.isNull(inventory.getReceipt())) {
+                return false;
+            }
+            else if (!inventory.getReceipt().getNumber().equalsIgnoreCase(receiptNumber)) {
+                return false;
+            }
         }
         return true;
     }
