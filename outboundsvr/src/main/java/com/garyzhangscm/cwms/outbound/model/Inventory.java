@@ -38,6 +38,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Location location;
 
     private Long receiptId;
+    private Receipt receipt;
 
     private Item item;
 
@@ -64,6 +65,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
 
     private Warehouse warehouse;
+
 
     private String color;
     private String productSize;
@@ -244,5 +246,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public Receipt getReceipt() {
+        return receipt;
+    }
+
+    public void setReceipt(Receipt receipt) {
+        this.receipt = receipt;
     }
 }

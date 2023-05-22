@@ -28,6 +28,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -62,6 +63,30 @@ public class InboundServiceRestemplateClient {
                 null
         );
     }
+    @Cacheable(cacheNames = "InventoryService_Receipt", unless="#result == null")
+    public Receipt getReceiptByNumber(Long warehouseId, String receiptNumber) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulservice")
+                        .path("/api/inbound/receipts")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("number", receiptNumber);
+        List<Receipt> receipts =  restTemplateProxy.exchangeList(
+                Receipt.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+        if (receipts.size() == 0) {
+            return null;
+        }
+        else {
+            return receipts.get(0);
+        }
+
+    }
+
 
     public ReceiptLine reverseReceivedInventory(Long receiptId, Long receiptLineId, Long quantity,
                                                 Boolean inboundQCRequired, Boolean reverseQCQuantity) {

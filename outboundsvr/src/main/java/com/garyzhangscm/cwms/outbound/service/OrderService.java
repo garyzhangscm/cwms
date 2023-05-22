@@ -1424,7 +1424,7 @@ public class OrderService {
                     // setup the quantity by UOM from the pickable inventory in the source location
                     List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
                             pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
-                            pick.getColor(), pick.getProductSize(), pick.getStyle());
+                            pick.getColor(), pick.getProductSize(), pick.getStyle(), pick.getAllocateByReceiptNumber());
 
                     StringBuilder pickQuantityByUOM = new StringBuilder();
                     pickQuantityByUOM.append(pick.getQuantity());

@@ -169,6 +169,7 @@ public class InventoryService {
                                    String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
+                                   String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
                                    String workOrderLineIds,
@@ -185,7 +186,8 @@ public class InventoryService {
         return findAll(warehouseId, itemId,
                 itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
-                receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
+                receiptId, receiptNumber,
+                customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
@@ -207,6 +209,7 @@ public class InventoryService {
                                    String locationIds,
                                    Long locationGroupId,
                                    String receiptId,
+                                   String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
                                    String workOrderLineIds,
@@ -332,6 +335,22 @@ public class InventoryService {
                     if (StringUtils.isNotBlank(receiptId)) {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 
+                    }
+                    if (Strings.isNotBlank(receiptNumber)) {
+                        Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
+                                warehouseId,
+                                receiptNumber
+                        );
+                        if (Objects.nonNull(receipt)) {
+
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), receipt.getId()));
+                        }
+                        else {
+
+                            // since there's no receipt match with the receipt, we will use -1 as the receipt id
+                            // to match with the inventory and we will assume there won't be anything return
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), -1));
+                        }
                     }
 
                     if (StringUtils.isNotBlank(customerReturnOrderId)) {
@@ -586,6 +605,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null);
     }
 
@@ -756,6 +776,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, includeDetails);
     }
 
@@ -789,6 +810,7 @@ public class InventoryService {
                 null,
                 null,
                 locationGroupId,
+                null,
                 null,
                 null,
                 null,
@@ -2486,6 +2508,7 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2538,6 +2561,7 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
                     lpn,
                     null,
                     null,
@@ -2568,6 +2592,7 @@ public class InventoryService {
                         null,
                         null,
                         inboundLocationId,
+                        null,
                         null,
                         null,
                         null,
@@ -3077,6 +3102,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, null,
                 null,
                 null,
@@ -3177,6 +3203,7 @@ public class InventoryService {
                                                             String locationIds,
                                                             Long locationGroupId,
                                                             String receiptId,
+                                     String receiptNumber,
                                                             String customerReturnOrderId,
                                                             Long workOrderId,
                                                             String workOrderLineIds,
@@ -3191,7 +3218,7 @@ public class InventoryService {
         List<Inventory> inventories = findAll(warehouseId, itemId,
                 itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
-                receiptId, customerReturnOrderId,  workOrderId, workOrderLineIds,
+                receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
@@ -3783,6 +3810,7 @@ public class InventoryService {
                 null,
                 null,
                 clientId,
+                null,
                 null,
                 null,
                 null,

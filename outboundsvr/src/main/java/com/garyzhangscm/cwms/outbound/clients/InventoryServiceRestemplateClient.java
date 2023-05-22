@@ -599,6 +599,9 @@ public class InventoryServiceRestemplateClient {
             if (StringUtils.isNotBlank(pick.getStyle())) {
                 builder = builder.queryParam("style", pick.getStyle());
             }
+            if (StringUtils.isNotBlank(pick.getAllocateByReceiptNumber())) {
+                builder = builder.queryParam("style", pick.getStyle());
+            }
 /**
             ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
                     = restTemplate.exchange(

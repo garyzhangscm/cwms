@@ -99,6 +99,10 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
     @Column(name="style")
     private String style;
 
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
+
     @Override
     public String toString() {
         try {
@@ -245,6 +249,14 @@ public class ShortAllocation   extends AuditibleEntity<String> implements Serial
             return null;
         }
         return shipmentLine.getShipment().getClientId();
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 
     public void setOrderNumber(String orderNumber) {

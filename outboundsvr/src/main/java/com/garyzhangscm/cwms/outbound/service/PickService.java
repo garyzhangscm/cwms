@@ -729,16 +729,14 @@ public class PickService {
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn) {
+
         return generateBasicPickInformation(warehouseId,
                 inventorySummary.getItem(),
                 inventorySummary.getLocation(),
                 inventorySummary.getInventoryStatus(),
                 quantity,
                 pickableUnitOfMeasure,
-                lpn,
-                inventorySummary.getColor(),
-                inventorySummary.getProductSize(),
-                inventorySummary.getStyle());
+                lpn );
     }
     public Pick generateBasicPickInformation(Long warehouseId,
                                              Item item,
@@ -838,7 +836,8 @@ public class PickService {
                 warehouseId, inventory, quantity, pickableUnitOfMeasure, null);
     }
 
-    public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary, Long quantity, String lpn) {
+    public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
+                                             Long quantity, String lpn) {
 
         return generateBasicPickInformation(
                 warehouseId, inventorySummary, quantity, null, lpn);
@@ -849,6 +848,11 @@ public class PickService {
         pick.setShipmentLine(shipmentLine);
         pick.setWarehouseId(shipmentLine.getWarehouseId());
         pick.setPickType(PickType.OUTBOUND);
+
+        pick.setColor(shipmentLine.getOrderLine().getColor());
+        pick.setProductSize(shipmentLine.getOrderLine().getProductSize());
+        pick.setStyle(shipmentLine.getOrderLine().getStyle());
+        pick.setAllocateByReceiptNumber(shipmentLine.getOrderLine().getAllocateByReceiptNumber());
 
         // Setup the destination, get from ship staging area
 
@@ -1800,7 +1804,7 @@ public class PickService {
                 item.getId(), inventoryStatus.getId(),
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
                 allocationRequest.getColor(), allocationRequest.getProductSize(),
-                allocationRequest.getStyle());
+                allocationRequest.getStyle(), allocationRequest.getAllocateByReceiptNumber());
 
         long pickableInventoryQuantity = pickableInventory.stream().map(inventory -> inventory.getQuantity())
                 .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();

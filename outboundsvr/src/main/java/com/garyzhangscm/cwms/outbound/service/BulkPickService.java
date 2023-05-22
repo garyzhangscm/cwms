@@ -772,7 +772,8 @@ public class BulkPickService {
                         pick.getSourceLocationId(),
                         pick.getColor(),
                         pick.getProductSize(),
-                        pick.getStyle());
+                        pick.getStyle(),
+                pick.getAllocateByReceiptNumber());
     }
 
     @Transactional
