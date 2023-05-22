@@ -243,14 +243,15 @@ public class InventoryServiceRestemplateClient {
 
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId,
                                                 String color, String productSize,
-                                                String style) {
+                                                String style, String allocateByReceiptNumber) {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
-                color, productSize, style);
+                color, productSize, style, allocateByReceiptNumber);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
                                                 Long locationId, String lpn,
                                                 String color, String productSize,
-                                                String style) {
+                                                String style,
+                                                String allocateByReceiptNumber) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -273,6 +274,9 @@ public class InventoryServiceRestemplateClient {
         }
         if (Strings.isNotBlank(style)) {
             builder = builder.queryParam("style", style);
+        }
+        if (Strings.isNotBlank(allocateByReceiptNumber)) {
+            builder = builder.queryParam("receiptNumber", allocateByReceiptNumber);
         }
 /**
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper

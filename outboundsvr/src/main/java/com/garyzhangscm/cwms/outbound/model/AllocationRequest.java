@@ -48,6 +48,8 @@ public class AllocationRequest {
     private String productSize;
     private String style;
 
+    private String allocateByReceiptNumber;
+
 
     // will be setup if the allocation request is a
     // manual allocation for a specific LPN
@@ -85,6 +87,8 @@ public class AllocationRequest {
         this.color = shipmentLine.getOrderLine().getColor();
         this.productSize = shipmentLine.getOrderLine().getProductSize();
         this.style = shipmentLine.getOrderLine().getStyle();
+
+        this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
     }
 
 
@@ -290,5 +294,13 @@ public class AllocationRequest {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 }

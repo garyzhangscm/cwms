@@ -490,6 +490,7 @@ public class OrderLineService{
 
         );
 
+        orderLine.setAllocateByReceiptNumber(orderLineCSVWrapper.getAllocateByReceiptNumber());
         orderLine.setWarehouseId(warehouseId);
 
 

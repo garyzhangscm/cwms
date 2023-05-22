@@ -174,6 +174,10 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name="style")
     private String style = "";
 
+    // only allocate inventory that received by certain receipt
+    @Column(name = "allocate_by_receipt_number")
+    private String allocateByReceiptNumber;
+
     // for report purpose
     @Transient
     private String inventoryAttribute = "";
@@ -595,5 +599,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setQuantityByUOM(String quantityByUOM) {
         this.quantityByUOM = quantityByUOM;
+    }
+
+    public String getAllocateByReceiptNumber() {
+        return allocateByReceiptNumber;
+    }
+
+    public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
+        this.allocateByReceiptNumber = allocateByReceiptNumber;
     }
 }
