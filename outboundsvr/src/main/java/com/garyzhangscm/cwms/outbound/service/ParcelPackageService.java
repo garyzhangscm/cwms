@@ -24,9 +24,7 @@ import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
-import com.garyzhangscm.cwms.outbound.model.hualei.HualeiShippingLabelFormatByProduct;
-import com.garyzhangscm.cwms.outbound.model.hualei.HualeiTrackResponseData;
+import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import com.garyzhangscm.cwms.outbound.repository.ParcelPackageRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -40,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -79,14 +78,11 @@ public class ParcelPackageService  {
 
     public ParcelPackage saveOrUpdate(ParcelPackage parcelPackage) {
         if (Objects.isNull(parcelPackage.getId()) &&
-                Objects.nonNull(findByShipmentId(parcelPackage.getWarehouseId(),parcelPackage.getShipmentId()))) {
-            parcelPackage.setId(findByShipmentId(parcelPackage.getWarehouseId(),parcelPackage.getShipmentId()).getId());
+                Strings.isNotBlank(parcelPackage.getTrackingCode()) &&
+                Objects.nonNull(findByTrackingCode(parcelPackage.getWarehouseId(),parcelPackage.getTrackingCode()))) {
+            parcelPackage.setId(findByTrackingCode(parcelPackage.getWarehouseId(),parcelPackage.getTrackingCode()).getId());
         }
         return save(parcelPackage);
-    }
-
-    public ParcelPackage findByShipmentId(Long warehouseId, String shipmentId) {
-        return parcelPackageRepository.findByWarehouseIdAndShipmentId(warehouseId, shipmentId);
     }
 
     public ParcelPackage findByTrackingCode(Long warehouseId, String trackingCode) {
@@ -130,7 +126,9 @@ public class ParcelPackageService  {
                                        String orderNumber,
                                        String trackingCode,
                                        Boolean undeliveredPackageOnly,
-                                       ParcelPackageRequestSystem requestSystem) {
+                                       Boolean emptyTrackingCodeOnly,  // only return the package that without tracking number
+                                       ParcelPackageRequestSystem requestSystem,
+                                       String hualeiOrderId) {
 
         List<ParcelPackage> cartons =  parcelPackageRepository.findAll(
                 (Root<ParcelPackage> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -153,11 +151,20 @@ public class ParcelPackageService  {
                         predicates.add(criteriaBuilder.equal(root.get("trackingCode"), trackingCode));
 
                     }
+
+                    if (Boolean.TRUE.equals(emptyTrackingCodeOnly)) {
+                        predicates.add(criteriaBuilder.isNull(root.get("trackingCode")));
+                    }
+
                     if (Boolean.TRUE.equals(undeliveredPackageOnly)) {
                         predicates.add(criteriaBuilder.notEqual(root.get("status"), ParcelPackageStatus.DELIVERED));
                     }
                     if (Objects.nonNull(requestSystem)) {
                         predicates.add(criteriaBuilder.equal(root.get("requestSystem"), requestSystem));
+
+                    }
+                    if (Strings.isNotBlank(hualeiOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("hualeiOrderId"), hualeiOrderId));
 
                     }
 
@@ -200,7 +207,7 @@ public class ParcelPackageService  {
      * @param weight
      * @return
      */
-    public ParcelPackage addTracking(Long warehouseId,
+    public ParcelPackage addParcelPackage(Long warehouseId,
                                      Order order,
                                      String productId,
                                      Long carrierId,
@@ -439,7 +446,8 @@ public class ParcelPackageService  {
         logger.debug("start to refresh hualei package status for warehouse id {}",
                 hualeiConfiguration.getWarehouseId());
         List<ParcelPackage> parcelPackages = findAll(hualeiConfiguration.getWarehouseId(),
-                null, null, null, true, ParcelPackageRequestSystem.HUALEI);
+                null, null, null, true,
+                null, ParcelPackageRequestSystem.HUALEI, null);
 
         logger.debug("find {} packages that is shipped by hualei and not delivered yet",
                 parcelPackages.size());
@@ -448,7 +456,7 @@ public class ParcelPackageService  {
         String[] trackingNumberArray = new String[20];
 
         // save the response of the package status from hualei
-        List<HualeiTrackResponseData> hualeiTrackResponseDataList = new ArrayList<>();
+        List<HualeiTrackStatusResponseData> hualeiTrackStatusResponseDataList = new ArrayList<>();
 
         for (ParcelPackage parcelPackage : parcelPackages) {
             // add current package to the array
@@ -456,7 +464,7 @@ public class ParcelPackageService  {
             if (count == 19) {
                 // ok, we already have 20 packages in the array, let's request the
                 // status from hualei
-                hualeiTrackResponseDataList.addAll(
+                hualeiTrackStatusResponseDataList.addAll(
                         hualeiShippingService.refreshHualeiPackageStatus(trackingNumberArray, hualeiConfiguration)
                 );
             }
@@ -468,24 +476,109 @@ public class ParcelPackageService  {
         }
         if (count > 0) {
 
-            hualeiTrackResponseDataList.addAll(
+            hualeiTrackStatusResponseDataList.addAll(
                 hualeiShippingService.refreshHualeiPackageStatus(trackingNumberArray, hualeiConfiguration));
         }
 
-        hualeiTrackResponseDataList.forEach(
-                hualeiTrackResponseData -> {
+        hualeiTrackStatusResponseDataList.forEach(
+                hualeiTrackStatusResponseData -> {
                     logger.debug("start to set tracking number {}'s status to {}",
-                            hualeiTrackResponseData.getTrackingNumber(),
-                            hualeiTrackResponseData.getTrackContent());
+                            hualeiTrackStatusResponseData.getTrackingNumber(),
+                            hualeiTrackStatusResponseData.getTrackContent());
 
                     ParcelPackage parcelPackage = findByTrackingCode(
                             hualeiConfiguration.getWarehouseId(),
-                            hualeiTrackResponseData.getTrackingNumber()
+                            hualeiTrackStatusResponseData.getTrackingNumber()
                     );
                     if (Objects.nonNull(parcelPackage)) {
-                        parcelPackage.setStatusDescription(hualeiTrackResponseData.getTrackContent());
+                        parcelPackage.setStatusDescription(hualeiTrackStatusResponseData.getTrackContent());
                     }
                     saveOrUpdate(parcelPackage);
+                }
+        );
+    }
+
+    /**
+     * Refresh the tracking number of the hualei packages
+     */
+    public void refreshPackageTrackingNumber() {
+        List<HualeiConfiguration> hualeiConfigurations = hualeiConfigurationService.listHualeiEnabledWarehouse();
+        hualeiConfigurations.stream().filter(
+                hualeiConfiguration -> Strings.isNotBlank(hualeiConfiguration.getGetTrackingNumberProtocol()) &&
+                        Strings.isNotBlank(hualeiConfiguration.getGetTrackingNumberHost()) &&
+                        Strings.isNotBlank(hualeiConfiguration.getGetTrackingNumberPort()) &&
+                        Strings.isNotBlank(hualeiConfiguration.getGetTrackingNumberEndpoint())
+        ).forEach(
+                hualeiConfiguration -> refreshPackageTrackingNumberByWarehouse(hualeiConfiguration)
+        );
+    }
+
+    private void refreshPackageTrackingNumberByWarehouse(HualeiConfiguration hualeiConfiguration) {
+        logger.debug("start to refresh hualei package tracking number for warehouse id {}",
+                hualeiConfiguration.getWarehouseId());
+        List<ParcelPackage> parcelPackages = findAll(hualeiConfiguration.getWarehouseId(),
+                null, null, null,
+                null, true,  ParcelPackageRequestSystem.HUALEI,
+                null)
+                .stream().filter(parcelPackage -> Strings.isNotBlank(parcelPackage.getHualeiOrderId()))
+                .collect(Collectors.toList());
+
+        logger.debug("find {} packages that is shipped by hualei and not having tracking number yet",
+                parcelPackages.size());
+        logger.debug("we will fetch in batch, 20 packages in one batch");
+        int count = 0;
+
+        // save the hualei's order id so that we can get the tracking number from order id
+        String[] orderIdArray = new String[20];
+
+        // save the response of the package tracking number from hualei
+        List<HualeiTrackNumberResponseData> hualeiTrackNumberResponseDataList = new ArrayList<>();
+
+        for (ParcelPackage parcelPackage : parcelPackages) {
+            // add current package to the array
+            orderIdArray[count] = parcelPackage.getHualeiOrderId();
+
+            if (count == 19) {
+                // ok, we already have 20 packages in the array, let's request the
+                // status from hualei
+                hualeiTrackNumberResponseDataList.addAll(
+                        hualeiShippingService.refreshHualeiPackageTrackingNumber(orderIdArray, hualeiConfiguration)
+                );
+            }
+            count = (count + 1) % 20;
+            // clear the old batch of tracking numbers
+            if (count == 0) {
+                orderIdArray = new String[20];
+            }
+        }
+        if (count > 0) {
+
+            hualeiTrackNumberResponseDataList.addAll(
+                    hualeiShippingService.refreshHualeiPackageTrackingNumber(orderIdArray, hualeiConfiguration));
+        }
+
+        hualeiTrackNumberResponseDataList.stream().filter(
+                hualeiTrackNumberResponseData -> Strings.isNotBlank(hualeiTrackNumberResponseData.getTrackingNumber()) &&
+                        Strings.isNotBlank(hualeiTrackNumberResponseData.getOrderId())
+        ).forEach(
+                hualeiTrackNumberResponseData -> {
+                    logger.debug("start to save tracking number {}'s status to {}",
+                            hualeiTrackNumberResponseData.getOrderId(),
+                            hualeiTrackNumberResponseData.getTrackingNumber());
+
+                    // update the tracking number for parcel package if it is not done yet
+                    findAll(hualeiConfiguration.getWarehouseId(),
+                            null, null, null,
+                            null, true,  ParcelPackageRequestSystem.HUALEI,
+                            hualeiTrackNumberResponseData.getOrderId())
+                            .stream()
+                            .forEach(
+                                    parcelPackage -> {
+                                        parcelPackage.setTrackingCode(hualeiTrackNumberResponseData.getTrackingNumber());
+                                        parcelPackage.setShipmentId(hualeiTrackNumberResponseData.getTrackingNumber());
+                                        saveOrUpdate(parcelPackage);
+                                    }
+                            );
                 }
         );
     }

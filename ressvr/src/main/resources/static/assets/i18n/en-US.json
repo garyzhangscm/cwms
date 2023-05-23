@@ -2146,5 +2146,8 @@
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LPN": "Group By LPN",
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION": "Group By Location",
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_ITEM": "Group By Item",
-  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "Group By Location And Item"
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "Group By Location And Item",
+  "get-tracking-number-url": "Get Tracking Number URL",
+  "getTrackingNumberEndpoint": "Get Tracking Number Endpoint",
+  "reverseInventory": "Reverse Inventory"
 }

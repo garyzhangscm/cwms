@@ -76,7 +76,7 @@ public class HualeiProductController {
     public ResponseBodyWrapper<String> removeHualeiProduct(
             @RequestParam Long warehouseId,
             @PathVariable Long id) {
-        hualeiProductService.delete(id);
+        hualeiProductService.removeHualeiProduct(warehouseId, id);
         return ResponseBodyWrapper.success("hualei product: " +
                 id + " is removed");
     }

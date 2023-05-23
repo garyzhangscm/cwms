@@ -52,6 +52,7 @@ Inventory-Inventory,remove-inventory,Remove Inventory
 Inventory-Inventory,remove-inventory-in-batch,Remove Inventory In Batch
 Inventory-Inventory,move-inventory-in-batch,Move Inventory In Batch
 Inventory-Inventory,upload-inventory,Upload Inventory
+Inventory-Inventory,reverse-inventory,Reverse Inventory
 Inventory-InventoryAdjust,add-inventory,Add Inventory
 Inventory-InventoryAdjust,empty-location,Empty Location
 Inventory-InventoryAdjust,adjust-inventory-quantity,Adjust Inventory Quantity

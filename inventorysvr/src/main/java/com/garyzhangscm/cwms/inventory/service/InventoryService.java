@@ -1751,7 +1751,7 @@ public class InventoryService {
         // and if we have nothing left, let's remove the possible work task that attached to
         // this inventory and movement path
         if (inventory.getInventoryMovements().size() == 0) {
-            commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
+            // commonServiceRestemplateClient.removeWorkTask(inventory, WorkType.INVENTORY_MOVEMENT);
         }
 
     }

@@ -90,11 +90,13 @@ public class ParcelShippingController {
                                                   @RequestParam(name = "orderNumber", required = false) String orderNumber,
                                                   @RequestParam(name = "trackingCode", required = false) String trackingCode,
                                                   @RequestParam(name = "undeliveredPackageOnly", required = false) Boolean undeliveredPackageOnly,
-                                                  @RequestParam(name = "requestSystem", required = false, defaultValue = "") String requestSystemName) {
+                                                  @RequestParam(name = "emptyTrackingCodeOnly", required = false) Boolean emptyTrackingCodeOnly,
+                                                  @RequestParam(name = "requestSystem", required = false, defaultValue = "") String requestSystemName,
+                                                  @RequestParam(name = "hualeiOrderId", required = false) String hualeiOrderId) {
         ParcelPackageRequestSystem requestSystem =
                 Strings.isBlank(requestSystemName) ? null : ParcelPackageRequestSystem.valueOf(requestSystemName);
         return parcelPackageService.findAll(warehouseId, orderId, orderNumber, trackingCode,
-                undeliveredPackageOnly, requestSystem);
+                undeliveredPackageOnly, emptyTrackingCodeOnly, requestSystem, hualeiOrderId);
     }
 
     @RequestMapping(value="/parcel/packages", method = RequestMethod.PUT)
