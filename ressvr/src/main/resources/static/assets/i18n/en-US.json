@@ -2140,5 +2140,11 @@
   "menu.mobile.inventory.partialInventoryMove": "Partial Inventory Move",
   "menu.mobile.inbound.reverse-receiving": "Reverse Receiving",
   "menu.mobile.work-order.reverse-production": "Reverse Production",
-  "allocateByReceiptNumber": "Allocate By Receipt"
+  "allocateByReceiptNumber": "Allocate By Receipt",
+  "inventory-display-options": "Inventory Display Options",
+  "INVENTORY-DISPLAY-OPTIONS-NONE": "None",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LPN": "Group By LPN",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION": "Group By Location",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_ITEM": "Group By Item",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "Group By Location And Item"
 }

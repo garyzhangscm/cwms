@@ -2137,5 +2137,11 @@
   "menu.mobile.inventory.partialInventoryMove": "零散库存移动",
   "menu.mobile.inbound.reverse-receiving": "冲消收货",
   "menu.mobile.work-order.reverse-production": "冲消完工入库",
-  "allocateByReceiptNumber": "指定入库单分配"
+  "allocateByReceiptNumber": "指定入库单分配",
+  "inventory-display-options": "库存显示选项",
+  "INVENTORY-DISPLAY-OPTIONS-NONE": "无",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LPN": "按LPN合并",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION": "按库位合并",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_ITEM": "按商品合并",
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "按库位和商品合并"
 }
