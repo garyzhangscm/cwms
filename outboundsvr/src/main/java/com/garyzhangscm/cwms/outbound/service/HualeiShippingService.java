@@ -169,12 +169,17 @@ public class HualeiShippingService {
                     );
                     logger.debug("save hualei's shipment response\n {}", shipmentResponse);
 
+                    /**
                     if (Strings.isBlank(shipmentResponse.getMessage())) {
                         // if message is empty, then we don't have any error
                         saveTrackingNumber(warehouseId, order, productId, shipmentResponse,
                                 hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId(),
                                 finalLength, finalWidth, finalHeight, lengthUnit, finalWeight, weightUnit);
                     }
+                     **/
+                    addPackage(warehouseId, order, productId, shipmentResponse,
+                        hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId(),
+                        finalLength, finalWidth, finalHeight, lengthUnit, finalWeight, weightUnit);
                     hualeiShipmentRequestRepository.save(shipmentRequest);
             }
         }).start();
@@ -183,7 +188,7 @@ public class HualeiShippingService {
         return shipmentRequests;
     }
 
-    private void saveTrackingNumber(Long warehouseId,
+    private void addPackage(Long warehouseId,
                                     Order order,
                                     String productId,
                                     ShipmentResponse shipmentResponse,
@@ -207,9 +212,13 @@ public class HualeiShippingService {
                 unitService.convertWeight(warehouseId, weight, weightUnit)
                 );
 
-        parcelPackageService.addTracking(warehouseId, order, productId,
+        parcelPackageService.addParcelPackage(warehouseId, order, productId,
                 carrierId, carrierServiceLevelId,
-                shipmentResponse.getTrackingNumber(), shipmentResponse.getOrderId(),
+                // if the message is blank, then there's no error and we can use the tracking number.
+                // if the message has value, it indicates that there's error with the call and
+                // the tracking number field will be the reference number that we passed to hualei
+                Strings.isBlank(shipmentResponse.getMessage()) ? shipmentResponse.getTrackingNumber() : null,
+                shipmentResponse.getOrderId(),
                 unitService.convertLength(warehouseId, length, lengthUnit),
                 unitService.convertLength(warehouseId, weight, lengthUnit),
                 unitService.convertLength(warehouseId, height, lengthUnit),
@@ -416,11 +425,20 @@ public class HualeiShippingService {
 
     }
 
-    public List<HualeiTrackResponseData> refreshHualeiPackageStatus(String[] trackingNumberArray, HualeiConfiguration hualeiConfiguration) {
+    public List<HualeiTrackStatusResponseData> refreshHualeiPackageStatus(String[] trackingNumberArray, HualeiConfiguration hualeiConfiguration) {
 
         String trackingNumbers = Arrays.stream(trackingNumberArray).filter(trackingNumber -> Strings.isNotBlank(trackingNumber))
                 .collect(Collectors.joining(","));
         return hualeiRestemplateClient.refreshHualeiPackageStatus(trackingNumbers, hualeiConfiguration);
+
+
+    }
+
+    public List<HualeiTrackNumberResponseData> refreshHualeiPackageTrackingNumber(String[] orderIdArray, HualeiConfiguration hualeiConfiguration) {
+
+        String orderIds = Arrays.stream(orderIdArray).filter(orderId -> Strings.isNotBlank(orderId))
+                .collect(Collectors.joining(","));
+        return hualeiRestemplateClient.refreshHualeiPackageTrackingNumbers(orderIds, hualeiConfiguration);
 
 
     }

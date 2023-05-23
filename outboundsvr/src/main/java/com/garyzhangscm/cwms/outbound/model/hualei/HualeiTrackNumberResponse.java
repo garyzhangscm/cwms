@@ -19,18 +19,20 @@
 package com.garyzhangscm.cwms.outbound.model.hualei;
 
 
+
 import java.util.List;
 
-public class HualeiTrackResponse   {
+public class HualeiTrackNumberResponse {
 
 
-    private List<HualeiTrackResponseData> data;
 
-    public List<HualeiTrackResponseData> getData() {
+    private List<HualeiTrackNumberResponseData> data;
+
+    public List<HualeiTrackNumberResponseData> getData() {
         return data;
     }
 
-    public void setData(List<HualeiTrackResponseData> data) {
+    public void setData(List<HualeiTrackNumberResponseData> data) {
         this.data = data;
     }
 }

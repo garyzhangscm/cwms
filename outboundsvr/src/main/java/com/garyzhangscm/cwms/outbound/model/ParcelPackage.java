@@ -100,6 +100,9 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
     @Column(name = "insurance")
     private String insurance;
 
+    @Column(name = "hualei_order_id")
+    private String hualeiOrderId;
+
     public ParcelPackage() {}
 
     // get parcel package from easy post system
@@ -193,6 +196,7 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
         this.trackingCode = trackingCode;
         // shipment ID is the business key for the package
         this.shipmentId = trackingCode;
+        this.hualeiOrderId = hualeiOrderId;
         statusDescription = "";
         status = ParcelPackageStatus.REQUESTED;
         this.requestSystem = requestSystem;
@@ -412,5 +416,13 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
 
     public void setRequestSystem(ParcelPackageRequestSystem requestSystem) {
         this.requestSystem = requestSystem;
+    }
+
+    public String getHualeiOrderId() {
+        return hualeiOrderId;
+    }
+
+    public void setHualeiOrderId(String hualeiOrderId) {
+        this.hualeiOrderId = hualeiOrderId;
     }
 }

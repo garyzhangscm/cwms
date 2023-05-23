@@ -20,8 +20,10 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Pick;
+import com.garyzhangscm.cwms.outbound.model.hualei.HualeiConfiguration;
 import com.garyzhangscm.cwms.outbound.model.hualei.HualeiProduct;
 import com.garyzhangscm.cwms.outbound.repository.HualeiProductRepository;
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +54,8 @@ public class HualeiProductService  {
     private HualeiProductRepository hualeiProductRepository;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private HualeiConfigurationService hualeiConfigurationService;
 
     public HualeiProduct findById(Long id) {
         return hualeiProductRepository.findById(id)
@@ -179,5 +183,21 @@ public class HualeiProductService  {
 
     public HualeiProduct changeHualeiProduct(Long id, HualeiProduct mould) {
         return saveOrUpdate(mould);
+    }
+
+    public void removeHualeiProduct(Long warehouseId, Long id) {
+        // make sure the product is not used by the configuration
+        HualeiProduct hualeiProduct = findById(id);
+        HualeiConfiguration hualeiConfiguration = hualeiConfigurationService.findByWarehouse(warehouseId);
+        if (Objects.nonNull(hualeiConfiguration) &&
+                hualeiConfiguration.getHualeiShippingLabelFormatByProducts().stream().anyMatch(
+                        hualeiShippingLabelFormatByProduct -> hualeiShippingLabelFormatByProduct.getProductId().equalsIgnoreCase(
+                                hualeiProduct.getProductId()
+                        )
+                )) {
+            throw OrderOperationException.raiseException("can't remove the product id " +
+                    hualeiProduct.getProductId() + " as it is in use at this moment");
+        }
+        delete(id);
     }
 }

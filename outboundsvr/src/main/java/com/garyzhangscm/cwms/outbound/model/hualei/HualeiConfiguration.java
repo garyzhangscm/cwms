@@ -75,6 +75,15 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
     @Column(name = "get_package_status_endpoint")
     private String getPackageStatusEndpoint;
 
+    @Column(name = "get_tracking_number_protocol")
+    private String getTrackingNumberProtocol;
+    @Column(name = "get_tracking_number_host")
+    private String getTrackingNumberHost;
+    @Column(name = "get_tracking_number_port")
+    private String getTrackingNumberPort;
+    @Column(name = "get_tracking_number_endpoint")
+    private String getTrackingNumberEndpoint;
+
     @Column(name = "default_cargo_type")
     private String defaultCargoType;
     @Column(name = "default_customs_clearance")
@@ -352,5 +361,37 @@ public class HualeiConfiguration extends AuditibleEntity<String> implements Seri
 
     public void setLengthUnit(String lengthUnit) {
         this.lengthUnit = lengthUnit;
+    }
+
+    public String getGetTrackingNumberProtocol() {
+        return getTrackingNumberProtocol;
+    }
+
+    public void setGetTrackingNumberProtocol(String getTrackingNumberProtocol) {
+        this.getTrackingNumberProtocol = getTrackingNumberProtocol;
+    }
+
+    public String getGetTrackingNumberHost() {
+        return getTrackingNumberHost;
+    }
+
+    public void setGetTrackingNumberHost(String getTrackingNumberHost) {
+        this.getTrackingNumberHost = getTrackingNumberHost;
+    }
+
+    public String getGetTrackingNumberPort() {
+        return getTrackingNumberPort;
+    }
+
+    public void setGetTrackingNumberPort(String getTrackingNumberPort) {
+        this.getTrackingNumberPort = getTrackingNumberPort;
+    }
+
+    public String getGetTrackingNumberEndpoint() {
+        return getTrackingNumberEndpoint;
+    }
+
+    public void setGetTrackingNumberEndpoint(String getTrackingNumberEndpoint) {
+        this.getTrackingNumberEndpoint = getTrackingNumberEndpoint;
     }
 }

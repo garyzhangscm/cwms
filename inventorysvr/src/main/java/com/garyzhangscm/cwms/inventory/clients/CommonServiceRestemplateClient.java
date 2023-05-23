@@ -496,23 +496,6 @@ public class CommonServiceRestemplateClient {
         return getNextNumber(warehouseId, "qc-inspection-request");
     }
 
-    public void removeWorkTask(Inventory inventory, WorkType workType) {
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/work-tasks")
-                        .queryParam("warehouseId", inventory.getWarehouseId())
-                        .queryParam("lpn", inventory.getWarehouseId())
-                        .queryParam("workType", workType);
-
-        restTemplateProxy.getRestTemplate().delete(
-                    builder.toUriString());
-
-    }
-
-
-
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

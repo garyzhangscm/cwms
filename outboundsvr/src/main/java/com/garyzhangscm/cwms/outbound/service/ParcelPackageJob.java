@@ -19,14 +19,25 @@ public class ParcelPackageJob {
 
     /**
      * Refresh package status every 5 minutes
-     * @throws IOException
      */
     @Scheduled(fixedDelay = 300000)
-    public void refreshPackageStatus() throws IOException {
+    public void refreshPackageStatus() {
         logger.debug("# start to refresh package status @ {}", LocalDateTime.now());
 
         // right now only refresh for the package that is from hualei system
         parcelPackageService.refreshHualeiPackageStatus();
+
+    }
+
+    /**
+     * Refresh package status every 15 minutes
+     */
+    @Scheduled(fixedDelay = 900000)
+    public void refreshPackageTrackingNumber()  {
+        logger.debug("# start to refresh package tracking number @ {}", LocalDateTime.now());
+
+        // right now only refresh for the package that is from hualei system
+        parcelPackageService.refreshPackageTrackingNumber();
 
     }
 

@@ -2143,5 +2143,8 @@
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LPN": "按LPN合并",
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION": "按库位合并",
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_ITEM": "按商品合并",
-  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "按库位和商品合并"
+  "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "按库位和商品合并",
+  "get-tracking-number-url": "更新快递单号地址",
+  "getTrackingNumberEndpoint": "更新快递单号地址",
+  "reverseInventory": "冲消库存"
 }

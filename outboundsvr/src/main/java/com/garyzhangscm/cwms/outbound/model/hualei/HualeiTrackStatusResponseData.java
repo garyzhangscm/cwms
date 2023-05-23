@@ -28,7 +28,7 @@ import java.util.List;
 //13:18:43","trackDetails":[{"business_id":"","country_code":"","flight_number":"","is_weic":"","system_id":"","time_zone":"","track_city":"","track_content":"货物电子信息已经收到","track_createdate":"","track_date":"2023-05-10
 //13:18:43","track_id":"","track_kind":"","track_location":"","track_signdate":"","track_signperson":"","track_state":"","track_substate":"","track_zippost":""}],"trackLocation":"","trackSignperson":"","trackingNumber":"9405509202043044222210"}],"ack":"true"}]
 
-public class HualeiTrackResponseData {
+public class HualeiTrackStatusResponseData {
     private String trackingNumber;
     private String referenceNumber;
     private String trackContent;

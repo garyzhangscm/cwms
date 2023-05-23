@@ -21,20 +21,13 @@ package com.garyzhangscm.cwms.outbound.clients;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
-import com.garyzhangscm.cwms.outbound.model.User;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,7 +179,7 @@ public class HualeiRestemplateClient {
         }
     }
 
-    public List<HualeiTrackResponseData> refreshHualeiPackageStatus(String trackingNumbers, HualeiConfiguration hualeiConfiguration) {
+    public List<HualeiTrackStatusResponseData> refreshHualeiPackageStatus(String trackingNumbers, HualeiConfiguration hualeiConfiguration) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -214,16 +207,57 @@ public class HualeiRestemplateClient {
         );
          **/
 
-        List<HualeiTrackResponse> trackResponses = null;
+        List<HualeiTrackStatusResponse> trackResponses = null;
         try {
             trackResponses = objectMapper.readValue(response,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, HualeiTrackResponse.class));
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, HualeiTrackStatusResponse.class));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw OrderOperationException.raiseException("fail to get tracking number status from hualei");
         }
 
-        return trackResponses.stream().map(HualeiTrackResponse::getData)
+        return trackResponses.stream().map(HualeiTrackStatusResponse::getData)
+                .flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    public List<HualeiTrackNumberResponseData> refreshHualeiPackageTrackingNumbers(String orderIds, HualeiConfiguration hualeiConfiguration) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(hualeiConfiguration.getGetTrackingNumberProtocol())
+                        .host(hualeiConfiguration.getGetTrackingNumberHost())
+                        .port(hualeiConfiguration.getGetTrackingNumberPort())
+                        .path(hualeiConfiguration.getGetTrackingNumberEndpoint())
+                        .queryParam("order_id", orderIds);
+
+
+        String response = restTemplateProxy.getRestTemplate().exchange(
+                builder.toUriString(),
+                HttpMethod.POST,
+                null,
+                String.class).getBody();
+        logger.debug("get response for get Hualei tracking number \n{}",
+                response);
+
+        /**
+         List<HualeiTrackResponse> trackResponses =  restTemplateProxy.exchangeList(
+         HualeiTrackResponse.class,
+         builder.toUriString(),
+         HttpMethod.GET,
+         null
+         );
+         **/
+
+        List<HualeiTrackNumberResponse> trackNumberResponses = null;
+        try {
+            trackNumberResponses = objectMapper.readValue(response,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, HualeiTrackNumberResponse.class));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw OrderOperationException.raiseException("fail to get tracking number status from hualei");
+        }
+
+        return trackNumberResponses.stream().map(HualeiTrackNumberResponse::getData)
                 .flatMap(List::stream).collect(Collectors.toList());
     }
 
