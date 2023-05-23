@@ -32,7 +32,8 @@ public class ParcelPackageJob {
     /**
      * Refresh package status every 15 minutes
      */
-    @Scheduled(fixedDelay = 900000)
+    // @Scheduled(fixedDelay = 900000)
+    @Scheduled(cron = "0 0,15,30,45 * * * ?")
     public void refreshPackageTrackingNumber()  {
         logger.debug("# start to refresh package tracking number @ {}", LocalDateTime.now());
 
