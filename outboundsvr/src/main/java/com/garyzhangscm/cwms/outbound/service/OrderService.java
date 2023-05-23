@@ -1418,7 +1418,8 @@ public class OrderService {
                     StringBuilder inventoryAttribute = new StringBuilder()
                             .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
                             .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
-                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle());
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
                     // setup the quantity by UOM from the pickable inventory in the source location
