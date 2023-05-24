@@ -94,6 +94,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     private String shipToContactorFirstname;
     @Column(name = "ship_to_contactor_lastname")
     private String shipToContactorLastname;
+    @Column(name = "ship_to_contactor_phone_number")
+    private String shipToContactorPhoneNumber;
 
     @Column(name = "ship_to_address_country")
     private String shipToAddressCountry;
@@ -788,5 +790,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setHualeiShipmentRequests(List<ShipmentRequest> hualeiShipmentRequests) {
         this.hualeiShipmentRequests = hualeiShipmentRequests;
+    }
+
+    public String getShipToContactorPhoneNumber() {
+        return shipToContactorPhoneNumber;
+    }
+
+    public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
+        this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
     }
 }

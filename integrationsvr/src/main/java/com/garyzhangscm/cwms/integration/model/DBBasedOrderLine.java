@@ -142,6 +142,18 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
     @Column(name = "error_message")
     private String errorMessage;
 
+
+    // when ship by parcel, whether we will need to
+    // insure the package
+    @Column(name = "parcel_insured")
+    private Boolean parcelInsured;
+    @Column(name = "parcel_insured_amount_per_unit")
+    private Double parcelInsuredAmountPerUnit;
+    // when ship by parcel, whether we will need to
+    // insure the package
+    @Column(name = "parcel_signature_required")
+    private Boolean parcelSignatureRequired;
+
     public DBBasedOrderLine(){}
 
 
@@ -174,6 +186,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
         setAllocateByReceiptNumber(orderLine.getAllocateByReceiptNumber());
 
         setHualeiProductId(orderLine.getHualeiProductId());
+        setParcelInsured(orderLine.getParcelInsured());
+        setParcelInsuredAmountPerUnit(orderLine.getParcelInsuredAmountPerUnit());
+        setParcelSignatureRequired(orderLine.getParcelSignatureRequired());
         if (Objects.nonNull(orderLine.getAutoRequestShippingLabel())) {
             setAutoRequestShippingLabel(
                     orderLine.getAutoRequestShippingLabel()
@@ -224,7 +239,9 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
                 "warehouseId","warehouseName", "quickbookTxnLineID","nonAllocatable",
                 "hualeiProductId", "autoRequestShippingLabel",
                 "color","productSize","style",
-                "allocateByReceiptNumber"
+                "allocateByReceiptNumber",
+                "parcelInsured", "parcelInsuredAmountPerUnit", "parcelSignatureRequired"
+
         };
 
         ObjectCopyUtil.copyValue(this, orderLine, fieldNames);
@@ -547,5 +564,29 @@ public class DBBasedOrderLine extends AuditibleEntity<String> implements Seriali
 
     public void setAutoRequestShippingLabel(Boolean autoRequestShippingLabel) {
         this.autoRequestShippingLabel = autoRequestShippingLabel;
+    }
+
+    public Boolean getParcelInsured() {
+        return parcelInsured;
+    }
+
+    public void setParcelInsured(Boolean parcelInsured) {
+        this.parcelInsured = parcelInsured;
+    }
+
+    public Double getParcelInsuredAmountPerUnit() {
+        return parcelInsuredAmountPerUnit;
+    }
+
+    public void setParcelInsuredAmountPerUnit(Double parcelInsuredAmountPerUnit) {
+        this.parcelInsuredAmountPerUnit = parcelInsuredAmountPerUnit;
+    }
+
+    public Boolean getParcelSignatureRequired() {
+        return parcelSignatureRequired;
+    }
+
+    public void setParcelSignatureRequired(Boolean parcelSignatureRequired) {
+        this.parcelSignatureRequired = parcelSignatureRequired;
     }
 }

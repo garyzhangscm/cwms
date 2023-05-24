@@ -46,6 +46,7 @@ public class OrderLineCSVWrapper {
 
     private String shipToContactorFirstname;
     private String shipToContactorLastname;
+    private String shipToContactorPhoneNumber;
     private String shipToAddressCountry;
     private String shipToAddressState;
     private String shipToAddressCounty;
@@ -79,6 +80,10 @@ public class OrderLineCSVWrapper {
 
 
     private String allocateByReceiptNumber;
+
+    private String parcelInsured;
+    private Double parcelInsuredAmountPerUnit;
+    private String parcelSignatureRequired;
 
     @Override
     public String toString() {
@@ -343,6 +348,39 @@ public class OrderLineCSVWrapper {
         return billToAddressDistrict;
     }
 
+    public String getShipToContactorPhoneNumber() {
+        return shipToContactorPhoneNumber;
+    }
+
+    public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
+        this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
+    }
+
+    public String getParcelInsured() {
+        return parcelInsured;
+    }
+
+    public void setParcelInsured(String parcelInsured) {
+        this.parcelInsured = parcelInsured;
+    }
+
+    public String getParcelSignatureRequired() {
+        return parcelSignatureRequired;
+    }
+
+    public void setParcelSignatureRequired(String parcelSignatureRequired) {
+        this.parcelSignatureRequired = parcelSignatureRequired;
+    }
+
+    public Double getParcelInsuredAmountPerUnit() {
+        return parcelInsuredAmountPerUnit;
+    }
+
+    public void setParcelInsuredAmountPerUnit(Double parcelInsuredAmountPerUnit) {
+        this.parcelInsuredAmountPerUnit = parcelInsuredAmountPerUnit;
+    }
+
+
     public void setBillToAddressDistrict(String billToAddressDistrict) {
         this.billToAddressDistrict = billToAddressDistrict;
     }
@@ -394,4 +432,6 @@ public class OrderLineCSVWrapper {
     public void setStyle(String style) {
         this.style = style;
     }
+
+
 }

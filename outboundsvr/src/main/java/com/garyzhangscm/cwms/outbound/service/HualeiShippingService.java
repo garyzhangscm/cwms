@@ -71,13 +71,17 @@ public class HualeiShippingService {
                                                        Long quantity,
                                                        Double unitCost,
                                                        String lengthUnit,
-                                                       String weightUnit) {
+                                                       String weightUnit,
+                                                       Boolean parcelInsured,
+                                                       Double parcelInsuredAmount,
+                                                       Boolean parcelSignatureRequired) {
 
         return sendHualeiShippingRequest(
                 warehouseId, productId, orderService.findById(orderId),
                 length, width, height, weight, packageCount,
                 itemName, quantity, unitCost,
-                lengthUnit, weightUnit);
+                lengthUnit, weightUnit,
+                parcelInsured, parcelInsuredAmount, parcelSignatureRequired);
     }
     public ShipmentRequest[] sendHualeiShippingRequest(Long warehouseId,
                                                        String productId, // hualei product id
@@ -91,7 +95,10 @@ public class HualeiShippingService {
                                                        Long quantity,
                                                        Double unitCost,
                                                        String lengthUnit,
-                                                       String weightUnit) {
+                                                       String weightUnit,
+                                                       Boolean parcelInsured,
+                                                       Double parcelInsuredAmount,
+                                                       Boolean parcelSignatureRequired) {
         HualeiConfiguration hualeiConfiguration =
                 hualeiConfigurationService.findByWarehouse(warehouseId);
 
@@ -138,7 +145,8 @@ public class HualeiShippingService {
                             generateHualeiShipmentRequest(
                                 warehouseId, productId, hualeiConfiguration, order, length, width, height, weight,
                                     itemName, quantity, unitCost,
-                                    lengthUnit, weightUnit
+                                    lengthUnit, weightUnit,
+                                    parcelInsured, parcelInsuredAmount, parcelSignatureRequired
                             )
                     );
         }
@@ -238,7 +246,10 @@ public class HualeiShippingService {
                                                           Long quantity,
                                                           Double unitCost,
                                                           String lengthUnit,
-                                                          String weightUnit) {
+                                                          String weightUnit,
+                                                          Boolean parcelInsured,
+                                                          Double parcelInsuredAmount,
+                                                          Boolean parcelSignatureRequired) {
         ShipmentRequest shipmentRequest = new ShipmentRequest();
 
         shipmentRequest.setWarehouseId(warehouseId);
@@ -251,7 +262,8 @@ public class HualeiShippingService {
                         warehouseId, productId, hualeiConfiguration, order,
                         length, width, height, weight,
                         itemName, quantity, unitCost,
-                        lengthUnit, weightUnit
+                        lengthUnit, weightUnit,
+                        parcelInsured, parcelInsuredAmount, parcelSignatureRequired
                 );
         shipmentRequestParameters.setShipmentRequest(shipmentRequest);
         shipmentRequest.setShipmentRequestParameters(shipmentRequestParameters);
@@ -272,7 +284,10 @@ public class HualeiShippingService {
                                                                         Long quantity,
                                                                         Double unitCost,
                                                                         String lengthUnit,
-                                                                        String weightUnit) {
+                                                                        String weightUnit,
+                                                                        Boolean parcelInsured,
+                                                                        Double parcelInsuredAmount,
+                                                                        Boolean parcelSignatureRequired) {
         ShipmentRequestParameters shipmentRequestParameters = new ShipmentRequestParameters();
         shipmentRequestParameters.setWarehouseId(warehouseId);
 
@@ -283,9 +298,10 @@ public class HualeiShippingService {
         shipmentRequestParameters.setConsigneeName(
                 order.getShipToContactorFirstname() + " " + order.getShipToContactorLastname()
         );
+        shipmentRequestParameters.setConsigneeTelephone(order.getShipToContactorPhoneNumber());
         shipmentRequestParameters.setConsigneePostcode(order.getShipToAddressPostcode());
         shipmentRequestParameters.setConsigneeState(order.getShipToAddressState());
-        shipmentRequestParameters.setConsigneeTelephone("0000000000");
+        // shipmentRequestParameters.setConsigneeTelephone("0000000000");
         shipmentRequestParameters.setCountry(order.getShipToAddressCountry());
 
         shipmentRequestParameters.setCustomerId(hualeiConfiguration.getCustomerId());
@@ -308,6 +324,16 @@ public class HualeiShippingService {
                 unitService.convertWeight(warehouseId, weight, weightUnit, hualeiConfiguration.getWeightUnit()));
         shipmentRequestParameters.setWeightUnit(hualeiConfiguration.getWeightUnit());
         // shipmentRequestParameters.setWeight(weight);
+
+        String note = "";
+
+        if (Boolean.TRUE.equals(parcelInsured) && Objects.nonNull(parcelInsuredAmount) && parcelInsuredAmount > 0) {
+            note += "Insured(Amount: $" + parcelInsuredAmount +").";
+        }
+        if (Boolean.TRUE.equals(parcelSignatureRequired)) {
+            note += " Signature Required!";
+        }
+        shipmentRequestParameters.setNote(note);
 
 
         String shippingCartonNumber =
