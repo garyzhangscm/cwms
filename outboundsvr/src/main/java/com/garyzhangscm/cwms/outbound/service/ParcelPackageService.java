@@ -59,6 +59,8 @@ public class ParcelPackageService  {
     private OrderService orderService;
     @Autowired
     private HualeiShippingService hualeiShippingService;
+    @Autowired
+    private HualeiProductService hualeiProductService;
 
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
@@ -516,6 +518,7 @@ public class ParcelPackageService  {
     private void refreshPackageTrackingNumberByWarehouse(HualeiConfiguration hualeiConfiguration) {
         logger.debug("start to refresh hualei package tracking number for warehouse id {}",
                 hualeiConfiguration.getWarehouseId());
+
         List<ParcelPackage> parcelPackages = findAll(hualeiConfiguration.getWarehouseId(),
                 null, null, null,
                 null, true,  ParcelPackageRequestSystem.HUALEI,
@@ -576,6 +579,11 @@ public class ParcelPackageService  {
                                     parcelPackage -> {
                                         parcelPackage.setTrackingCode(hualeiTrackNumberResponseData.getTrackingNumber());
                                         parcelPackage.setShipmentId(hualeiTrackNumberResponseData.getTrackingNumber());
+                                        if (Strings.isNotBlank(parcelPackage.getTrackingUrl())) {
+                                            parcelPackage.setTrackingUrl(
+                                                    parcelPackage.getTrackingUrl() + hualeiTrackNumberResponseData.getTrackingNumber()
+                                            );
+                                        }
                                         saveOrUpdate(parcelPackage);
                                     }
                             );

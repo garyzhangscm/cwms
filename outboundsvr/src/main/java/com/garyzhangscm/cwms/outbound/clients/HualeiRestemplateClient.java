@@ -248,17 +248,15 @@ public class HualeiRestemplateClient {
          );
          **/
 
-        List<HualeiTrackNumberResponse> trackNumberResponses = null;
+        HualeiTrackNumberResponse trackNumberResponses = null;
         try {
-            trackNumberResponses = objectMapper.readValue(response,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, HualeiTrackNumberResponse.class));
+            trackNumberResponses = objectMapper.readValue(response, HualeiTrackNumberResponse.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw OrderOperationException.raiseException("fail to get tracking number status from hualei");
         }
 
-        return trackNumberResponses.stream().map(HualeiTrackNumberResponse::getData)
-                .flatMap(List::stream).collect(Collectors.toList());
+        return trackNumberResponses.getData();
     }
 
     private HttpEntity<LinkedMultiValueMap<String, String>> getHttpEntity(ShipmentRequest shipmentRequest) throws JsonProcessingException {

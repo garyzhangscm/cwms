@@ -202,8 +202,9 @@ public class ParcelPackage extends AuditibleEntity<String> implements Serializab
         this.requestSystem = requestSystem;
 
         trackingUrl = Objects.nonNull(hualeiShippingLabelFormatByProduct) ?
-                        hualeiShippingLabelFormatByProduct.getTrackingInfoUrl() + trackingCode
-                        : "";
+                            hualeiShippingLabelFormatByProduct.getTrackingInfoUrl() +
+                                    (Strings.isBlank(trackingCode) ? "" : trackingCode)
+                            : "";
 
         this.length = length;
         this.width = width;
