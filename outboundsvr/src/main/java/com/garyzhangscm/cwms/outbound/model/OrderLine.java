@@ -162,6 +162,17 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "allocate_by_receipt_number")
     private String allocateByReceiptNumber;
 
+    // when ship by parcel, whether we will need to
+    // insure the package
+    @Column(name = "parcel_insured")
+    private Boolean parcelInsured;
+    @Column(name = "parcel_insured_amount_per_unit")
+    private Double parcelInsuredAmountPerUnit;
+    // when ship by parcel, whether we will need to
+    // insure the package
+    @Column(name = "parcel_signature_required")
+    private Boolean parcelSignatureRequired;
+
     @Override
     public String toString() {
         try {
@@ -434,5 +445,29 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
         this.allocateByReceiptNumber = allocateByReceiptNumber;
+    }
+
+    public Boolean getParcelInsured() {
+        return parcelInsured;
+    }
+
+    public void setParcelInsured(Boolean parcelInsured) {
+        this.parcelInsured = parcelInsured;
+    }
+
+    public Double getParcelInsuredAmountPerUnit() {
+        return parcelInsuredAmountPerUnit;
+    }
+
+    public void setParcelInsuredAmountPerUnit(Double parcelInsuredAmountPerUnit) {
+        this.parcelInsuredAmountPerUnit = parcelInsuredAmountPerUnit;
+    }
+
+    public Boolean getParcelSignatureRequired() {
+        return parcelSignatureRequired;
+    }
+
+    public void setParcelSignatureRequired(Boolean parcelSignatureRequired) {
+        this.parcelSignatureRequired = parcelSignatureRequired;
     }
 }

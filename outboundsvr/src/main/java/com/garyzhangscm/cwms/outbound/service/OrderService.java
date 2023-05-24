@@ -870,6 +870,7 @@ public class OrderService {
         } else {
             order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
             order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
+            order.setShipToContactorPhoneNumber(orderLineCSVWrapper.getShipToContactorPhoneNumber());
             order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
             order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState());
             order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());

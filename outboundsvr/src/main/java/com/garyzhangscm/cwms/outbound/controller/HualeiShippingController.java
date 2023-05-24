@@ -52,11 +52,14 @@ public class HualeiShippingController {
                                                @RequestParam(name = "packageCount", required = false, defaultValue = "1") Integer packageCount,
                                                @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
                                                @RequestParam(name = "quantity", required = false, defaultValue = "1") Long quantity,
-                                               @RequestParam(name = "unitCost", required = false, defaultValue = "1.0") Double unitCost) {
+                                               @RequestParam(name = "unitCost", required = false, defaultValue = "1.0") Double unitCost,
+                                               @RequestParam(name = "parcelInsured", required = false, defaultValue = "") Boolean parcelInsured,
+                                               @RequestParam(name = "parcelInsuredAmount", required = false, defaultValue = "") Double parcelInsuredAmount,
+                                               @RequestParam(name = "parcelSignatureRequired", required = false, defaultValue = "") Boolean parcelSignatureRequired) {
         return hualeiShippingService.sendHualeiShippingRequest(warehouseId,
                 productId, orderId, length, width, height, weight, packageCount,
                 itemName, quantity, unitCost,
-                lengthUnit, weightUnit);
+                lengthUnit, weightUnit, parcelInsured, parcelInsuredAmount, parcelSignatureRequired);
     }
 
     @RequestMapping(value="/hualei/shipping/label", method = RequestMethod.GET)

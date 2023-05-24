@@ -343,6 +343,7 @@ public class OrderLineService{
         logger.debug("item name: {}", item.getName());
         logger.debug("quantity: {}", caseItemUnitOfMeasure.getQuantity());
         logger.debug("item price: {}", item.getUnitCost());
+        int quantityPerPackage = (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity());
         hualeiShippingService.sendHualeiShippingRequest(
                 orderLine.getWarehouseId(),
                 orderLine.getHualeiProductId(),
@@ -351,12 +352,16 @@ public class OrderLineService{
                 caseItemUnitOfMeasure.getWidth(),
                 caseItemUnitOfMeasure.getHeight(),
                 caseItemUnitOfMeasure.getWeight(),
-                (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity()),
+                quantityPerPackage,
                 item.getName(),
                 caseItemUnitOfMeasure.getQuantity(),
                 item.getUnitCost(),
                 caseItemUnitOfMeasure.getLengthUnit(),
-                caseItemUnitOfMeasure.getWeightUnit()
+                caseItemUnitOfMeasure.getWeightUnit(),
+                orderLine.getParcelInsured(),
+                Objects.isNull(orderLine.getParcelInsuredAmountPerUnit()) ? 0 :
+                        orderLine.getParcelInsuredAmountPerUnit() * quantityPerPackage,
+                orderLine.getParcelSignatureRequired()
         );
 
     }
@@ -486,7 +491,30 @@ public class OrderLineService{
                         false
                         :
                         orderLineCSVWrapper.getAutoRequestShippingLabel().equals("1") ||
-                                orderLineCSVWrapper.getAutoRequestShippingLabel().equalsIgnoreCase("true")
+                                orderLineCSVWrapper.getAutoRequestShippingLabel().equalsIgnoreCase("true") ||
+                                orderLineCSVWrapper.getAutoRequestShippingLabel().equalsIgnoreCase("yes")
+
+        );
+
+        orderLine.setParcelInsured(
+                Strings.isBlank(orderLineCSVWrapper.getParcelInsured()) ?
+                        false
+                        :
+                        orderLineCSVWrapper.getParcelInsured().equals("1") ||
+                                orderLineCSVWrapper.getParcelInsured().equalsIgnoreCase("true") ||
+                                orderLineCSVWrapper.getParcelInsured().equalsIgnoreCase("yes")
+
+        );
+
+        orderLine.setParcelInsuredAmountPerUnit(orderLineCSVWrapper.getParcelInsuredAmountPerUnit());
+
+        orderLine.setParcelSignatureRequired(
+                Strings.isBlank(orderLineCSVWrapper.getParcelSignatureRequired()) ?
+                        false
+                        :
+                        orderLineCSVWrapper.getParcelSignatureRequired().equals("1") ||
+                                orderLineCSVWrapper.getParcelSignatureRequired().equalsIgnoreCase("true") ||
+                                orderLineCSVWrapper.getParcelSignatureRequired().equalsIgnoreCase("yes")
 
         );
 

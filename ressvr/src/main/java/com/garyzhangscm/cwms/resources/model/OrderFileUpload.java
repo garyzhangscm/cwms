@@ -67,6 +67,10 @@ public class OrderFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
+                "shipToContactorPhoneNumber", "Ship to Customer's Contactor, Phone Number",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
                 "shipToAddressCountry", "Ship to Customer Address - Country",
                 String.class, 100, true
         ));
@@ -161,6 +165,18 @@ public class OrderFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "autoRequestShippingLabel", "Auto Request Shipping Label",
+                Boolean.class, 10, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "parcelInsured", "If ship by Parcel, default to insure the package?",
+                Boolean.class, 10, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "parcelInsuredAmountPerUnit", "If ship by Parcel and insured, the insured amount per unit",
+                Double.class, 10, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "parcelSignatureRequired", "If ship by Parcel, default to Signature Required?",
                 Boolean.class, 10, true
         ));
 

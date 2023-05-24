@@ -56,6 +56,8 @@ public class Order implements Serializable {
 
     private String shipToContactorLastname;
 
+    private String shipToContactorPhoneNumber;
+
 
     private String shipToAddressCountry;
 
@@ -386,6 +388,14 @@ public class Order implements Serializable {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
+    }
+
+    public String getShipToContactorPhoneNumber() {
+        return shipToContactorPhoneNumber;
+    }
+
+    public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
+        this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
     }
 
     public String getBillToCustomerName() {

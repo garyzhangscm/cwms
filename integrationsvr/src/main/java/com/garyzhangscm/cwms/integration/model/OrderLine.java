@@ -66,6 +66,10 @@ public class OrderLine implements Serializable {
 
     private String allocateByReceiptNumber;
 
+    private Boolean parcelInsured;
+    private Double parcelInsuredAmountPerUnit;
+    private Boolean parcelSignatureRequired;
+
     public Long getId() {
         return id;
     }
@@ -256,5 +260,29 @@ public class OrderLine implements Serializable {
 
     public void setAutoRequestShippingLabel(Boolean autoRequestShippingLabel) {
         this.autoRequestShippingLabel = autoRequestShippingLabel;
+    }
+
+    public Boolean getParcelInsured() {
+        return parcelInsured;
+    }
+
+    public void setParcelInsured(Boolean parcelInsured) {
+        this.parcelInsured = parcelInsured;
+    }
+
+    public Double getParcelInsuredAmountPerUnit() {
+        return parcelInsuredAmountPerUnit;
+    }
+
+    public void setParcelInsuredAmountPerUnit(Double parcelInsuredAmountPerUnit) {
+        this.parcelInsuredAmountPerUnit = parcelInsuredAmountPerUnit;
+    }
+
+    public Boolean getParcelSignatureRequired() {
+        return parcelSignatureRequired;
+    }
+
+    public void setParcelSignatureRequired(Boolean parcelSignatureRequired) {
+        this.parcelSignatureRequired = parcelSignatureRequired;
     }
 }

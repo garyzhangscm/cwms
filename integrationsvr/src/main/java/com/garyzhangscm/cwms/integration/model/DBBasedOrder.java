@@ -87,6 +87,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     private String shipToContactorFirstname;
     @Column(name = "ship_to_contactor_lastname")
     private String shipToContactorLastname;
+    @Column(name = "ship_to_contactor_phone_number")
+    private String shipToContactorPhoneNumber;
 
     @Column(name = "ship_to_address_country")
     private String shipToAddressCountry;
@@ -197,7 +199,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressCity", "billToAddressDistrict", "billToAddressLine1", "billToAddressLine2", "billToAddressPostcode",
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
                 "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId",
-                "shipToAddressLine3", "billToAddressLine3"
+                "shipToAddressLine3", "billToAddressLine3",
+                "shipToContactorPhoneNumber"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -233,7 +236,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
                 "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId",
-                "shipToAddressLine3", "billToAddressLine3"
+                "shipToAddressLine3", "billToAddressLine3", "shipToContactorPhoneNumber"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -563,6 +566,14 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
     public void setCarrierServiceLevelName(String carrierServiceLevelName) {
         this.carrierServiceLevelName = carrierServiceLevelName;
+    }
+
+    public String getShipToContactorPhoneNumber() {
+        return shipToContactorPhoneNumber;
+    }
+
+    public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
+        this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
     }
 
     @Override

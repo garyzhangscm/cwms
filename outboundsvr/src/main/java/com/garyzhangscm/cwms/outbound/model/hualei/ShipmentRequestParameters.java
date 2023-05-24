@@ -76,6 +76,10 @@ public class ShipmentRequestParameters  extends AuditibleEntity<String> implemen
     @JsonProperty("duty_type")
     private String dutyType;
 
+    @Column(name = "note")
+    @JsonProperty("order_customnote")
+    private String note;
+
     @Column(name = "ship_from")
     @JsonProperty("from")
     private String shipFrom;
@@ -356,5 +360,13 @@ public class ShipmentRequestParameters  extends AuditibleEntity<String> implemen
 
     public void setWeightUnit(String weightUnit) {
         this.weightUnit = weightUnit;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }
