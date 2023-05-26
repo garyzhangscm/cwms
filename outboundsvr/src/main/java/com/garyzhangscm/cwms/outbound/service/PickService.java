@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.*;
-import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.exception.PickingException;
-import com.garyzhangscm.cwms.outbound.exception.ReplenishmentException;
-import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.*;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickRepository;
@@ -1320,6 +1317,27 @@ public class PickService {
                             boolean pickToContainer, String containerId,
                             String lpn)  {
         Pick pick = findById(pickId);
+
+        if (Objects.nonNull(pick.getShipmentLine())) {
+            Order order = pick.getShipmentLine().getOrderLine().getOrder();
+
+            if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+                throw OrderOperationException.raiseException(
+                        "Can't confirm the pick " + pick.getNumber() + " as its order " +
+                                order.getNumber() + " already completed");
+            }
+            if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+                throw OrderOperationException.raiseException(
+                        "Can't confirm the pick " + pick.getNumber() + " as its order " +
+                                order.getNumber() + " already cancelled");
+            }
+            if (Boolean.TRUE.equals(order.getCancelRequested())) {
+                throw OrderOperationException.raiseException("There's a cancel request on the pick " +
+                        pick.getNumber() + "'s Order " + order.getNumber() + ", " +
+                        "please cancel it before you want to continue");
+            }
+        }
+
         if (pickToContainer) {
             // OK we are picking to container, let's check if we already have
             // a location for the container. If not, we will create the location

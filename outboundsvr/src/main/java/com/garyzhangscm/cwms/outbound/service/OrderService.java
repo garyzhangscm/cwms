@@ -955,6 +955,22 @@ public class OrderService {
         logger.debug(">>>    Start to allocate order  {}  <<<",
                 order.getNumber());
 
+        // if the order is already cancelled or request cancellation,
+        // raise an error
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+
+            throw OrderOperationException.raiseException("Order " + order.getNumber() + " is already complete, can't allocate it");
+        }
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+
+            throw OrderOperationException.raiseException("Order " + order.getNumber() + " is already cancelled, can't allocate it");
+        }
+        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+
+            throw OrderOperationException.raiseException("There's a cancel request on Order " + order.getNumber() + ", " +
+                    "please cancel it before you want to continue");
+        }
+
         // When we directly allocate the order, we will
         // 1. create a fake shipment for the order
         // 2. allocate the shipment
@@ -1045,6 +1061,22 @@ public class OrderService {
     @Transactional
     public Order stage(Long orderId, boolean ignoreUnfinishedPicks) {
         Order order = findById(orderId);
+
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw OrderOperationException.raiseException(
+                    "Can't stage the order " +
+                            order.getNumber() + " as it is  already completed");
+        }
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw OrderOperationException.raiseException(
+                    "Can't stage the order " +
+                            order.getNumber() + " as it is  already cancelled");
+        }
+        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+            throw OrderOperationException.raiseException("There's a cancel request on the Order " + order.getNumber() + ", " +
+                    "please cancel it before you want to continue");
+        }
+
         validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_STAGE);
 
         // Find any shipment that is ready for stage and stage the shipment
@@ -1062,10 +1094,28 @@ public class OrderService {
         return findById(orderId);
 
     }
+
+
     @Transactional
     public Order load(Long orderId, boolean ignoreUnfinishedPicks) {
         // Let's stage all the possible shipment first
         Order order = findById(orderId);
+
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw OrderOperationException.raiseException(
+                    "Can't load the order " +
+                            order.getNumber() + " as it is  already completed");
+        }
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw OrderOperationException.raiseException(
+                    "Can't load the order " +
+                            order.getNumber() + " as it is  already cancelled");
+        }
+        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+            throw OrderOperationException.raiseException("There's a cancel request on the Order " + order.getNumber() + ", " +
+                    "please cancel it before you want to continue");
+        }
+
         validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_LOADING);
 
         logger.debug("Start to load order: {}", order.getNumber());
@@ -1102,6 +1152,22 @@ public class OrderService {
     public Order dispatch(Long orderId, boolean ignoreUnfinishedPicks) {
         // Let's stage all the possible shipment first
         Order order = findById(orderId);
+
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+            throw OrderOperationException.raiseException(
+                    "Can't dispatch the order " +
+                            order.getNumber() + " as it is  already completed");
+        }
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw OrderOperationException.raiseException(
+                    "Can't dispatch the order " +
+                            order.getNumber() + " as it is  already cancelled");
+        }
+        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+            throw OrderOperationException.raiseException("There's a cancel request on the Order " + order.getNumber() + ", " +
+                    "please cancel it before you want to continue");
+        }
+
         validateOrderForOutboundProcessing(order, OrderActivityType.SHIPMENT_DISPATCH);
         logger.debug("Start to dispatch order: {}", order.getNumber());
 
@@ -1214,7 +1280,16 @@ public class OrderService {
         // Let's make sure the order is still open
         if (existingOrder.getStatus().equals(OrderStatus.COMPLETE)) {
             throw OrderOperationException.raiseException(
-                    "Complete the order " + existingOrder.getNumber() + " as it is already completed");
+                    "Can't complete the order " + existingOrder.getNumber() + " as it is already completed");
+        }
+        if (existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw OrderOperationException.raiseException(
+                    "Cancel complete the order " + existingOrder.getNumber() + " as it is already cancelled");
+        }
+        if (Boolean.TRUE.equals(existingOrder.getCancelRequested())) {
+
+            throw OrderOperationException.raiseException("There's a cancel request on Order " + existingOrder.getNumber() + ", " +
+                    "please cancel it before you want to continue");
         }
 
         if (existingOrder.getCategory().isOutsourcingOrder()) {
