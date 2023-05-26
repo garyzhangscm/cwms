@@ -442,7 +442,7 @@ public class ShipmentService {
         orderLines.forEach(orderLine -> {
             ShipmentLine shipmentLine = shipmentLineService.createShipmentLine(wave, newShipment, orderLine);
 
-            orderActivityService.saveOrderActivity(
+            orderActivityService.sendOrderActivity(
                 orderActivityService.createOrderActivity(
                         newShipment.getWarehouseId(), order, newShipment,
                         shipmentLine, OrderActivityType.ORDER_PLAN

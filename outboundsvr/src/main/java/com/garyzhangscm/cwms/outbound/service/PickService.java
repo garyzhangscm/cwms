@@ -678,7 +678,7 @@ public class PickService {
 
         // save the order activity
         orderActivity.setQuantityByNewPick(pick);
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
 
         logger.debug("after we cancelled the quantity {}, there's still {} quantity left",
                 cancelledQuantity, pick.getQuantity());
@@ -1430,7 +1430,7 @@ public class PickService {
         // Get the latest pick information
         Pick newPick = findById(pick.getId());
         orderActivity.setQuantityByNewPick(newPick);
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
         // if the pick work is fully picked and there's work task attached to it,
         // let's complete the work task
         if (newPick.getQuantity().equals(newPick.getPickedQuantity()) &&

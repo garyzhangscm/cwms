@@ -343,7 +343,6 @@ public class OrderLineService{
         logger.debug("item name: {}", item.getName());
         logger.debug("quantity: {}", caseItemUnitOfMeasure.getQuantity());
         logger.debug("item price: {}", item.getUnitCost());
-        int quantityPerPackage = (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity());
         hualeiShippingService.sendHualeiShippingRequest(
                 orderLine.getWarehouseId(),
                 orderLine.getHualeiProductId(),
@@ -352,7 +351,7 @@ public class OrderLineService{
                 caseItemUnitOfMeasure.getWidth(),
                 caseItemUnitOfMeasure.getHeight(),
                 caseItemUnitOfMeasure.getWeight(),
-                quantityPerPackage,
+                (int) Math.ceil(orderLine.getExpectedQuantity() / caseItemUnitOfMeasure.getQuantity()),
                 item.getName(),
                 caseItemUnitOfMeasure.getQuantity(),
                 item.getUnitCost(),
@@ -360,7 +359,7 @@ public class OrderLineService{
                 caseItemUnitOfMeasure.getWeightUnit(),
                 orderLine.getParcelInsured(),
                 Objects.isNull(orderLine.getParcelInsuredAmountPerUnit()) ? 0 :
-                        orderLine.getParcelInsuredAmountPerUnit() * quantityPerPackage,
+                        orderLine.getParcelInsuredAmountPerUnit() * caseItemUnitOfMeasure.getQuantity(),
                 orderLine.getParcelSignatureRequired()
         );
 

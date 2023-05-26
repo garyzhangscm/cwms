@@ -233,6 +233,21 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     private String quickbookTxnID;
 
 
+    // if there's a cancel requested
+    // and record the request by user and timing
+    @Column(name = "cancel_requested")
+    private Boolean cancelRequested;
+
+    @Column(name = "cancel_requested_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime cancelRequestedTime;
+
+    @Column(name = "cancel_requested_username")
+    private String cancelRequestedUsername;
+
+
 
     // Some statistics numbers that we can show
     // in the frontend
@@ -798,5 +813,29 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
         this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
+    }
+
+    public Boolean getCancelRequested() {
+        return cancelRequested;
+    }
+
+    public void setCancelRequested(Boolean cancelRequested) {
+        this.cancelRequested = cancelRequested;
+    }
+
+    public ZonedDateTime getCancelRequestedTime() {
+        return cancelRequestedTime;
+    }
+
+    public void setCancelRequestedTime(ZonedDateTime cancelRequestedTime) {
+        this.cancelRequestedTime = cancelRequestedTime;
+    }
+
+    public String getCancelRequestedUsername() {
+        return cancelRequestedUsername;
+    }
+
+    public void setCancelRequestedUsername(String cancelRequestedUsername) {
+        this.cancelRequestedUsername = cancelRequestedUsername;
     }
 }

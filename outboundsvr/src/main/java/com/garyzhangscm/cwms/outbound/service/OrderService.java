@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -552,8 +553,12 @@ public class OrderService {
 
             loadOrderAttribute(newOrder);
         }
-        sendAlertForOrder(order, newOrderFlag,
-                Strings.isBlank(username) ? newOrder.getCreatedBy() : username);
+        if (newOrderFlag) {
+            sendAlertForOrderCreation(order, username);
+        }
+        else {
+            sendAlertForOrderModification(order, username);
+        }
         // for new order, let's see if we will need to request shippping label for it
 
         if (newOrderFlag) {
@@ -1259,7 +1264,7 @@ public class OrderService {
 
 
         Order completedOrder =  saveOrUpdate(order);
-        orderActivityService.saveOrderActivity(
+        orderActivityService.sendOrderActivity(
                 orderActivityService.createOrderActivity(
                         completedOrder.getWarehouseId(), completedOrder, OrderActivityType.ORDER_COMPLETE
                 ));
@@ -1316,7 +1321,7 @@ public class OrderService {
         existingOrder.setStageLocationGroupId(null);
 
         existingOrder = saveOrUpdate(existingOrder);
-        orderActivityService.saveOrderActivity(
+        orderActivityService.sendOrderActivity(
                 orderActivityService.createOrderActivity(
                         existingOrder.getWarehouseId(), existingOrder, OrderActivityType.ORDER_COMPLETE
                 ));
@@ -1537,7 +1542,7 @@ public class OrderService {
 
         Order newOrder =  saveOrUpdate(order, false);
 
-        orderActivityService.saveOrderActivity(
+        orderActivityService.sendOrderActivity(
                 orderActivityService.createOrderActivity(
                         newOrder.getWarehouseId(), newOrder, OrderActivityType.ORDER_CREATE
                 ));
@@ -2525,11 +2530,27 @@ public class OrderService {
         return fileUploadResultMap.getOrDefault(key, new ArrayList<>());
     }
 
+    private void sendAlertForOrderCreation(Order order,  String username) {
+
+        sendAlertForOrder(order, AlertType.NEW_ORDER, username);
+    }
+    private void sendAlertForOrderModification(Order order, String username) {
+
+        sendAlertForOrder(order, AlertType.MODIFY_ORDER, username);
+    }
+    private void sendAlertForOrderCancellationRequest(Order order, String username) {
+
+        sendAlertForOrder(order, AlertType.REQUEST_ORDER_CANCELLATION, username);
+    }
+    private void sendAlertForOrderCancellation(Order order, String username) {
+
+        sendAlertForOrder(order, AlertType.CANCEL_ORDER, username);
+    }
     /**
      * Send alert for new order or changing order
      * @param order
      */
-    private void sendAlertForOrder(Order order, boolean newOrderFlag, String username) {
+    private void sendAlertForOrder(Order order, AlertType alertType, String username) {
 
         if (Strings.isBlank(username)) {
 
@@ -2547,23 +2568,30 @@ public class OrderService {
         StringBuilder alertParameters = new StringBuilder();
         alertParameters.append("number=").append(order.getNumber())
                 .append("&lineCount=").append(order.getOrderLines().size());
-
-        if (newOrderFlag) {
-
-            Alert alert = new Alert(companyId,
-                    AlertType.NEW_ORDER,
+        Alert alert = null;
+        switch (alertType) {
+            case NEW_ORDER:
+                alert = new Alert(companyId, alertType,
                     "NEW-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
                     "Outbound Order " + order.getNumber() + " created, by " + username,
                     "", alertParameters.toString());
-            kafkaSender.send(alert);
-        }
-        else {
+            break;
+            case MODIFY_ORDER:
+                alert = new Alert(companyId, alertType,
+                        "MODIFY-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                        "Outbound Order " + order.getNumber() + " is changed, by " + username,
+                        "", alertParameters.toString());
+            break;
+            case REQUEST_ORDER_CANCELLATION:
+                alert = new Alert(companyId, alertType,
+                        "REQUEST-ORDER-CANCELLATION" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                        "Outbound Order " + order.getNumber() + " 's cancellation , requested by " + username,
+                        "", alertParameters.toString());
+            break;
 
-            Alert alert = new Alert(companyId,
-                    AlertType.MODIFY_ORDER,
-                    "MODIFY-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
-                    "Outbound Order " + order.getNumber() + " is changed, by " + username,
-                    "", alertParameters.toString());
+        }
+        if (Objects.nonNull(alert)) {
+
             kafkaSender.send(alert);
         }
     }
@@ -2592,5 +2620,166 @@ public class OrderService {
     }
 
 
+    public Order findOrder(Long warehouseId, Long orderId,
+                           Long clientId,
+                           String clientName, String orderNumber) {
+        Order order = null;
+        if (Objects.nonNull(orderId)) {
+            order = findById(orderId);
+        }
+        else if (Strings.isNotBlank(orderNumber)) {
+            // order number is passed in, let's see if we will need to
+            // query by the client as well
+            if (Strings.isBlank(clientName) && Objects.isNull(clientId)) {
+                // for non client environment
+                order = findByNumber(warehouseId, null, orderNumber);
+            }
+            else if (Objects.nonNull(clientId)){
+                order = findByNumber(warehouseId, clientId, orderNumber );
+            }
+            else {
+                // client name is passed in without client id
+                Client client = commonServiceRestemplateClient.getClientByName(warehouseId, clientName);
+                if (Objects.isNull(client)) {
 
+                    throw OrderOperationException.raiseException("Invalid client by name " + clientName);
+                }
+                order = findByNumber(warehouseId, client.getId(), orderNumber );
+            }
+        }
+        else {
+
+            throw OrderOperationException.raiseException("At least one of order id or order number needs to be present");
+        }
+        return order;
+    }
+    public Order cancelOrder(Long warehouseId, Long orderId,
+                             Long clientId,
+                             String clientName, String orderNumber) {
+        Order order = findOrder(warehouseId, orderId, clientId, clientName, orderNumber);
+        if (Objects.isNull(order)) {
+
+            throw OrderOperationException.raiseException("Not able to find order by parameters. " +
+                    (Objects.nonNull(orderId) ? "order id = " + orderId : "" ) +
+                            (Objects.nonNull(clientId) ? "client id = " + clientId : "" ) +
+                            (Strings.isNotBlank(clientName) ? "client name = " + clientName : "" ) +
+                            (Strings.isNotBlank(orderNumber) ? "order number = " + orderNumber : "" )
+                    );
+        }
+        // ok, we get the right order. see if we can cancel it
+        return startOrderCancellation(order);
+    }
+
+    public Order startOrderCancellation(Order order) {
+
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw OrderOperationException.raiseException("Fail to cancel order " + order.getNumber() +
+                    " as it is already cancelled");
+        }
+        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+
+            throw OrderOperationException.raiseException("Fail to cancel order " + order.getNumber() +
+                    " as it is already completed");
+        }
+
+        // save the order activity for order cancellation
+        OrderActivity orderActivity = orderActivityService.createOrderActivity(
+                order.getWarehouseId(), order, OrderActivityType.ORDER_CANCELLATION_REQUEST
+        );
+        orderActivityService.sendOrderActivity(orderActivity);
+        // send alert for order cancellation request
+
+        sendAlertForOrderCancellationRequest(order, "");
+
+        if (pickService.findByOrder(order).size() > 0 || shortAllocationService.findByOrder(order).size() > 0) {
+            // there're picks / short allocations on it, let's just mark it as cancel request and
+            // let the user cancel those picks / short allocation first
+            return sendCancelOrderRequest(order);
+
+        }
+        else {
+            return markOrderCancelled(order);
+        }
+
+    }
+
+    private Order sendCancelOrderRequest(Order order) {
+
+        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+            // order request is already sent, do nothing
+            return order;
+        }
+        order.setCancelRequested(true);
+        order.setCancelRequestedTime(ZonedDateTime.now());
+        order.setCancelRequestedUsername(userService.getCurrentUserName());
+
+
+        // sent notification for the order cancellation
+        return saveOrUpdate(order);
+    }
+
+    /**
+     * Change the order's status to cancelled
+     * @param order
+     * @return
+     */
+    private Order markOrderCancelled(Order order) {
+
+        // ok, the order is ready to be cancelled.
+        // let's
+        // 1. mark the order as cancel requested
+        // 2. cancel all the shipments
+        // 3. mark the order as cancelled
+        order.setCancelRequested(true);
+        order.setCancelRequestedTime(ZonedDateTime.now());
+        order.setCancelRequestedUsername(userService.getCurrentUserName());
+
+        // if the order reserves any stage locations, release them
+        changeAssignedStageLocations(order, null, null);
+
+
+        // if we have shipment related to this order, remove the shipment as well
+        Set<Long> shipmentIds = new HashSet<>();
+        for (OrderLine orderLine : order.getOrderLines()) {
+            orderLine.getShipmentLines().forEach(
+                    shipmentLine -> shipmentIds.add(shipmentLine.getShipment().getId())
+            );
+        }
+        logger.debug("We already have {} shipment assigned to this order", shipmentIds.size());
+        for (Long shipmentId : shipmentIds) {
+            shipmentService.removeShipment(shipmentId);
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+
+        order = saveOrUpdate(order, true);
+
+        // send alert for order cancellation
+        sendAlertForOrderCancellation(order, "");
+
+        return order;
+    }
+
+    public Order clearOrderCancellationRequest(Long warehouseId, Long orderId, Long clientId, String clientName, String orderNumber) {
+
+        Order order = findOrder(warehouseId, orderId, clientId, clientName, orderNumber);
+        if (Objects.isNull(order)) {
+
+            throw OrderOperationException.raiseException("Not able to find order by parameters. " +
+                    (Objects.nonNull(orderId) ? "order id = " + orderId : "" ) +
+                    (Objects.nonNull(clientId) ? "client id = " + clientId : "" ) +
+                    (Strings.isNotBlank(clientName) ? "client name = " + clientName : "" ) +
+                    (Strings.isNotBlank(orderNumber) ? "order number = " + orderNumber : "" )
+            );
+        }
+
+        order.setCancelRequested(false);
+        order.setCancelRequestedUsername(null);
+        order.setCancelRequestedTime(null);
+
+        return saveOrUpdate(order);
+
+
+    }
 }

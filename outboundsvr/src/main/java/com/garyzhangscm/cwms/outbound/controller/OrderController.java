@@ -69,7 +69,7 @@ public class OrderController {
                                      @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate,
                                      @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
                                      @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
-                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate specificCreatedDate,
                                      ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
         return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,
@@ -358,12 +358,45 @@ public class OrderController {
     public OrderBillableActivity changeOrderBillableActivity(Long warehouseId,
                                                                  @PathVariable Long orderId,
                                                                  @PathVariable Long id,
-                                                                 @RequestBody OrderBillableActivity orderBillableActivity) throws IOException {
+                                                                 @RequestBody OrderBillableActivity orderBillableActivity)  {
 
 
         return orderBillableActivityService.changeOrderBillableActivity(orderBillableActivity);
     }
 
- 
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/cancel-order")
+    public ResponseBodyWrapper<String> cancelOrder(Long warehouseId,
+                                                   @RequestParam(name = "orderId", required = false, defaultValue = "") Long orderId,
+                                                   @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
+                                                   @RequestParam(name = "clientName", required = false, defaultValue = "") String clientName,
+                                                   @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber) {
+
+
+        Order order = orderService.cancelOrder(warehouseId, orderId, clientId, clientName, orderNumber);
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+            return ResponseBodyWrapper.success("order " + order.getNumber() + " is cancelled");
+        }
+        else {
+
+            return ResponseBodyWrapper.success("cancellation request for order " + order.getNumber() + " is sent");
+        }
+
+
+    }
+    @RequestMapping(method=RequestMethod.POST, value="/orders/clear-order-cancelleation-request")
+    public Order clearOrderCancellationRequest(Long warehouseId,
+                                                   @RequestParam(name = "orderId", required = false, defaultValue = "") Long orderId,
+                                                   @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
+                                                   @RequestParam(name = "clientName", required = false, defaultValue = "") String clientName,
+                                                   @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber) {
+
+
+        return orderService.clearOrderCancellationRequest(warehouseId, orderId, clientId, clientName, orderNumber);
+
+    }
+
+
 
 }

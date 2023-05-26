@@ -962,7 +962,7 @@ public class BulkPickService {
         OrderActivity orderActivity = orderActivityService.createOrderActivity(
                 bulkPick.getWarehouseId(), newBulkPick, OrderActivityType.BULK_PICK_CONFIRM
         );
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
         // complete the work task if any
         if (Objects.nonNull(bulkPick.getWorkTaskId())) {
             resourceServiceRestemplateClient.completeWorkTask(

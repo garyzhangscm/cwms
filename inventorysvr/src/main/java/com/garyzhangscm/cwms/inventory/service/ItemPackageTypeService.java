@@ -351,7 +351,7 @@ public class ItemPackageTypeService {
                 null,null,null,null,null, null,
                 null,null,null,null, null,
                 null,null,null,null,null,null, null,null,null,
-                        null, false, null)
+                        null, false, null, false)
                   .size() > 0) {
             logger.debug("There's inventory attached to this item package type {} / {}, can't remove it",
                     item.getName(), itemPackageType.getName());

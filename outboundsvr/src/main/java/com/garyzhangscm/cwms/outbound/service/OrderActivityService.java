@@ -463,7 +463,7 @@ public class OrderActivityService {
         return orderActivity;
     }
 
-    public void saveOrderActivity(OrderActivity orderActivity) {
+    public void sendOrderActivity(OrderActivity orderActivity) {
         kafkaSender.send(orderActivity);
     }
 

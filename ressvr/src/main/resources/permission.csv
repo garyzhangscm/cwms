@@ -20,8 +20,8 @@ Outbound-Order,allocate-short-allocation,Allocate Short Allocation
 Outbound-Order,create-work-order,Create Work Order
 Outbound-Order,cancel-short-allocation,Cancel Short Allocation
 Outbound-Order,remove-order-billable-activity-type,Remove Order Billable Activity Type
-Outbound-Order,remove-order-document,Remove Order Document
-Outbound-Order,remove-order-line-billable-activity-type,Remove Order Line Billable Activity Type
+Outbound-Order,cancel-order,Cancel Order
+Outbound-Order,clear-cancellation-request,Clear Order Cancellation Request
 Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory

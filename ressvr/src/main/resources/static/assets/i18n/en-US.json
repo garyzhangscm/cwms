@@ -2149,5 +2149,11 @@
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "Group By Location And Item",
   "get-tracking-number-url": "Get Tracking Number URL",
   "getTrackingNumberEndpoint": "Get Tracking Number Endpoint",
-  "reverseInventory": "Reverse Inventory"
+  "reverseInventory": "Reverse Inventory",
+  "order.cancelRequested": "Cancellation Requested",
+  "order.cancelRequestedTime": "Cancellation Requested Time",
+  "order.cancelRequestedUsername": "Cancellation Requested By User",
+  "clear-cancellation-request": "Clear Cancellation Request",
+  "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "Order Cancellation Request",
+  "ALERT-TYPE-CANCEL_ORDER": "Cancel Order"
 }
