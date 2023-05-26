@@ -1821,6 +1821,7 @@ public class PickService {
                 = inventoryServiceRestemplateClient.getPickableInventory(
                 item.getId(), inventoryStatus.getId(),
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
+                null,
                 allocationRequest.getColor(), allocationRequest.getProductSize(),
                 allocationRequest.getStyle(), allocationRequest.getAllocateByReceiptNumber());
 

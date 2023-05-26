@@ -2152,5 +2152,7 @@
   "order.cancelRequestedUsername": "订单取消申请发送用户",
   "clear-cancellation-request": "取消订单取消申请",
   "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "订单取消申请",
-  "ALERT-TYPE-CANCEL_ORDER": "取消订单"
+  "ALERT-TYPE-CANCEL_ORDER": "取消订单",
+  "order-cancellation-request-sent": "",
+  "order-cancelled": "Order is cancelled"
 }

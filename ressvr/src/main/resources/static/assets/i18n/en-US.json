@@ -2155,5 +2155,7 @@
   "order.cancelRequestedUsername": "Cancellation Requested By User",
   "clear-cancellation-request": "Clear Cancellation Request",
   "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "Order Cancellation Request",
-  "ALERT-TYPE-CANCEL_ORDER": "Cancel Order"
+  "ALERT-TYPE-CANCEL_ORDER": "Cancel Order",
+  "order-cancellation-request-sent": "Order Cancellation Request sent, wait for order to be cancelled",
+  "order-cancelled": "Order is cancelled"
 }
