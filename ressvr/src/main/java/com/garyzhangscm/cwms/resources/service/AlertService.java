@@ -110,7 +110,9 @@ public class AlertService {
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
+                },
+                Sort.by(Sort.Direction.DESC, "createdTime")
+
         );
     }
 

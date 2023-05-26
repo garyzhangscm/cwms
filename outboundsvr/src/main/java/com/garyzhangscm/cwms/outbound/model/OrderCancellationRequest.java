@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -47,9 +48,13 @@ public class OrderCancellationRequest extends AuditibleEntity<String> implements
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "outbound_order_id")
     private Order order;
+
+    @Transient
+    private String orderNumber;
 
     @Column(name = "cancel_requested_time")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
@@ -142,5 +147,21 @@ public class OrderCancellationRequest extends AuditibleEntity<String> implements
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getOrderNumber() {
+        if (Objects.nonNull(order)) {
+            return order.getNumber();
+        }
+        else if(Strings.isBlank(orderNumber)) {
+            return orderNumber;
+        }
+        else {
+            return "";
+        }
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 }
