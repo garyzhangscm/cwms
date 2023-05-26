@@ -304,7 +304,7 @@ public class ShortAllocationService {
             workOrderServiceRestemplateClient.registerShortAllocationCancelled(shortAllocation.getWorkOrderLineId(), shortAllocation.getQuantity());
         }
 
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
 
         // When we cancel the short allocation, do we still want to finish the
         // related emergency replenishment picks, if the picks are already
@@ -414,7 +414,7 @@ public class ShortAllocationService {
         shortAllocation =  allocationConfigurationService.allocate(shortAllocation);
 
         orderActivity.setQuantityByNewShortAllocation(shortAllocation);
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
 
         if (readyToRemoveShortAllocation(shortAllocation)) {
 

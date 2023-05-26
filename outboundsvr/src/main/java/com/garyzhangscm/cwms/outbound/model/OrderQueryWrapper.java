@@ -45,6 +45,7 @@ public class OrderQueryWrapper implements Serializable {
 
     private String shipToContactorFirstname;
     private String shipToContactorLastname;
+    private String shipToContactorPhoneNumber;
 
     private String shipToAddressCountry;
     private String shipToAddressState;
@@ -90,7 +91,7 @@ public class OrderQueryWrapper implements Serializable {
                 "shipToAddressLine1", "shipToAddressLine2", "shipToAddressLine3", "shipToAddressPostcode",
                 "billToContactorFirstname", "billToContactorLastname", "billToAddressCountry", "billToAddressState", "billToAddressCounty", "billToAddressCity",
                 "billToAddressLine1", "billToAddressLine2", "billToAddressLine3", "billToAddressPostcode",
-                "completeTime", "supplier","client", "parcelPackages"
+                "completeTime", "supplier","client", "parcelPackages","shipToContactorPhoneNumber"
 
         };
 
@@ -367,5 +368,13 @@ public class OrderQueryWrapper implements Serializable {
 
     public void setParcelPackages(List<ParcelPackage> parcelPackages) {
         this.parcelPackages = parcelPackages;
+    }
+
+    public String getShipToContactorPhoneNumber() {
+        return shipToContactorPhoneNumber;
+    }
+
+    public void setShipToContactorPhoneNumber(String shipToContactorPhoneNumber) {
+        this.shipToContactorPhoneNumber = shipToContactorPhoneNumber;
     }
 }

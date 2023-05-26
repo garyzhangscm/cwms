@@ -2146,5 +2146,11 @@
   "INVENTORY-DISPLAY-OPTIONS-GROUP_BY_LOCATION_ITEM": "按库位和商品合并",
   "get-tracking-number-url": "更新快递单号地址",
   "getTrackingNumberEndpoint": "更新快递单号地址",
-  "reverseInventory": "冲消库存"
+  "reverseInventory": "冲消库存",
+  "order.cancelRequested": "订单取消申请已发送",
+  "order.cancelRequestedTime": "订单取消申请发送时间",
+  "order.cancelRequestedUsername": "订单取消申请发送用户",
+  "clear-cancellation-request": "取消订单取消申请",
+  "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "订单取消申请",
+  "ALERT-TYPE-CANCEL_ORDER": "取消订单"
 }

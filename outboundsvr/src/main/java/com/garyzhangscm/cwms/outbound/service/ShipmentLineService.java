@@ -253,7 +253,7 @@ public class ShipmentLineService {
         }
 
         orderActivity.setQuantityByNewShipmentLine(shipmentLine);
-        orderActivityService.saveOrderActivity(orderActivity);
+        orderActivityService.sendOrderActivity(orderActivity);
 
 
         save(shipmentLine);
