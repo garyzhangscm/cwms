@@ -770,6 +770,7 @@ public class BulkPickService {
                         pick.getItemId(),
                         pick.getInventoryStatusId(),
                         pick.getSourceLocationId(),
+                        null,
                         pick.getColor(),
                         pick.getProductSize(),
                         pick.getStyle(),

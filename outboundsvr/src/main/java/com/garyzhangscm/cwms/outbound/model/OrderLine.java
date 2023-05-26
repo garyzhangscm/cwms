@@ -115,7 +115,6 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @OneToMany(
             mappedBy = "orderLine",
             cascade = CascadeType.REMOVE,
-            orphanRemoval = true,
             fetch = FetchType.LAZY
     )
     private List<ShipmentLine> shipmentLines = new ArrayList<>();

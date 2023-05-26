@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -60,6 +59,8 @@ public class OrderService {
     private OrderActivityService orderActivityService;
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private OrderCancellationRequestService orderCancellationRequestService;
 
     @Autowired
     private PickService pickService;
@@ -1505,7 +1506,7 @@ public class OrderService {
 
                     // setup the quantity by UOM from the pickable inventory in the source location
                     List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
-                            pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+                            pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(), null,
                             pick.getColor(), pick.getProductSize(), pick.getStyle(), pick.getAllocateByReceiptNumber());
 
                     StringBuilder pickQuantityByUOM = new StringBuilder();
@@ -2653,16 +2654,25 @@ public class OrderService {
             break;
             case MODIFY_ORDER:
                 alert = new Alert(companyId, alertType,
-                        "MODIFY-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                        "MODIFY-ORDER-" + companyId + "-" + order.getWarehouseId() + "-" +
+                                order.getNumber() + "-" + System.currentTimeMillis(),
                         "Outbound Order " + order.getNumber() + " is changed, by " + username,
                         "", alertParameters.toString());
             break;
             case REQUEST_ORDER_CANCELLATION:
                 alert = new Alert(companyId, alertType,
-                        "REQUEST-ORDER-CANCELLATION" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                        "REQUEST-ORDER-CANCELLATION" + companyId + "-" + order.getWarehouseId() +
+                                "-" + order.getNumber() + "-" + System.currentTimeMillis(),
                         "Outbound Order " + order.getNumber() + " 's cancellation , requested by " + username,
                         "", alertParameters.toString());
             break;
+            case CANCEL_ORDER:
+                alert = new Alert(companyId, alertType,
+                        "CANCEL_ORDER" + companyId + "-" + order.getWarehouseId() + "-" + order.getNumber(),
+                        "Outbound Order " + order.getNumber() + "  is cancelled by " + username,
+                        "", alertParameters.toString());
+                break;
+
 
         }
         if (Objects.nonNull(alert)) {
@@ -2728,7 +2738,7 @@ public class OrderService {
         }
         return order;
     }
-    public Order cancelOrder(Long warehouseId, Long orderId,
+    public OrderCancellationRequest cancelOrder(Long warehouseId, Long orderId,
                              Long clientId,
                              String clientName, String orderNumber) {
         Order order = findOrder(warehouseId, orderId, clientId, clientName, orderNumber);
@@ -2745,16 +2755,22 @@ public class OrderService {
         return startOrderCancellation(order);
     }
 
-    public Order startOrderCancellation(Order order) {
+    public OrderCancellationRequest startOrderCancellation(Order order) {
 
         if (order.getStatus().equals(OrderStatus.CANCELLED)) {
-            throw OrderOperationException.raiseException("Fail to cancel order " + order.getNumber() +
-                    " as it is already cancelled");
+            return orderCancellationRequestService.createFailedOrderCancellationRequest(
+                    order, userService.getCurrentUserName(),
+                    "Fail to cancel order " + order.getNumber() +
+                            " as it is already cancelled"
+            );
         }
         if (order.getStatus().equals(OrderStatus.COMPLETE)) {
 
-            throw OrderOperationException.raiseException("Fail to cancel order " + order.getNumber() +
-                    " as it is already completed");
+            return orderCancellationRequestService.createFailedOrderCancellationRequest(
+                    order, userService.getCurrentUserName(),
+                    "Fail to cancel order " + order.getNumber() +
+                            " as it is already completed"
+            );
         }
 
         // save the order activity for order cancellation
@@ -2778,11 +2794,15 @@ public class OrderService {
 
     }
 
-    private Order sendCancelOrderRequest(Order order) {
+    private OrderCancellationRequest sendCancelOrderRequest(Order order) {
 
         if (Boolean.TRUE.equals(order.getCancelRequested())) {
             // order request is already sent, do nothing
-            return order;
+            return orderCancellationRequestService.createFailedOrderCancellationRequest(
+                    order, userService.getCurrentUserName(),
+                    "Fail to cancel order " + order.getNumber() +
+                            " as there's already cancel request on this order"
+            );
         }
         order.setCancelRequested(true);
         order.setCancelRequestedTime(ZonedDateTime.now());
@@ -2790,7 +2810,14 @@ public class OrderService {
 
 
         // sent notification for the order cancellation
-        return saveOrUpdate(order);
+        saveOrUpdate(order);
+
+        return orderCancellationRequestService.createOrderCancellationRequest(
+                order, userService.getCurrentUserName(),
+                OrderCancellationRequestResult.REQUESTED,
+                "order cancellation request for " + order.getNumber() +
+                        " is sent, wait for the warehouse to cancel everything for the order"
+        );
     }
 
     /**
@@ -2798,7 +2825,7 @@ public class OrderService {
      * @param order
      * @return
      */
-    private Order markOrderCancelled(Order order) {
+    private OrderCancellationRequest markOrderCancelled(Order order) {
 
         // ok, the order is ready to be cancelled.
         // let's
@@ -2826,6 +2853,10 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        // clear all shipment line assignment
+        order.getOrderLines().forEach(
+                orderLine -> orderLine.setShipmentLines(new ArrayList<>())
+        );
 
 
         order = saveOrUpdate(order, true);
@@ -2833,7 +2864,11 @@ public class OrderService {
         // send alert for order cancellation
         sendAlertForOrderCancellation(order, "");
 
-        return order;
+        return orderCancellationRequestService.createOrderCancellationRequest(
+                order, userService.getCurrentUserName(),
+                OrderCancellationRequestResult.CANCELLED,
+                order.getNumber() + " is cancelled"
+        );
     }
 
     public Order clearOrderCancellationRequest(Long warehouseId, Long orderId, Long clientId, String clientName, String orderNumber) {

@@ -367,21 +367,14 @@ public class OrderController {
 
 
     @RequestMapping(method=RequestMethod.POST, value="/orders/cancel-order")
-    public ResponseBodyWrapper<String> cancelOrder(Long warehouseId,
+    public OrderCancellationRequest cancelOrder(Long warehouseId,
                                                    @RequestParam(name = "orderId", required = false, defaultValue = "") Long orderId,
                                                    @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
                                                    @RequestParam(name = "clientName", required = false, defaultValue = "") String clientName,
                                                    @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber) {
 
 
-        Order order = orderService.cancelOrder(warehouseId, orderId, clientId, clientName, orderNumber);
-        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
-            return ResponseBodyWrapper.success("order " + order.getNumber() + " is cancelled");
-        }
-        else {
-
-            return ResponseBodyWrapper.success("cancellation request for order " + order.getNumber() + " is sent");
-        }
+        return orderService.cancelOrder(warehouseId, orderId, clientId, clientName, orderNumber);
 
 
     }
