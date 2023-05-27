@@ -2154,5 +2154,8 @@
   "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "订单取消申请",
   "ALERT-TYPE-CANCEL_ORDER": "取消订单",
   "order-cancellation-request-sent": "",
-  "order-cancelled": "Order is cancelled"
+  "order-cancelled": "Order is cancelled",
+  "singleOrderLineOnly": "仅单行订单",
+  "singleOrderQuantityOnly": "仅包含订购单个数量的订单",
+  "singleOrderCaseQuantityOnly": "仅包含订购单箱数量的订单"
 }

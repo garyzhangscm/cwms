@@ -2157,5 +2157,8 @@
   "ALERT-TYPE-REQUEST_ORDER_CANCELLATION": "Order Cancellation Request",
   "ALERT-TYPE-CANCEL_ORDER": "Cancel Order",
   "order-cancellation-request-sent": "Order Cancellation Request sent, wait for order to be cancelled",
-  "order-cancelled": "Order is cancelled"
+  "order-cancelled": "Order is cancelled",
+  "singleOrderLineOnly": "Single Line Only",
+  "singleOrderQuantityOnly": "Single Quantity Only",
+  "singleOrderCaseQuantityOnly": "Single Case Quantity Only"
 }
