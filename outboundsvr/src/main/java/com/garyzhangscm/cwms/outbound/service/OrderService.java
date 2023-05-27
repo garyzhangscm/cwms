@@ -313,6 +313,57 @@ public class OrderService {
                 clientId, trailerAppointmentId, true, clientRestriction);
     }
 
+    /**
+     * Return true if the order only have one line
+     * @param order
+     * @return
+     */
+    public boolean isSingleLineOrder(Order order) {
+        return order.getOrderLines().size() == 1;
+    }
+
+    /**
+     * Return true if the order has line(s) that only have quantity of 1
+     * @param order
+     * @return
+     */
+    public boolean isSingleUnitQuantityOrder(Order order) {
+        return order.getOrderLines().size() > 0 &&
+                order.getOrderLines().stream().noneMatch(
+                        orderLine -> orderLine.getExpectedQuantity() > 1
+                );
+    }
+
+    /**
+     * Return true if the order has line(s) that only have quantity of 1 case
+     * @param order
+     * @return
+     */
+    public boolean isSingleCaseQuantityOrder(Order order) {
+        return order.getOrderLines().size() > 0 &&
+                order.getOrderLines().stream().noneMatch(
+                        orderLine -> {
+                            if (Objects.isNull(orderLine.getItem())) {
+                                orderLine.setItem(
+                                        inventoryServiceRestemplateClient.getItemById(
+                                                orderLine.getItemId()
+                                        )
+                                );
+                            }
+                            if (Objects.isNull(orderLine.getItem()) ||
+                                Objects.isNull(orderLine.getItem().getDefaultItemPackageType()) ||
+                                Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getCaseItemUnitOfMeasure())) {
+                                // return false if we can't get the item for one of the order line
+                                // so the item wil fail in the function isSingleCaseQuantityOrder
+                                return true;
+                            }
+                            return orderLine.getExpectedQuantity() !=
+                                    orderLine.getItem().getDefaultItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+
+                        }
+                );
+    }
+
 
     public List<Order> findWavableOrders(Long warehouseId, String orderNumber,
                                          Long clientId,
@@ -320,6 +371,9 @@ public class OrderService {
                                          ZonedDateTime startCreatedTime,
                                          ZonedDateTime endCreatedTime,
                                          LocalDate specificCreatedDate,
+                                         Boolean singleOrderLineOnly,
+                                         Boolean singleOrderQuantityOnly,
+                                         Boolean singleOrderCaseQuantityOnly,
                                          ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
@@ -340,6 +394,25 @@ public class OrderService {
         // skip the completed ones and any orders that doesn't have any open quantity
         return orders.stream().filter(
                 order -> !order.getStatus().equals(OrderStatus.CANCELLED) && !order.getStatus().equals(OrderStatus.COMPLETE)
+        ).filter(
+             order -> {
+                if (Boolean.TRUE.equals(singleOrderLineOnly) && !isSingleLineOrder(order)) {
+                    logger.debug("Skip order {}. We will need to return single line order but the order has mutliple lines",
+                            order.getNumber());
+                    return false;
+                }
+                 if (Boolean.TRUE.equals(singleOrderQuantityOnly) && !isSingleUnitQuantityOrder(order)) {
+                     logger.debug("Skip order {}. We will need to return single quantity order but the order has lines with multiple quantity",
+                             order.getNumber());
+                     return false;
+                 }
+                 if (Boolean.TRUE.equals(singleOrderCaseQuantityOnly) && !isSingleCaseQuantityOrder(order)) {
+                     logger.debug("Skip order {}. We will need to return single case quantity order but the order lines with multiple case quantity",
+                             order.getNumber());
+                     return false;
+                 }
+                return true;
+             }
         ).filter(
                 order -> order.getOrderLines().stream().anyMatch(
                         orderLine -> orderLine.getOpenQuantity() > 0

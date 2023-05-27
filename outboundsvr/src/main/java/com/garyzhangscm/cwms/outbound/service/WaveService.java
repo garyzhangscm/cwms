@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -364,12 +365,17 @@ public class WaveService {
                                          ZonedDateTime startCreatedTime,
                                          ZonedDateTime endCreatedTime,
                                          LocalDate specificCreatedDate,
+                                         Boolean singleOrderLineOnly,
+                                         Boolean singleOrderQuantityOnly,
+                                         Boolean singleOrderCaseQuantityOnly,
                                          ClientRestriction clientRestriction
     ) {
 
         return orderService.findWavableOrders(warehouseId, orderNumber, clientId,
                 customerName, customerId, startCreatedTime, endCreatedTime,
-                specificCreatedDate, clientRestriction);
+                specificCreatedDate,
+                singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
+                clientRestriction);
     }
 
     public Wave allocateWave(Long id) {

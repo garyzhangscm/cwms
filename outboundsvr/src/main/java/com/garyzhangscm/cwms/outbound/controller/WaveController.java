@@ -55,13 +55,18 @@ public class WaveController {
                                          @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                          @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
                                          @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
+                                         @RequestParam(name="singleOrderLineOnly", required = false, defaultValue = "") Boolean singleOrderLineOnly,
+                                         @RequestParam(name="singleOrderQuantityOnly", required = false, defaultValue = "") Boolean singleOrderQuantityOnly,
+                                         @RequestParam(name="singleOrderCaseQuantityOnly", required = false, defaultValue = "") Boolean singleOrderCaseQuantityOnly,
                                          @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
                                          @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
                                          @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
                                          ClientRestriction clientRestriction) {
         return waveService.findWaveCandidate(warehouseId,
                 orderNumber,  clientId, customerName, customerId,
-                startCreatedTime,  endCreatedTime, specificCreatedDate, clientRestriction);
+                startCreatedTime,  endCreatedTime, specificCreatedDate,
+                singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
+                clientRestriction);
     }
 
     @BillableEndpoint
