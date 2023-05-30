@@ -285,6 +285,17 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                 .collect(Collectors.toList());
     }
 
+    public List<ListPickConfiguration> findMatchedListPickConfiguration(String waveNumber, Pick pick) {
+        List<ListPickConfiguration> listPickConfigurations = findAll(pick.getWarehouseId(),
+                null, null, null, null);
+        logger.debug("Start to find matched list picking configuration for pick: {} / from {} configuration",
+                pick.getNumber(), listPickConfigurations.size());
+
+        return listPickConfigurations.stream()
+                .filter(listPickingConfiguration -> match(listPickingConfiguration,pick))
+                .collect(Collectors.toList());
+    }
+
     private boolean match(ListPickConfiguration listPickConfiguration, Pick pick) {
         logger.debug("Start to match list picking configuration {} with pick {}",
                 listPickConfiguration.getId(), pick.getNumber());

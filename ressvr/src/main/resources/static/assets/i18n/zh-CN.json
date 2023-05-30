@@ -2157,5 +2157,6 @@
   "order-cancelled": "Order is cancelled",
   "singleOrderLineOnly": "仅单行订单",
   "singleOrderQuantityOnly": "仅包含订购单个数量的订单",
-  "singleOrderCaseQuantityOnly": "仅包含订购单箱数量的订单"
+  "singleOrderCaseQuantityOnly": "仅包含订购单箱数量的订单",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "按波次"
 }

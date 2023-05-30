@@ -1898,6 +1898,11 @@ public class PickService {
         return pick;
     }
 
+    public Pick assignPickToList(Pick pick, PickList pickList) {
+        pick.setPickList(pickList);
+        return saveOrUpdate(pick, false);
+    }
+
     /**
      * Get the next pick from the pick pool
      * 1. single pick

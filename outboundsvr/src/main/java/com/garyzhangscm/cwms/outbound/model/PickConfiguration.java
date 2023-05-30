@@ -1,7 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.domain.Sort;
 
 import javax.persistence.*;
 
@@ -26,6 +25,10 @@ public class PickConfiguration extends AuditibleEntity<String> {
     @Column(name = "work_task_priority")
     private Integer workTaskPriority;
 
+    @Column(name = "release_pick_list_to_work_task")
+    private Boolean releasePickListToWorkTask;
+    @Column(name = "pick_list_work_task_priority")
+    private Integer pickListWorkTaskPriority;
 
     public Long getId() {
         return id;
@@ -66,5 +69,21 @@ public class PickConfiguration extends AuditibleEntity<String> {
 
     public void setWorkTaskPriority(Integer workTaskPriority) {
         this.workTaskPriority = workTaskPriority;
+    }
+
+    public Boolean getReleasePickListToWorkTask() {
+        return releasePickListToWorkTask;
+    }
+
+    public void setReleasePickListToWorkTask(Boolean releasePickListToWorkTask) {
+        this.releasePickListToWorkTask = releasePickListToWorkTask;
+    }
+
+    public Integer getPickListWorkTaskPriority() {
+        return pickListWorkTaskPriority;
+    }
+
+    public void setPickListWorkTaskPriority(Integer pickListWorkTaskPriority) {
+        this.pickListWorkTaskPriority = pickListWorkTaskPriority;
     }
 }

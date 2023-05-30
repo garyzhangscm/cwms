@@ -92,9 +92,10 @@ public class OutboundController {
     @RequestMapping(value="/query/orders", method = RequestMethod.GET)
     public List<OrderQueryWrapper> getOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                             @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                              @RequestParam(name="status", required = false, defaultValue = "") String status,
                                              ClientRestriction clientRestriction) {
-       return orderService.getOrdersForQuery(warehouseId, number, status, clientRestriction);
+       return orderService.getOrdersForQuery(warehouseId, number, numbers, status, clientRestriction);
     }
 
 }

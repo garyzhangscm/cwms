@@ -84,4 +84,24 @@ public class PickReleaseService {
         return pick;
     }
 
+    public PickList releasePickList(PickList pickList) {
+        logger.debug("start to release pick list {}", pickList.getNumber());
+
+        PickConfiguration pickConfiguration =
+                pickConfigurationService.findByWarehouse(pickList.getWarehouseId());
+        if (Objects.nonNull(pickConfiguration) &&
+                Boolean.TRUE.equals(pickConfiguration.getReleasePickListToWorkTask())) {
+            WorkTask workTask = workTaskService.releasePickList(pickList);
+            if (Objects.nonNull(workTask)) {
+                pickList.setStatus(PickListStatus.RELEASED);
+                pickList.setWorkTaskId(workTask.getId());
+            }
+        }
+        else {
+            // if we don't need to release to work task, then set the bulk pick's status
+            // to released
+            pickList.setStatus(PickListStatus.RELEASED);
+        }
+        return pickList;
+    }
 }

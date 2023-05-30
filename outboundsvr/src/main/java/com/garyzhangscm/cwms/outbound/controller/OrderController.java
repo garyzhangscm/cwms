@@ -57,6 +57,7 @@ public class OrderController {
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                     @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                      @RequestParam(name="status", required = false, defaultValue = "") String status,
                                      @RequestParam(name="category", required = false, defaultValue = "") String category,
                                      @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
@@ -72,7 +73,7 @@ public class OrderController {
                                      @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate specificCreatedDate,
                                      ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+        return orderService.findAll(warehouseId, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category,  customerName, customerId, clientId, trailerAppointmentId, loadDetails,
                 clientRestriction);

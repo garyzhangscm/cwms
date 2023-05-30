@@ -57,6 +57,9 @@ public class PickListService {
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
+    @Autowired
+    private PickReleaseService pickReleaseService;
+
     public PickList findById(Long id) {
 
         return pickListRepository.findById(id)
@@ -68,10 +71,10 @@ public class PickListService {
 
     }
 
-    public List<PickList> findAll(Long warehouseId, String number) {
-        return findAll(warehouseId, number, true);
+    public List<PickList> findAll(Long warehouseId, String number, String numberList) {
+        return findAll(warehouseId, number, numberList, true);
     }
-    public List<PickList> findAll(Long warehouseId, String number, boolean loadDetails) {
+    public List<PickList> findAll(Long warehouseId, String number, String numberList, boolean loadDetails) {
 
         List<PickList> pickLists =  pickListRepository.findAll(
                 (Root<PickList> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -81,6 +84,14 @@ public class PickListService {
 
                     if (StringUtils.isNotBlank(number)) {
                         predicates.add(criteriaBuilder.equal(root.get("number"), number));
+
+                    }
+                    if (StringUtils.isNotBlank(numberList)) {
+                        CriteriaBuilder.In<String> inNumbers = criteriaBuilder.in(root.get("number"));
+                        for(String bulkPickNumber : numberList.split(",")) {
+                            inNumbers.value(bulkPickNumber);
+                        }
+                        predicates.add(criteriaBuilder.and(inNumbers));
 
                     }
 
@@ -138,17 +149,33 @@ public class PickListService {
         pickListRepository.deleteById(id);
     }
 
-    // Group the pick into a list and return the list
-    // if we don't have the list picking policy turned on, or
-    // we don't have the matched policy, return null
     @Transactional
     public PickList processPickList(Pick pick) {
+        return processPickList(pick, new ArrayList<>());
+    }
+
+    /**
+     * Group the pick into a list and return the list
+     * if we don't have the list picking policy turned on, or
+     * we don't have the matched policy, return null. the function accept
+     * a list of pick list that created in the same transaction. It is useful
+     * when
+     * 1. those will be the first priority to group the pick into
+     * 2. if the list configuration doesn't allow new pick to be added into
+     *    existing list, then those are the only option to add the pick
+     * @param pick
+     * @param pickLists
+     * @return
+     */
+    @Transactional
+    public PickList processPickList(Pick pick, List<PickList> pickLists) {
         // first, let's check if the pick is enabled
         // 1. globally
         // 2. enabled for the customer
         // 3. etc(see the method for the details
+
         if(!listPickEnabled(pick)) {
-            logger.debug("list pick is not enabled");
+            logger.debug("list pick is not enabled for warehouse {}", pick.getWarehouseId());
 
             return null;
         }
@@ -162,18 +189,33 @@ public class PickListService {
             return null;
         }
         try {
-            PickList  pickList = findMatchedPickList(listPickConfigurations, pick);
+            logger.debug("start to find matched pick list for pick {}, with {} existing list in the current session",
+                    pick.getNumber(), pickLists.size());
+            pickLists.forEach(
+                    pickList -> logger.debug(">> existing list: {}, number of picks: {}", pickList.getNumber(),
+                            pickList.getPicks().size())
+            );
+            PickList pickList = findMatchedPickList(listPickConfigurations, pick, pickLists);
             return pickList;
         }
         catch (GenericException ex) {
             // OK we can't find any existing pick list for the pick. Let's
             // create a new list based upon the first available pick list
             logger.debug("We can't find any existing picking list, let's try to create one based on the configuration");
-            return createPickList(listPickConfigurations, pick);
+            PickList pickList = createPickList(listPickConfigurations, pick);
+            // let's release the list pick
+            pickList = pickReleaseService.releasePickList(pickList);
+            // add the new pick list to the temporary list so that
+            // we can consider the list as first priority for grouping
+            // new picks from the same session
+            pickLists.add(pickList);
+
+            return pickList;
 
         }
 
     }
+
 
     private boolean listPickEnabled(Pick pick) {
 
@@ -232,12 +274,16 @@ public class PickListService {
     }
 
     private PickList findMatchedPickList(List<ListPickConfiguration> listPickConfigurations, Pick pick) {
+        return findMatchedPickList(listPickConfigurations, pick, new ArrayList<>());
+    }
+    private PickList findMatchedPickList(List<ListPickConfiguration> listPickConfigurations, Pick pick,
+                                         List<PickList> pickLists) {
 
         for(ListPickConfiguration listPickConfiguration : listPickConfigurations) {
             try {
                 logger.debug("Start to find existing PENDING picking list based on the configuraiton {}",
                         listPickConfiguration);
-                PickList pickList = findMatchedPickList(listPickConfiguration, pick);
+                PickList pickList = findMatchedPickList(listPickConfiguration, pick, pickLists);
                 return pickList;
             }
             catch (GenericException ex) {
@@ -251,17 +297,47 @@ public class PickListService {
     }
 
     private PickList findMatchedPickList(ListPickConfiguration listPickConfiguration, Pick pick) {
+        return findMatchedPickList(listPickConfiguration, pick, new ArrayList<>());
+    }
+    private PickList findMatchedPickList(ListPickConfiguration listPickConfiguration, Pick pick,
+                                         List<PickList> pickListsFromSameSession) {
 
         String groupKey = getGroupKey(listPickConfiguration, pick);
 
-        logger.debug("Will try to find existing list picking based on groupKey: {}",
-                groupKey);
-        // Only return the open list with same group key
-        List<PickList> pickLists = findByGroupKeyAndStatus(groupKey, PickListStatus.PENDING);
-        if (pickLists.size() == 0) {
-            throw PickingException.raiseException( "Can't find matched open list with the configuration");
+        // see if we have pick list with same group key that is created
+        // from the same session
+        for (PickList pickList : pickListsFromSameSession) {
+            logger.debug("start to check if save session pick list {} with status {} " +
+                            " has the same group key {} as the pick's group key {}" +
+                    pickList.getNumber(),
+                    pickList.getStatus(),
+                    pickList.getGroupKey(),
+                    groupKey);
+            if (pickList.getGroupKey().equalsIgnoreCase(groupKey) &&
+                    (pickList.getStatus().equals(PickListStatus.PENDING) || pickList.getStatus().equals(PickListStatus.RELEASED))) {
+                return pickList;
+            }
         }
-        return pickLists.get(0);
+
+        // ok, we don't have list with same group key, we will need to find from
+        // existing but pending list(list that no one started yet)
+        // ONLY if the configuration allows to add new pick into existing list
+        if (Boolean.TRUE.equals(listPickConfiguration.getAllowAddToExistingList())) {
+
+            logger.debug("Will try to find existing list picking based on groupKey: {}",
+                    groupKey);
+            // Only return the open list with same group key
+            List<PickList> pickLists = findByGroupKeyAndStatus(groupKey, PickListStatus.PENDING);
+            if (pickLists.size() == 0) {
+                throw PickingException.raiseException( "Can't find matched open list with the configuration");
+            }
+
+            return pickLists.get(0);
+        }
+        else {
+
+            throw PickingException.raiseException( "Configuration doesn't allow adding new pick into existing list");
+        }
     }
 
     private String getGroupKey(ListPickConfiguration listPickConfiguration, Pick pick) {

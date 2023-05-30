@@ -49,6 +49,9 @@ import java.util.*;
 public class WaveService {
     private static final Logger logger = LoggerFactory.getLogger(WaveService.class);
 
+    // maximun orders per wave
+    private static final int MAX_ORDER_PER_WAVE = 1000;
+
     @Autowired
     private WaveRepository waveRepository;
     @Autowired
@@ -57,6 +60,8 @@ public class WaveService {
     private OrderService orderService;
     @Autowired
     private OrderLineService orderLineService;
+    @Autowired
+    private PickListService pickListService;
 
     @Autowired
     private BulkPickService bulkPickService;
@@ -375,7 +380,7 @@ public class WaveService {
                 customerName, customerId, startCreatedTime, endCreatedTime,
                 specificCreatedDate,
                 singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
-                clientRestriction);
+                clientRestriction, MAX_ORDER_PER_WAVE);
     }
 
     public Wave allocateWave(Long id) {
@@ -419,10 +424,52 @@ public class WaveService {
 
         // for anything that not fall in the bulk pick, see if we can group them into
         // a list pick
-        // requestListPick(allocationResults);
+        processListPick(warehouseId, waveNumber, allocationResults);
 
         releaseSinglePicks(warehouseId, waveNumber, allocationResults);
 
+    }
+
+
+    /**
+     * Find picks from the same wave and group them together into the same list
+     * @param warehouseId
+     * @param waveNumber
+     */
+    private void processListPick(Long warehouseId, String waveNumber, List<AllocationResult> allocationResults) {
+        logger.debug("start to process pick list for wave {}", waveNumber);
+        // save the pick list that generated in this session.
+        // in case the pick list configuration is setup to be NOT allow new pick
+        // being group into existing, then we will only group the pick into
+        // the list that generated in the same session
+        List<PickList> pickLists = new ArrayList<>();
+
+        // let's get any pick that is
+        // 1. not in any group
+        // 2. in PENDING status
+        // and see if we can group into a existing pick
+        allocationResults.stream().map(
+                allocationResult ->  allocationResult.getPicks()
+        ).flatMap(List::stream)
+                .filter(pick ->  pick.getStatus().equals(PickStatus.PENDING) &&
+                            Objects.isNull(pick.getBulkPick()) &&
+                            Objects.isNull(pick.getCartonization()) &&
+                            Objects.isNull(pick.getWorkTaskId()) &&
+                            pick.getPickedQuantity() == 0
+                 )
+                .forEach(
+                        pick -> {
+                            PickList pickList = pickListService.processPickList(pick, pickLists);
+                            if (Objects.nonNull(pickList)) {
+                                assignPickToList(pick, pickList);
+                            }
+                        }
+                );
+
+    }
+
+    private void assignPickToList(Pick pick, PickList pickList) {
+        pickService.assignPickToList(pick, pickList);
     }
 
     /**
