@@ -1564,7 +1564,8 @@ public class InventoryService {
                         inventory.getQuantity(),
                         destination.getId(), inventory.getId()
                 );
-                if (workOrderMaterialConsumeTiming.equals(
+                if (Objects.nonNull(workOrderMaterialConsumeTiming) &&
+                        workOrderMaterialConsumeTiming.equals(
                         WorkOrderMaterialConsumeTiming.WHEN_DELIVER
                 )) {
                     // ok the work order's consume time is when delivered
