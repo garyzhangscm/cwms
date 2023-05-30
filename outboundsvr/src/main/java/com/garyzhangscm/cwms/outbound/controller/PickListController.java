@@ -33,8 +33,9 @@ public class PickListController {
 
     @RequestMapping(value="/pick-lists", method = RequestMethod.GET)
     public List<PickList> findAllPickLists(@RequestParam Long warehouseId,
-                                           @RequestParam(name="number", required = false, defaultValue = "") String number) {
-        return pickListService.findAll(warehouseId, number);
+                                           @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                           @RequestParam(name="numberList", required = false, defaultValue = "") String numberList) {
+        return pickListService.findAll(warehouseId, number, numberList);
     }
 
 

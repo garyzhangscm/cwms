@@ -41,17 +41,11 @@ public class PickList  extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private PickListStatus status;
 
-    @Override
-    public String toString() {
-        return "PickList{" +
-                "id=" + id +
-                ", picks=" + picks +
-                ", groupKey='" + groupKey + '\'' +
-                ", warehouseId=" + warehouseId +
-                ", warehouse=" + warehouse +
-                ", status=" + status +
-                '}';
-    }
+    @Column(name = "work_task_id")
+    private Long workTaskId;
+
+    @Transient
+    private WorkTask workTask;
 
     public Long getId() {
         return id;
@@ -107,5 +101,21 @@ public class PickList  extends AuditibleEntity<String>{
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public Long getWorkTaskId() {
+        return workTaskId;
+    }
+
+    public void setWorkTaskId(Long workTaskId) {
+        this.workTaskId = workTaskId;
+    }
+
+    public WorkTask getWorkTask() {
+        return workTask;
+    }
+
+    public void setWorkTask(WorkTask workTask) {
+        this.workTask = workTask;
     }
 }

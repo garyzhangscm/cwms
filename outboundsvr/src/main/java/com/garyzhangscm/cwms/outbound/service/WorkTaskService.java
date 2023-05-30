@@ -81,5 +81,18 @@ public class WorkTaskService {
 
         return resourceServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
     }
+    public WorkTask releasePickList(PickList pickList) {
+
+        WorkTask workTask = new WorkTask(
+                pickList.getWarehouseId(),
+                "",
+                WorkTaskType.LIST_PICK,
+                WorkTaskStatus.PENDING,
+                pickList.getPicks().get(0).getSourceLocationId(),
+                pickList.getPicks().get(0).getDestinationLocationId(),
+                pickList.getNumber());
+
+        return resourceServiceRestemplateClient.addWorkTask(workTask.getWarehouseId(), workTask);
+    }
 
 }

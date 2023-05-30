@@ -2160,5 +2160,6 @@
   "order-cancelled": "Order is cancelled",
   "singleOrderLineOnly": "Single Line Only",
   "singleOrderQuantityOnly": "Single Quantity Only",
-  "singleOrderCaseQuantityOnly": "Single Case Quantity Only"
+  "singleOrderCaseQuantityOnly": "Single Case Quantity Only",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "By Wave"
 }

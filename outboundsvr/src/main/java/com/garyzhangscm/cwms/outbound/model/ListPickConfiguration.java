@@ -42,6 +42,9 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "allow_add_to_existing_list")
+    private Boolean allowAddToExistingList;
+
     @OneToMany(
             mappedBy = "listPickConfiguration",
             cascade = CascadeType.ALL,
@@ -145,5 +148,13 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
 
     public void setMaxWeight(Double maxWeight) {
         this.maxWeight = maxWeight;
+    }
+
+    public Boolean getAllowAddToExistingList() {
+        return allowAddToExistingList;
+    }
+
+    public void setAllowAddToExistingList(Boolean allowAddToExistingList) {
+        this.allowAddToExistingList = allowAddToExistingList;
     }
 }

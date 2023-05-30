@@ -115,6 +115,7 @@ public class OrderService {
 
     public List<Order> findAll(Long warehouseId,
                                String number,
+                               String numbers,
                                String status,
                                ZonedDateTime startCompleteTime,
                                ZonedDateTime endCompleteTime,
@@ -145,6 +146,15 @@ public class OrderService {
                             predicates.add(criteriaBuilder.equal(root.get("number"), number));
                         }
                     }
+                    if (StringUtils.isNotBlank(numbers)) {
+
+                        CriteriaBuilder.In<String> inNumbers = criteriaBuilder.in(root.get("number"));
+                        for(String orderNumber : numbers.split(",")) {
+                            inNumbers.value(orderNumber);
+                        }
+                        predicates.add(criteriaBuilder.and(inNumbers));
+                    }
+
 
 
                     if (StringUtils.isNotBlank(status)) {
@@ -223,6 +233,7 @@ public class OrderService {
                         Join<Shipment, Stop> joinStop = joinShipment.join("stop", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinStop.get("trailerAppointmentId"), trailerAppointmentId));
                     }
+
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -297,7 +308,7 @@ public class OrderService {
 
     }
 
-    public List<Order> findAll(Long warehouseId, String number, String status,
+    public List<Order> findAll(Long warehouseId, String number, String numbers, String status,
                                ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
                                ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
@@ -306,7 +317,7 @@ public class OrderService {
                                Long clientId,
                               Long trailerAppointmentId,
                               ClientRestriction clientRestriction) {
-        return findAll(warehouseId, number, status,
+        return findAll(warehouseId, number, numbers, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category, customerName, customerId,
@@ -374,10 +385,11 @@ public class OrderService {
                                          Boolean singleOrderLineOnly,
                                          Boolean singleOrderQuantityOnly,
                                          Boolean singleOrderCaseQuantityOnly,
-                                         ClientRestriction clientRestriction) {
+                                         ClientRestriction clientRestriction,
+                                         int orderNumberCap) {
 
         List<Order> orders = findAll(warehouseId,
-                orderNumber, null,
+                orderNumber, null, OrderStatus.OPEN.toString(),
                 null,
                 null,
                 null,
@@ -389,12 +401,17 @@ public class OrderService {
                 customerId,
                 clientId,
                 null,
-                true, clientRestriction);
+                false, clientRestriction);
+
+        if (orders.size() > orderNumberCap) {
+            orders = orders.subList(0, orderNumberCap);
+        }
+
+        logger.debug("Get {} orders for waving", orders.size());
 
         // skip the completed ones and any orders that doesn't have any open quantity
-        return orders.stream().filter(
-                order -> !order.getStatus().equals(OrderStatus.CANCELLED) && !order.getStatus().equals(OrderStatus.COMPLETE)
-        ).filter(
+        List<Order> waveableOrders =  orders.stream()
+                .filter(
              order -> {
                 if (Boolean.TRUE.equals(singleOrderLineOnly) && !isSingleLineOrder(order)) {
                     logger.debug("Skip order {}. We will need to return single line order but the order has mutliple lines",
@@ -432,6 +449,11 @@ public class OrderService {
         ).filter(
                 order -> !order.getOrderLines().isEmpty()
         ).collect(Collectors.toList());
+
+        if (waveableOrders.size() > 0) {
+            loadOrderAttribute(waveableOrders);
+        }
+        return waveableOrders;
 
     }
 /**
@@ -2755,10 +2777,11 @@ public class OrderService {
     }
 
     public List<OrderQueryWrapper> getOrdersForQuery(Long warehouseId, String number,
+                                                     String numbers,
                                                      String status,
                                                      ClientRestriction clientRestriction) {
 
-        List<Order> orders = findAll(warehouseId, number,
+        List<Order> orders = findAll(warehouseId, number, numbers,
                 status, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
