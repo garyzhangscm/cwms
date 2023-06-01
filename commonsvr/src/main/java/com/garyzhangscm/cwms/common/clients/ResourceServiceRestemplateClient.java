@@ -18,17 +18,12 @@
 
 package com.garyzhangscm.cwms.common.clients;
 
-import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.common.model.Role;
 import com.garyzhangscm.cwms.common.model.User;
-import com.garyzhangscm.cwms.common.model.WorkingTeam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,9 +35,8 @@ public class ResourceServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
-
-
+    private RestTemplateProxy restTemplateProxy;
+/**
     @Cacheable(cacheNames = "CommonService_User", unless="#result == null")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
@@ -50,16 +44,15 @@ public class ResourceServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/resource/users/{id}");
 
-        ResponseBodyWrapper<User> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(id).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<User>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+        return restTemplateProxy.exchange(
+                User.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
+ **/
     @Cacheable(cacheNames = "CommonService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
@@ -68,7 +61,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
-
+/**
         ResponseBodyWrapper<List<User>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -77,6 +70,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
 
         List<User> users = responseBodyWrapper.getData();
+**/
+        List<User> users = restTemplateProxy.exchangeList(
+                User.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
         if (users.size() != 1) {
             return null;
@@ -86,7 +86,7 @@ public class ResourceServiceRestemplateClient {
         }
 
     }
-
+/**
     @Cacheable(cacheNames = "CommonService_Role", unless="#result == null")
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
@@ -104,9 +104,9 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+**/
 
-
-
+/**
     @Cacheable(cacheNames = "CommonService_Role", unless="#result == null")
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
@@ -133,8 +133,8 @@ public class ResourceServiceRestemplateClient {
         }
 
     }
-
-
+**/
+/**
     @Cacheable(cacheNames = "CommonService_WorkingTeam", unless="#result == null")
     public WorkingTeam getWorkingTeamById(Long id) {
         UriComponentsBuilder builder =
@@ -152,6 +152,8 @@ public class ResourceServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
+ **/
+/**
     @Cacheable(cacheNames = "CommonService_WorkingTeam", unless="#result == null")
     public WorkingTeam getWorkingTeamByName(Long companyId, String name) {
         UriComponentsBuilder builder =
@@ -178,6 +180,7 @@ public class ResourceServiceRestemplateClient {
         }
 
     }
+    **/
 
     public String validateNewUsername(Long companyId, Long warehouseId, String value) {
         UriComponentsBuilder builder =
@@ -187,7 +190,7 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("username", value);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -196,5 +199,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 }

@@ -2,21 +2,13 @@ package com.garyzhangscm.cwms.resources.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "report_history")
@@ -39,11 +31,10 @@ public class ReportHistory extends AuditibleEntity<String> {
     private Company company;
 
     @Column(name = "printed_date")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    //@DateTimeFormat(pattern =  "YYYY-MM-DDTHH:mm:ss.SSSZ")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime printedDate;
+    private ZonedDateTime printedDate;
 
     @Column(name = "printed_username")
     private String printedUsername;
@@ -76,7 +67,7 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.companyId = companyId;
         this.warehouseId = warehouseId;
 
-        this.printedDate = LocalDateTime.now();
+        this.printedDate = ZonedDateTime.now();
         this.printedUsername = printedUsername;
         this.type = report.getType();
         this.reportOrientation  = report.getReportOrientation();
@@ -130,11 +121,11 @@ public class ReportHistory extends AuditibleEntity<String> {
         this.warehouse = warehouse;
     }
 
-    public LocalDateTime getPrintedDate() {
+    public ZonedDateTime getPrintedDate() {
         return printedDate;
     }
 
-    public void setPrintedDate(LocalDateTime printedDate) {
+    public void setPrintedDate(ZonedDateTime printedDate) {
         this.printedDate = printedDate;
     }
 

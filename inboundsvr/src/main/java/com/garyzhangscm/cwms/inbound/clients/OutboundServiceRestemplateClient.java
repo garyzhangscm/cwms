@@ -18,21 +18,13 @@
 
 package com.garyzhangscm.cwms.inbound.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 
@@ -41,13 +33,8 @@ public class OutboundServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(OutboundServiceRestemplateClient.class);
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
 
     public void addRequestReturnQuantity(
              Long warehouseId, Long orderLineId, Long requestReturnQuantity) {
@@ -58,13 +45,19 @@ public class OutboundServiceRestemplateClient {
                         .path("/api/outbound/orders/lines/{id}/add-request-return-quantity")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("requestReturnQuantity", requestReturnQuantity);
-
+/**
         restTemplate.postForEntity(
                     builder.buildAndExpand(orderLineId).toUriString(), null, Void.class);
 
-
+**/
+       restTemplateProxy.exchange(
+               Void.class,
+               builder.buildAndExpand(orderLineId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
-
+/**
     public void addActualReturnQuantity(
             Long warehouseId, Long orderLineId, Long actualReturnQuantity) {
 
@@ -80,14 +73,6 @@ public class OutboundServiceRestemplateClient {
 
 
     }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
+**/
 
 }

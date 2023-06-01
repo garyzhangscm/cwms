@@ -294,7 +294,8 @@ public class WorkTaskService{
         WorkTask newWorkTask =  saveOrUpdate(workTask);
         // let's release the work task
         if (newWorkTask.getStatus().equals(WorkTaskStatus.PENDING)) {
-            logger.debug("the new work task's status is pending, let's release it and get the operation type and priority");
+            logger.debug("the new work task {}'s status is pending, let's release it and get the operation type and priority",
+                    newWorkTask.getNumber());
             newWorkTask = releaseWorkTask(newWorkTask);
         }
         return newWorkTask;

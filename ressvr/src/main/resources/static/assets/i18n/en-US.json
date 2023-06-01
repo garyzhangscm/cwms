@@ -2161,5 +2161,7 @@
   "singleOrderLineOnly": "Single Line Only",
   "singleOrderQuantityOnly": "Single Quantity Only",
   "singleOrderCaseQuantityOnly": "Single Case Quantity Only",
-  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "By Wave"
+  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "By Wave",
+  "releaseToWorkTask": "Release Pick List to Work Task",
+  "workTaskPriority": "Work Task Priority"
 }

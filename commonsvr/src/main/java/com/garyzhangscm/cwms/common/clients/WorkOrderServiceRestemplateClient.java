@@ -38,8 +38,7 @@ public class WorkOrderServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderServiceRestemplateClient.class);
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     public String validatNewBomNumber(Long warehouseId, String bomNumber) {
 
@@ -49,7 +48,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/bill-of-materials/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -58,6 +57,14 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 
@@ -69,7 +76,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/production-plans/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -78,7 +85,14 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
 
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String validatNewWorkOrderNumber(Long warehouseId, String bomNumber) {
@@ -89,7 +103,7 @@ public class WorkOrderServiceRestemplateClient {
                         .path("/api/workorder/work-orders/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -98,6 +112,14 @@ public class WorkOrderServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
 }

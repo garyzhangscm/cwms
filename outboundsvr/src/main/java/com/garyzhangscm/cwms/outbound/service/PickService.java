@@ -1025,6 +1025,7 @@ public class PickService {
 
 
     }
+    /**
     @Transactional
     private void processPickList(Pick pick) {
         try {
@@ -1050,7 +1051,7 @@ public class PickService {
                          , pick.getNumber(), ex.getMessage(), ex.getData());
         }
     }
-
+**/
     /**
      * Generate emergency replenishment type of picks for short allocation
      * @param inventorySummary

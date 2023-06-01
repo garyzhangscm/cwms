@@ -778,7 +778,7 @@ public class BulkPickService {
     }
 
     @Transactional
-    public void cancelPick(Long id, Boolean errorLocation, Boolean generateCycleCount) {
+    public void cancelBulkPick(Long id, Boolean errorLocation, Boolean generateCycleCount) {
         BulkPick bulkPick = findById(id);
         // let's cancel all the picks in this bulk
         // if we will need to generate the cycle count, then we will generate one

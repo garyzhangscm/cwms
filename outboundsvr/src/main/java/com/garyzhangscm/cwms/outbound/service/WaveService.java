@@ -459,19 +459,12 @@ public class WaveService {
                  )
                 .forEach(
                         pick -> {
-                            PickList pickList = pickListService.processPickList(pick, pickLists);
-                            if (Objects.nonNull(pickList)) {
-                                assignPickToList(pick, pickList);
-                            }
+                            pickListService.processPickList(pick, pickLists);
                         }
                 );
 
-    }
 
-    private void assignPickToList(Pick pick, PickList pickList) {
-        pickService.assignPickToList(pick, pickList);
     }
-
     /**
      * Release the picks of the wave, which are not in any group of
      * 1. list pick

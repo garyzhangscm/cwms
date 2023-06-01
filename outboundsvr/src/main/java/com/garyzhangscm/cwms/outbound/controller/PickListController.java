@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.PickList;
 import com.garyzhangscm.cwms.outbound.service.PickListService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,14 @@ public class PickListController {
     @RequestMapping(value="/pick-lists/{id}", method = RequestMethod.GET)
     public PickList findPickList(@PathVariable Long id) {
         return pickListService.findById(id);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> cancelPickList(@PathVariable Long id){
+        pickListService.cancelPickList(id);
+        return ResponseBodyWrapper.success("pick list " + id + " is cancelled");
     }
 
 }

@@ -415,19 +415,19 @@ public class PutawayConfigurationService implements TestDataInitiableService{
             }
         }
         else if (putawayConfiguration.getLocationGroupId() != null) {
-            Location[] locationsByGroup = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
+            List<Location> locationsByGroup = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
                     putawayConfiguration.getWarehouseId(),
                     String.valueOf(putawayConfiguration.getLocationGroupId()));
-            if (locationsByGroup.length > 0) {
-                locations = Arrays.asList(locationsByGroup);
+            if (locationsByGroup.size() > 0) {
+                locations = locationsByGroup;
             }
         }
         else if (putawayConfiguration.getLocationGroupTypeId() != null) {
-            Location[] locationsByGroupType = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroupTypes(
+            List<Location> locationsByGroupType = warehouseLayoutServiceRestemplateClient.getLocationByLocationGroupTypes(
                     putawayConfiguration.getWarehouseId(),
                     String.valueOf(putawayConfiguration.getLocationGroupTypeId()));
-            if (locationsByGroupType.length > 0) {
-                locations = Arrays.asList(locationsByGroupType);
+            if (locationsByGroupType.size() > 0) {
+                locations = locationsByGroupType;
             }
         }
 
