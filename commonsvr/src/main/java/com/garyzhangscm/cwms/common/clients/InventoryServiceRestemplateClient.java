@@ -19,48 +19,25 @@
 package com.garyzhangscm.cwms.common.clients;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.List;
 
 @Component
 public class InventoryServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryServiceRestemplateClient.class);
 
-    @Qualifier("getObjMapper")
     @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
-
-    @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
-
-
-
-
-
+    private RestTemplateProxy restTemplateProxy;
 
     public String validateNewLPN(Long warehouseId, String lpn) {
 
@@ -70,7 +47,7 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventories/validate-new-lpn")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("lpn", lpn);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -79,6 +56,14 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
     }
     public String validateNewItemName(Long warehouseId, String itemName) {
 
@@ -90,7 +75,7 @@ public class InventoryServiceRestemplateClient {
                     .path("/api/inventory/items/validate-new-item-name")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("itemName", URLEncoder.encode(itemName, "UTF-8"));
-
+/**
             ResponseBodyWrapper<String> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -99,6 +84,14 @@ public class InventoryServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
             return responseBodyWrapper.getData();
+ **/
+
+            return restTemplateProxy.exchange(
+                    String.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.POST,
+                    null
+            );
         }
         catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
@@ -112,7 +105,7 @@ public class InventoryServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventory/{id}");
-
+/**
         ResponseBodyWrapper<Inventory> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -121,9 +114,18 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Inventory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
+    /**
     public List<Inventory> getInventoryByLpn(Long warehouseId, String lpn) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -142,7 +144,7 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
 
     }
-
+**/
     public String validateNewInventoryLockName(Long warehouseId, String inventoryLockName) {
 
         UriComponentsBuilder builder =
@@ -151,7 +153,7 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventory-lock/validate-new-inventory-lock-name")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("inventoryLockName", inventoryLockName);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -160,5 +162,13 @@ public class InventoryServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 }

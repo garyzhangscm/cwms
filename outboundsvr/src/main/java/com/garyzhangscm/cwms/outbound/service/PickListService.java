@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
@@ -49,6 +50,8 @@ public class PickListService {
     private PickListRepository pickListRepository;
     @Autowired
     private ListPickConfigurationService listPickConfigurationService;
+    @Autowired
+    private PickService pickService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -56,6 +59,8 @@ public class PickListService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
     private PickReleaseService pickReleaseService;
@@ -130,6 +135,15 @@ public class PickListService {
                     pickList.getWarehouseId()
             ));
         }
+        if (Objects.nonNull(pickList.getWorkTaskId()) &&
+                Objects.isNull(pickList.getWorkTask())) {
+            pickList.setWorkTask(resourceServiceRestemplateClient.getWorkTaskById(
+                    pickList.getWarehouseId(),
+                    pickList.getWorkTaskId()
+            ));
+        }
+        pickService.loadAttribute(pickList.getPicks());
+
     }
 
     public List<PickList> findByGroupKey(String groupKey) {
@@ -148,11 +162,12 @@ public class PickListService {
     public void delete(Long id) {
         pickListRepository.deleteById(id);
     }
-
+    /**
     @Transactional
     public PickList processPickList(Pick pick) {
         return processPickList(pick, new ArrayList<>());
     }
+    **/
 
     /**
      * Group the pick into a list and return the list
@@ -196,6 +211,15 @@ public class PickListService {
                             pickList.getPicks().size())
             );
             PickList pickList = findMatchedPickList(listPickConfigurations, pick, pickLists);
+
+            if (Objects.nonNull(pickList)) {
+                // if we found an existing list, let's add the pick to the list
+                logger.debug("add pick {} to the list {}",
+                        pick.getNumber(),
+                        pickList.getNumber());
+                pickService.assignPickToList(pick, pickList);
+            }
+
             return pickList;
         }
         catch (GenericException ex) {
@@ -389,6 +413,16 @@ public class PickListService {
                         }
 
                         break;
+                    case BY_WAVE:
+                        if (Objects.nonNull(pick.getShipmentLine()) &&
+                            Objects.nonNull(pick.getShipmentLine().getWave())) {
+                            groupKeyList.add(pick.getShipmentLine().getWave().getNumber());
+                        }
+                        else {
+
+                            groupKeyList.add("****");
+                        }
+                        break;
                 }
 
             }
@@ -427,13 +461,21 @@ public class PickListService {
         ListPickConfiguration listPickConfiguration = listPickConfigurations.get(0);
         logger.debug("try to create picking list based on the configuration {}", listPickConfiguration);
         String groupKey = getGroupKey(listPickConfiguration, pick);
+        logger.debug("create a new list with group key {}",
+                groupKey);
 
         PickList pickList = new PickList();
         pickList.setGroupKey(groupKey);
         pickList.setStatus(PickListStatus.PENDING);
         pickList.setWarehouseId(pick.getWarehouseId());
         pickList.setNumber(getNextPickListNumber(pick.getWarehouseId()));
-        return save(pickList);
+        pickList = save(pickList);
+
+
+        pick = pickService.assignPickToList(pick, pickList);
+        pickList.getPicks().add(pick);
+
+        return pickList;
     }
 
     public void processPickConfirmed(Pick pick) {
@@ -484,7 +526,23 @@ public class PickListService {
     }
 
 
+    @Transactional
+    public void cancelPickList(Long id) {
+        PickList pickList = findById(id);
+        // let's cancel all the picks in this list
+        for (Pick pick : pickList.getPicks()) {
+            pickService.cancelPick(pick, false, false);
+        }
 
+        // if there's already a work task released for this pick list, then
+        // remove the work task as well
+        if (Objects.nonNull(pickList.getWorkTaskId())) {
+            resourceServiceRestemplateClient.cancelWorkTaskById(
+                    pickList.getWarehouseId(),
+                    pickList.getWorkTaskId()
+            );
+        }
 
-
+        delete(pickList);
+    }
 }

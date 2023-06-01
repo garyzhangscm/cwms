@@ -18,13 +18,10 @@
 
 package com.garyzhangscm.cwms.common.clients;
 
-import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -34,7 +31,7 @@ public class InboundServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(InboundServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
 
     public int getReceiptCountBySupplier(Long warehouseId, Long supplierId) {
@@ -44,7 +41,7 @@ public class InboundServiceRestemplateClient {
                         .path("/api/inbound/receipts/count-by-supplier")
                 .queryParam("warehouseId", warehouseId)
                         .queryParam("supplierId", supplierId);
-
+/**
         ResponseBodyWrapper<Integer> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -53,6 +50,14 @@ public class InboundServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<Integer>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                Integer.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 

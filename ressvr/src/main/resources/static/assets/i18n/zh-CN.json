@@ -2158,5 +2158,7 @@
   "singleOrderLineOnly": "仅单行订单",
   "singleOrderQuantityOnly": "仅包含订购单个数量的订单",
   "singleOrderCaseQuantityOnly": "仅包含订购单箱数量的订单",
-  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "按波次"
+  "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "按波次",
+  "releaseToWorkTask": "使用工作任务系统",
+  "workTaskPriority": "工作任务优先级"
 }

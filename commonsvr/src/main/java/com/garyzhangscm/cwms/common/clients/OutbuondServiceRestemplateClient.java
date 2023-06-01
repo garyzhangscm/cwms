@@ -46,14 +46,8 @@ public class OutbuondServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
 
-    @Qualifier("getObjMapper")
     @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
-
-    @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     public String validateNewOrderNumber(Long warehouseId, String orderNumber) {
 
@@ -65,7 +59,7 @@ public class OutbuondServiceRestemplateClient {
                     .path("/api/outbound/orders/validate-new-order-number")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("orderNumber", URLEncoder.encode(orderNumber, "UTF-8"));
-
+/**
             ResponseBodyWrapper<String> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -74,6 +68,14 @@ public class OutbuondServiceRestemplateClient {
                     new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
             return responseBodyWrapper.getData();
+**/
+            return restTemplateProxy.exchange(
+                    String.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.POST,
+                    null
+            );
+
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             throw ResourceNotFoundException.raiseException("can't find the order by name " + orderNumber);

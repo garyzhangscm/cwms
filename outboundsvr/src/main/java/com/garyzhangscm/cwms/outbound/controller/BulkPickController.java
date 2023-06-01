@@ -80,7 +80,7 @@ public class BulkPickController {
     public ResponseBodyWrapper<String> cancelPick(@PathVariable Long id,
                                           @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
                                           @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
-        bulkPickService.cancelPick(id, errorLocation, generateCycleCount);
+        bulkPickService.cancelBulkPick(id, errorLocation, generateCycleCount);
         return ResponseBodyWrapper.success("bulk pick " + id + " is cancelled");
     }
 

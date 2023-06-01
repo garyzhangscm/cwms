@@ -4,8 +4,6 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDateTime;
-
 public class ReportHistory extends AuditibleEntity<String> {
 
     private Long id;
@@ -14,7 +12,7 @@ public class ReportHistory extends AuditibleEntity<String> {
     private Long warehouseId;
     private Warehouse warehouse;
 
-    private LocalDateTime printedDate;
+
     private String printedUsername;
 
     private String description;
@@ -60,14 +58,6 @@ public class ReportHistory extends AuditibleEntity<String> {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
-    }
-
-    public LocalDateTime getPrintedDate() {
-        return printedDate;
-    }
-
-    public void setPrintedDate(LocalDateTime printedDate) {
-        this.printedDate = printedDate;
     }
 
     public String getFileName() {

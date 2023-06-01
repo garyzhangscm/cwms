@@ -19,31 +19,20 @@
 package com.garyzhangscm.cwms.inbound.clients;
 
 
-import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
 
 @Component
 public class AdminServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminServiceRestemplateClient.class);
 
-
-    @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
 
     @Autowired
     private RestTemplateProxy restTemplateProxy;
@@ -56,7 +45,7 @@ public class AdminServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/admin/billable-activity-types/{id}");
-
+/**
         ResponseBodyWrapper<BillableActivityType> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                         builder.buildAndExpand(id).toUriString(),
@@ -65,7 +54,15 @@ public class AdminServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<BillableActivityType>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
 
+
+        return restTemplateProxy.exchange(
+                BillableActivityType.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
 }

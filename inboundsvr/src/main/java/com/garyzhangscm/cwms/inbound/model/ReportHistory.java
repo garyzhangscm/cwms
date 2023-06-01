@@ -1,10 +1,7 @@
 package com.garyzhangscm.cwms.inbound.model;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.time.ZonedDateTime;
 
 public class ReportHistory {
 
@@ -14,7 +11,7 @@ public class ReportHistory {
     private Long warehouseId;
     private Warehouse warehouse;
 
-    private ZonedDateTime printedDate;
+
     private String printedUsername;
 
     private String description;
@@ -60,14 +57,6 @@ public class ReportHistory {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
-    }
-
-    public ZonedDateTime getPrintedDate() {
-        return printedDate;
-    }
-
-    public void setPrintedDate(ZonedDateTime printedDate) {
-        this.printedDate = printedDate;
     }
 
     public String getFileName() {
