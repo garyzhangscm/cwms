@@ -596,7 +596,17 @@ public class PickListService {
             // remove the picked quantity from the total quantity
             totalPickQuantity -= pickQuantity;
         }
-        return findById(pickList.getId());
+        pickList = findById(pickList.getId());
+
+        if (Objects.nonNull(pickList.getWorkTaskId()) &&
+            pickList.getPicks().stream().noneMatch(pick -> pick.getQuantity() < pick.getPickedQuantity())) {
+            logger.debug("All picks in the list {} are completely picked, let's complete the work task");
+            resourceServiceRestemplateClient.completeWorkTask(
+                    pickList.getWarehouseId(), pickList.getWorkTaskId()
+            );
+        }
+
+        return pickList;
 
     }
 
