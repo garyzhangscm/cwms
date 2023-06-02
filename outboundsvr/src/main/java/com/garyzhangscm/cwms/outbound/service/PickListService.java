@@ -68,9 +68,16 @@ public class PickListService {
     private PickReleaseService pickReleaseService;
 
     public PickList findById(Long id) {
+        return findById(id, true);
+    }
+    public PickList findById(Long id, boolean loadDetails) {
 
-        return pickListRepository.findById(id)
+        PickList pickList = pickListRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException(" pick list not found by id: " + id));
+        if (Objects.nonNull(pickList) && loadDetails) {
+            loadAttribute(pickList);
+        }
+        return pickList;
     }
 
     public PickList save(PickList pickList) {
@@ -549,13 +556,16 @@ public class PickListService {
     }
 
 
-    public PickList confirmPickList(Long pickId, Long quantity, Long nextLocationId,
+    public PickList confirmPickList(Long pickId,
+                                    Long sourceLocationId,
+                                    Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
                             String lpn)  {
         PickList pickList = findById(pickId);
         List<Pick> confirmablePicks = pickList.getPicks().stream().filter(
-                pick -> pick.getQuantity() > pick.getPickedQuantity()
+                pick -> pick.getSourceLocationId().equals(sourceLocationId) &&
+                        pick.getQuantity() > pick.getPickedQuantity()
         ).collect(Collectors.toList());
 
         // make sure all the picks in the list are pickable
@@ -598,9 +608,18 @@ public class PickListService {
         }
         pickList = findById(pickList.getId());
 
+        logger.debug("pick list {}'s work task id {}",
+                pickList.getNumber(), pickList.getWorkTaskId());
+        pickList.getPicks().forEach(
+                pick -> logger.debug("pick {}, pick quantity {}, picked quantity {}",
+                        pick.getNumber(),
+                        pick.getQuantity(),
+                        pick.getPickedQuantity())
+        );
         if (Objects.nonNull(pickList.getWorkTaskId()) &&
-            pickList.getPicks().stream().noneMatch(pick -> pick.getQuantity() < pick.getPickedQuantity())) {
-            logger.debug("All picks in the list {} are completely picked, let's complete the work task");
+            pickList.getPicks().stream().allMatch(pick -> pick.getQuantity() <= pick.getPickedQuantity())) {
+            logger.debug("All picks in the list {} are completely picked, let's complete the work task",
+                    pickList.getNumber());
             resourceServiceRestemplateClient.completeWorkTask(
                     pickList.getWarehouseId(), pickList.getWorkTaskId()
             );

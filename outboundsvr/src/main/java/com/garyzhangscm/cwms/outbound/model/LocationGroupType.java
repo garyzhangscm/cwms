@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -50,19 +52,12 @@ public class LocationGroupType {
 
     @Override
     public String toString() {
-        return "LocationGroupType{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", fourWallInventory=" + fourWallInventory +
-                ", virtual=" + virtual +
-                ", receivingStage=" + receivingStage +
-                ", shippingStage=" + shippingStage +
-                ", dock=" + dock +
-                ", yard=" + yard +
-                ", storage=" + storage +
-                ", pickupAndDeposit=" + pickupAndDeposit +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

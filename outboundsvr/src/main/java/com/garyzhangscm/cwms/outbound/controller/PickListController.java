@@ -64,6 +64,7 @@ public class PickListController {
     @BillableEndpoint
     @RequestMapping(value="/pick-lists/{id}/confirm", method = RequestMethod.POST)
     public PickList confirmPickList(@PathVariable Long id,
+                            @RequestParam Long sourceLocationId,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
@@ -72,12 +73,13 @@ public class PickListController {
                             @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
         logger.debug("======        Start to confirm pick list  ========");
         logger.debug("=> quantity: {}", quantity);
+        logger.debug("=> sourceLocationId: {}", sourceLocationId);
         logger.debug("=> nextLocationId: {}", nextLocationId);
         logger.debug("=> nextLocationName: {}", nextLocationName);
         logger.debug("=> pickToContainer: {}", pickToContainer);
         logger.debug("=> containerId: {}", containerId);
         logger.debug("=> pick from LPN: {}", lpn);
-        return pickListService.confirmPickList(id, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
+        return pickListService.confirmPickList(id, sourceLocationId, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
     }
 
 }
