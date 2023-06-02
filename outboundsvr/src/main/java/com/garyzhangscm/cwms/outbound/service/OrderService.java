@@ -1374,6 +1374,18 @@ public class OrderService {
     public Order completeOrder(Long orderId, Order completedOrder) {
         Order existingOrder = findById(orderId);
         // Let's make sure the order is still open
+        validateOrderForComplete(existingOrder);
+
+        if (existingOrder.getCategory().isOutsourcingOrder()) {
+            return completeOutsourcingOrder(existingOrder, completedOrder);
+        }
+        else {
+            return completeWarehouseOrder(existingOrder);
+        }
+    }
+
+    private void validateOrderForComplete(Order existingOrder) {
+
         if (existingOrder.getStatus().equals(OrderStatus.COMPLETE)) {
             throw OrderOperationException.raiseException(
                     "Can't complete the order " + existingOrder.getNumber() + " as it is already completed");
@@ -1387,13 +1399,6 @@ public class OrderService {
             throw OrderOperationException.raiseException("There's a cancel request on Order " + existingOrder.getNumber() + ", " +
                     "please cancel it before you want to continue");
         }
-
-        if (existingOrder.getCategory().isOutsourcingOrder()) {
-            return completeOutsourcingOrder(existingOrder, completedOrder);
-        }
-        else {
-            return completeWarehouseOrder(existingOrder);
-        }
     }
 
     /**
@@ -1403,6 +1408,7 @@ public class OrderService {
      */
     @Transactional
     private Order completeWarehouseOrder(Order order) {
+
         // Let's complete all the shipments related to this
         // order
         order.getOrderLines()

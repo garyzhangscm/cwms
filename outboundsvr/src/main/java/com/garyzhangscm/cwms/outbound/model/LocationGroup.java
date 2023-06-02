@@ -20,6 +20,8 @@ package com.garyzhangscm.cwms.outbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
 
@@ -63,20 +65,12 @@ public class LocationGroup {
 
     @Override
     public String toString() {
-        return "LocationGroup{" +
-                "id=" + id +
-                ", warehouse=" + warehouse +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", pickable=" + pickable +
-                ", storable=" + storable +
-                ", countable=" + countable +
-                ", grid=" + grid +
-                ", allowCartonization=" + allowCartonization +
-                ", trackingVolume=" + trackingVolume +
-                ", consolidateLpn=" + consolidateLpn +
-                ", locationGroupType=" + locationGroupType +
-                '}';
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Long getId() {

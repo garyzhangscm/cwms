@@ -836,7 +836,7 @@ public class ShipmentService {
         if (!validateShipmentReadyForComplete(shipment)) {
             throw ShippingException.raiseException("Shipment  " + shipment.getNumber() +
                     " is not ready for complete yet" +
-                    " please check if there's open pick and short allocation");
+                    " please check if there's open pick and short allocation, or inventory has not been staged");
         }
         if (Objects.isNull(shipment.getStop()) && Objects.isNull(shipment.getOrder())) {
 
@@ -922,6 +922,30 @@ public class ShipmentService {
         List<ShortAllocation> shortAllocations
                 = shortAllocationService.findByShipment(shipment);
         if (!shortAllocations.isEmpty()) {
+            return false;
+        }
+
+
+        // if there's anything picked for the shipment, make sure it is either in the
+        // shipping stage area, or already shipped
+        List<Inventory> pickedInventories = getPickedInventory(shipment);
+        logger.debug("Get {} picked inventory ", pickedInventories.size());
+        boolean unStagedInventory =
+                pickedInventories.stream()
+                .anyMatch(inventory -> {
+                    // return the inventory that is in four wall but not in the shipping stage / yard / docker
+                    if (inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory() &&
+                            !inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage() &&
+                            !inventory.getLocation().getLocationGroup().getLocationGroupType().getDock() &&
+                            !inventory.getLocation().getLocationGroup().getLocationGroupType().getYard()) {
+
+                        return true;
+                    }
+                    return false;
+                });
+        if (unStagedInventory) {
+
+            logger.debug("there's un staged inventory for the shipment ");
             return false;
         }
 
