@@ -2160,5 +2160,6 @@
   "singleOrderCaseQuantityOnly": "仅包含订购单箱数量的订单",
   "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "按波次",
   "releaseToWorkTask": "使用工作任务系统",
-  "workTaskPriority": "工作任务优先级"
+  "workTaskPriority": "工作任务优先级",
+  "listPickBatchPicking": "列表拣货 - 当拣货库存属性相同时，组合拣货"
 }
