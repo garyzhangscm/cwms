@@ -18,11 +18,8 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
-import java.util.Objects;
 
 /**
  * Default configuration on RFs
@@ -64,6 +61,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     // from the location groups that marked as receiving stage
     @Column(name = "receiving_receive_to_stage")
     private Boolean receiveToStage = false;
+
+
+    // Outbound
+    // list pick - batch pick when picking from same
+    //    location and attribute
+    @Column(name = "list_pick_batch_picking")
+    private Boolean listPickBatchPicking = true;
 
     public Long getId() {
         return id;
@@ -111,5 +115,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setReceiveToStage(Boolean receiveToStage) {
         this.receiveToStage = receiveToStage;
+    }
+
+    public Boolean getListPickBatchPicking() {
+        return listPickBatchPicking;
+    }
+
+    public void setListPickBatchPicking(Boolean listPickBatchPicking) {
+        this.listPickBatchPicking = listPickBatchPicking;
     }
 }
