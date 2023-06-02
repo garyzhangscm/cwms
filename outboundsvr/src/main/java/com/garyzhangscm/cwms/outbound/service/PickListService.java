@@ -23,9 +23,11 @@ import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.PickingException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PickListRepository;
 
 import org.apache.commons.lang.StringUtils;
@@ -545,4 +547,57 @@ public class PickListService {
 
         delete(pickList);
     }
+
+
+    public PickList confirmPickList(Long pickId, Long quantity, Long nextLocationId,
+                            String nextLocationName,
+                            boolean pickToContainer, String containerId,
+                            String lpn)  {
+        PickList pickList = findById(pickId);
+        List<Pick> confirmablePicks = pickList.getPicks().stream().filter(
+                pick -> pick.getQuantity() > pick.getPickedQuantity()
+        ).collect(Collectors.toList());
+
+        // make sure all the picks in the list are pickable
+        for (Pick pick : confirmablePicks) {
+
+            if (Objects.nonNull(pick.getShipmentLine())) {
+                Order order = pick.getShipmentLine().getOrderLine().getOrder();
+
+                if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+                    throw OrderOperationException.raiseException(
+                            "Can't confirm the pick " + pick.getNumber() + " as its order " +
+                                    order.getNumber() + " already completed");
+                }
+                if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+                    throw OrderOperationException.raiseException(
+                            "Can't confirm the pick " + pick.getNumber() + " as its order " +
+                                    order.getNumber() + " already cancelled");
+                }
+                if (Boolean.TRUE.equals(order.getCancelRequested())) {
+                    throw OrderOperationException.raiseException("There's a cancel request on the pick " +
+                            pick.getNumber() + "'s Order " + order.getNumber() + ", " +
+                            "please cancel it before you want to continue");
+                }
+            }
+        }
+
+        // confirm each pick
+        Long totalPickQuantity = quantity;
+        Iterator<Pick> pickIterator = confirmablePicks.listIterator();
+        while(pickIterator.hasNext() && totalPickQuantity > 0) {
+            Pick pick = pickIterator.next();
+            // get the pick quantity for the current pick
+            long pickQuantity = Math.min(totalPickQuantity, pick.getQuantity() - pick.getPickedQuantity());
+
+            logger.debug("start to confirm pick {} from list {}, with quantity {}",
+                    pick.getNumber(), pickList.getNumber(), pickQuantity);
+            pickService.confirmPick(pick.getId(), pickQuantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
+            // remove the picked quantity from the total quantity
+            totalPickQuantity -= pickQuantity;
+        }
+        return findById(pickList.getId());
+
+    }
+
 }
