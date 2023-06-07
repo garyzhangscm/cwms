@@ -317,7 +317,9 @@ public class QCInspectionRequestService {
                         qcInspectionRequestItem.setQcInspectionRequest(qcInspectionRequest);
                         qcInspectionRequestItem.setQcInspectionResult(QCInspectionResult.PENDING);
                         qcInspectionRequestItem.setQcRule(qcRule);
-                        qcRule.getQcRuleItems().forEach(
+                        qcRule.getQcRuleItems().stream().filter(
+                                qcRuleItem -> Boolean.TRUE.equals(qcRuleItem.getEnabled())
+                        ).forEach(
                                 qcRuleItem -> {
                                     QCInspectionRequestItemOption qcInspectionRequestItemOption = new QCInspectionRequestItemOption();
                                     qcInspectionRequestItemOption.setQcRuleItem(qcRuleItem);

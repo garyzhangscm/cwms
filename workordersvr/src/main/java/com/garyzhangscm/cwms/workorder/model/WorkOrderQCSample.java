@@ -32,6 +32,14 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
     @JoinColumn(name="production_line_assignment_id")
     ProductionLineAssignment productionLineAssignment;
 
+    @ManyToOne
+    @JoinColumn(name="work_order_id")
+    WorkOrder workOrder;
+
+    @ManyToOne
+    @JoinColumn(name="production_line_id")
+    ProductionLine productionLine;
+
     @Column(name = "image_urls")
     private String imageUrls;
 
@@ -82,5 +90,21 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
 
     public void setImageUrls(String imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public WorkOrder getWorkOrder() {
+        return workOrder;
+    }
+
+    public void setWorkOrder(WorkOrder workOrder) {
+        this.workOrder = workOrder;
+    }
+
+    public ProductionLine getProductionLine() {
+        return productionLine;
+    }
+
+    public void setProductionLine(ProductionLine productionLine) {
+        this.productionLine = productionLine;
     }
 }

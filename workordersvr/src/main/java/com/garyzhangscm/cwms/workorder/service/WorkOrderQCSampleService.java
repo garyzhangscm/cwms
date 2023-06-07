@@ -169,6 +169,23 @@ public class WorkOrderQCSampleService   {
 
 
     public WorkOrderQCSample addWorkOrderQCSample(WorkOrderQCSample workOrderQCSample) {
+        // get the work order and production from the production line assignment
+        if (Objects.isNull(workOrderQCSample.getWorkOrder()) ||
+                Objects.isNull(workOrderQCSample.getProductionLine())) {
+
+            // work order or production line is not setup at the sample level,
+            // let's get from the production line assignment
+            ProductionLineAssignment productionLineAssignment = workOrderQCSample.getProductionLineAssignment();
+            if (Objects.isNull(productionLineAssignment.getWorkOrder()) ||
+                    Objects.isNull(productionLineAssignment.getWorkOrder().getId()) ||
+                    Objects.isNull(productionLineAssignment.getProductionLine()) ||
+                    Objects.isNull(productionLineAssignment.getProductionLine().getId()) ) {
+                // work order or production line is not fully loaded in the production line, let's load it
+                productionLineAssignment = productionLineAssignmentService.findById(productionLineAssignment.getId());
+                workOrderQCSample.setWorkOrder(productionLineAssignment.getWorkOrder());
+                workOrderQCSample.setProductionLine(productionLineAssignment.getProductionLine());
+            }
+        }
         return saveOrUpdate(workOrderQCSample);
     }
 
