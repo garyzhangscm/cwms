@@ -69,6 +69,9 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "list_pick_batch_picking")
     private Boolean listPickBatchPicking = true;
 
+    @Column(name = "printer_name")
+    private String printerName;
+
     public Long getId() {
         return id;
     }
@@ -123,5 +126,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setListPickBatchPicking(Boolean listPickBatchPicking) {
         this.listPickBatchPicking = listPickBatchPicking;
+    }
+
+    public String getPrinterName() {
+        return printerName;
+    }
+
+    public void setPrinterName(String printerName) {
+        this.printerName = printerName;
     }
 }

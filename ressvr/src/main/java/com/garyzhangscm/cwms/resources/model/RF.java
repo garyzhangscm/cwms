@@ -46,6 +46,8 @@ public class RF extends AuditibleEntity<String>  {
     @Column(name = "current_location_id")
     private Long currentLocationId;
 
+    @Column(name = "printer_name")
+    private String printerName;
 
     @Override
     public boolean equals(Object o) {
@@ -71,6 +73,13 @@ public class RF extends AuditibleEntity<String>  {
         return null;
     }
 
+    public String getPrinterName() {
+        return printerName;
+    }
+
+    public void setPrinterName(String printerName) {
+        this.printerName = printerName;
+    }
 
     public Long getId() {
         return id;
