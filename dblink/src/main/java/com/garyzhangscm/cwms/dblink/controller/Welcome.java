@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 
@@ -69,7 +71,10 @@ public class Welcome {
 
     @RequestMapping(value = "/work-orders", method = RequestMethod.GET)
     public int getDBBasedWorkOrders() {
-        List<DBBasedWorkOrder> dbBasedWorkOrders = dbBasedWorkOrderService.findAll();
+        List<DBBasedWorkOrder> dbBasedWorkOrders =
+                dbBasedWorkOrderService.findAll(null,
+                        null, null, null, null,
+                        null, null, 2);
         logger.debug("Get {} items", dbBasedWorkOrders.size());
         return dbBasedWorkOrders.size();
     }
