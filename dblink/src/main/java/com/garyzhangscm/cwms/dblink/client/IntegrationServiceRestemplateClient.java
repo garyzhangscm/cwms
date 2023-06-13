@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.dblink.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.dblink.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.dblink.exception.SystemFatalException;
 import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
 import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
 import com.garyzhangscm.cwms.dblink.model.DBBasedReceiptConfirmation;
@@ -94,7 +95,11 @@ public class IntegrationServiceRestemplateClient {
                 getHttpEntity(objectMapper.writeValueAsString(data)),
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        if (responseBodyWrapper.getResult() == 0) {
+
+            return responseBodyWrapper.getData();
+        }
+        throw SystemFatalException.raiseException("fail to send integration data for " + subUrl);
     }
 
     public String saveIntegrationResult(String subUrl, long id, boolean succeed, String errorMessage) {

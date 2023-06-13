@@ -149,22 +149,18 @@ public class DBBasedWorkOrderService {
                     lastProcessingDateTime.set(LocalDateTime.now());
                     logger.debug("# {} start to process work order {}", i, dbBasedWorkOrder.getNumber());
                     String result = "";
-                    String errorMessage = "";
                      try {
                          result = integrationServiceRestemplateClient.sendIntegrationData("work-orders", dbBasedWorkOrder);
                          logger.debug("# get result " + result);
+                         dbBasedWorkOrder.setStatus(IntegrationStatus.COMPLETED);
+                         dbBasedWorkOrder.setErrorMessage("");
                      }
                      catch (Exception ex) {
                          ex.printStackTrace();
-                         result = "false";
-                         errorMessage = ex.getMessage();
-                     }
-                     if (result.equalsIgnoreCase("success")) {
-                         dbBasedWorkOrder.setStatus(IntegrationStatus.COMPLETED);
-                     }
-                     else {
                          dbBasedWorkOrder.setStatus(IntegrationStatus.ERROR);
+                         dbBasedWorkOrder.setErrorMessage(ex.getMessage());
                      }
+
                      save(dbBasedWorkOrder);
                      logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                              i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));
