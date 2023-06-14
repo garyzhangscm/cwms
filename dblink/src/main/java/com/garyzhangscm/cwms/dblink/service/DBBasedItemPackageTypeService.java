@@ -84,17 +84,13 @@ public class DBBasedItemPackageTypeService {
                     try {
                         result = integrationServiceRestemplateClient.sendIntegrationData("item-package-type", dbBasedItemPackageType);
                         logger.debug("# get result " + result);
+                        dbBasedItemPackageType.setStatus(IntegrationStatus.COMPLETED);
+                        dbBasedItemPackageType.setErrorMessage("");
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
-                        result = "false";
-                        errorMessage = ex.getMessage();
-                    }
-                    if (result.equalsIgnoreCase("success")) {
-                        dbBasedItemPackageType.setStatus(IntegrationStatus.COMPLETED);
-                    }
-                    else {
                         dbBasedItemPackageType.setStatus(IntegrationStatus.ERROR);
+                        dbBasedItemPackageType.setErrorMessage(ex.getMessage());
                     }
                     save(dbBasedItemPackageType);
                     logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",

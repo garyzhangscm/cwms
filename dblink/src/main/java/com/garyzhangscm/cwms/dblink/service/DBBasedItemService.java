@@ -82,18 +82,16 @@ public class DBBasedItemService {
                     try {
                         result = integrationServiceRestemplateClient.sendIntegrationData("item", dbBasedItem);
                         logger.debug("# get result " + result);
+                        dbBasedItem.setStatus(IntegrationStatus.COMPLETED);
+                        dbBasedItem.setErrorMessage("");
+
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
-                        result = "false";
-                        errorMessage = ex.getMessage();
-                    }
-                    if (result.equalsIgnoreCase("success")) {
-                        dbBasedItem.setStatus(IntegrationStatus.COMPLETED);
-                    }
-                    else {
                         dbBasedItem.setStatus(IntegrationStatus.ERROR);
+                        dbBasedItem.setErrorMessage(ex.getMessage());
                     }
+
                     save(dbBasedItem);
                     logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                             i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));

@@ -659,6 +659,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     }
 
 
+    @Override
     public String getErrorMessage() {
         return errorMessage;
     }

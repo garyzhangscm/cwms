@@ -68,5 +68,6 @@ public interface IntegrationOrderData {
 
 
     public IntegrationStatus getStatus() ;
+    public String getErrorMessage();
 
 }

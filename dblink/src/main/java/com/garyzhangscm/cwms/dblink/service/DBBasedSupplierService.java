@@ -85,18 +85,15 @@ public class DBBasedSupplierService {
                      try {
                          result = integrationServiceRestemplateClient.sendIntegrationData("suppliers", dbBasedSupplier);
                          logger.debug("# get result " + result);
+                         dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);
+                         dbBasedSupplier.setErrorMessage("");
                      }
                      catch (Exception ex) {
                          ex.printStackTrace();
-                         result = "false";
-                         errorMessage = ex.getMessage();
-                     }
-                     if (result.equalsIgnoreCase("success")) {
-                         dbBasedSupplier.setStatus(IntegrationStatus.COMPLETED);
-                     }
-                     else {
                          dbBasedSupplier.setStatus(IntegrationStatus.ERROR);
+                         dbBasedSupplier.setErrorMessage(ex.getMessage());
                      }
+
                      save(dbBasedSupplier);
                      logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                              i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));

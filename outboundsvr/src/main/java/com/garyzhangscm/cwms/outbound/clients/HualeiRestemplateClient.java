@@ -91,6 +91,8 @@ public class HualeiRestemplateClient {
                  entity,
                  String.class).getBody();
 
+        logger.debug("get response for hualei package \n{}", response);
+
         ShipmentResponse shipmentResponse = null;
         try {
             shipmentResponse = objectMapper.readValue(response, ShipmentResponse.class);
@@ -100,8 +102,18 @@ public class HualeiRestemplateClient {
                     GenericException.createDefaultData("can't decode the response from hualei"));
         }
         try {
+            logger.debug("1. message: \n{}", shipmentResponse.getMessage());
+            logger.debug("2. message: \n{}", shipmentResponse.getMessage().getBytes("ISO8859-1"));
+            logger.debug("3. message: \n{}", new String(shipmentResponse.getMessage().getBytes("ISO8859-1"), "utf-8"));
             shipmentResponse.setMessage(
-                    java.net.URLDecoder.decode(shipmentResponse.getMessage(), StandardCharsets.UTF_8.name()));
+                    new String(shipmentResponse.getMessage().getBytes("ISO8859-1"), "utf-8"));
+
+            String newMessage = java.net.URLDecoder.decode(shipmentResponse.getMessage(), StandardCharsets.UTF_8.name());
+            logger.debug("1. message: \n{}",newMessage);
+            logger.debug("2. message: \n{}", newMessage.getBytes("ISO8859-1"));
+            logger.debug("3. message: \n{}", new String(newMessage.getBytes("ISO8859-1"), "utf-8"));
+            // shipmentResponse.setMessage(
+             //       java.net.URLDecoder.decode(shipmentResponse.getMessage(), StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

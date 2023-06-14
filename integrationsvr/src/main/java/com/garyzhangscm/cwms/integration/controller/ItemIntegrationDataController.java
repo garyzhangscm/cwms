@@ -73,11 +73,10 @@ public class ItemIntegrationDataController {
 
 
     @RequestMapping(value="/items", method = RequestMethod.PUT)
-    public ResponseBodyWrapper addIntegrationItemData(@RequestBody Item item) {
+    public IntegrationItemData addIntegrationItemData(@RequestBody Item item,
+                                                      @RequestParam(name = "immediateProcess", defaultValue = "false", required = false) Boolean immediateProcess) {
 
-        IntegrationItemData itemData =
-                integrationDataService.addIntegrationItemData(item);
-        return ResponseBodyWrapper.success(String.valueOf(itemData.getId()));
+        return integrationDataService.addIntegrationItemData(item, immediateProcess);
     }
 /***
     @RequestMapping(value="/dblink/item", method = RequestMethod.PUT)

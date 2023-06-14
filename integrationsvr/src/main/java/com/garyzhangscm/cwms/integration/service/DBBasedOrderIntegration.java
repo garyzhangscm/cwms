@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -110,7 +111,12 @@ public class DBBasedOrderIntegration {
     }
 
 
+    @Transactional
     public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder) {
+        return addIntegrationOrderData(dbBasedOrder, false);
+    }
+    @Transactional
+    public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder, Boolean immediateProcess) {
         dbBasedOrder.setStatus(IntegrationStatus.PENDING);
         dbBasedOrder.getOrderLines().forEach(
                 dbBasedOrderLine -> {
@@ -118,7 +124,17 @@ public class DBBasedOrderIntegration {
                     dbBasedOrderLine.setStatus(IntegrationStatus.ATTACHED);
                 }
         );
-        return dbBasedOrderRepository.save(dbBasedOrder);
+        DBBasedOrder newDBBasedOrder =
+                dbBasedOrderRepository.save(dbBasedOrder);
+        if (Boolean.TRUE.equals(immediateProcess)) {
+            // ok, we will process the integration right after it is saved
+            process(newDBBasedOrder);
+            return findById(newDBBasedOrder.getId());
+        }
+        else {
+            return newDBBasedOrder;
+        }
+
     }
 
     private List<DBBasedOrder> findPendingIntegration() {

@@ -82,18 +82,15 @@ public class DBBasedReceiptService {
                      try {
                          result = integrationServiceRestemplateClient.sendIntegrationData("receipt", dbBasedReceipt);
                          logger.debug("# get result " + result);
+                         dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
+                         dbBasedReceipt.setErrorMessage("");
                      }
                      catch (Exception ex) {
                          ex.printStackTrace();
-                         result = "false";
-                         errorMessage = ex.getMessage();
-                     }
-                     if (result.equalsIgnoreCase("success")) {
-                         dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
-                     }
-                     else {
                          dbBasedReceipt.setStatus(IntegrationStatus.ERROR);
+                         dbBasedReceipt.setErrorMessage(ex.getMessage());
                      }
+
                      save(dbBasedReceipt);
                      logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                              i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));

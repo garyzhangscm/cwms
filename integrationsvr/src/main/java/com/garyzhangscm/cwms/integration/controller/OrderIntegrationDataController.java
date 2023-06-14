@@ -74,11 +74,10 @@ public class OrderIntegrationDataController {
         return integrationDataService.resendOrderData(id);
     }
     @RequestMapping(value="/orders", method = RequestMethod.PUT)
-    public ResponseBodyWrapper addIntegrationOrderData(@RequestBody Order order) {
+    public IntegrationOrderData addIntegrationOrderData(@RequestBody Order order,
+                                                       @RequestParam(name = "immediateProcess", defaultValue = "false", required = false) Boolean immediateProcess) {
 
-        IntegrationOrderData orderData =
-                integrationDataService.addOrderData(order);
-        return ResponseBodyWrapper.success(String.valueOf(orderData.getId()));
+        return integrationDataService.addOrderData(order, immediateProcess);
     }
 
     /**
