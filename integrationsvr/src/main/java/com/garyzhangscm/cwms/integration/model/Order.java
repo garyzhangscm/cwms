@@ -46,6 +46,8 @@ public class Order implements Serializable {
     private Long companyId;
     private String companyCode;
 
+    private OrderStatus status = OrderStatus.OPEN;
+
 
 
     private Long billToCustomerId;
@@ -484,5 +486,13 @@ public class Order implements Serializable {
 
     public void setBillToAddressLine3(String billToAddressLine3) {
         this.billToAddressLine3 = billToAddressLine3;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 }

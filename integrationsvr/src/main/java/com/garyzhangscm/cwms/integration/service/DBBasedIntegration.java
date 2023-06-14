@@ -393,8 +393,9 @@ public class DBBasedIntegration implements Integration{
     public IntegrationOrderData getOrderData(Long id) {
         return dbBasedOrderIntegration.findById(id);
     }
-    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess) {
-        return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order), immediateProcess);
+    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess, Boolean validateAddress) {
+        return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order), immediateProcess,
+                validateAddress);
     }
     public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
         return dbBasedOrderIntegration.addIntegrationOrderData(dbBasedOrder);
