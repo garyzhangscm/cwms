@@ -118,7 +118,7 @@ public class DBBasedItemIntegration {
     }
 
     @Transactional
-    public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem) {
+    public IntegrationItemData addIntegrationItemData(DBBasedItem dbBasedItem, Boolean immediateProcess) {
 
         dbBasedItem.setStatus(IntegrationStatus.PENDING);
         // in case the description is too long
@@ -145,7 +145,15 @@ public class DBBasedItemIntegration {
         dbBasedItem.setId(null);
         logger.debug("Start to save dbBasedItem: \n {}",
                 dbBasedItem);
-        return dbBasedItemRepository.save(dbBasedItem);
+        DBBasedItem newDBBasedItem = dbBasedItemRepository.save(dbBasedItem);
+        if (Boolean.TRUE.equals(immediateProcess)) {
+            // ok, we will process the integration right after it is saved
+            process(newDBBasedItem);
+            return findById(newDBBasedItem.getId());
+        }
+        else {
+            return newDBBasedItem;
+        }
     }
 
     private List<DBBasedItem> findPendingIntegration() {

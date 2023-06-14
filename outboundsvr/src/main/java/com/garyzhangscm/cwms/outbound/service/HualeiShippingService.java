@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentRequestRepository;
+import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentResponseRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +55,8 @@ public class HualeiShippingService {
     private HualeiRestemplateClient hualeiRestemplateClient;
     @Autowired
     private HualeiShipmentRequestRepository hualeiShipmentRequestRepository;
+    @Autowired
+    private HualeiShipmentResponseRepository hualeiShipmentResponseRepository;
     @Autowired
     private UnitService unitService;
     @Autowired
@@ -170,12 +175,11 @@ public class HualeiShippingService {
                     shipmentResponse.setShipmentRequest(shipmentRequest);
                     shipmentResponse.setWarehouseId(warehouseId);
                     shipmentResponse.getChildList().forEach(
-                            shipmentResponseChild -> {
-                                shipmentResponseChild.setShipmentResponse(shipmentResponse);
-                                shipmentResponseChild.setWarehouseId(warehouseId);
-                            }
+                                shipmentResponseChild -> {
+                                    shipmentResponseChild.setShipmentResponse(shipmentResponse);
+                                    shipmentResponseChild.setWarehouseId(warehouseId);
+                                }
                     );
-                    logger.debug("save hualei's shipment response\n {}", shipmentResponse);
 
                     /**
                     if (Strings.isBlank(shipmentResponse.getMessage())) {
@@ -188,7 +192,9 @@ public class HualeiShippingService {
                     addPackage(warehouseId, order, productId, shipmentResponse,
                         hualeiProduct.getCarrierId(), hualeiProduct.getCarrierServiceLevelId(),
                         finalLength, finalWidth, finalHeight, lengthUnit, finalWeight, weightUnit);
+                    logger.debug("save hualei's shipment request\n {}", shipmentRequest);
                     hualeiShipmentRequestRepository.save(shipmentRequest);
+                    // hualeiShipmentResponseRepository.save(shipmentResponse);
             }
         }).start();
 

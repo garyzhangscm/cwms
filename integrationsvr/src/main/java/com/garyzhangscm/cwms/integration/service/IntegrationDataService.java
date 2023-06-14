@@ -70,8 +70,8 @@ public class IntegrationDataService {
     }
 
     @Transactional
-    public IntegrationItemData addIntegrationItemData(Item item) {
-        return integration.addIntegrationItemData(item);
+    public IntegrationItemData addIntegrationItemData(Item item, Boolean immediateProcess) {
+        return integration.addIntegrationItemData(item, immediateProcess);
     }
 
 
@@ -168,10 +168,6 @@ public class IntegrationDataService {
         return integration.addIntegrationWorkOrderData(workOrderData);
     }
 
-    // Integration - Item
-    public IntegrationItemData addIntegrationItemData(IntegrationItemData itemData) {
-        return integration.addIntegrationItemData(itemData);
-    }
 
     //
     // Integration - Receipt and Receipt Line
@@ -187,11 +183,8 @@ public class IntegrationDataService {
     public IntegrationReceiptData getReceiptData(Long id) {
         return integration.getReceiptData(id);
     }
-    public IntegrationReceiptData addReceiptData(Receipt receipt) {
-        return integration.addReceiptData(receipt);
-    }
-    public IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt) {
-        return integration.addReceiptData(dbBasedReceipt);
+    public IntegrationReceiptData addReceiptData(Receipt receipt, Boolean immediateProcess) {
+        return integration.addReceiptData(receipt, immediateProcess);
     }
 
     //
@@ -228,8 +221,8 @@ public class IntegrationDataService {
     public IntegrationOrderData getOrderData(Long id) {
         return integration.getOrderData(id);
     }
-    public IntegrationOrderData addOrderData(Order order) {
-        return integration.addOrderData(order);
+    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess) {
+        return integration.addOrderData(order, immediateProcess);
     }
     public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
         return integration.addOrderData(dbBasedOrder);

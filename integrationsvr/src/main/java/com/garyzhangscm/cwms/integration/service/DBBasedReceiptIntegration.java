@@ -18,6 +18,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -108,7 +109,12 @@ public class DBBasedReceiptIntegration {
     }
 
 
+    @Transactional
     public IntegrationReceiptData addIntegrationReceiptData(DBBasedReceipt dbBasedReceipt) {
+        return addIntegrationReceiptData(dbBasedReceipt, false);
+    }
+    @Transactional
+    public IntegrationReceiptData addIntegrationReceiptData(DBBasedReceipt dbBasedReceipt, Boolean immediateProcess) {
         int index = 0;
 
         if (Objects.isNull(dbBasedReceipt.getAllowUnexpectedItem())) {
@@ -133,7 +139,17 @@ public class DBBasedReceiptIntegration {
         }
         dbBasedReceipt.setId(null);
 
-        return dbBasedReceiptRepository.save(dbBasedReceipt);
+        DBBasedReceipt newDBBasedReceipt =
+                dbBasedReceiptRepository.save(dbBasedReceipt);
+
+        if (Boolean.TRUE.equals(immediateProcess)) {
+            // ok, we will process the integration right after it is saved
+            process(newDBBasedReceipt);
+            return findById(newDBBasedReceipt.getId());
+        }
+        else {
+            return newDBBasedReceipt;
+        }
     }
 
     private List<DBBasedReceipt> findPendingIntegration() {

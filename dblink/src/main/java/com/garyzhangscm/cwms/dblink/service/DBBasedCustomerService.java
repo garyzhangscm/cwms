@@ -84,18 +84,15 @@ public class DBBasedCustomerService {
                     try {
                         result = integrationServiceRestemplateClient.sendIntegrationData("customer", dbBasedCustomer);
                         logger.debug("# get result " + result);
+                        dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
+                        dbBasedCustomer.setErrorMessage("");
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
-                        result = "false";
-                        errorMessage = ex.getMessage();
-                    }
-                    if (result.equalsIgnoreCase("success")) {
-                        dbBasedCustomer.setStatus(IntegrationStatus.COMPLETED);
-                    }
-                    else {
                         dbBasedCustomer.setStatus(IntegrationStatus.ERROR);
+                        dbBasedCustomer.setErrorMessage(ex.getMessage());
                     }
+
                     save(dbBasedCustomer);
                     logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                             i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));

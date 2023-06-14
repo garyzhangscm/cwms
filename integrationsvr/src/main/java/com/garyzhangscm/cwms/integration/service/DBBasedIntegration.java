@@ -211,11 +211,11 @@ public class DBBasedIntegration implements Integration{
 
     @Override
     @Transactional
-    public IntegrationItemData addIntegrationItemData(Item item) {
+    public IntegrationItemData addIntegrationItemData(Item item, Boolean immediateProcess) {
         DBBasedItem dbBasedItem = new DBBasedItem(item);
         logger.debug("Get dbBasedItem\n{}\n from item : \n{}",
                 dbBasedItem, item);
-        return dbBasedItemIntegration.addIntegrationItemData(dbBasedItem);
+        return dbBasedItemIntegration.addIntegrationItemData(dbBasedItem, immediateProcess);
     }
 
 
@@ -327,7 +327,7 @@ public class DBBasedIntegration implements Integration{
     }
     @Override
     public IntegrationItemData addIntegrationItemData(IntegrationItemData itemData) {
-        return dbBasedItemIntegration.addIntegrationItemData((DBBasedItem) itemData);
+        return dbBasedItemIntegration.addIntegrationItemData((DBBasedItem) itemData, false);
     }
 
 
@@ -345,9 +345,9 @@ public class DBBasedIntegration implements Integration{
     public IntegrationReceiptData getReceiptData(Long id) {
         return dbBasedReceiptIntegration.findById(id);
     }
-    public IntegrationReceiptData addReceiptData(Receipt receipt) {
+    public IntegrationReceiptData addReceiptData(Receipt receipt, Boolean immediateProcess) {
 
-        return dbBasedReceiptIntegration.addIntegrationReceiptData(new DBBasedReceipt(receipt));
+        return dbBasedReceiptIntegration.addIntegrationReceiptData(new DBBasedReceipt(receipt), immediateProcess);
 
     }
     public IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt) {
@@ -393,8 +393,8 @@ public class DBBasedIntegration implements Integration{
     public IntegrationOrderData getOrderData(Long id) {
         return dbBasedOrderIntegration.findById(id);
     }
-    public IntegrationOrderData addOrderData(Order order) {
-        return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order));
+    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess) {
+        return dbBasedOrderIntegration.addIntegrationOrderData(new DBBasedOrder(order), immediateProcess);
     }
     public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
         return dbBasedOrderIntegration.addIntegrationOrderData(dbBasedOrder);

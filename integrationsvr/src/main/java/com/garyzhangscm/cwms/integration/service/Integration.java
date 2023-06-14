@@ -42,7 +42,7 @@ public interface Integration {
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationItemData getItemData(Long id);
-    IntegrationItemData addIntegrationItemData(Item item);
+    IntegrationItemData addIntegrationItemData(Item item, Boolean immediateProcess);
 
 
     //
@@ -102,7 +102,7 @@ public interface Integration {
             String statusList,
             Long id);
     IntegrationReceiptData getReceiptData(Long id);
-    IntegrationReceiptData addReceiptData(Receipt receipt);
+    IntegrationReceiptData addReceiptData(Receipt receipt, Boolean immediateProcess);
     IntegrationReceiptData addReceiptData(DBBasedReceipt dbBasedReceipt);
 
     //
@@ -126,7 +126,7 @@ public interface Integration {
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationOrderData getOrderData(Long id);
-    IntegrationOrderData addOrderData(Order order);
+    IntegrationOrderData addOrderData(Order order, Boolean immediateProcess);
     IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder);
 
     //
