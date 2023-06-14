@@ -126,7 +126,7 @@ public interface Integration {
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
             Long id);
     IntegrationOrderData getOrderData(Long id);
-    IntegrationOrderData addOrderData(Order order, Boolean immediateProcess);
+    IntegrationOrderData addOrderData(Order order, Boolean immediateProcess, Boolean validateAddress);
     IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder);
 
     //

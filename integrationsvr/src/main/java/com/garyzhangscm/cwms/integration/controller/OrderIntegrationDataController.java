@@ -75,9 +75,10 @@ public class OrderIntegrationDataController {
     }
     @RequestMapping(value="/orders", method = RequestMethod.PUT)
     public IntegrationOrderData addIntegrationOrderData(@RequestBody Order order,
-                                                       @RequestParam(name = "immediateProcess", defaultValue = "false", required = false) Boolean immediateProcess) {
+                                                       @RequestParam(name = "immediateProcess", defaultValue = "false", required = false) Boolean immediateProcess,
+                                                        @RequestParam(name = "validateAddress", defaultValue = "false", required = false) Boolean validateAddress) {
 
-        return integrationDataService.addOrderData(order, immediateProcess);
+        return integrationDataService.addOrderData(order, immediateProcess, validateAddress);
     }
 
     /**

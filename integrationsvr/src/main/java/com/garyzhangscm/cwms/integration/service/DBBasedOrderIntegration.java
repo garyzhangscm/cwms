@@ -1,12 +1,11 @@
 package com.garyzhangscm.cwms.integration.service;
 
-import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
-import com.garyzhangscm.cwms.integration.clients.KafkaSender;
-import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.clients.*;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
+import com.garyzhangscm.cwms.integration.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
+import com.garyzhangscm.cwms.integration.model.usps.AddressValidateResponse;
 import com.garyzhangscm.cwms.integration.repository.DBBasedItemRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderLineRepository;
 import com.garyzhangscm.cwms.integration.repository.DBBasedOrderRepository;
@@ -48,6 +47,11 @@ public class DBBasedOrderIntegration {
     CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
+
+    @Autowired
+    private USPSAPIRestemplateClient uspsapiRestemplateClient;
 
 
     public List<DBBasedOrder> findAll(String companyCode,
@@ -113,10 +117,11 @@ public class DBBasedOrderIntegration {
 
     @Transactional
     public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder) {
-        return addIntegrationOrderData(dbBasedOrder, false);
+        return addIntegrationOrderData(dbBasedOrder, false, false);
     }
     @Transactional
-    public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder, Boolean immediateProcess) {
+    public IntegrationOrderData addIntegrationOrderData(DBBasedOrder dbBasedOrder, Boolean immediateProcess,
+                                                        Boolean validateAddress) {
         dbBasedOrder.setStatus(IntegrationStatus.PENDING);
         dbBasedOrder.getOrderLines().forEach(
                 dbBasedOrderLine -> {
@@ -126,6 +131,27 @@ public class DBBasedOrderIntegration {
         );
         DBBasedOrder newDBBasedOrder =
                 dbBasedOrderRepository.save(dbBasedOrder);
+        // see if we will need to validate the address
+        if (Boolean.TRUE.equals(validateAddress)) {
+
+            AddressValidateResponse addressValidateResponse =
+                    uspsapiRestemplateClient.validateAddress(
+                            newDBBasedOrder.getShipToAddressLine1(),
+                            newDBBasedOrder.getShipToAddressLine2(),
+                            newDBBasedOrder.getShipToAddressCity(),
+                            newDBBasedOrder.getShipToAddressState(),
+                            newDBBasedOrder.getShipToAddressPostcode()
+                    );
+            // return immediately if the address validation is fail
+            if (Objects.nonNull(addressValidateResponse.getAddress().getError())) {
+                // ok, the address is not valid
+                newDBBasedOrder.setStatus(IntegrationStatus.ERROR);
+                newDBBasedOrder.setErrorMessage("address validation fail: " +
+                        addressValidateResponse.getAddress().getError().getDescription());
+                return save(newDBBasedOrder);
+            }
+            // address validation passed, let's continue
+        }
         if (Boolean.TRUE.equals(immediateProcess)) {
             // ok, we will process the integration right after it is saved
             process(newDBBasedOrder);
@@ -181,6 +207,8 @@ public class DBBasedOrderIntegration {
             // 5. client
             setupMissingField(order, dbBasedOrder);
 
+            validateOrderForIntegration(order);
+
 
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Order:\n{}", order);
@@ -218,6 +246,24 @@ public class DBBasedOrderIntegration {
                 dbBasedOrderLineRepository.save(dbBasedOrderLine);
             });
         }
+    }
+
+    private void validateOrderForIntegration(Order order) {
+        Order existingOrder = outbuondServiceRestemplateClient.getOrderByNumber(
+                order.getWarehouseId(),
+                order.getNumber()
+        );
+        if (Objects.nonNull(existingOrder)) {
+            if (existingOrder.getStatus().equals(OrderStatus.CANCELLED)) {
+                throw RequestValidationFailException.raiseException("Order " + existingOrder.getNumber() +
+                        " already exists and cancelled, please use a new order number");
+            }
+            else if (existingOrder.getStatus().equals(OrderStatus.COMPLETE)) {
+                throw RequestValidationFailException.raiseException("Order " + existingOrder.getNumber() +
+                        " already exists and completed, please use a new order number");
+            }
+        }
+
     }
 
 

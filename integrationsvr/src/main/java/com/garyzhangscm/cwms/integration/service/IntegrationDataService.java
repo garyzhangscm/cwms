@@ -221,8 +221,8 @@ public class IntegrationDataService {
     public IntegrationOrderData getOrderData(Long id) {
         return integration.getOrderData(id);
     }
-    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess) {
-        return integration.addOrderData(order, immediateProcess);
+    public IntegrationOrderData addOrderData(Order order, Boolean immediateProcess, Boolean validateAddress) {
+        return integration.addOrderData(order, immediateProcess, validateAddress);
     }
     public IntegrationOrderData addOrderData(DBBasedOrder dbBasedOrder) {
         return integration.addOrderData(dbBasedOrder);
