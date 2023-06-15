@@ -127,6 +127,7 @@ public class PickService {
                               String sourceLocationName,
                               String destinationLocationName,
                               Long trailerAppointmentId,
+                              ClientRestriction clientRestriction,
                               boolean loadDetails) {
 
         List<Pick> picks =  pickRepository.findAll(
@@ -292,7 +293,22 @@ public class PickService {
                         predicates.add(criteriaBuilder.greaterThan(root.get("quantity"), root.get("pickedQuantity")));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+                    // return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    if (Objects.isNull(clientRestriction)) {
+                        return predicate;
+                    }
+                    else {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+                        return
+                                clientRestriction.addClientRestriction(predicate,
+                                        joinOrder, criteriaBuilder);
+                    }
                 }
         );
 
@@ -315,13 +331,14 @@ public class PickService {
                               String sourceLocationName,
                               String destinationLocationName,
                               Long trailerAppointmentId,
-                              Boolean openPickOnly) {
+                              Boolean openPickOnly,
+                              ClientRestriction clientRestriction) {
         return findAll(warehouseId, clientId,  number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
                 itemNumber, sourceLocationName, destinationLocationName,
-                trailerAppointmentId,
+                trailerAppointmentId, clientRestriction,
                 true);
     }
 
@@ -337,14 +354,14 @@ public class PickService {
         return findAll(order.getWarehouseId(), null, null, order.getId(), null, null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null, null, null);
     }
 
     public List<Pick> findByShipment(Shipment shipment) {
         return findAll(shipment.getWarehouseId(),null, null, null, null, shipment.getId(),
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null, null, null);
     }
     public List<Pick> findByWorkOrder(WorkOrder workOrder) {
         String workOrderLineIds
@@ -355,28 +372,28 @@ public class PickService {
         return findAll(workOrder.getWarehouseId(), null, null, null, null,  null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, workOrderLineIds, null,null, null, null);
+                null, workOrderLineIds, null,null, null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
         return findAll(wave.getWarehouseId(), null, null, null, null, null,
                 wave.getId(), null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null);
+                null, null, null, null,null, null, null);
     }
     public List<Pick> findByPickList(PickList pickList) {
 
         return findAll(pickList.getWarehouseId(), null, null, null, null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null);
+                null, null, null, null,null, null, null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
         return findAll(cartonization.getWarehouseId(), null, null, null, null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null);
+                null, null, null, null,null, null, null);
     }
 
     public Pick findByNumber(String number) {
@@ -1904,6 +1921,51 @@ public class PickService {
         return saveOrUpdate(pick, false);
     }
 
+    public Long getQuantityInOrderPick(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
+                                   String color, String productSize, String style, boolean exactMatch,
+                                   ClientRestriction clientRestriction) {
+        List<Pick> picks = findAll(
+                warehouseId, clientId, null, null, null,
+                null, null,
+                null, null,  null,
+                itemId, null, null,
+                null, null,
+                null, true,
+                inventoryStatusId,
+                null,
+                null,null,null,null,null,null,null,
+                clientRestriction, false
+        );
+        picks = picks.stream().filter(
+                pick -> matchPickAttributeWithInventoryAttribute(pick.getColor(), color, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getProductSize(), productSize, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getStyle(), style, exactMatch)
+        ).collect(Collectors.toList());
+
+        return picks.stream().map(pick -> pick.getQuantity() > pick.getPickedQuantity() ?
+                pick.getQuantity() - pick.getPickedQuantity() : 0l).mapToLong(Long::longValue).sum();
+    }
+
+    private boolean matchPickAttributeWithInventoryAttribute(String pickAttribute,
+                                                                  String inventoryAttribute,
+                                                                  boolean exactMatch) {
+        if (Strings.isBlank(pickAttribute) && Strings.isBlank(inventoryAttribute)) {
+            return true;
+        }
+        if (Strings.isBlank(pickAttribute)) {
+            // the pick doesn't have any requirement on the attribute but the inventory
+            // has the attribute, return true if we are not looking for an exact match
+            return !exactMatch;
+        }
+        if (Strings.isBlank(inventoryAttribute)) {
+            // the pick has order line attribute setup but the inventory doesn't have the attribute
+            // we know for sure the inventory is not for the order line
+            return false;
+        }
+        // both the pick and the inventory has the attribute setup, let's return true if they
+        // have the same value
+        return pickAttribute.equalsIgnoreCase(inventoryAttribute);
+    }
     /**
      * Get the next pick from the pick pool
      * 1. single pick

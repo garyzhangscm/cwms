@@ -30,6 +30,7 @@ public class Warehouse implements Serializable {
 
     private Long id;
     Long companyId;
+    private Company company;
 
     private String name;
 
@@ -68,6 +69,14 @@ public class Warehouse implements Serializable {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     public String getName() {

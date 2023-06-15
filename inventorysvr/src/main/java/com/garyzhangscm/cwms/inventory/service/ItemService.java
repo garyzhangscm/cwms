@@ -994,7 +994,7 @@ public class ItemService {
         // Check if we have inventory that is using this item package type
 
         List<Inventory> inventories = inventoryService.
-                findAll(item.getWarehouseId(), null, item.getName(), null,
+                findAll(item.getWarehouseId(), null, item.getName(), null, null,
                         null,null,null,null,null, null,
                         null,null,null,null,null,
                         null,null,null,null, null,null,null,

@@ -53,6 +53,7 @@ public class InventoryController {
     public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                              @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
                                               @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
@@ -81,7 +82,8 @@ public class InventoryController {
 
 
 
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,clientId,  clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
+                itemPackageTypeName, clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId,  receiptNumber,
                 customerReturnOrderId,  workOrderId,
@@ -97,6 +99,7 @@ public class InventoryController {
     @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
     public int getInventoryCount(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                 @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                  @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
@@ -122,7 +125,8 @@ public class InventoryController {
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                  ClientRestriction clientRestriction) {
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemPackageTypeName,  clientId, clientIds,
+        return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
+                itemPackageTypeName,  clientId, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, receiptId, receiptNumber ,
                 customerReturnOrderId, workOrderId,
@@ -214,6 +218,7 @@ public class InventoryController {
     public ResponseBodyWrapper<String> removeAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                                            @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
                                               @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
@@ -241,7 +246,7 @@ public class InventoryController {
 
 
 
-        inventoryService.removeAllInventories(warehouseId, itemId, itemName, itemPackageTypeName,clientId,  clientIds,
+        inventoryService.removeAllInventories(warehouseId, itemId, itemName, itemNames, itemPackageTypeName,clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId,  receiptId, receiptNumber,
                 customerReturnOrderId,  workOrderId,
@@ -670,6 +675,5 @@ public class InventoryController {
                 warehouseId, lpn, nextLocationId, bulkPick
         );
     }
-
 
 }

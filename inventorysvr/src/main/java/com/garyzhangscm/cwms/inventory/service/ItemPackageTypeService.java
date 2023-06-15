@@ -347,7 +347,7 @@ public class ItemPackageTypeService {
         // Check if we have inventory that is using this item package type
 
         if (inventoryService.
-                findAll(item.getWarehouseId(), null, item.getName(), itemPackageType.getName(),
+                findAll(item.getWarehouseId(), null, item.getName(), null, itemPackageType.getName(),
                 null,null,null,null,null, null,
                 null,null,null,null, null,
                 null,null,null,null,null,null, null,null,null,

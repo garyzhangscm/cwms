@@ -20,9 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
-import com.garyzhangscm.cwms.outbound.model.OrderLineBillableActivity;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.OrderLineBillableActivityService;
 import com.garyzhangscm.cwms.outbound.service.OrderLineService;
 
@@ -44,12 +42,17 @@ public class OrderLineController {
 
 
     @RequestMapping(value="/orders/lines", method = RequestMethod.GET)
+    @ClientValidationEndpoint
     public List<OrderLine> findAllOrderLines(@RequestParam Long warehouseId,
                                              @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                              @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                              @RequestParam(name = "orderNumber", required = false, defaultValue = "") String orderNumber,
-                                             @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName) {
-        return orderLineService.findAll(warehouseId, clientId, shipmentId, orderNumber, itemName);
+                                             @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name = "itemId", required = false, defaultValue = "") Long itemId,
+                                             @RequestParam(name = "inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                             ClientRestriction clientRestriction) {
+        return orderLineService.findAll(warehouseId, clientId, shipmentId, orderNumber, itemName,
+                itemId, inventoryStatusId, clientRestriction);
     }
 
     @RequestMapping(value="/orders/lines/{id}", method = RequestMethod.GET)

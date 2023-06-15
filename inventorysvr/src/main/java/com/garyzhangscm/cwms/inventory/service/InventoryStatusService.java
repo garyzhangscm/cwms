@@ -216,7 +216,7 @@ public class InventoryStatusService implements TestDataInitiableService{
                     " as it is the default available status");
         }
         if (!inventoryService.findAll(warehouseId,
-                null, null, null, null,
+                null, null, null, null, null,
                 null, null, inventoryStatus.getId(), null,
                 null, null, null, null, null,
                 null, null, null, null,null,null,null,
