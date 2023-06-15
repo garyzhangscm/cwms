@@ -159,6 +159,7 @@ public class InventoryService {
     public List<Inventory> findAll(Long warehouseId,
                                    Long itemId,
                                    String itemName,
+                                   String itemNames,
                                    String itemPackageTypeName,
                                    Long clientId,
                                    String clientIds,
@@ -184,7 +185,7 @@ public class InventoryService {
                                    Boolean includeVirturalInventory,
                                    ClientRestriction clientRestriction) {
         return findAll(warehouseId, itemId,
-                itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
+                itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, receiptNumber,
                 customerReturnOrderId,  workOrderId, workOrderLineIds,
@@ -199,6 +200,7 @@ public class InventoryService {
     public List<Inventory> findAll(Long warehouseId,
                                    Long itemId,
                                    String itemName,
+                                   String itemNames,
                                    String itemPackageTypeName,
                                    Long clientId,
                                    String clientIds,
@@ -251,7 +253,8 @@ public class InventoryService {
                         predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
 
                     }
-                    if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds)) {
+                    if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds) ||
+                       Strings.isNotBlank(itemNames)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
 
@@ -263,6 +266,14 @@ public class InventoryService {
                                 }
                         }
 
+                        if (Strings.isNotBlank(itemNames)) {
+                            CriteriaBuilder.In<String> inItemNames = criteriaBuilder.in(joinItem.get("name"));
+                            for(String name : itemNames.split(",")) {
+                                inItemNames.value(name);
+                            }
+                            predicates.add(criteriaBuilder.and(inItemNames));
+
+                        }
                         if (StringUtils.isNotBlank(clientIds)) {
                             CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(joinItem.get("clientId"));
                             for(String id : clientIds.split(",")) {
@@ -590,6 +601,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 locationIds,
                 null,
                 null,
@@ -759,6 +771,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 locationName,
                 null,
                 null,
@@ -799,6 +812,7 @@ public class InventoryService {
     public List<Inventory> findByLocationGroupId(Long warehouseId, Long clientId,  Long locationGroupId, boolean includeDetails) {
         return findAll(
                 warehouseId,
+                null,
                 null,
                 null,
                 null,
@@ -2510,6 +2524,7 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2554,6 +2569,7 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
                     inboundLocationId,
                     null,
                     null, null,
@@ -2584,6 +2600,7 @@ public class InventoryService {
                         .map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
                 pickedInventories = findAll(
                         warehouseId,
+                        null,
                         null,
                         null,
                         null,
@@ -3095,6 +3112,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 locationName,
                 locationId,
                 locationIds,
@@ -3194,6 +3212,7 @@ public class InventoryService {
     public void removeAllInventories(Long warehouseId,
                                                             Long itemId,
                                                             String itemName,
+                                     String itemNames,
                                                             String itemPackageTypeName,
                                                             Long clientId,
                                                             String clientIds,
@@ -3217,7 +3236,7 @@ public class InventoryService {
                                                             Boolean includeVirturalInventory,
                                                             ClientRestriction clientRestriction) {
         List<Inventory> inventories = findAll(warehouseId, itemId,
-                itemName, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
+                itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
@@ -3810,6 +3829,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 clientId,
                 null,
                 null,
@@ -3831,7 +3851,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                false,
+                null,
                 null, includeDetails);
     }
 

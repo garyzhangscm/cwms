@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.clients;
 
 import com.garyzhangscm.cwms.inventory.model.Pick;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 
@@ -176,6 +178,78 @@ public class OutbuondServiceRestemplateClient {
     }
 
 
+    public long getQuantityInOrder(Long warehouseId,
+                                    Long clientId,
+                                    Long itemId,
+                                    Long inventoryStatusId,
+                                    String color,
+                                    String productSize,
+                                    String style,
+                                    boolean exactMatch) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/orders/quantity-in-order")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("exactMatch", exactMatch);
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+        if (Strings.isNotBlank(color)) {
+            builder = builder.queryParam("color", color);
+        }
+        if (Strings.isNotBlank(productSize)) {
+            builder = builder.queryParam("productSize", productSize);
+        }
+        if (Strings.isNotBlank(style)) {
+            builder = builder.queryParam("style", style);
+        }
+        return restTemplateProxy.exchange(
+                Long.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
+
+
+    public long getQuantityInOrderPick(Long warehouseId,
+                                   Long clientId,
+                                   Long itemId,
+                                   Long inventoryStatusId,
+                                   String color,
+                                   String productSize,
+                                   String style,
+                                   boolean exactMatch) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/picks/quantity-in-order-pick")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("exactMatch", exactMatch);
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+        if (Strings.isNotBlank(color)) {
+            builder = builder.queryParam("color", color);
+        }
+        if (Strings.isNotBlank(productSize)) {
+            builder = builder.queryParam("productSize", productSize);
+        }
+        if (Strings.isNotBlank(style)) {
+            builder = builder.queryParam("style", style);
+        }
+        return restTemplateProxy.exchange(
+                Long.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
 }

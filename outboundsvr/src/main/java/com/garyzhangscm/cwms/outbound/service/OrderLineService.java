@@ -101,12 +101,17 @@ public class OrderLineService{
     }
 
     public List<OrderLine> findAll(Long warehouseId, Long clientId,Long shipmentId,
-                                   String orderNumber, String itemName) {
-        return findAll(warehouseId, clientId, shipmentId, orderNumber, itemName,true);
+                                   String orderNumber, String itemName, Long itemId,
+                                   Long inventoryStatusId,
+                                   ClientRestriction clientRestriction) {
+        return findAll(warehouseId, clientId, shipmentId, orderNumber, itemName,
+                itemId, inventoryStatusId, clientRestriction, true);
     }
 
     public List<OrderLine> findAll(Long warehouseId, Long clientId, Long shipmentId,
-                                   String orderNumber, String itemName,
+                                   String orderNumber, String itemName,Long itemId,
+                                   Long inventoryStatusId,
+                                   ClientRestriction clientRestriction,
                                    boolean includeDetails) {
 
 
@@ -150,9 +155,32 @@ public class OrderLineService{
 
 
                     }
+                    if (Objects.nonNull(itemId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("itemId"), itemId));
+                    }
+                    if (Objects.nonNull(inventoryStatusId)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryStatusId"), inventoryStatusId));
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    if (Objects.isNull(clientRestriction)) {
+                        return predicate;
+                    }
+                    else {
+
+                        Join<OrderLine, Order> joinOrder = root.join("order", JoinType.INNER);
+                        return
+                                clientRestriction.addClientRestriction(predicate,
+                                        joinOrder, criteriaBuilder);
+                    }
+
+                    // return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
 
@@ -654,7 +682,7 @@ public class OrderLineService{
     public List<OrderLine> findProductionPlanCandidate( Long warehouseId,
                                                         String orderNumber,
                                                         String itemName) {
-        List<OrderLine> orderLines = findAll(warehouseId, null, null, orderNumber, itemName);
+        List<OrderLine> orderLines = findAll(warehouseId, null, null, orderNumber, itemName, null, null, null);
         logger.debug("Find {} candidate by parameters {}, {}, {}",
                 orderLines.size(), warehouseId, orderNumber, itemName);
         return orderLines.stream().filter(orderLine -> isProductionPlanCandidate(orderLine))

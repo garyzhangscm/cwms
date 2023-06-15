@@ -2994,4 +2994,58 @@ public class OrderService {
 
 
     }
+
+    /**
+     * Get quantity in open orders
+     * @param warehouseId
+     * @param clientId
+     * @param itemId
+     * @param inventoryStatusId
+     * @param color
+     * @param productSize
+     * @param style
+     * @param exactMatch
+     * @return
+     */
+    public Long getQuantityInOrder(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
+                                   String color, String productSize, String style, boolean exactMatch,
+                                   ClientRestriction clientRestriction) {
+        List<OrderLine> orderLines = orderLineService.findAll(
+                warehouseId, clientId, null,
+                null, null, itemId, inventoryStatusId, clientRestriction, false
+        );
+        orderLines = orderLines.stream()
+                // filter out those order that are completed or cancelled
+                .filter(orderLine -> !orderLine.getOrder().getStatus().equals(OrderStatus.COMPLETE) &&
+                        !orderLine.getOrder().getStatus().equals(OrderStatus.CANCELLED))
+                .filter(
+                    orderLine -> matchOrderLineAttributeWithInventoryAttribute(orderLine.getColor(), color, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getProductSize(), productSize, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getStyle(), style, exactMatch)
+        ).collect(Collectors.toList());
+
+        return orderLines.stream().map(orderLine -> orderLine.getExpectedQuantity() > orderLine.getShippedQuantity() ?
+                orderLine.getExpectedQuantity() - orderLine.getShippedQuantity() : 0l).mapToLong(Long::longValue).sum();
+    }
+
+    private boolean matchOrderLineAttributeWithInventoryAttribute(String orderLineAttribute,
+                                                                  String inventoryAttribute,
+                                                                  boolean exactMatch) {
+        if (Strings.isBlank(orderLineAttribute) && Strings.isBlank(inventoryAttribute)) {
+            return true;
+        }
+        if (Strings.isBlank(orderLineAttribute)) {
+            // the order line doesn't have any requirement on the attribute but the inventory
+            // has the attribute, return true if we are not looking for an exact match
+            return !exactMatch;
+        }
+        if (Strings.isBlank(inventoryAttribute)) {
+            // the order line has order line attribute setup but the inventory doesn't have the attribute
+            // we know for sure the inventory is not for the order line
+            return false;
+        }
+        // both the order line and the inventory has the attribute setup, let's return true if they
+        // have the same value
+        return orderLineAttribute.equalsIgnoreCase(inventoryAttribute);
+    }
 }

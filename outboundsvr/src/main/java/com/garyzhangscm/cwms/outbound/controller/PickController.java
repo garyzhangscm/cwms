@@ -18,9 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.BulkPick;
-import com.garyzhangscm.cwms.outbound.model.Pick;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -37,6 +35,7 @@ public class PickController {
     PickService pickService;
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
+    @ClientValidationEndpoint
     public List<Pick> findAllPicks(@RequestParam Long warehouseId,
                                    @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
@@ -64,7 +63,8 @@ public class PickController {
                                    @RequestParam(name="sourceLocationName", required = false, defaultValue = "") String sourceLocationName,
                                    @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
                                    @RequestParam(name="openPickOnly", required = false, defaultValue = "false") Boolean openPickOnly,
-            @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+            @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                   ClientRestriction clientRestriction) {
 
         logger.debug("Start to find pick by: {}", listId);
         if (StringUtils.isNotBlank(containerId)) {
@@ -74,7 +74,7 @@ public class PickController {
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
-                sourceLocationName, destinationLocationName, trailerAppointmentId,
+                sourceLocationName, destinationLocationName, trailerAppointmentId, clientRestriction,
                 loadDetails);
 
     }
@@ -189,5 +189,23 @@ public class PickController {
     }
                                  **/
 
+    @RequestMapping(method=RequestMethod.GET, value="/picks/quantity-in-order-pick")
+    @ClientValidationEndpoint
+    public Long getQuantityInOrderPick(Long warehouseId,
+                                   @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
+                                   Long itemId,
+                                   Long inventoryStatusId,
+                                   @RequestParam(name = "color", required = false, defaultValue = "") String color,
+                                   @RequestParam(name = "productSize", required = false, defaultValue = "") String productSize,
+                                   @RequestParam(name = "style", required = false, defaultValue = "") String style,
+                                   boolean exactMatch, ClientRestriction clientRestriction) {
+
+
+        return pickService.getQuantityInOrderPick(
+                warehouseId, clientId, itemId,
+                inventoryStatusId, color, productSize, style, exactMatch,
+                clientRestriction);
+
+    }
 
 }

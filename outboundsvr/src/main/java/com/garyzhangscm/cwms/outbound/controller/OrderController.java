@@ -391,6 +391,24 @@ public class OrderController {
 
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/orders/quantity-in-order")
+    @ClientValidationEndpoint
+    public Long getQuantityInOrder(Long warehouseId,
+                                   @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
+                                   Long itemId,
+                                   Long inventoryStatusId,
+                                   @RequestParam(name = "color", required = false, defaultValue = "") String color,
+                                   @RequestParam(name = "productSize", required = false, defaultValue = "") String productSize,
+                                   @RequestParam(name = "style", required = false, defaultValue = "") String style,
+                                   boolean exactMatch, ClientRestriction clientRestriction) {
+
+
+        return orderService.getQuantityInOrder(
+                warehouseId, clientId, itemId,
+                inventoryStatusId, color, productSize, style, exactMatch,
+                clientRestriction);
+
+    }
 
 
 }

@@ -680,6 +680,7 @@ public class LocationUtilizationSnapshotBatchService {
                             null,
                             null,
                             null,
+                            null,
                             clientId,
                             null,
                             null,
