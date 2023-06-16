@@ -20,7 +20,6 @@ package com.garyzhangscm.cwms.integration;
 
 import com.garyzhangscm.cwms.integration.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.UserService;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ import java.util.Collections;
 public class RequestInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInterceptor.class);
+
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
 
@@ -60,6 +60,8 @@ public class RequestInterceptor implements ClientHttpRequestInterceptor {
         }
          ***/
         logger.debug("Start to get current token");
+        logger.debug("authServiceRestemplateClient is null? {}",
+                authServiceRestemplateClient == null);
         String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
 
         HttpHeaders headers = request.getHeaders();

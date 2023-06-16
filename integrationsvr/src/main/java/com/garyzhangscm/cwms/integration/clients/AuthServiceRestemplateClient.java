@@ -18,14 +18,16 @@
 
 package com.garyzhangscm.cwms.integration.clients;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.garyzhangscm.cwms.integration.LoginResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.LoginCredential;
 import com.garyzhangscm.cwms.integration.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -46,10 +48,6 @@ public class AuthServiceRestemplateClient {
 
     private User currentLoginUser;
 
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-
 
     @Value("${integration.login.username}")
     private String integrationUsername;
@@ -57,25 +55,20 @@ public class AuthServiceRestemplateClient {
     @Value("${integration.login.password}")
     private String integrationPassword;
 
-    // private ObjectMapper mapper = new ObjectMapper();
-
-    // User a new rest template for login. The global auto-wirable
-    // rest template will try to add an user token to the http header
-    // which will call the getCurrentLoginUser() to get the token.
-    // if the user has not login in yet, then it will call login()
-    // to login a specific user for the integration, which will make
-    // the call a infinite recursive call.
-    @Autowired
-    @Qualifier("noTokenRestTemplate")
-    RestTemplate restTemplate;
-
 
     public User login() throws IOException {
-        LoginCredential loginCredential = new LoginCredential(-1L, integrationUsername, integrationPassword);
+        LoginCredential loginCredential = new LoginCredential(-1L,integrationUsername, integrationPassword);
 
         StringBuilder url = new StringBuilder()
                 .append("http://zuulserver:5555/api/auth/login?")
                 .append("_allow_anonymous=true");
+
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         String requestBody = objectMapper.writeValueAsString(loginCredential);
         logger.debug("LOGIN WITH: {}", requestBody);
@@ -86,10 +79,12 @@ public class AuthServiceRestemplateClient {
         HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
 
 
+        RestTemplate restTemplate = new RestTemplate();
         LoginResponseBodyWrapper loginResponseBodyWrapper = restTemplate.exchange(
                 url.toString(),
                 HttpMethod.POST, httpEntity,
                 new ParameterizedTypeReference<LoginResponseBodyWrapper>() {}).getBody();
+
 
         logger.debug("Get user from auth server: {}", loginResponseBodyWrapper.getUser());
         currentLoginUser = loginResponseBodyWrapper.getUser();

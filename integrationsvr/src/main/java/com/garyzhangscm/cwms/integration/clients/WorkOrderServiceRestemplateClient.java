@@ -41,10 +41,9 @@ public class WorkOrderServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkOrderServiceRestemplateClient.class);
 
-
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    RestTemplate restTemplate;
+    private RestTemplateProxy restTemplateProxy;
+
 
     @Cacheable(cacheNames = "IntegrationService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderByNumber(Long warehouseId, String number)  {
@@ -57,7 +56,7 @@ public class WorkOrderServiceRestemplateClient {
                             .queryParam("number", URLEncoder.encode(number, "UTF-8"))
                             .queryParam("warehouseId", warehouseId);
 
-
+/**
             ResponseBodyWrapper<List<WorkOrder>> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -68,6 +67,13 @@ public class WorkOrderServiceRestemplateClient {
 
 
             List<WorkOrder> workOrders = responseBodyWrapper.getData();
+ **/
+            List<WorkOrder> workOrders = restTemplateProxy.exchangeList(
+                    WorkOrder.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.GET,
+                    null
+            );
 
             if (workOrders.size() == 0) {
                 return null;

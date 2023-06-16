@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.integration.clients;
 
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.Company;
 import com.garyzhangscm.cwms.integration.model.Warehouse;
 
@@ -26,20 +25,11 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,7 +39,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(WarehouseLayoutServiceRestemplateClient.class);
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
@@ -57,13 +47,21 @@ public class WarehouseLayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/companies")
                         .queryParam("code", companyCode);
-
+/**
         ResponseBodyWrapper<List<Company>> responseBodyWrapper = restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
                 }).getBody();
 
         List<Company> companies = responseBodyWrapper.getData();
+ **/
+        List<Company> companies = restTemplateProxy.exchangeList(
+                Company.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (companies.size() != 1) {
             return null;
         }
@@ -79,13 +77,21 @@ public class WarehouseLayoutServiceRestemplateClient {
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                 .queryParam("name", name);
-
+/**
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper = restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {
                 }).getBody();
 
         List<Warehouse> warehouses = responseBodyWrapper.getData();
+ **/
+        List<Warehouse> warehouses = restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (warehouses.size() != 1) {
             return null;
         }
@@ -101,13 +107,21 @@ public class WarehouseLayoutServiceRestemplateClient {
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
                         .queryParam("companyId", companyId)
                         .queryParam("name", name);
-
+/**
         ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper = restTemplate.exchange(
                 builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {
                 }).getBody();
 
         List<Warehouse> warehouses = responseBodyWrapper.getData();
+ **/
+        List<Warehouse> warehouses = restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (warehouses.size() != 1) {
             return null;
         }
@@ -157,7 +171,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/warehouses/{id}");
 
-
+/**
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -166,6 +180,14 @@ public class WarehouseLayoutServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                Warehouse.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
 
     }
 
