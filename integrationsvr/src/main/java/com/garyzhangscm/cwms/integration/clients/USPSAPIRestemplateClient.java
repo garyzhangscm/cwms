@@ -33,8 +33,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Objects;
-
 @Component
 public class USPSAPIRestemplateClient {
 
@@ -46,7 +44,8 @@ public class USPSAPIRestemplateClient {
     private ObjectMapper objectMapper;
 
     @Autowired
-    RestTemplate restTemplate;
+    @Qualifier("noAuthRestTemplate")
+    RestTemplate noAuthRestTemplate;
 
     @Value("${usps.api.username}")
     private String username;
@@ -72,8 +71,7 @@ public class USPSAPIRestemplateClient {
 
         String url = "https://secure.shippingapis.com/ShippingAPI.dll?API=Verify&XML=" + xml;
 
-        String response = restTemplate.exchange(
-                    // builder.toUriString(),
+        String response = noAuthRestTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     null,

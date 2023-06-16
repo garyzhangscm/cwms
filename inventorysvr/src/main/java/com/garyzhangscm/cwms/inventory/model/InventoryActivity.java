@@ -121,6 +121,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
      */
     @Column(name = "type")
     @com.fasterxml.jackson.annotation.JsonProperty(value="type")
+    @Enumerated(EnumType.STRING)
     private InventoryActivityType inventoryActivityType;
 
     @Column(name = "activity_datetime")

@@ -18,16 +18,13 @@
 
 package com.garyzhangscm.cwms.integration.clients;
 
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -38,8 +35,7 @@ public class OutbuondServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(OutbuondServiceRestemplateClient.class);
 
     @Autowired
-    RestTemplate restTemplate;
-
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "IntegrationService_Order", unless="#result == null")
     public Order getOrderById(Long id) {
@@ -48,7 +44,7 @@ public class OutbuondServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/orders/{id}");
-
+/**
         ResponseBodyWrapper<Order> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.buildAndExpand(id).toUriString(),
@@ -57,6 +53,14 @@ public class OutbuondServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<Order>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                Order.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
 
 
     }
@@ -70,7 +74,7 @@ public class OutbuondServiceRestemplateClient {
                 .queryParam("warehouseId", warehosueId)
                 .queryParam("number", number)
                 .queryParam("loadDetails", false);
-
+/**
         ResponseBodyWrapper<List<Order>> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.toUriString(),
@@ -79,6 +83,14 @@ public class OutbuondServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<List<Order>>>() {}).getBody();
 
         List<Order> orders = responseBodyWrapper.getData();
+ **/
+        List<Order> orders = restTemplateProxy.exchangeList(
+                Order.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (orders.size() == 0 ) {
             return  null;
         }

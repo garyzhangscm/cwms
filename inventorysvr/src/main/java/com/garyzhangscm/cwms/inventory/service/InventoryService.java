@@ -1260,6 +1260,9 @@ public class InventoryService {
             case REVERSE_BY_PRODUCT:
                 inventoryActivityType = InventoryActivityType.REVERSE_BY_PRODUCT;
                 break;
+            case REVERSE_RECEIVING:
+                inventoryActivityType = InventoryActivityType.REVERSE_RECEIVING;
+                break;
             default:
                 inventoryActivityType = InventoryActivityType.INVENTORY_ADJUSTMENT;
         }

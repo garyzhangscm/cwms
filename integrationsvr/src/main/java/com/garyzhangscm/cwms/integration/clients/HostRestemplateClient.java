@@ -42,20 +42,8 @@ public class HostRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(HostRestemplateClient.class);
 
 
-    @Qualifier("getObjMapper")
     @Autowired
-    private ObjectMapper objectMapper;
-    // private ObjectMapper mapper = new ObjectMapper();
-
-/**
-    @Value("${dblink.host.ip}")
-    private String hostIP;
-
-    @Value("${dblink.host.port}")
-    private String hostPort;
-**/
-    @Autowired
-    RestTemplate restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     public <T> String sendIntegrationData(String subUrl, T data) throws JsonProcessingException {
 
@@ -65,7 +53,7 @@ public class HostRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/dblink/integration-data/" + subUrl);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -74,6 +62,13 @@ public class HostRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.PUT,
+                data
+        );
     }
 
 

@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.integration.clients;
 
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
+
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.*;
@@ -26,10 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
@@ -42,63 +41,86 @@ public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
+
+
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplateProxy restTemplateProxy;
+
 
     @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
-    public Client getClientById(Long id) {
-
-        ResponseBodyWrapper<Client> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/clients/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}, id).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
-    @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
-    public Client getClientByName(Long warehouseId, String name)   {
+    public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 null;
         try {
-            builder = UriComponentsBuilder
-                    .fromHttpUrl("http://zuulserver:5555/api/common/clients")
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/clients")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("name", URLEncoder.encode(name, "UTF-8"));
-
-            ResponseBodyWrapper<List<Client>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                    HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
-            List<Client> clients = responseBodyWrapper.getData();
-            if (clients.size() == 0) {
-                return null;
-            }
-            else {
-                return clients.get(0);
-            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+/**
+ ResponseBodyWrapper<List<Client>> responseBodyWrapper
+ = restTemplateProxy.getRestTemplate().exchange(
+ builder.toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
 
+ List<Client> clients = responseBodyWrapper.getData();
+ **/
+        List<Client> clients = restTemplateProxy.exchangeList(
+                Client.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+        if (clients.size() == 0) {
+            return null;
+        }
+        else {
+            return clients.get(0);
+        }
     }
-    @Cacheable(cacheNames = "IntegrationService_Supplier", unless="#result == null")
-    public Supplier getSupplierById(Long id) {
 
-        ResponseBodyWrapper<Supplier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/suppliers/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Supplier>>() {}, id).getBody();
-
-        return responseBodyWrapper.getData();
-    }
     @Cacheable(cacheNames = "IntegrationService_Supplier", unless="#result == null")
-    public Supplier getSupplierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
+    public Supplier getSupplierByName(Long warehouseId, String name) {
+
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
-        ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
-        List<Supplier> suppliers = responseBodyWrapper.getData();
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/suppliers")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
+/**
+ ResponseBodyWrapper<List<Supplier>> responseBodyWrapper
+ = restTemplate.exchange(
+ builder.toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
+
+ List<Supplier> suppliers = responseBodyWrapper.getData();
+ **/
+
+        List<Supplier> suppliers = restTemplateProxy.exchangeList(
+                Supplier.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (suppliers.size() == 0) {
-            throw MissingInformationException.raiseException("can't find supplier with warehouse id " +
-                    warehouseId + ", name " + name);
+            return null;
         }
         else {
             return suppliers.get(0);
@@ -106,34 +128,54 @@ public class CommonServiceRestemplateClient {
         }
     }
 
+
     @Cacheable(cacheNames = "IntegrationService_UnitOfMeasure", unless="#result == null")
-    public UnitOfMeasure getUnitOfMeasureById(Long id) {
-
-        ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/unit-of-measures/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<UnitOfMeasure>>() {}, id).getBody();
-
-        return responseBodyWrapper.getData();
+    public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
+                                                Long warehouseId, String name) {
+        return getUnitOfMeasureByName(companyId, warehouseId, name,
+                null, null);
     }
-
     @Cacheable(cacheNames = "IntegrationService_UnitOfMeasure", unless="#result == null")
-    public UnitOfMeasure getUnitOfMeasureByName(Long companyId, Long warehouseId, String name) throws UnsupportedEncodingException {
+    public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
+                                                Long warehouseId, String name,
+                                                Boolean companyUnitOfMeasure,
+                                                Boolean warehouseSpecificUnitOfMeasure) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/common/unit-of-measures")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("companyId", companyId)
-                        .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+                        .queryParam("name", name);
 
-        ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
-                = restTemplate.exchange(
+        if (Objects.nonNull(companyId)) {
+            builder = builder.queryParam("companyId", companyId);
+        }
+        if (Objects.nonNull(warehouseId)) {
+            builder = builder.queryParam("warehouseId", warehouseId);
+        }
+        if (Objects.nonNull(companyUnitOfMeasure)) {
+            builder = builder.queryParam("companyUnitOfMeasure", companyUnitOfMeasure);
+        }
+        if (Objects.nonNull(warehouseSpecificUnitOfMeasure)) {
+            builder = builder.queryParam("warehouseSpecificUnitOfMeasure", warehouseSpecificUnitOfMeasure);
+        }
+/**
+ ResponseBodyWrapper<List<UnitOfMeasure>> responseBodyWrapper
+ = restTemplateProxy.getRestTemplate().exchange(
+ builder.toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
+
+ List<UnitOfMeasure> unitOfMeasures = responseBodyWrapper.getData();
+ **/
+
+        List<UnitOfMeasure> unitOfMeasures =  restTemplateProxy.exchangeList(
+                UnitOfMeasure.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<UnitOfMeasure>>>() {}).getBody();
-
-        List<UnitOfMeasure> unitOfMeasures = responseBodyWrapper.getData();
+                null
+        );
 
         if (unitOfMeasures.size() != 1) {
             return null;
@@ -160,6 +202,7 @@ public class CommonServiceRestemplateClient {
             if (Objects.nonNull(warehouseId)) {
                 builder = builder.queryParam("warehouseId", warehouseId);
             }
+            /**
             ResponseBodyWrapper<List<Customer>> responseBodyWrapper
                     = restTemplate.exchange(
                     builder.build(true).toUri(),
@@ -169,6 +212,14 @@ public class CommonServiceRestemplateClient {
                     }).getBody();
 
             List<Customer> customers = responseBodyWrapper.getData();
+             **/
+
+            List<Customer> customers = restTemplateProxy.exchangeList(
+                    Customer.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.GET,
+                    null
+            );
             if (customers.size() == 0) {
                 return null;
             } else {
@@ -190,7 +241,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/carriers")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
-
+/**
         ResponseBodyWrapper<List<Carrier>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -199,6 +250,14 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<Carrier>>>() {}).getBody();
 
         List<Carrier> carriers = responseBodyWrapper.getData();
+ **/
+
+        List<Carrier> carriers = restTemplateProxy.exchangeList(
+                Carrier.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (carriers.size() == 0) {
             return null;
         }
@@ -209,10 +268,21 @@ public class CommonServiceRestemplateClient {
     @Cacheable(cacheNames = "IntegrationService_Carrier", unless="#result == null")
     public Carrier getCarrierById(Long id) {
 
-        ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carriers/{id}",
-                HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}, id).getBody();
+        // ResponseBodyWrapper<Carrier> responseBodyWrapper = restTemplate.exchange("http://zuulserver:5555/api/common/carriers/{id}",
+        //        HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<Carrier>>() {}, id).getBody();
 
-        return responseBodyWrapper.getData();
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/carriers/{id}");
+
+        return restTemplateProxy.exchange(
+                Carrier.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     @Cacheable(cacheNames = "IntegrationService_CarrierServiceLevel", unless="#result == null")
@@ -223,7 +293,7 @@ public class CommonServiceRestemplateClient {
                         .path("/api/common/carrier-service-levels")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
-
+/**
         ResponseBodyWrapper<List<CarrierServiceLevel>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -232,6 +302,15 @@ public class CommonServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<CarrierServiceLevel>>>() {}).getBody();
 
         List<CarrierServiceLevel> carrierServiceLevels = responseBodyWrapper.getData();
+   **/
+
+
+        List<CarrierServiceLevel> carrierServiceLevels = restTemplateProxy.exchangeList(
+                CarrierServiceLevel.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (carrierServiceLevels.size() == 0) {
             return null;
         }
@@ -246,9 +325,18 @@ public class CommonServiceRestemplateClient {
                 UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("quickbookListId", URLEncoder.encode(quickbookListId, "UTF-8"));
+        /**
         ResponseBodyWrapper<List<Supplier>> responseBodyWrapper = restTemplate.exchange(builder.toUriString(),
                 HttpMethod.GET, null, new ParameterizedTypeReference<ResponseBodyWrapper<List<Supplier>>>() {}).getBody();
         List<Supplier> suppliers = responseBodyWrapper.getData();
+**/
+        List<Supplier> suppliers = restTemplateProxy.exchangeList(
+                Supplier.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
         if (suppliers.size() == 0) {
             throw MissingInformationException.raiseException("can't find supplier with warehouse id " +
                     warehouseId + ", quickbook list id " + quickbookListId);

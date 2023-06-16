@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.integration.usercontext;
 
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,11 +29,18 @@ public class UserContextFilter implements Filter {
         UserContextHolder.getContext().setRfCode(
                 httpServletRequest.getHeader(UserContext.RF_CODE));
 
+
         UserContextHolder.getContext().setCompanyId(
-                httpServletRequest.getHeader(UserContext.COMPANY_ID));
+                Strings.isNotBlank(httpServletRequest.getHeader(UserContext.COMPANY_ID)) ?
+                        httpServletRequest.getHeader(UserContext.COMPANY_ID) :
+                    Strings.isNotBlank(httpServletRequest.getParameter(UserContext.COMPANY_ID)) ?
+                            httpServletRequest.getParameter(UserContext.COMPANY_ID) : "");
 
         UserContextHolder.getContext().setWarehouseId(
-                httpServletRequest.getHeader(UserContext.WAREHOUSE_ID));
+                Strings.isNotBlank(httpServletRequest.getHeader(UserContext.WAREHOUSE_ID)) ?
+                        httpServletRequest.getHeader(UserContext.WAREHOUSE_ID) :
+                        Strings.isNotBlank(httpServletRequest.getParameter(UserContext.WAREHOUSE_ID)) ?
+                                httpServletRequest.getParameter(UserContext.WAREHOUSE_ID) : "");
 
         filterChain.doFilter(httpServletRequest, servletResponse);
     }
