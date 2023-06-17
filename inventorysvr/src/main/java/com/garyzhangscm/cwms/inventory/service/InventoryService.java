@@ -2823,6 +2823,9 @@ public class InventoryService {
         // an plain LPN label
 
         List<Inventory> inventories = findByLpn(warehouseId, lpn);
+        if (Objects.isNull(quantity)) {
+            quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        }
         Set<Long> workOrderIds = new HashSet<>();
         Set<Long> receiptLineIds = new HashSet<>();
         boolean notFromWorkOrderReceipt = false;

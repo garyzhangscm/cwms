@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.garyzhangscm.cwms.integration.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.integration.model.usps.AddressValidateResponse;
+import com.garyzhangscm.cwms.integration.model.usps.Error;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Objects;
 
 @Component
 public class USPSAPIRestemplateClient {
@@ -77,19 +81,68 @@ public class USPSAPIRestemplateClient {
                     null,
                     String.class).getBody();
 
-        // logger.debug("get response from validateAddress:\n {}",
-        //             response);
+        logger.debug("get response from validateAddress:\n {}",
+                     response);
         XmlMapper xmlMapper = new XmlMapper();
         try {
             AddressValidateResponse addressValidateResponse
                     = xmlMapper.readValue(response, AddressValidateResponse.class);
             // logger.debug("convert to address validation response: \n{}", addressValidateResponse);
-            return addressValidateResponse;
+
+            return validateAddress(addressLine1, addressLine2,
+                    city, state, zipCode, addressValidateResponse);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw RequestValidationFailException.raiseException("error while validate address " +
                     e.getMessage());
         }
+    }
+
+    /**
+     * Validate the response from USPS against the address from the user. If USPS correct the
+     * address, then we will raise error to the user
+     * @param addressLine1
+     * @param addressLine2
+     * @param city
+     * @param state
+     * @param zipCode
+     * @param addressValidateResponse
+     * @return
+     */
+    public AddressValidateResponse validateAddress(String addressLine1, String addressLine2, String city,
+                                                   String state, String zipCode,
+                                                   AddressValidateResponse addressValidateResponse)   {
+        // there's error with the address, we won't need to validate it again
+        if (Objects.nonNull(addressValidateResponse.getAddress().getError())) {
+            return addressValidateResponse;
+        }
+        // we will only validate the city, state, zipcode
+        String errorMessage = "";
+        if (!addressValidateResponse.getAddress().getCity().equalsIgnoreCase(city)) {
+            errorMessage += "city " + city + " is not correct, suggest city: " +
+                    addressValidateResponse.getAddress().getCity() + "; ";
+        }
+        if (!addressValidateResponse.getAddress().getState().equalsIgnoreCase(state)) {
+            errorMessage += "state " + state + " is not correct, suggest state: " +
+                    addressValidateResponse.getAddress().getState() + "; ";
+        }
+        if (!addressValidateResponse.getAddress().getZip5().equalsIgnoreCase(zipCode)) {
+            errorMessage = "zip " + zipCode + " is not correct, suggest zip: " +
+                    addressValidateResponse.getAddress().getZip5() + "; ";
+        }
+        if (Strings.isNotBlank(errorMessage)) {
+            addressValidateResponse.getAddress().setError(
+                    new Error(
+                            "-1",
+                            "USPS-Address-Correction",
+                            errorMessage
+                    )
+            );
+        }
+        else {
+            addressValidateResponse.getAddress().setError(null);
+        }
+        return addressValidateResponse;
     }
 
     /**

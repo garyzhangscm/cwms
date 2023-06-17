@@ -14,6 +14,12 @@ public class Error {
     @JsonProperty("Description")
     private String description;
 
+    public Error(){}
+    public Error(String number, String source, String description) {
+        this.number = number;
+        this.source = source;
+        this.description = description;
+    }
 
     @Override
     public String toString() {
