@@ -966,9 +966,8 @@ public class ReceiptService {
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
-        lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
 
         if (Objects.nonNull(receiptLine.getReceipt())) {
             // if we already have supplier setup, then use the value. otherwise,
@@ -984,9 +983,19 @@ public class ReceiptService {
 
             lpnLabelContent.put("supplier",
                     Objects.nonNull(supplier) ? supplier.getDescription() : "");
+
+            if (Objects.nonNull(receiptLine.getReceipt().getCheckInTime())) {
+
+                lpnLabelContent.put("check_in_date", receiptLine.getReceipt().getCheckInTime().format(formatter));
+            }
+            else {
+
+                lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
+            }
         }
         else {
 
+            lpnLabelContent.put("check_in_date", LocalDateTime.now().format(formatter));
             lpnLabelContent.put("supplier",  "");
         }
 
