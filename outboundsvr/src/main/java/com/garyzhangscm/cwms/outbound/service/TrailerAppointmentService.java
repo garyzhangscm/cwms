@@ -275,149 +275,79 @@ public class TrailerAppointmentService {
     }
 
 
-    public String saveShippingTrailerAppointmentData(Long warehouseId, File file) throws IOException {
+    private List<OrderLineCSVWrapper> loadDataWithLine(File file) throws IOException {
+
+
+        // return fileService.loadData(file, getCsvSchemaWithLine(), OrderLineCSVWrapper.class);
+        return fileService.loadData(file, OrderLineCSVWrapper.class);
+    }
+    public String saveShippingTrailerAppointmentData(Long warehouseId,
+                                File localFile) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
 
         clearFileUploadMap();
+
         shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 0.0);
         shippingTrailerAppointmentFileUploadResultMap.put(fileUploadProgressKey, new ArrayList<>());
 
+        List<OrderLineCSVWrapper> orderLineCSVWrappers = loadDataWithLine(localFile);
 
-        List<ShippingTractorAppointmentLineCSVWrapper> shippingTractorAppointmentLineCSVWrappers =
-                fileService.loadData(file, ShippingTractorAppointmentLineCSVWrapper.class);
+        logger.debug("start to save {} order lines ", orderLineCSVWrappers.size());
 
         shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0);
 
-
         new Thread(() -> {
-
-            int totalCount = shippingTractorAppointmentLineCSVWrappers.size();
+            int totalCount = orderLineCSVWrappers.size();
             int index = 0;
-
-            // before we start processing, we will sort the list by order and then order line
-            // if we have a line with only order and a line with same order number but already have
-            // order line, we will make sure we process the line without order line first, which
-            // means we will process every line in the order and then we will error out with the
-            // line that have order line number
-            Collections.sort(shippingTractorAppointmentLineCSVWrappers, (line1, line2) -> {
-                if (line1.getOrder().equalsIgnoreCase(line2.getOrder())) {
-                    if (Strings.isBlank(line1.getLine())) {
-                        return -1;
-                    }
-                    else if (Strings.isBlank(line2.getLine())) {
-                        return 1;
-                    }
-                    else {
-                        return line1.getLine().compareTo(line2.getLine());
-                    }
-                }
-                else {
-                    return line1.getOrder().compareTo(line2.getOrder());
-                }
-            });
-            // a map to save the shipment we create in this transaction.
-            // we will try to group all order lines from the same order into same shipment
-            // key: order number
-            // value: new shipment create in this transaction
-            Map<String, Shipment> newShipmentMap = new HashMap<>();
-
-            // a set to save the record that doesn't have order line.
-            // we will keep track of the record so that if we meet a line with
-            // same order but has order line information, we will error as we should
-            // already process the line when we process at the order level
-            Set<String> wholeOrderRecord =new HashSet<>();
+            List<TrailerAppointment> trailerAppointments =
+                    getTrailerAppointmentsFromOrderLinesCSV(orderLineCSVWrappers);
 
 
+            for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
 
-            for (ShippingTractorAppointmentLineCSVWrapper shippingTractorAppointmentLineCSVWrapper
-                    : shippingTractorAppointmentLineCSVWrappers) {
-                shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
-
-                Client client = Strings.isNotBlank(shippingTractorAppointmentLineCSVWrapper.getClient()) ?
-                        commonServiceRestemplateClient.getClientByName(warehouseId, shippingTractorAppointmentLineCSVWrapper.getClient())
-                        : null;
-                Long clientId = Objects.isNull(client) ? null : client.getId();
-
-                logger.debug("start to process line \n{}", shippingTractorAppointmentLineCSVWrapper);
                 try {
-                    if (Strings.isBlank(shippingTractorAppointmentLineCSVWrapper.getLine())) {
-                        wholeOrderRecord.add(shippingTractorAppointmentLineCSVWrapper.getOrder());
-                    }
-                    else if (wholeOrderRecord.contains(shippingTractorAppointmentLineCSVWrapper.getOrder())) {
-                        throw OrderOperationException.raiseException("can't process the order " +
-                                shippingTractorAppointmentLineCSVWrapper.getOrder() + ", line " +
-                                shippingTractorAppointmentLineCSVWrapper.getLine() + " as we already " +
-                                " processed the order at a previous line that without order line information");
+                    // see if we already have the trailer appointment
+                    TrailerAppointment trailerAppointment
+                            = commonServiceRestemplateClient.getTrailerAppointmentByNumber(warehouseId, orderLineCSVWrapper.getLoad());
+                    if (Objects.isNull(trailerAppointment)) {
+                        trailerAppointment = createTrailerAppointment(warehouseId, orderLineCSVWrapper.getLoad());
                     }
 
                     shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
-                    TrailerAppointment trailerAppointment = commonServiceRestemplateClient.getTrailerAppointmentByNumber(
-                            warehouseId, shippingTractorAppointmentLineCSVWrapper.getNumber());
+                    Client client = Strings.isNotBlank(orderLineCSVWrapper.getClient()) ?
+                            commonServiceRestemplateClient.getClientByName(warehouseId, orderLineCSVWrapper.getClient())
+                            : null;
+                    Long clientId = Objects.isNull(client) ? null : client.getId();
 
-                    shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.25));
-                    if (Objects.isNull(trailerAppointment)) {
-                        logger.debug("Trailer appointment {} is not created yet, let's create the order on the fly ",
-                                shippingTractorAppointmentLineCSVWrapper.getNumber());
+                    Order order = findByNumber(warehouseId, clientId, orderLineCSVWrapper.getOrder());
+                    if (Objects.isNull(order)) {
+                        logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
+                        // the order is not created yet, let's
 
-                        trailerAppointment = commonServiceRestemplateClient.addTrailerAppointment(
-                                warehouseId,
-                                // if the trailer is not passed in and we need to create
-                                // a new trailer appointment, we will use the trailer appointment number
-                                // as the trailer number so the the common service will create the
-                                // trailer with the same number as the trailer appointment
-                                Strings.isBlank(shippingTractorAppointmentLineCSVWrapper.getTrailer()) ?
-                                    shippingTractorAppointmentLineCSVWrapper.getNumber() :
-                                        shippingTractorAppointmentLineCSVWrapper.getTrailer(),
-                                shippingTractorAppointmentLineCSVWrapper.getNumber(),
-                                shippingTractorAppointmentLineCSVWrapper.getDescription(),
-                                TrailerAppointmentType.SHIPPING
-                        );
+                        // we have to do it manually since the user name is only available in the main http session
+                        // but we will create the receipt / receipt line in a separate transaction
+                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order.setCreatedBy(username);
+                        order = saveOrUpdate(order);
                     }
-
                     shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
-
-                    // see if we already created a new shipment for the order. If so, we will pass into the command
-                    // so all the lines from the same order will be group into same shipment
-                    Shipment newlyCreatedShipment = newShipmentMap.get(
-                            shippingTractorAppointmentLineCSVWrapper.getOrder()
-                    );
-
-                    if (Strings.isBlank(shippingTractorAppointmentLineCSVWrapper.getLine())) {
-                        // if order line is not passed in, let's group the whole order into the trailer appointment
-                        // it will automatically skip the line that already in other trailer appointment
-
-                        attachOrderToTrailerAppointment(warehouseId, clientId, trailerAppointment,
-                                shippingTractorAppointmentLineCSVWrapper.getStopSequence(),
-                                shippingTractorAppointmentLineCSVWrapper.getOrder());
-
-                    }
-                    else {
-
-                        Shipment shipment = attachOrderLineToTrailerAppointment(warehouseId, trailerAppointment,
-                                shippingTractorAppointmentLineCSVWrapper.getStopSequence(),
-                                shippingTractorAppointmentLineCSVWrapper.getOrder(),
-                                shippingTractorAppointmentLineCSVWrapper.getLine(), newlyCreatedShipment);
-                        if (Objects.isNull(newlyCreatedShipment) && Objects.nonNull(shipment)) {
-                            // before this line, we haven't create any shipment yet for this order but during
-                            // processing this line, we get a new shipment, let's save it to the map so that
-                            // all the following order lines from this order will be group into same shipment
-                            newShipmentMap.put(shippingTractorAppointmentLineCSVWrapper.getOrder(),
-                                    shipment);
-                        }
-                    }
+                    logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
+                            orderLineCSVWrapper.getLine(),
+                            orderLineCSVWrapper.getItem(),
+                            orderLineCSVWrapper.getExpectedQuantity(),
+                            order.getNumber());
+                    orderLineService.saveOrderLineData(warehouseId, clientId, order, orderLineCSVWrapper);
 
                     shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 1));
 
-
-                    List<FileUploadResult> fileUploadResults =
-                            shippingTrailerAppointmentFileUploadResultMap.getOrDefault(
-                                    fileUploadProgressKey, new ArrayList<>()
-                            );
+                    List<FileUploadResult> fileUploadResults = shippingTrailerAppointmentFileUploadResultMap.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            shippingTractorAppointmentLineCSVWrapper.toString(),
+                            orderLineCSVWrapper.toString(),
                             "success", ""
                     ));
                     shippingTrailerAppointmentFileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
@@ -426,15 +356,15 @@ public class TrailerAppointmentService {
                 catch(Exception ex) {
 
                     ex.printStackTrace();
-                    logger.debug("Error while process trailer appointment upload file record: {}, \n error message: {}",
-                            shippingTractorAppointmentLineCSVWrapper,
+                    logger.debug("Error while process receiving order upload file record: {}, \n error message: {}",
+                            orderLineCSVWrapper,
                             ex.getMessage());
                     List<FileUploadResult> fileUploadResults = shippingTrailerAppointmentFileUploadResultMap.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
                     );
                     fileUploadResults.add(new FileUploadResult(
                             index + 1,
-                            shippingTractorAppointmentLineCSVWrapper.toString(),
+                            orderLineCSVWrapper.toString(),
                             "fail", ex.getMessage()
                     ));
                     shippingTrailerAppointmentFileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
@@ -443,17 +373,42 @@ public class TrailerAppointmentService {
 
                     index++;
                 }
-
             }
-
-            logger.debug("All lines are processed");
-            shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 100.0);
         }).start();
 
         return fileUploadProgressKey;
 
-
     }
+
+    /**
+     * Convert CSV lines into trailer appointment list
+     * @param orderLineCSVWrappers
+     * @return
+     */
+    private List<TrailerAppointment> getTrailerAppointmentsFromOrderLinesCSV(Long warehouseId,
+                                                                             List<OrderLineCSVWrapper> orderLineCSVWrappers) {
+        // key: load #
+        // value: Trailer Appointment
+        Map<String, TrailerAppointment> trailerAppointmentMap = new HashMap<>();
+        orderLineCSVWrappers.forEach(
+                orderLineCSVWrapper -> {
+                    TrailerAppointment trailerAppointment =
+                            trailerAppointmentMap.getOrDefault(
+                                    orderLineCSVWrapper.getLoad(),
+                                    new TrailerAppointment(
+                                            warehouseId,
+                                            orderLineCSVWrapper.getLoad()
+                                    )
+                            );
+
+                }
+        );
+    }
+
+    private TrailerAppointment createTrailerAppointment(Long warehouseId, String load) {
+        return commonServiceRestemplateClient.createTrailerAppointment(warehouseId, load);
+    }
+
 
     private Shipment attachOrderToTrailerAppointment(Long warehouseId,
                                                  Long clientId,

@@ -85,6 +85,9 @@ public class OrderLineCSVWrapper {
     private Double parcelInsuredAmountPerUnit;
     private String parcelSignatureRequired;
 
+    private String load;
+    private Integer loadSequence;
+
     @Override
     public String toString() {
         try {
@@ -433,5 +436,19 @@ public class OrderLineCSVWrapper {
         this.style = style;
     }
 
+    public String getLoad() {
+        return load;
+    }
 
+    public void setLoad(String load) {
+        this.load = load;
+    }
+
+    public Integer getLoadSequence() {
+        return loadSequence;
+    }
+
+    public void setLoadSequence(Integer loadSequence) {
+        this.loadSequence = loadSequence;
+    }
 }

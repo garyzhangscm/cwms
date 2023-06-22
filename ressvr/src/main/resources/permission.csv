@@ -66,3 +66,12 @@ Inventory-Item,add-item,Add Item
 WorkTask-WorkTask,assign-user,Assign User
 WorkTask-WorkTask,assign-role,Assign Role
 WorkTask-WorkTask,assign-working-team,Assign Working Team
+Outbound-Load,file-upload,Upload Load File
+Outbound-Load,allocate-load,Allocate Load
+Outbound-Load,complete-load,Complete Load
+Outbound-Load,cancel-single-pick,Cancel Single Pick
+Outbound-Load,cancel-multiple-pick,Cancel Multiple Pick
+Outbound-Load,confirm-multiple-pick,Confirm Pick
+Outbound-Load,allocate-short-allocation,Allocate Short Allocation
+Outbound-Load,create-work-order,Create Work Order
+Outbound-Load,cancel-short-allocation,Cancel Short Allocation
