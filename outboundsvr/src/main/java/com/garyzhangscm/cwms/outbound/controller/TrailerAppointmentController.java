@@ -74,11 +74,16 @@ public class TrailerAppointmentController {
     public ResponseBodyWrapper uploadShippingTrailerAppointments(Long warehouseId,
                                                                  @RequestParam("file") MultipartFile file) throws IOException {
 
-
         File localFile = fileService.saveFile(file);
-        fileService.validateCSVFile(warehouseId, "shipping-trailer-appointment", localFile);
+        try {
+            fileService.validateCSVFile(warehouseId, "loads", localFile);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
         String fileUploadProgressKey = trailerAppointmentService.saveShippingTrailerAppointmentData(warehouseId, localFile);
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/trailer-appointments/shipping/upload/progress")

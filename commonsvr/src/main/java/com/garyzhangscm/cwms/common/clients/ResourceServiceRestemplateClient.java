@@ -208,4 +208,27 @@ public class ResourceServiceRestemplateClient {
                 null
         );
     }
+
+    public String validateCSVFile(Long warehouseId,
+                                  String type, String headers) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("type", type)
+                        .queryParam("headers", headers);
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
+
+    }
+
+
 }

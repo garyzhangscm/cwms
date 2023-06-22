@@ -542,4 +542,23 @@ public class CommonServiceRestemplateClient {
                 null
         );
     }
+
+    public TrailerAppointment createTrailerAppointment(Long warehouseId, String load) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/trailer-appointments/new")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("trailerNumber", load)
+                        .queryParam("number", load)
+                        .queryParam("description", load)
+                        .queryParam("type", TrailerAppointmentType.SHIPPING);
+
+        return restTemplateProxy.exchange(
+                TrailerAppointment.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
 }

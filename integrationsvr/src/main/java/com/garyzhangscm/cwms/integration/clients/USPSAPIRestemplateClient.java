@@ -71,7 +71,7 @@ public class USPSAPIRestemplateClient {
         //</AddressValidateRequest>
         String xml = getAddressValidateRequestXML(addressLine1, addressLine2, city,
                 state, zipCode);
-        // logger.debug("Start to send xml for address validation: \n{}", xml);
+        logger.debug("Start to send xml for address validation: \n{}", xml);
 
         String url = "https://secure.shippingapis.com/ShippingAPI.dll?API=Verify&XML=" + xml;
 
@@ -126,10 +126,38 @@ public class USPSAPIRestemplateClient {
             errorMessage += "state " + state + " is not correct, suggest state: " +
                     addressValidateResponse.getAddress().getState() + "; ";
         }
-        if (!addressValidateResponse.getAddress().getZip5().equalsIgnoreCase(zipCode)) {
-            errorMessage = "zip " + zipCode + " is not correct, suggest zip: " +
+
+        String zip5 = "";
+        String zip4 = "";
+        if (Strings.isNotBlank(zipCode)) {
+            if(zipCode.contains("-")) {
+                String[] zipCodes = zipCode.split("-");
+                if (zipCodes.length != 2) {
+                    // zipCode is not in the right format, let USPS
+                    // verify
+                    zip5 = zipCode;
+                }
+                else {
+                    zip5 = zipCodes[0];
+                    zip4 = zipCodes[1];
+                }
+            }
+            else {
+                zip5 = zipCode;
+            }
+        }
+
+        if (!addressValidateResponse.getAddress().getZip5().equalsIgnoreCase(zip5)) {
+            errorMessage = "zip " + zip5 + " is not correct, suggest zip: " +
                     addressValidateResponse.getAddress().getZip5() + "; ";
         }
+
+        if (Strings.isNotBlank(zip4) &&
+                !addressValidateResponse.getAddress().getZip4().equalsIgnoreCase(zip4)) {
+            errorMessage = "ZIP+4 " + zip4 + " is not correct, suggest zip: " +
+                    addressValidateResponse.getAddress().getZip4() + "; ";
+        }
+
         if (Strings.isNotBlank(errorMessage)) {
             addressValidateResponse.getAddress().setError(
                     new Error(
@@ -155,7 +183,27 @@ public class USPSAPIRestemplateClient {
      * @return
      */
     private String getAddressValidateRequestXML(String addressLine1, String addressLine2, String city, String state, String zipCode) {
-        return new StringBuilder()
+        // we allow the user to pass in xxxxx or xxxxx-yyyy as zip code
+        String zip5 = "";
+        String zip4 = "";
+        if (Strings.isNotBlank(zipCode)) {
+            if(zipCode.contains("-")) {
+                String[] zipCodes = zipCode.split("-");
+                if (zipCodes.length != 2) {
+                    // zipCode is not in the right format, let USPS
+                    // verify
+                    zip5 = zipCode;
+                }
+                else {
+                    zip5 = zipCodes[0];
+                    zip4 = zipCodes[1];
+                }
+            }
+            else {
+                zip5 = zipCode;
+            }
+        }
+        StringBuilder stringBuilder = new StringBuilder()
                 .append("<AddressValidateRequest USERID=\"").append(username).append("\">")
                 .append("<Revision>1</Revision>")
                 .append("<Address ID=\"0\">")
@@ -163,9 +211,16 @@ public class USPSAPIRestemplateClient {
                 .append("<Address2>").append(addressLine2).append("</Address2>")
                 .append("<City>").append(city).append("</City>")
                 .append("<State>").append(state).append("</State>")
-                .append("<Zip5>").append(zipCode).append("</Zip5>")
-                .append("<Zip4/>")
-                .append("</Address>")
+                .append("<Zip5>").append(zip5).append("</Zip5>");
+        if (Strings.isNotBlank(zip4)) {
+            stringBuilder
+                    .append("<Zip4>").append(zip4).append("</Zip4>");
+        }
+        else {
+            stringBuilder
+                    .append("<Zip4/>");
+        }
+        return stringBuilder.append("</Address>")
                 .append("</AddressValidateRequest>")
                 .toString();
     }

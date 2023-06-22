@@ -27,6 +27,21 @@ public class TrailerAppointment extends AuditibleEntity<String>{
     private Trailer trailer;
     private List<Stop> stops = new ArrayList<>();
 
+    public TrailerAppointment(){
+
+    }
+    public TrailerAppointment(Long warehouseId, String number){
+
+        this.warehouseId = warehouseId;
+        this.number = number;
+        this.description = number;
+        this.type = TrailerAppointmentType.SHIPPING;
+        this.status = TrailerAppointmentStatus.PLANNED;
+        this.stops = new ArrayList<>();
+
+    }
+
+
     public Long getId() {
         return id;
     }
