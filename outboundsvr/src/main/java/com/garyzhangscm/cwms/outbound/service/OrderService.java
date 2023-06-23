@@ -908,7 +908,7 @@ public class OrderService {
         return order;
     }
 **/
-    private Order convertFromWrapper(Long warehouseId,
+    public Order convertFromWrapper(Long warehouseId,
                                      OrderLineCSVWrapper orderLineCSVWrapper) {
 
         Order order = new Order();

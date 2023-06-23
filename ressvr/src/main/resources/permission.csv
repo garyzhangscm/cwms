@@ -33,6 +33,7 @@ Util-File-Upload,putaway-inventories,Putaway Inventory
 Util-File-Upload,receipts,Receipt
 Util-File-Upload,receiving-inventories,Receiving Inventory
 Util-File-Upload,shipping-trailer-appointment,Shipping Trailer Appointment
+Util-File-Upload,loads,Loads
 Inbound-receipt,modify-receipt,Modify Receipt
 Inbound-receipt,check-in-receipt,Check In Receipt
 Inbound-receipt,complete-receipt,Complete Receipt

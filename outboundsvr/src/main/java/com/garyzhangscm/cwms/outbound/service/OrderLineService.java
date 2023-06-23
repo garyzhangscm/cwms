@@ -503,7 +503,32 @@ public class OrderLineService{
                                          Order order) {
 
         OrderLine orderLine = new OrderLine();
-        orderLine.setNumber(orderLineCSVWrapper.getLine());
+
+        if (Strings.isBlank(orderLineCSVWrapper.getLine())) {
+            // if order line is not passed in, get the next number
+            logger.debug("Order line number is not in the CSV file, let's get the max number from existing order lines of order {}",
+                    order.getNumber());
+            int maxExistingOrderLineNumber = 0;
+            for (OrderLine existingOrderLine : order.getOrderLines()) {
+                try {
+                    int orderLineNumber = Integer.parseInt(existingOrderLine.getNumber());
+                    maxExistingOrderLineNumber = Math.max(maxExistingOrderLineNumber, orderLineNumber);
+                }
+                catch (Exception ex) {
+                    // skip the current line if the order line is not an integer
+                }
+            }
+
+            orderLine.setNumber(String.valueOf(maxExistingOrderLineNumber + 1));
+
+            logger.debug("set the current order line's number to {} after the calculation",
+                    orderLine.getNumber());
+        }
+        else {
+            orderLine.setNumber(orderLineCSVWrapper.getLine());
+
+        }
+
 
         orderLine.setColor(orderLineCSVWrapper.getColor());
         orderLine.setProductSize(orderLineCSVWrapper.getProductSize());
@@ -731,10 +756,23 @@ public class OrderLineService{
         orderLineRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
 
-    public void saveOrderLineData(Long warehouseId, Long clientId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
+    public OrderLine saveOrderLineData(Long warehouseId, Long clientId, Order order, OrderLineCSVWrapper orderLineCSVWrapper) {
 
-        saveOrUpdate(
+
+        return saveOrUpdate(
                 convertFromWrapper(warehouseId, clientId, orderLineCSVWrapper, order)
         );
+    }
+
+    /**
+     * Assign order line to the trailer appointment
+     * @param orderLineId
+     * @param trailerAppointment
+     */
+    public void assignTrailerAppointment(long orderLineId, TrailerAppointment trailerAppointment) {
+        OrderLine orderLine = findById(orderLineId);
+
+        // see if we have shipment lines for this order line
+
     }
 }

@@ -98,6 +98,7 @@ public class TrailerAppointmentService {
         return trailerAppointment;
     }
 
+
     private void assignOrdersToTrailerAppointment(TrailerAppointment trailerAppointment, String orderIdList) {
         logger.debug("Start to assign trailer appointment {} to orders with id {}",
                 trailerAppointment.getNumber(), orderIdList);
@@ -301,18 +302,31 @@ public class TrailerAppointmentService {
         new Thread(() -> {
             int totalCount = orderLineCSVWrappers.size();
             int index = 0;
-            List<TrailerAppointment> trailerAppointments =
-                    getTrailerAppointmentsFromOrderLinesCSV(orderLineCSVWrappers);
+            // start to build the trailer appointment structure
+            // 1. create the order line
+            // 2. build the trailer appointment.
+            // 3. setup the trailer appointment / stop / shipment
 
+            // a map of trailer app
+            // key: trailer appointment number
+            // value: trailer appointment
+            Map<String, TrailerAppointment> trailerAppointmentMap = new HashMap<>();
 
+            // Step 1: create the order line and build into the trailer appointment MAP
             for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
 
                 try {
                     // see if we already have the trailer appointment
-                    TrailerAppointment trailerAppointment
-                            = commonServiceRestemplateClient.getTrailerAppointmentByNumber(warehouseId, orderLineCSVWrapper.getLoad());
-                    if (Objects.isNull(trailerAppointment)) {
-                        trailerAppointment = createTrailerAppointment(warehouseId, orderLineCSVWrapper.getLoad());
+                    TrailerAppointment trailerAppointment = null;
+                    if (trailerAppointmentMap.containsKey(orderLineCSVWrapper.getLoad())) {
+                        trailerAppointment = trailerAppointmentMap.get(orderLineCSVWrapper.getLoad());
+                    }
+                    else {
+                        trailerAppointment =
+                                commonServiceRestemplateClient.getTrailerAppointmentByNumber(warehouseId, orderLineCSVWrapper.getLoad());
+                        if (Objects.isNull(trailerAppointment)) {
+                            trailerAppointment = createTrailerAppointment(warehouseId, orderLineCSVWrapper.getLoad());
+                        }
                     }
 
                     shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
@@ -321,26 +335,31 @@ public class TrailerAppointmentService {
                             : null;
                     Long clientId = Objects.isNull(client) ? null : client.getId();
 
-                    Order order = findByNumber(warehouseId, clientId, orderLineCSVWrapper.getOrder());
+                    Order order = orderService.findByNumber(warehouseId, clientId, orderLineCSVWrapper.getOrder());
                     if (Objects.isNull(order)) {
                         logger.debug("order {} is not created yet, let's create the order on the fly ", orderLineCSVWrapper.getOrder());
                         // the order is not created yet, let's
 
                         // we have to do it manually since the user name is only available in the main http session
                         // but we will create the receipt / receipt line in a separate transaction
-                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order = orderService.convertFromWrapper(warehouseId, orderLineCSVWrapper);
                         order.setCreatedBy(username);
-                        order = saveOrUpdate(order);
+                        order = orderService.saveOrUpdate(order);
                     }
-                    shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
+                    shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 90.0 +  (70.0 / totalCount) * (index + 0.5));
                     logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
                             orderLineCSVWrapper.getLine(),
                             orderLineCSVWrapper.getItem(),
                             orderLineCSVWrapper.getExpectedQuantity(),
                             order.getNumber());
-                    orderLineService.saveOrderLineData(warehouseId, clientId, order, orderLineCSVWrapper);
+                    OrderLine newOrderLine = orderLineService.saveOrderLineData(warehouseId, clientId, order, orderLineCSVWrapper);
 
-                    shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 1));
+                    attachOrderLineToTrailerAppointment(warehouseId, trailerAppointment,
+                            orderLineCSVWrapper.getStopSequence(), newOrderLine);
+
+                    trailerAppointmentMap.put(orderLineCSVWrapper.getLoad(), trailerAppointment);
+
+                    shippingTrailerAppointmentFileUploadProgressMap.put(fileUploadProgressKey, 90.0 +  (70.0 / totalCount) * (index + 1));
 
                     List<FileUploadResult> fileUploadResults = shippingTrailerAppointmentFileUploadResultMap.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
@@ -374,253 +393,207 @@ public class TrailerAppointmentService {
                     index++;
                 }
             }
+
         }).start();
 
         return fileUploadProgressKey;
 
     }
 
-    /**
-     * Convert CSV lines into trailer appointment list
-     * @param orderLineCSVWrappers
-     * @return
-     */
-    private List<TrailerAppointment> getTrailerAppointmentsFromOrderLinesCSV(Long warehouseId,
-                                                                             List<OrderLineCSVWrapper> orderLineCSVWrappers) {
-        // key: load #
-        // value: Trailer Appointment
-        Map<String, TrailerAppointment> trailerAppointmentMap = new HashMap<>();
-        orderLineCSVWrappers.forEach(
-                orderLineCSVWrapper -> {
-                    TrailerAppointment trailerAppointment =
-                            trailerAppointmentMap.getOrDefault(
-                                    orderLineCSVWrapper.getLoad(),
-                                    new TrailerAppointment(
-                                            warehouseId,
-                                            orderLineCSVWrapper.getLoad()
-                                    )
-                            );
-
-                }
-        );
-    }
-
     private TrailerAppointment createTrailerAppointment(Long warehouseId, String load) {
         return commonServiceRestemplateClient.createTrailerAppointment(warehouseId, load);
     }
 
-
-    private Shipment attachOrderToTrailerAppointment(Long warehouseId,
-                                                 Long clientId,
-                                                 TrailerAppointment trailerAppointment,
-                                                 Integer stopSequence,
-                                                 String orderNumber) {
-
-        Order order = orderService.findByNumber(warehouseId, clientId, orderNumber);
-        if (Objects.isNull(order)) {
-            throw OrderOperationException.raiseException("can't find order by number " + orderNumber);
-        }
-        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
-
-            throw OrderOperationException.raiseException("order " + orderNumber + " is already completed, " +
-                    "can't further process this order");
-        }
-
-        // see if we have any order lines that can be group into the trailer appointment
-        List<OrderLine> orderLines = order.getOrderLines().stream()
-                .filter(
-                    orderLine -> {
-                        List<ShipmentLine> shipmentLines = orderLine.getShipmentLines().stream()
-                                .filter(shipmentLine ->
-                                        !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED) &&
-                                                !shipmentLine.getStatus().equals(ShipmentLineStatus.DISPATCHED))
-                                .collect(Collectors.toList());
-                        if (shipmentLines.isEmpty() && orderLine.getOpenQuantity() == 0) {
-                            // if there's no shipment line for the order line yet but the open quantity
-                            // is 0, skip the line
-                            logger.debug("The order {}, line {} doesn't have any shipment line" +
-                                    " but no open quantity as well, skip the line",
-                                    orderNumber, orderLine.getNumber());
-                            return false;
-                        }
-                        else if (shipmentLines.stream().anyMatch(
-                                shipmentLine -> Objects.nonNull(shipmentLine.getShipment().getStop()))) {
-                            // skip the order line as it already active shipment line and the shipment line
-                            // is attached to some trailer appointment
-                            logger.debug("The order {}, line {} doesn't have active shipment line" +
-                                            " that assigned to other trailer appointment, skip the line",
-                                    orderNumber, orderLine.getNumber());
-                            return false;
-                        }
-                        // we either don't have any shipment line for the order line yet
-                        // or even if we have, the shipment line has not build into any trailer appointment yet
-                        // then the order line(along with the possible shipment line) is good for the new trailer
-                        // appointment
-                        return true;
-                    }
-                ).collect(Collectors.toList());
-
-        if (orderLines.isEmpty()) {
-
-            throw OrderOperationException.raiseException("order " + orderNumber + " doesn't have  " +
-                    " any valid order lines for the new trailer appointment");
-        }
-
-        Shipment shipment = null;
-        for (OrderLine orderLine : orderLines) {
-            Shipment newlyCreatedShipment =
-                    attachOrderLineToTrailerAppointment(warehouseId,
-                            trailerAppointment, stopSequence, orderLine, shipment);
-            if (Objects.isNull(shipment) && Objects.nonNull(newlyCreatedShipment)) {
-                // ok, we haven't created any shipment yet but this round, we created
-                // a new shipment, let's record it
-                // since we only need one shipment per order, we will replace the
-                // shipment only when it is not setup yet
-                shipment = newlyCreatedShipment;
-            }
-        }
-        return shipment;
-
-    }
-
-    private Shipment attachOrderLineToTrailerAppointment(Long warehouseId,
+    private void attachOrderLineToTrailerAppointment(Long warehouseId,
                                                      TrailerAppointment trailerAppointment,
-                                                         Integer stopSequence,
+                                                     Integer stopSequence,
                                                      String orderNumber,
-                                                     String orderLineNumber,
-                                                         Shipment newlyCreatedShipment) {
-
-        // make sure the line is not build into an active shipment line yet
+                                                     String orderLineNumber) {
 
         OrderLine orderLine = orderLineService.findByNumber(warehouseId,
                 orderNumber, orderLineNumber);
 
+        attachOrderLineToTrailerAppointment(warehouseId, trailerAppointment,
+                stopSequence, orderLine);
+    }
+    private void attachOrderLineToTrailerAppointment(Long warehouseId,
+                                                         TrailerAppointment trailerAppointment,
+                                                         Integer stopSequence,
+                                                     OrderLine orderLine) {
+
+        // make sure the line is not build into an active shipment line yet
+
+
         if (orderLine.getOrder().getStatus().equals(OrderStatus.COMPLETE)) {
 
-            throw OrderOperationException.raiseException("order " + orderNumber + " is already completed, " +
+            throw OrderOperationException.raiseException("order " + orderLine.getOrder().getNumber() + " is already completed, " +
                     "can't further process this order");
         }
-        return attachOrderLineToTrailerAppointment(warehouseId,
-                trailerAppointment, stopSequence,
-                orderLine, newlyCreatedShipment);
+        // get the open shipment for the order line. If there're multiple open shipments, then
+        // raise an error as we don't want to have multiple shipments group into the
+        // same trailer
+
+        List<ShipmentLine> shipmentLines = orderLine.getShipmentLines().stream()
+                .filter(shipmentLine ->
+                        !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED) &&
+                                !shipmentLine.getStatus().equals(ShipmentLineStatus.DISPATCHED))
+                .collect(Collectors.toList());
+        if (shipmentLines.size() > 1) {
+
+            throw OrderOperationException.raiseException("order " + orderLine.getOrder().getNumber() + " has multiple shipment assigned, " +
+                    "can't further process this order");
+        }
+        ShipmentLine shipmentLine = shipmentLines.size() == 1? shipmentLines.get(0) : null;
+        if(Objects.isNull(shipmentLine)) {
+            // there's no shipment line yet
+            // 1. if there's shipment for the same order in the same trailer, and the shipment
+            //    has the same load sequence, then build the order line into the same shipment
+            // 2. otherwise, build the order line into a new shipment
+            Shipment matchedShipment = findMatchedShipmentForNewOrderInTrailerAppointment(
+                    trailerAppointment, stopSequence, orderLine
+            );
+            if (Objects.isNull(matchedShipment)) {
+                // OK, there's no matched shipment, let's plan a shipment for the order line , and then
+                // build it into the trailer appointment
+                List<Shipment> shipments = shipmentService.planShipments(warehouseId, List.of(orderLine));
+                if (shipments.size() != 1) {
+
+                    throw OrderOperationException.raiseException("fail to plan a new shipment for order " + orderLine.getOrder().getNumber()  +
+                            "can't further process this order");
+                }
+                matchedShipment = shipments.get(0);
+                // build the shipment into the trailer
+                attachShipmentToTrailerAppointment(matchedShipment, trailerAppointment, stopSequence);
+            }
+            else {
+                // ok, we find a shipment that match with the order line and is in the current
+                // trailer appointment, we will just need to build the order line into the same shipment
+                shipmentLine = shipmentService.addOrderLine(matchedShipment, orderLine);
+                // we may need to add the shipment line to the shipment
+                matchedShipment.getShipmentLines().add(shipmentLine);
+            }
+        }
+        else {
+            // ok, there's shipment line planned for the order line, attached the shipment to the current trailer
+            attachShipmentToTrailerAppointment(shipmentLine.getShipment(), trailerAppointment, stopSequence);
+        }
 
     }
 
     /**
-     * Attach order line to the trailer appointment
-     * @param warehouseId
+     * When we want to build a order line into a trailer appointment, we will first check
+     * if there's existing shipment that
+     * 1. has the same stop sequence
+     * 2. has the same ship to address
+     * 3. the shipment is built for the same order as the line
      * @param trailerAppointment
      * @param stopSequence
      * @param orderLine
-     * @param newlyCreatedShipment optional. Passed in if we created a shipment for other lines from the same order in this transaction
+     * @return
      */
-    private Shipment attachOrderLineToTrailerAppointment(Long warehouseId,
-                                                         TrailerAppointment trailerAppointment,
-                                                         Integer stopSequence,
-                                                         OrderLine orderLine,
-                                                         Shipment newlyCreatedShipment) {
+    private Shipment findMatchedShipmentForNewOrderInTrailerAppointment(TrailerAppointment trailerAppointment,
+                                                                        int stopSequence,
+                                                                        OrderLine orderLine) {
 
-        Shipment newShipment = null;
-        // see if the we already have active shipment line for this order line
-        List<ShipmentLine> shipmentLines = orderLine.getShipmentLines().stream()
-                .filter(shipmentLine ->
-                        !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED) &&
-                        !shipmentLine.getStatus().equals(ShipmentLineStatus.DISPATCHED))
-                .collect(Collectors.toList());
-
-        if (shipmentLines.size() == 0) {
-            // there's no active shipment line yet, let's plan a shipment line for this order line
-            // before we create new shipment line, make sure there's still open quantity
-            if (orderLine.getOpenQuantity() <= 0) {
-                throw OrderOperationException.raiseException("Can't attach the order line into trailer appointment "
-                        + trailerAppointment.getNumber() + " as the order " +
-                        orderLine.getOrder().getNumber() + ", line " +
-                        orderLine.getNumber() + " has 0 open quantity");
+        for (Stop stop : trailerAppointment.getStops()) {
+            if (stop.getSequence() != stopSequence) {
+                // current order's load sequence doesn't match the exists load
+                // we can't group the order into this stop
+                continue;
             }
-            // see if we already have existing shipment for the same order. If so,
-            // we will group into the same shipment
-            if (Objects.isNull(newlyCreatedShipment)) {
-                // shipment is not passed, we will create a shipment for the order line
-                List<Shipment> shipments = shipmentService.planShipments(
-                        warehouseId, List.of(orderLine)
-                );
-                // we should only get one shipment as we are planning for one line
-                if (shipments.size() != 1) {
-                    throw OrderOperationException.raiseException("error while plan order order " +
-                            orderLine.getOrder().getNumber() + ", line " +
-                                    orderLine.getNumber() + ", get " + shipments.size() +
-                            " shipment");
+            if (!stop.orderValidForStop(orderLine.getOrder())) {
+                continue;
+            }
+            // ok, the stop is valid for the order, see if there's shipment
+            // in the stop that is for the same order
+
+            for (Shipment shipment : stop.getShipments()) {
+                // if the shipment has lines from other order, we will not group the current order
+                // into this shipment as we don't want to group same orders into different
+                boolean shipmentForDifferentOrder = false;
+                for (ShipmentLine existingShipmentLine : shipment.getShipmentLines()) {
+                    if (!existingShipmentLine.getOrderLine().getOrder().equals(orderLine.getOrder())) {
+                        shipmentForDifferentOrder = true;
+                    }
                 }
-                newShipment = shipments.get(0);
-                attachShipmentToTrailerAppointment(newShipment, trailerAppointment, stopSequence);
-                // return newly created shipment
-                return newShipment;
-            }
-            else {
-                // shipment is passed in, let's build the order line to this shipment
-                // since the passed in shipment is supposed to be create in this transaction, we will
-                // assume it is already assigned to the trailer appointment
-                shipmentService.addOrderLine(newlyCreatedShipment, orderLine);
+
+                // OK, we didn't find shipment for this order line, then
+                // see if we can group the order into the shipment
+                logger.debug("The shipment {} has shipment from different order ? {}",
+                        shipment.getNumber(), shipmentForDifferentOrder);
+                if (!shipmentForDifferentOrder) {
+                    return shipment;
+                }
             }
         }
-        else if (shipmentLines.stream().anyMatch(
-                shipmentLine -> Objects.nonNull(shipmentLine.getShipment().getStop()))) {
-            // the order line has some shipment line that already group into stop / trailer appointment,
-            // let's skip this order line
-            throw OrderOperationException.raiseException("the order " +
-                    orderLine.getOrder().getNumber() + ", line " +
-                            orderLine.getNumber() + " is already in some trailer appointment");
-        }
-        else {
-            // if we are here, we know that we already have shipment lines for this order line but
-            // none of them are in any trailer appointment, let's build the shipment into the trailer
-            // appointment with the right loading sequence
-            Set<Shipment> shipments = shipmentLines.stream().map(
-                    shipmentLine -> shipmentLine.getShipment()
-            ).collect(Collectors.toSet());
-            shipments.forEach(
-                    existingShipment -> attachShipmentToTrailerAppointment(existingShipment, trailerAppointment, stopSequence)
-            );
-
-            // we will return nothing as we didn't create shipment in this transaction
-            return null;
-        }
-
         return null;
     }
 
-    private void attachShipmentToTrailerAppointment(Shipment existingShipment,
+    private void attachShipmentToTrailerAppointment(Shipment shipment,
                                                     TrailerAppointment trailerAppointment,
                                                     Integer stopSequence) {
-        Stop stop = stopService.createStop(existingShipment.getWarehouseId(),
-                stopSequence,
-                existingShipment.getShipToContactorFirstname(),
-                existingShipment.getShipToContactorLastname(),
-                existingShipment.getShipToAddressCountry(),
-                existingShipment.getShipToAddressState(),
-                existingShipment.getShipToAddressCounty(),
-                existingShipment.getShipToAddressCity(),
-                existingShipment.getShipToAddressDistrict(),
-                existingShipment.getShipToAddressLine1(),
-                existingShipment.getShipToAddressLine2(),
-                existingShipment.getShipToAddressPostcode());
-        logger.debug("stop {} / {} is created for shipment {} / {}",
-                stop.getId(), stop.getNumber(),
-                existingShipment.getId(), existingShipment.getNumber());
+        // see if the shipment already have a stop
+        if (Objects.nonNull(shipment.getStop()) && Objects.nonNull(shipment.getStop().getTrailerAppointmentId())) {
+            // ok, the shipment already have a stop, validate the stop to make sure
+            // 1. it is in the same trailer appointment
+            // 2. it has the right stop sequence
+            if (!trailerAppointment.getId().equals(shipment.getStop().getTrailerAppointmentId())) {
 
-        // assign the shipment to the stop
-        existingShipment = shipmentService.assignShipmentToStop(stop, existingShipment);
+                throw OrderOperationException.raiseException("fail to assign the shipment " + shipment.getNumber() +
+                                " to the trailer "  + trailerAppointment.getNumber() +
+                        "as the shipment already assigned to a different trailer appointment with id " +
+                                shipment.getStop().getTrailerAppointmentId());
+            }
+            if (!shipment.getStop().getSequence().equals(stopSequence)){
 
-        logger.debug("shipment {} / {} is assigned to stop {} / {} ",
-                existingShipment.getId(), existingShipment.getNumber(),
-                existingShipment.getStop().getId(), existingShipment.getStop().getNumber());
+                throw OrderOperationException.raiseException("fail to assign the shipment " + shipment.getNumber() +
+                        " to the trailer "  + trailerAppointment.getNumber() +
+                        "as the shipment has a different stop sequence " + shipment.getStop().getSequence() +
+                        "than the required one " + stopSequence);
+            }
+            // the shipment is already assigned to the trailer, do nothing
+        }
+        else if (Objects.nonNull(shipment.getStop())) {
+            // if we are here, we know the shipment has a stop but the stop doesn't assigned to any trailer appointment yet
+            // let's assign to the current trailer appointment
+            Stop stop = shipment.getStop();
+            stop =  stopService.assignTrailerAppointment(stop, trailerAppointment,
+                    stopSequence);
+            trailerAppointment.getStops().add(stop);
 
+        }
+        else {
+            // ok, if we are here, we know the shipment has not been built into any stop yet, let's
+            // create a stop for the shipment and then assign the stop to the trailer
+            Stop stop = stopService.createStop(shipment.getWarehouseId(),
+                    stopSequence,
+                    shipment.getShipToContactorFirstname(),
+                    shipment.getShipToContactorLastname(),
+                    shipment.getShipToAddressCountry(),
+                    shipment.getShipToAddressState(),
+                    shipment.getShipToAddressCounty(),
+                    shipment.getShipToAddressCity(),
+                    shipment.getShipToAddressDistrict(),
+                    shipment.getShipToAddressLine1(),
+                    shipment.getShipToAddressLine2(),
+                    shipment.getShipToAddressPostcode());
+            logger.debug("stop {} / {} is created for shipment {} / {}",
+                    stop.getId(), stop.getNumber(),
+                    shipment.getId(), shipment.getNumber());
 
-        stopService.assignTrailerAppointment(stop, trailerAppointment,
-                stopSequence);
+            // assign the shipment to the stop
+            shipment = shipmentService.assignShipmentToStop(stop, shipment);
+
+            logger.debug("shipment {} / {} is assigned to stop {} / {} ",
+                    shipment.getId(), shipment.getNumber(),
+                    shipment.getStop().getId(), shipment.getStop().getNumber());
+            stop.getShipments().add(shipment);
+
+            stop = stopService.assignTrailerAppointment(stop, trailerAppointment,
+                    stopSequence);
+            trailerAppointment.getStops().add(stop);
+        }
 
 
     }
-
-
 }

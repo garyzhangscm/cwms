@@ -1332,7 +1332,7 @@ public class ShipmentService {
      * @param shipment
      * @param orderLine
      */
-    public void addOrderLine(Shipment shipment, OrderLine orderLine) {
+    public ShipmentLine addOrderLine(Shipment shipment, OrderLine orderLine) {
 
         ShipmentLine shipmentLine = shipmentLineService.createShipmentLine(
                 shipment, orderLine, orderLine.getOpenQuantity()
@@ -1340,5 +1340,6 @@ public class ShipmentService {
         // Add the new shipment line to the shipment
         shipment.getShipmentLines().add(shipmentLine);
         save(shipment);
+        return shipmentLine;
     }
 }
