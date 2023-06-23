@@ -182,6 +182,25 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
         return null;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderLine orderLine = (OrderLine) o;
+
+        if (Objects.nonNull(id) && Objects.nonNull(orderLine.id) &&
+                Objects.equals(id, orderLine.id)){
+            return true;
+        }
+        return Objects.equals(order, orderLine.order) &&
+                number.equalsIgnoreCase(orderLine.getNumber());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, order, number);
+    }
+
     public Long getId() {
         return id;
     }

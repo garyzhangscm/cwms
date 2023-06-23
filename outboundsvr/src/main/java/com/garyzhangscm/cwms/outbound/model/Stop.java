@@ -1,8 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
-import com.garyzhangscm.cwms.outbound.service.StopService;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
@@ -83,6 +81,38 @@ public class Stop  extends AuditibleEntity<String> {
     @Column(name = "address_postcode")
     private String addressPostcode;
 
+    public Stop() {}
+    public Stop(Long warehouseId, String number,
+                Integer sequence,
+                Long trailerAppointmentId,
+                Long shipToCustomerId,
+                String contactorFirstname,
+                String contactorLastname,
+                String addressCountry,
+                String addressState,
+                String addressCounty,
+                String addressCity,
+                String addressDistrict,
+                String addressLine1,
+                String addressLine2,
+                String addressPostcode) {
+        this.warehouseId = warehouseId;
+        this.number = number;
+        this.sequence = sequence;
+        this.trailerAppointmentId = trailerAppointmentId;
+
+        this.shipToCustomerId = shipToCustomerId;
+        this.contactorFirstname = contactorFirstname;
+        this.contactorLastname = contactorLastname;
+        this.addressCountry = addressCountry;
+        this.addressState = addressState;
+        this.addressCounty = addressCounty;
+        this.addressCity = addressCity;
+        this.addressDistrict = addressDistrict;
+        this.addressLine1 = addressLine1;
+        this.addressLine2 = addressLine2;
+        this.addressPostcode = addressPostcode;
+    }
     public Long getId() {
         return id;
     }
@@ -192,6 +222,45 @@ public class Stop  extends AuditibleEntity<String> {
 
     }
 
+    // check if the order can be group into the stop
+    // by compare the order's address to the stop
+    // if there's no shipment yet, then the order is valid for the stop
+    public boolean orderValidForStop(Order order) {
+        if (getShipments().isEmpty()) {
+            return true;
+        }
+        return shipmentAddressInformationEquals("contactorFirstname",
+                order.getNumber(), order.getShipToContactorFirstname(),
+                getNumber(), getContactorFirstname()) &&
+                shipmentAddressInformationEquals("contactorLastname",
+                        order.getNumber(), order.getShipToContactorLastname(),
+                        getNumber(), getContactorLastname()) &&
+                shipmentAddressInformationEquals("addressCountry",
+                        order.getNumber(), order.getShipToAddressCountry(),
+                        getNumber(), getAddressCountry()) &&
+                shipmentAddressInformationEquals("addressState",
+                        order.getNumber(), order.getShipToAddressState(),
+                        getNumber(), getAddressState()) &&
+                shipmentAddressInformationEquals("addressCounty",
+                        order.getNumber(), order.getShipToAddressCounty(),
+                        getNumber(), getAddressCounty()) &&
+                shipmentAddressInformationEquals("addressCity",
+                        order.getNumber(), order.getShipToAddressCity(),
+                        getNumber(), getAddressCity()) &&
+                shipmentAddressInformationEquals("addressDistrict",
+                        order.getNumber(), order.getShipToAddressDistrict(),
+                        getNumber(), getAddressDistrict()) &&
+                shipmentAddressInformationEquals("addressLine1",
+                        order.getNumber(), order.getShipToAddressLine1(),
+                        getNumber(), getAddressLine1()) &&
+                shipmentAddressInformationEquals("addressLine2",
+                        order.getNumber(), order.getShipToAddressLine2(),
+                        getNumber(), getAddressLine2()) &&
+                shipmentAddressInformationEquals("addressPostcode",
+                        order.getNumber(), order.getShipToAddressPostcode(),
+                        getNumber(), getAddressPostcode());
+
+    }
     private boolean shipmentAddressInformationEquals(
             Shipment shipment1, Shipment shipment2
     ) {

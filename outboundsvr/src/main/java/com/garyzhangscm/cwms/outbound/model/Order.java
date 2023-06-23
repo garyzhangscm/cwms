@@ -281,6 +281,7 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
         }
         Order anotherOrder = (Order)anotherObj;
         return getWarehouseId().equals(anotherOrder.getWarehouseId()) &&
+                Objects.equals(client, anotherOrder.getClient()) &&
                 getNumber().equals(anotherOrder.getNumber());
     }
 

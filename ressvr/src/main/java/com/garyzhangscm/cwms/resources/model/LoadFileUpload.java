@@ -15,15 +15,15 @@ public class LoadFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "client", "Client",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "load", "Load Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(
-                "loadSequence", "Load Sequence",
+                "stopSequence", "Stop Sequence",
                 String.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(

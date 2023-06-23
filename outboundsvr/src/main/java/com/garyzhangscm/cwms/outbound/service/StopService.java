@@ -298,7 +298,7 @@ public class StopService {
                 getNextStopSequenceInTrailerAppointment(stop.getWarehouseId(), trailerAppointment));
     }
 
-    public void assignTrailerAppointment(Stop stop, TrailerAppointment trailerAppointment,
+    public Stop assignTrailerAppointment(Stop stop, TrailerAppointment trailerAppointment,
                                          Integer stopSequence) {
         if (Objects.nonNull(stop.getTrailerAppointmentId())) {
             // if the stop is already assigned to some trailer appointment,
@@ -306,7 +306,7 @@ public class StopService {
             if (Objects.equals(trailerAppointment.getId(), stop.getTrailerAppointmentId())) {
                 // the stop is already assigned to the current trailer appointment, we don't need to
                 // do anything
-                return;
+                return stop;
             }
             else {
 
@@ -316,7 +316,7 @@ public class StopService {
         }
         stop.setTrailerAppointmentId(trailerAppointment.getId());
         stop.setSequence(stopSequence);
-        save(stop);
+        return saveOrUpdate(stop);
     }
 
     public Stop findMatchedStop(TrailerAppointment trailerAppointment, Shipment shipment) {

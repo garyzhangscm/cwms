@@ -86,7 +86,7 @@ public class OrderLineCSVWrapper {
     private String parcelSignatureRequired;
 
     private String load;
-    private Integer loadSequence;
+    private Integer stopSequence;
 
     @Override
     public String toString() {
@@ -444,11 +444,11 @@ public class OrderLineCSVWrapper {
         this.load = load;
     }
 
-    public Integer getLoadSequence() {
-        return loadSequence;
+    public Integer getStopSequence() {
+        return stopSequence;
     }
 
-    public void setLoadSequence(Integer loadSequence) {
-        this.loadSequence = loadSequence;
+    public void setStopSequence(Integer stopSequence) {
+        this.stopSequence = stopSequence;
     }
 }
