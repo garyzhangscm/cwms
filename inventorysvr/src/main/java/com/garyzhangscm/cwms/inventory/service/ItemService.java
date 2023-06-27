@@ -1491,7 +1491,11 @@ public class ItemService {
 
         }
 
-        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(item.getWarehouseId()).getCompanyId();
+        Long companyId = Objects.nonNull(item.getCompanyId()) ?
+                item.getCompanyId() :
+                Objects.nonNull(item.getWarehouseId()) ?
+                    warehouseLayoutServiceRestemplateClient.getWarehouseById(item.getWarehouseId()).getCompanyId()
+                    : null;
         StringBuilder alertParameters = new StringBuilder();
         alertParameters.append("name=").append(item.getName()) ;
 
@@ -1499,7 +1503,10 @@ public class ItemService {
 
             Alert alert = new Alert(companyId,
                     AlertType.NEW_ITEM,
-                    "NEW-ITEM-" + companyId + "-" + item.getWarehouseId() + "-" + item.getName(),
+                    "NEW-ITEM-" +
+                            (Objects.nonNull(companyId) ? companyId : "")
+                            + "-" + (Objects.nonNull(item.getWarehouseId()) ?  item.getWarehouseId() : "")
+                            + "-" + item.getName(),
                     "Item " + item.getName() + " created, by " + username,
                     "", alertParameters.toString());
             kafkaSender.send(alert);
@@ -1508,7 +1515,10 @@ public class ItemService {
 
             Alert alert = new Alert(companyId,
                     AlertType.MODIFY_RECEIPT,
-                    "MODIFY-ITEM-" + companyId + "-" + item.getWarehouseId() + "-" + item.getName(),
+                    "MODIFY-ITEM-" +
+                        (Objects.nonNull(companyId) ? companyId : "")
+                        + "-" + (Objects.nonNull(item.getWarehouseId()) ?  item.getWarehouseId() : "")
+                        + "-" + item.getName(),
                     "Item " + item.getName() + " is changed, by " + username,
                     "", alertParameters.toString());
             kafkaSender.send(alert);
