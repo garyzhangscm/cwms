@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.AllocationResult;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.OrderLine;
 import com.garyzhangscm.cwms.outbound.model.Shipment;
@@ -107,7 +108,7 @@ public class ShipmentController {
 
     @BillableEndpoint
     @RequestMapping(value="/shipments/{id}/allocate", method = RequestMethod.PUT)
-    public Shipment allocateShipment(@PathVariable Long id){
+    public List<AllocationResult> allocateShipment(@PathVariable Long id){
 
         return shipmentService.allocateShipment(id);
     }

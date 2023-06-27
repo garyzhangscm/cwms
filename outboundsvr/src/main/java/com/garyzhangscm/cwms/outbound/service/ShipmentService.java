@@ -255,7 +255,7 @@ public class ShipmentService {
 
 
     @Transactional
-    public Shipment allocateShipment(Long id){
+    public List<AllocationResult> allocateShipment(Long id){
 
         Shipment shipment = findById(id);
 
@@ -267,6 +267,7 @@ public class ShipmentService {
             shipment = save(shipment);
         }
 
+        List<AllocationResult> allocationResults = new ArrayList<>();
         // Allocate each line
         Iterator<ShipmentLine> shipmentLineIterator = shipment.getShipmentLines().iterator();
         logger.debug("Get {} lines from shipment {}",
@@ -274,14 +275,14 @@ public class ShipmentService {
                 shipment.getNumber());
         while (shipmentLineIterator.hasNext()) {
             ShipmentLine shipmentLine = shipmentLineIterator.next();
-            shipmentLineService.allocateShipmentLine(shipmentLine);
+            allocationResults.add(shipmentLineService.allocateShipmentLine(shipmentLine));
         }
         /***
         shipment.getShipmentLines().
                 forEach(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine));
         **/
         // return the result after the allocation
-        return findById(id);
+        return allocationResults;
     }
 
     @Transactional

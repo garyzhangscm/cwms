@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.AllocationResult;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Stop;
 import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
@@ -75,7 +76,7 @@ public class StopController {
 
     @BillableEndpoint
     @RequestMapping(value="/stops/{id}/allocate", method = RequestMethod.POST)
-    public Stop allocateStop(
+    public List<AllocationResult> allocateStop(
             @PathVariable Long id,
             @RequestParam Long warehouseId) {
         return stopService.allocateStop(id);

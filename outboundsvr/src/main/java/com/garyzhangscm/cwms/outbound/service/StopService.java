@@ -391,10 +391,10 @@ public class StopService {
         return newStop;
     }
 
-    public Stop allocateStop(Long id) {
+    public List<AllocationResult> allocateStop(Long id) {
         return allocateStop(findById(id));
     }
-    public Stop allocateStop(Stop stop) {
+    public List<AllocationResult> allocateStop(Stop stop) {
         if (stop.getStatus() == StopStatus.CANCELLED || stop.getStatus() == StopStatus.COMPLETED) {
             logger.debug("Can't allocate the stop {} as its status is {}",
                     stop.getNumber(), stop.getStatus());
@@ -404,10 +404,20 @@ public class StopService {
         stop.setStatus(StopStatus.INPROCESS);
         saveOrUpdate(stop);
 
+        List<AllocationResult> allocationResults = new ArrayList<>();
         stop.getShipments().forEach(
-                shipment -> shipmentService.allocateShipment(shipment.getId())
+                shipment -> {
+                    try {
+                        allocationResults.addAll(shipmentService.allocateShipment(shipment.getId()));
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                        // ignore any shipment that has error
+                    }
+                }
+
         );
-        return stop;
+        return allocationResults;
 
     }
 }

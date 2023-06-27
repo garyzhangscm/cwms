@@ -66,6 +66,16 @@ public class TrailerAppointmentService {
     private FileService fileService;
     @Autowired
     private ShipmentLineService shipmentLineService;
+    @Autowired
+    private BulkPickConfigurationService bulkPickConfigurationService;
+    @Autowired
+    private BulkPickService bulkPickService;
+    @Autowired
+    private PickListService pickListService;
+    @Autowired
+    private PickReleaseService pickReleaseService;
+    @Autowired
+    private PickService pickService;
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> shippingTrailerAppointmentFileUploadProgressMap = new ConcurrentHashMap<>();
@@ -180,10 +190,166 @@ public class TrailerAppointmentService {
                     "let's just mark this trailer appointment as in process");
             return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.INPROCESS);
         }
+
         Collections.sort(stops, Comparator.comparing(Stop::getSequence));
-        stops.forEach(stop ->   stopService.allocateStop(stop) );
+
+        List<AllocationResult> allocationResults = new ArrayList<>();
+        stops.forEach(stop ->  {
+            try {
+                allocationResults.addAll(stopService.allocateStop(stop));
+            }
+            catch(Exception ex) {
+                ex.printStackTrace();
+                // ignore any exception
+            }
+        });
+
+        // post allocation process
+        // 1. bulk pick
+        // 2. list pick
+        // 3. release picks into work task
+        TrailerAppointment trailerAppointment = commonServiceRestemplateClient.getTrailerAppointmentById(id);
+        postAllocationProcess(warehouseId,
+                trailerAppointment.getNumber(),  allocationResults);
+
+
         // set the trailer appointment's status to in process
         return commonServiceRestemplateClient.changeTrailerAppointmentStatus(id, TrailerAppointmentStatus.INPROCESS);
+    }
+
+
+    /**
+     * Post allocation process
+     * 1. bulk pick
+     * 2. list pick
+     * @param allocationResults
+     */
+    private void postAllocationProcess(Long warehouseId,
+                                       String trailerAppointmentNumber,
+                                       List<AllocationResult> allocationResults) {
+        // we will always try bulk pick first
+        requestBulkPick(warehouseId, trailerAppointmentNumber, allocationResults);
+
+        // for anything that not fall in the bulk pick, see if we can group them into
+        // a list pick
+        processListPick(warehouseId, trailerAppointmentNumber, allocationResults);
+
+        releaseSinglePicks(allocationResults);
+
+    }
+    /**
+     * Group all the picks into bulk pick, if possible
+     * @param allocationResults
+     */
+    private void requestBulkPick(Long warehouseId,
+                                 String trailerAppointmentNumber,
+                                 List<AllocationResult> allocationResults) {
+
+        logger.debug("start to seek bulk pick possibility for trailer appointment {}",
+                trailerAppointmentNumber);
+        // make sure the bulk pick is enabled
+        BulkPickConfiguration bulkPickConfiguration =
+                bulkPickConfigurationService.findByWarehouse(warehouseId);
+        if (Objects.isNull(bulkPickConfiguration)) {
+            logger.debug("Skip the bulk pick process as there's no configuration setup for bulk picking");
+            return;
+        }
+        if (!Boolean.TRUE.equals(bulkPickConfiguration.getEnabledForOutbound())){
+            // bulk pick is not enabled at the warehouse
+
+            logger.debug("Skip the bulk pick process as it is disabled for the outbound process");
+            return;
+        }
+
+        bulkPickService.groupPicksIntoBulk(
+                trailerAppointmentNumber, allocationResults, bulkPickConfiguration.getPickSortDirection());
+
+
+        logger.debug("complete bulk pick processing for trailer appointment {}",
+                trailerAppointmentNumber);
+    }
+
+    /**
+     * Find picks from the same wave and group them together into the same list
+     * @param warehouseId
+     * @param trailerAppointmentNumber
+     */
+    private void processListPick(Long warehouseId, String trailerAppointmentNumber, List<AllocationResult> allocationResults) {
+        logger.debug("start to process pick list for trailer appointment {}", trailerAppointmentNumber);
+        // save the pick list that generated in this session.
+        // in case the pick list configuration is setup to be NOT allow new pick
+        // being group into existing, then we will only group the pick into
+        // the list that generated in the same session
+        List<PickList> pickLists = new ArrayList<>();
+
+        // let's get any pick that is
+        // 1. not in any group
+        // 2. in PENDING status
+        // and see if we can group into a existing pick
+        allocationResults.stream().map(
+                allocationResult ->  allocationResult.getPicks()
+        ).flatMap(List::stream)
+                .filter(pick ->  pick.getStatus().equals(PickStatus.PENDING) &&
+                        Objects.isNull(pick.getBulkPick()) &&
+                        Objects.isNull(pick.getCartonization()) &&
+                        Objects.isNull(pick.getWorkTaskId()) &&
+                        pick.getPickedQuantity() == 0
+                )
+                .forEach(
+                        pick -> {
+                            pickListService.processPickList(pick, pickLists);
+                        }
+                );
+
+
+    }
+
+
+    /**
+     * Release the picks of the wave, which are not in any group of
+     * 1. list pick
+     * 2. bulk pick
+     * 3. carton pick
+     * @param allocationResults
+     */
+    private void releaseSinglePicks(List<AllocationResult> allocationResults) {
+        // let's get any pick that is
+        // 1. not in any group
+        // 2. in PENDING status
+        // and then release
+        allocationResults.stream().map(
+                allocationResult ->  allocationResult.getPicks()
+        ).flatMap(List::stream)
+                .filter(pick -> {
+
+                    logger.debug("check if we will need to release the pick {}",
+                            pick.getNumber());
+                    logger.debug("pick.getStatus().equals(PickStatus.PENDING): {}",
+                            pick.getStatus().equals(PickStatus.PENDING));
+                    logger.debug("Objects.isNull(pick.getBulkPick()): {}",
+                            Objects.isNull(pick.getBulkPick()));
+                    logger.debug("Objects.isNull(pick.getCartonization()): {}", Objects.isNull(pick.getCartonization()) );
+                    logger.debug("Objects.isNull(pick.getPickList()): {}", Objects.isNull(pick.getPickList()));
+                    logger.debug("Objects.isNull(pick.getWorkTaskId()): {}", Objects.isNull(pick.getWorkTaskId()));
+                    logger.debug("pick.getPickedQuantity() == 0: {}", pick.getPickedQuantity() == 0);
+                    return pick.getStatus().equals(PickStatus.PENDING) &&
+                            Objects.isNull(pick.getBulkPick()) &&
+                            Objects.isNull(pick.getCartonization()) &&
+                            Objects.isNull(pick.getPickList()) &&
+                            Objects.isNull(pick.getWorkTaskId()) &&
+                            pick.getPickedQuantity() == 0;
+                })
+                .forEach(
+                        pick -> {
+                            pick = pickReleaseService.releasePick(pick);
+                            logger.debug("pick {} is released? {}, work task id: {}",
+                                    pick.getNumber(),
+                                    PickStatus.RELEASED.equals(pick.getStatus()),
+                                    pick.getWorkTaskId());
+                            pickService.saveOrUpdate(pick, false);
+                        }
+                );
+
     }
 
     public TrailerAppointment completeTrailerAppointment(Long warehouseId, Long id) {
