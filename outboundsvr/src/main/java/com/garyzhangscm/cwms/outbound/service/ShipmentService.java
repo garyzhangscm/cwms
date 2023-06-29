@@ -1262,12 +1262,9 @@ public class ShipmentService {
 
         // remove all the cancelled pick first
         cancelledPickService.removeCancelledPicks(shipment);
-
         shortAllocationService.removeCancelledShortAllocations(shipment);
         cancelledShortAllocationService.removeCancelledShortAllocations(shipment);
-
         allocationTransactionHistoryService.removeAllocationTransactionHistory(shipment);
-
 
 
         delete(shipment);

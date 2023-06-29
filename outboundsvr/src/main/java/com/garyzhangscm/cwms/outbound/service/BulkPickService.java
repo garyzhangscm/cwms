@@ -328,6 +328,7 @@ public class BulkPickService {
                                 Objects.isNull(pick.getWorkTaskId()) &&
                                 Strings.isBlank(pick.getLpn()) &&
                                 pick.getPickedQuantity() == 0 &&
+                                !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
                                 pick.getStatus() == PickStatus.PENDING
                 ).collect(Collectors.toList());
 
@@ -579,6 +580,10 @@ public class BulkPickService {
 
     private Pick splitPickForBulkPick(Pick pick, long newPickQuantity) {
 
+        logger.debug("start to split quantity {} from pick {}, original quantity {}",
+                newPickQuantity,
+                pick.getNumber(),
+                pick.getQuantity());
         // reduce the original pick's quantity
         pick.setQuantity(pick.getQuantity() - newPickQuantity);
         pickService.saveOrUpdate(pick, false);

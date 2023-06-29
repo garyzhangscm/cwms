@@ -2161,5 +2161,7 @@
   "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "按波次",
   "releaseToWorkTask": "使用工作任务系统",
   "workTaskPriority": "工作任务优先级",
-  "listPickBatchPicking": "列表拣货 - 当拣货库存属性相同时，组合拣货"
+  "listPickBatchPicking": "列表拣货 - 当拣货库存属性相同时，组合拣货",
+  "releaseBulkPickToWorkTask": "使用工作任务系统",
+  "releasePickListToWorkTask": "使用工作任务系统"
 }
