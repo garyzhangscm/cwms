@@ -60,6 +60,19 @@ public class PickListController {
         return ResponseBodyWrapper.success("pick list " + id + " is cancelled");
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/cancel-in-batch", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> cancelPickListInBatch(
+            @RequestParam String ids,
+            @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+            @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
+        String[] idList = ids.split(",");
+        for (String id : idList) {
+
+            pickListService.cancelPickList(Long.parseLong(id));
+        }
+        return ResponseBodyWrapper.success("pick list " + ids + " are cancelled");
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/pick-lists/{id}/confirm", method = RequestMethod.POST)

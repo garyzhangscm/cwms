@@ -403,13 +403,16 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     logger.debug("start to allocate from lpn {}, quantity {}",
                             quantityOnLpn.getKey(), quantityOnLpn.getValue());
                     Long allocatedQuantity = Math.min(quantityOnLpn.getValue(), allocatibleQuantity);
+                    boolean wholeLPNPick = allocatedQuantity.equals(quantityOnLpn.getValue());
+
                     String allocatedLpn = quantityOnLpn.getKey();
 
                     logger.debug("will allocate from lpn {}, original quantity {}, allocated quantity {}",
                             quantityOnLpn.getKey(), quantityOnLpn.getValue(),
                             allocatedQuantity);
 
-                    Pick pick = tryCreatePickForUOMAllocation(allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure);
+                    Pick pick = tryCreatePickForUOMAllocation(
+                            allocationRequest, inventorySummary, allocatedQuantity, smallestPickableUnitOfMeasure, wholeLPNPick);
                     picks.add(pick);
 
                     // SAVE the allocation transaction
@@ -485,10 +488,11 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      */
     @Transactional(dontRollbackOn = GenericException.class)
     private Pick tryCreatePickForUOMAllocation(AllocationRequest allocationRequest, InventorySummary inventorySummary,
-                                               long allocatibleQuantity, ItemUnitOfMeasure smallestPickableUnitOfMeasure) {
+                                               long allocatibleQuantity, ItemUnitOfMeasure smallestPickableUnitOfMeasure,
+                                               boolean wholeLPNPick) {
         if (allocationRequest.getShipmentLines().size() > 0) {
             return pickService.generatePick(inventorySummary, allocationRequest.getShipmentLines().get(0),
-                    allocatibleQuantity, smallestPickableUnitOfMeasure);
+                    allocatibleQuantity, smallestPickableUnitOfMeasure, wholeLPNPick);
         }
         else if(allocationRequest.getWorkOrder() != null &&
                 allocationRequest.getWorkOrderLines().size() > 0) {
@@ -496,7 +500,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventorySummary, allocationRequest.getWorkOrderLines().get(0),
                     allocatibleQuantity, smallestPickableUnitOfMeasure,
-                    allocationRequest.getDestinationLocationId());
+                    allocationRequest.getDestinationLocationId(), wholeLPNPick);
         }
         else {
             throw AllocationException.raiseException("now we only support new allocation for single shipment line or single work order line");
@@ -877,7 +881,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             logger.debug("Start to create picks for {} shipment ",
                     allocationRequest.getShipmentLines().size());
             return pickService.generatePick(inventorySummary, allocationRequest.getShipmentLines().get(0),
-                    lpnQuantityToBeAllocated, lpn);
+                    lpnQuantityToBeAllocated, lpn, true);
         }
         else if(allocationRequest.getWorkOrder() != null &&
                 allocationRequest.getWorkOrderLines().size() > 0) {
@@ -885,7 +889,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventorySummary, allocationRequest.getWorkOrderLines().get(0),
                     lpnQuantityToBeAllocated, lpn,
-                    allocationRequest.getDestinationLocationId());
+                    allocationRequest.getDestinationLocationId(), true);
         }
         else {
             throw AllocationException.raiseException("now we only support new allocation for single shipment line");

@@ -514,7 +514,8 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 }
 
                 try {
-                    Pick pick = pickService.generatePick(inventorySummary, shipmentLine, pickQuantity, smallestPickableUnitOfMeasure);
+                    Pick pick = pickService.generatePick(inventorySummary, shipmentLine, pickQuantity, smallestPickableUnitOfMeasure,
+                            pickQuantity == pickableQuantity);
                     picks.add(pick);
                     openQuantity -= pickQuantity;
                     logger.debug("OK, we generate a pick with quantity {}. The open quantity become {}",
@@ -684,8 +685,11 @@ public class AllocationConfigurationService implements TestDataInitiableService 
                 try {
                     Pick pick = (
                             allocationConfigurationType.equals(AllocationConfigurationType.PICKING) ?
-                                    pickService.generatePick(inventorySummary, shortAllocation.getShipmentLine(), pickQuantity, smallestPickableUnitOfMeasure) :
-                                    pickService.generatePick(inventorySummary, shortAllocation, pickQuantity, smallestPickableUnitOfMeasure)
+                                    pickService.generatePick(
+                                            inventorySummary, shortAllocation.getShipmentLine(), pickQuantity, smallestPickableUnitOfMeasure,
+                                            pickQuantity.equals(pickableQuantity)) :
+                                    pickService.generatePick(inventorySummary, shortAllocation, pickQuantity, smallestPickableUnitOfMeasure,
+                                            pickQuantity.equals(pickableQuantity))
                     );
 
                     if (allocationConfigurationType.equals(AllocationConfigurationType.REPLENISHMENT)) {

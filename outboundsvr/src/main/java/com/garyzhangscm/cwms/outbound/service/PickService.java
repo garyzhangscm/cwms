@@ -720,9 +720,10 @@ public class PickService {
 
 
     public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
-                                             Long quantity) {
+                                             Long quantity,
+                                             boolean wholeLPNPick) {
         return generateBasicPickInformation(
-                warehouseId, inventorySummary, quantity, null, null);
+                warehouseId, inventorySummary, quantity, null, null, wholeLPNPick);
     }
 
 
@@ -730,19 +731,22 @@ public class PickService {
                                              Inventory inventory,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
-                                             String lpn) {
+                                             String lpn,
+                                             boolean wholeLPNPick) {
         return generateBasicPickInformation(warehouseId,
                 inventory.getItem(),
                 inventory.getLocation(),
                 inventory.getInventoryStatus(),
                 quantity,
-                pickableUnitOfMeasure, lpn);
+                pickableUnitOfMeasure, lpn,
+                wholeLPNPick);
     }
     public Pick generateBasicPickInformation(Long warehouseId,
                                              InventorySummary inventorySummary,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
-                                             String lpn) {
+                                             String lpn,
+                                             boolean wholeLPNPick) {
 
         return generateBasicPickInformation(warehouseId,
                 inventorySummary.getItem(),
@@ -750,7 +754,8 @@ public class PickService {
                 inventorySummary.getInventoryStatus(),
                 quantity,
                 pickableUnitOfMeasure,
-                lpn );
+                lpn ,
+                wholeLPNPick);
     }
     public Pick generateBasicPickInformation(Long warehouseId,
                                              Item item,
@@ -758,11 +763,12 @@ public class PickService {
                                              InventoryStatus inventoryStatus,
                                              Long quantity,
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
-                                             String lpn) {
+                                             String lpn,
+                                             boolean wholeLPNPick) {
         return generateBasicPickInformation(warehouseId,
                 item, sourceLocation, inventoryStatus,
                 quantity, pickableUnitOfMeasure, lpn,
-                "", "", "");
+                "", "", "", wholeLPNPick);
 
     }
     public Pick generateBasicPickInformation(Long warehouseId,
@@ -774,7 +780,8 @@ public class PickService {
                                              String lpn,
                                              String color,
                                              String productSize,
-                                             String style) {
+                                             String style,
+                                             boolean wholeLPNPick) {
 
         Pick pick = new Pick();
         pick.setWarehouseId(warehouseId);
@@ -787,6 +794,7 @@ public class PickService {
         pick.setNumber(getNextPickNumber(sourceLocation.getWarehouse().getId()));
         pick.setStatus(PickStatus.PENDING);
         pick.setInventoryStatusId(inventoryStatus.getId());
+        pick.setWholeLPNPick(wholeLPNPick);
 
         pick.setColor(color);
         pick.setProductSize(productSize);
@@ -837,24 +845,27 @@ public class PickService {
 
     public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
                                              Long quantity,
-                                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             boolean wholeLPNPick) {
 
         return generateBasicPickInformation(
-                warehouseId, inventorySummary, quantity, pickableUnitOfMeasure, null);
+                warehouseId, inventorySummary, quantity, pickableUnitOfMeasure, null, wholeLPNPick);
     }
     public Pick generateBasicPickInformation(Long warehouseId, Inventory inventory,
                                              Long quantity,
-                                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+                                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                                             boolean wholeLPNPick) {
 
         return generateBasicPickInformation(
-                warehouseId, inventory, quantity, pickableUnitOfMeasure, null);
+                warehouseId, inventory, quantity, pickableUnitOfMeasure, null, wholeLPNPick);
     }
 
     public Pick generateBasicPickInformation(Long warehouseId,InventorySummary inventorySummary,
-                                             Long quantity, String lpn) {
+                                             Long quantity, String lpn,
+                                             boolean wholeLPNPick) {
 
         return generateBasicPickInformation(
-                warehouseId, inventorySummary, quantity, null, lpn);
+                warehouseId, inventorySummary, quantity, null, lpn, wholeLPNPick);
     }
 
     @Transactional
@@ -927,7 +938,8 @@ public class PickService {
     @Transactional
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
-                             String lpn) {
+                             String lpn,
+                             boolean wholeLPNPick) {
         logger.debug("create picks for:");
         logger.debug("inventory summary: {}",
                 Objects.isNull(inventorySummary.getLocation()) ? inventorySummary.getLocationId() :
@@ -935,7 +947,7 @@ public class PickService {
         logger.debug("shipment line: {}", shipmentLine);
         logger.debug("quantity: {}", quantity);
         logger.debug("lpn: {}", lpn);
-        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(), inventorySummary, quantity, lpn);
+        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(), inventorySummary, quantity, lpn, wholeLPNPick);
         logger.debug("will need to setup shipment line information for the pick: {}", pick.getNumber());
         pick = setupShipmentInformation(pick, shipmentLine);
         logger.debug("start to process the pick: {}", pick.getNumber());
@@ -945,9 +957,10 @@ public class PickService {
     @Transactional(dontRollbackOn = GenericException.class)
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
-                             ItemUnitOfMeasure pickableUnitOfMeasure) {
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean wholeLPNPick) {
         Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(),
-                inventorySummary, quantity, pickableUnitOfMeasure);
+                inventorySummary, quantity, pickableUnitOfMeasure, wholeLPNPick);
         pick = setupShipmentInformation(pick, shipmentLine);
         return processPick(pick);
     }
@@ -989,9 +1002,10 @@ public class PickService {
     public Pick generatePick(WorkOrder workOrder, InventorySummary inventorySummary,
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure,
-                             Long destinationLocationId) {
+                             Long destinationLocationId,
+                             boolean wholeLPNPick) {
         Pick pick = generateBasicPickInformation(
-                workOrder.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure);
+                workOrder.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure, wholeLPNPick);
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
@@ -1000,18 +1014,21 @@ public class PickService {
     public Pick generatePick(WorkOrder workOrder, Inventory inventory,
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure,
-                             Long destinationLocationId) {
+                             Long destinationLocationId,
+                             boolean wholeLPNPick) {
         return generatePick(workOrder, inventory,
-                workOrderLine, quantity, pickableUnitOfMeasure, destinationLocationId, true);
+                workOrderLine, quantity, pickableUnitOfMeasure, destinationLocationId, true,
+                wholeLPNPick);
     }
     @Transactional
     public Pick generatePick(WorkOrder workOrder, Inventory inventory,
                              WorkOrderLine workOrderLine, Long quantity,
                              ItemUnitOfMeasure pickableUnitOfMeasure,
                              Long destinationLocationId,
-                             boolean loadDetails) {
+                             boolean loadDetails,
+                             boolean wholeLPNPick) {
         Pick pick = generateBasicPickInformation(
-                workOrder.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure);
+                workOrder.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure, wholeLPNPick);
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick, loadDetails);
     }
@@ -1023,9 +1040,10 @@ public class PickService {
                              WorkOrderLine workOrderLine,
                              long quantity,
                              String lpn,
-                             Long destinationLocationId) {
+                             Long destinationLocationId,
+                             boolean wholeLPNPick) {
         Pick pick = generateBasicPickInformation(
-                workOrder.getWarehouseId(), inventorySummary, quantity, lpn);
+                workOrder.getWarehouseId(), inventorySummary, quantity, lpn, wholeLPNPick);
         pick = setupWorkOrderInformation(pick, workOrder, workOrderLine, destinationLocationId);
         return processPick(pick);
     }
@@ -1079,9 +1097,11 @@ public class PickService {
      */
     @Transactional
     public Pick generatePick(InventorySummary inventorySummary, ShortAllocation shortAllocation,
-                             Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure) {
+                             Long quantity, ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean wholeLPNPick) {
         Pick pick = generateBasicPickInformation(
-                shortAllocation.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure);
+                shortAllocation.getWarehouseId(), inventorySummary, quantity, pickableUnitOfMeasure,
+                wholeLPNPick);
 
         pick.setShortAllocation(shortAllocation);
         pick.setWarehouseId(shortAllocation.getWarehouseId());

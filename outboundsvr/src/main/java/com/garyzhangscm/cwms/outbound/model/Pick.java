@@ -110,6 +110,10 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "quantity")
     private Long quantity;
 
+    @Column(name = "whole_lpn_pick")
+    private Boolean wholeLPNPick;
+
+
     @Column(name = "picked_quantity")
     private Long pickedQuantity;
 
@@ -127,7 +131,7 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     @OneToMany(
             mappedBy = "pick",
-            cascade = CascadeType.REMOVE,
+            cascade = CascadeType.ALL,
             // orphanRemoval = true, // We will process the movement manually from InventoryMovementService
             fetch = FetchType.LAZY
     )
@@ -248,7 +252,19 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         pick.setPickedQuantity(getPickedQuantity());
         pick.setStatus(getStatus());
         pick.setInventoryStatusId(getInventoryStatusId());
-        pick.setPickMovements(getPickMovements());
+
+        // setup the pick move
+        List<PickMovement> newPickMovements = new ArrayList<>();
+        for (PickMovement pickMovement : getPickMovements()) {
+            PickMovement newPickMovement = new PickMovement();
+            newPickMovement.setPick(pick);
+            newPickMovement.setWarehouseId(pickMovement.getWarehouseId());
+            newPickMovement.setLocationId(pickMovement.getLocationId());
+            newPickMovement.setSequence(pickMovement.getSequence());
+            newPickMovement.setArrivedQuantity(0l);
+            newPickMovements.add(newPickMovement);
+        }
+        pick.setPickMovements(newPickMovements);
         pick.setPickList(getPickList());
         pick.setBulkPick(getBulkPick());
         pick.setUnitOfMeasureId(getUnitOfMeasureId());
@@ -419,6 +435,15 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Boolean getWholeLPNPick() {
+
+        return wholeLPNPick;
+    }
+
+    public void setWholeLPNPick(Boolean wholeLPNPick) {
+        this.wholeLPNPick = wholeLPNPick;
     }
 
     public Client getClient() {

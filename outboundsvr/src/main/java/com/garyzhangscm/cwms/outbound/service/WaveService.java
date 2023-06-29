@@ -455,6 +455,7 @@ public class WaveService {
                             Objects.isNull(pick.getBulkPick()) &&
                             Objects.isNull(pick.getCartonization()) &&
                             Objects.isNull(pick.getWorkTaskId()) &&
+                            !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
                             pick.getPickedQuantity() == 0
                  )
                 .forEach(

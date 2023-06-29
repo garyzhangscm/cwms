@@ -84,6 +84,20 @@ public class BulkPickController {
         return ResponseBodyWrapper.success("bulk pick " + id + " is cancelled");
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/cancel-in-batch", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> cancelBulkPickInBatch(
+            @RequestParam String ids,
+                                                  @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                                                  @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
+        String[] idList = ids.split(",");
+        for (String id : idList) {
+
+            bulkPickService.cancelBulkPick(Long.parseLong(id), errorLocation, generateCycleCount);
+        }
+        return ResponseBodyWrapper.success("bulk pick " + ids + " are cancelled");
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/bulk-picks/{id}/confirm", method = RequestMethod.POST)

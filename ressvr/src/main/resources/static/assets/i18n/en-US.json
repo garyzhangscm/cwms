@@ -2164,5 +2164,7 @@
   "LIST-PICK-GROUP-RULE-TYPE-BY_WAVE": "By Wave",
   "releaseToWorkTask": "Release Pick List to Work Task",
   "workTaskPriority": "Work Task Priority",
-  "listPickBatchPicking": "List Pick - Batch Picking When Picking With Same Attribute"
+  "listPickBatchPicking": "List Pick - Batch Picking When Picking With Same Attribute",
+  "releaseBulkPickToWorkTask": "Release Bulk Pick To Work Task",
+  "releasePickListToWorkTask": "Release Pick List To Work Task"
 }

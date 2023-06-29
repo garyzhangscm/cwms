@@ -204,6 +204,19 @@ public class TrailerAppointmentService {
             }
         });
 
+        logger.debug("allocation result for trailer appointment {}",
+                id);
+        for (AllocationResult allocationResult : allocationResults) {
+            for (Pick pick : allocationResult.getPicks()) {
+                logger.debug(">> pick {}, source location {}, item {}, quantity {}, whole LPN Pick? {}",
+                        pick.getNumber(),
+                        Objects.nonNull(pick.getSourceLocation()) ? pick.getSourceLocation().getName() : pick.getSourceLocationId(),
+                        Objects.nonNull(pick.getItem()) ? pick.getItem().getName() : pick.getItemId(),
+                        pick.getQuantity(),
+                        pick.getWholeLPNPick());
+            }
+        }
+
         // post allocation process
         // 1. bulk pick
         // 2. list pick
@@ -293,6 +306,7 @@ public class TrailerAppointmentService {
                         Objects.isNull(pick.getBulkPick()) &&
                         Objects.isNull(pick.getCartonization()) &&
                         Objects.isNull(pick.getWorkTaskId()) &&
+                        !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
                         pick.getPickedQuantity() == 0
                 )
                 .forEach(
