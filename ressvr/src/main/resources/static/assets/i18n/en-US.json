@@ -2166,5 +2166,7 @@
   "workTaskPriority": "Work Task Priority",
   "listPickBatchPicking": "List Pick - Batch Picking When Picking With Same Attribute",
   "releaseBulkPickToWorkTask": "Release Bulk Pick To Work Task",
-  "releasePickListToWorkTask": "Release Pick List To Work Task"
+  "releasePickListToWorkTask": "Release Pick List To Work Task",
+  "PICK-GROUP-TYPE-BULK_PICK": "Bulk Pick",
+  "PICK-GROUP-TYPE-LIST_PICK": "Pick List"
 }
