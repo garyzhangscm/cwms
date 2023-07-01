@@ -2168,5 +2168,6 @@
   "releaseBulkPickToWorkTask": "Release Bulk Pick To Work Task",
   "releasePickListToWorkTask": "Release Pick List To Work Task",
   "PICK-GROUP-TYPE-BULK_PICK": "Bulk Pick",
-  "PICK-GROUP-TYPE-LIST_PICK": "Pick List"
+  "PICK-GROUP-TYPE-LIST_PICK": "Pick List",
+  "PICK-GROUP-TYPE-SINGLE_PICK": "Single Pick"
 }
