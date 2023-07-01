@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
@@ -1103,5 +1104,132 @@ public class BulkPickService {
                     );
         }
         return saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));
+    }
+
+    public ReportHistory generatePickReportByBulkPick(Long id, String locale) throws JsonProcessingException {
+        return generatePickReportByBulkPick(findById(id), locale);
+    }
+
+    public ReportHistory generatePickReportByBulkPick(BulkPick bulkPick, String locale)
+            throws JsonProcessingException {
+
+        Long warehouseId = bulkPick.getWarehouseId();
+
+
+        // setup the quantity by UOM from the pickable inventory in the source location
+        List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                bulkPick.getItemId(), bulkPick.getInventoryStatusId(), bulkPick.getSourceLocationId(), null,
+                bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle());
+
+        Report reportData = new Report();
+        setupBulkPickReportParameters(
+                reportData, bulkPick, pickableInventory
+        );
+        setupBulkPickReportData(
+                reportData, bulkPick, pickableInventory
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.BULK_PICK_SHEET, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private String getQuantityByUOM(Long quantity, List<Inventory> pickableInventory) {
+
+        StringBuilder pickQuantityByUOM = new StringBuilder();
+        pickQuantityByUOM.append(quantity);
+
+        if (pickableInventory != null && !pickableInventory.isEmpty() &&
+                Objects.nonNull(pickableInventory.get(0).getItemPackageType())) {
+            // get the information from the first inventory of the list
+            // we will assume all the pickable inventory in the same location
+            // has the same item UOM information. If the location is mixed with
+            // different package type, the warehouse may have some difficulty for picking
+            ItemUnitOfMeasure stockItemUnitOfMeasure =
+                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+            ItemUnitOfMeasure caseItemUnitOfMeasure =
+                    pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
+
+            if (Objects.nonNull(stockItemUnitOfMeasure) &&
+                    Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+
+                pickQuantityByUOM.append(" ")
+                        .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+            }
+            // if the item package type has case UOM defined, show the quantity in case UOM as well.
+            if (Objects.nonNull(caseItemUnitOfMeasure) &&
+                    Objects.nonNull(caseItemUnitOfMeasure.getUnitOfMeasure())) {
+
+                Long caseQuantity = quantity / caseItemUnitOfMeasure.getQuantity();
+                Long leftOverQuantity = quantity % caseItemUnitOfMeasure.getQuantity();
+
+                pickQuantityByUOM.append(" (").append(caseQuantity).append(" ")
+                        .append(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
+                if (leftOverQuantity > 0) {
+                    pickQuantityByUOM.append(", ").append(leftOverQuantity);
+                    if (Objects.nonNull(stockItemUnitOfMeasure) &&
+                            Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+                        pickQuantityByUOM.append(" ")
+                                .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+                    }
+                }
+                pickQuantityByUOM.append(")");
+            }
+        }
+
+        return pickQuantityByUOM.toString();
+    }
+    private void setupBulkPickReportParameters(
+            Report report, BulkPick bulkPick, List<Inventory> pickableInventory) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("number", bulkPick.getNumber());
+        report.addParameter("sourceLocation", bulkPick.getSourceLocation().getName());
+        report.addParameter("itemName", bulkPick.getItem().getName());
+        report.addParameter("itemDescription", bulkPick.getItem().getDescription());
+
+        StringBuilder inventoryAttribute = new StringBuilder()
+                .append(Strings.isBlank(bulkPick.getColor()) ? "" : bulkPick.getColor()).append("    ")
+                .append(Strings.isBlank(bulkPick.getProductSize()) ? "" : bulkPick.getProductSize()).append("    ")
+                .append(Strings.isBlank(bulkPick.getStyle()) ? "" : bulkPick.getStyle());
+        report.addParameter("inventoryAttribute", inventoryAttribute.toString());
+
+        report.addParameter("quantiyByUOM", getQuantityByUOM(bulkPick.getQuantity(), pickableInventory));
+
+    }
+
+    private void setupBulkPickReportData(Report report, BulkPick bulkPick, List<Inventory> pickableInventory) {
+
+        // set data to be all picks
+
+        // Setup display field
+        bulkPick.getPicks().forEach(
+                pick -> {
+                    // set the inventory attribute in one string
+                    StringBuilder inventoryAttribute = new StringBuilder()
+                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
+                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
+                    pick.setInventoryAttribute(inventoryAttribute.toString());
+
+                    pick.setQuantityByUOM(getQuantityByUOM(bulkPick.getQuantity(), pickableInventory));
+                }
+        );
+
+
+        report.setData(bulkPick.getPicks());
     }
 }

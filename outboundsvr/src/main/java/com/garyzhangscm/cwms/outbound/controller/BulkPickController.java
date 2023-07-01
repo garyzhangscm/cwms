@@ -18,10 +18,12 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.BulkPick;
 import com.garyzhangscm.cwms.outbound.model.Pick;
+import com.garyzhangscm.cwms.outbound.model.ReportHistory;
 import com.garyzhangscm.cwms.outbound.service.BulkPickService;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -132,6 +134,16 @@ public class BulkPickController {
     public BulkPick releasePick(@PathVariable Long id,
                                  Long warehouseId) {
         return bulkPickService.releasePick(id, warehouseId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/{id}/pick-report", method = RequestMethod.POST)
+    public ReportHistory generateBulkPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print pick sheet for bulk pick with id: {}", id);
+        return bulkPickService.generatePickReportByBulkPick(id, locale);
     }
 
 

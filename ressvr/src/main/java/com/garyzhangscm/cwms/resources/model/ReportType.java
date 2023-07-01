@@ -19,7 +19,8 @@ public enum ReportType {
     QC_INSPECTION_REQUEST_REPORT(false),
     RECEIVING_LPN_REPORT(false),
     PARCEL_LABEL(true),
-    PARCEL_REPORT(false);
+    PARCEL_REPORT(false),
+    BULK_PICK_SHEET(false);
 
     private boolean isLabelFlag;
 

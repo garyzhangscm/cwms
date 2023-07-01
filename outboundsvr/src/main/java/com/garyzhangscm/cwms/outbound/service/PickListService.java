@@ -193,21 +193,26 @@ public class PickListService {
      */
     @Transactional
     public PickList processPickList(Pick pick, List<PickList> pickLists) {
+        logger.debug("Start to process pick list potential for pick {} ",
+                pick.getNumber());
         // first, let's check if the pick is enabled
         // 1. globally
         // 2. enabled for the customer
         // 3. etc(see the method for the details
 
         if(!listPickEnabled(pick)) {
-            logger.debug("list pick is not enabled for warehouse {}", pick.getWarehouseId());
+            logger.debug("list pick is not enabled for warehouse {}, skip list for pick {}",
+                    pick.getWarehouseId(),
+                    pick.getNumber());
 
             return null;
         }
         // Step 1. Find the matched configuration
         List<ListPickConfiguration> listPickConfigurations = findMatchedListPickingConfiguration(pick);
 
-        logger.debug("We find {} list picking configuration that match with current pick",
-                listPickConfigurations.size());
+        logger.debug("We find {} list picking configuration that match with current pick, start to process list for pick {}",
+                listPickConfigurations.size(),
+                pick.getNumber());
         if (listPickConfigurations.size() == 0) {
             // throw PickingException.raiseException("No list picking configuration defined for the current pick " + pick);
             return null;
@@ -261,6 +266,7 @@ public class PickListService {
                 !Boolean.TRUE.equals(warehouseConfiguration.getListPickEnabledFlag())) {
             // warehouse configuration is not setup
             // or list pick is not enabled
+            logger.debug("Pick list is not enabled for the warehouse ");
             return false;
         }
 
@@ -277,6 +283,9 @@ public class PickListService {
 
             // ok the order belongs to certain client but list pick is not enabled
             // for the client
+            logger.debug("pick list function is not enabled for client {}",
+                    client.getName());
+
             return false;
         }
 
@@ -293,6 +302,8 @@ public class PickListService {
 
             // ok the order belongs to certain customer but list pick is not enabled
             // for the client
+            logger.debug("pick list function is not enabled for ship to customer {}",
+                    shipToCustomer.getName());
             return false;
         }
 

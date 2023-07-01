@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
@@ -632,5 +633,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
         this.allocateByReceiptNumber = allocateByReceiptNumber;
+    }
+
+    public String getCustomerName() {
+        if (Objects.isNull(getShipmentLine())) {
+            return "";
+        }
+        return getShipmentLine().getShipment().getShipToContactorFirstname() + " , " +
+            getShipmentLine().getShipment().getShipToContactorLastname();
     }
 }
