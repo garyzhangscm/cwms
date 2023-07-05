@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -80,6 +82,7 @@ public class CancelledPick  extends AuditibleEntity<String> implements Serializa
     @ManyToOne
     @JoinColumn(name = "shipment_line_id")
     @JsonIgnore
+    @NotFound(action= NotFoundAction.IGNORE)
     private ShipmentLine shipmentLine;
 
     @Column(name = "work_order_line_id")
@@ -88,6 +91,7 @@ public class CancelledPick  extends AuditibleEntity<String> implements Serializa
     @ManyToOne
     @JoinColumn(name = "short_allocation_id")
     @JsonIgnore
+    @NotFound(action= NotFoundAction.IGNORE)
     private ShortAllocation shortAllocation;
 
     @Column(name = "type")
@@ -110,12 +114,14 @@ public class CancelledPick  extends AuditibleEntity<String> implements Serializa
 
     @ManyToOne
     @JoinColumn(name = "pick_list_id")
+    @NotFound(action= NotFoundAction.IGNORE)
     private PickList pickList;
 
 
     @ManyToOne
     @JoinColumn(name = "cartonization_id")
     @JsonIgnore
+    @NotFound(action= NotFoundAction.IGNORE)
     private Cartonization cartonization;
 
 

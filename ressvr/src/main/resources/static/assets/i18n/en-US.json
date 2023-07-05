@@ -2169,5 +2169,7 @@
   "releasePickListToWorkTask": "Release Pick List To Work Task",
   "PICK-GROUP-TYPE-BULK_PICK": "Bulk Pick",
   "PICK-GROUP-TYPE-LIST_PICK": "Pick List",
-  "PICK-GROUP-TYPE-SINGLE_PICK": "Single Pick"
+  "PICK-GROUP-TYPE-SINGLE_PICK": "Single Pick",
+  "menu.mobile.outbound.pick-by-number": "Pick",
+  "menu.mobile.outbound.bulk-pick,bulk_pick": "Bulk Pick"
 }

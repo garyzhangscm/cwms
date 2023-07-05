@@ -189,8 +189,8 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="340" y="20" width="80" height="20" uuid="f2409e70-54bb-47e2-a1e2-c871142aecc6">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="340" y="0" width="80" height="60" uuid="f2409e70-54bb-47e2-a1e2-c871142aecc6">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
@@ -211,8 +211,8 @@
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 			</rectangle>
-			<textField>
-				<reportElement x="110" y="30" width="140" height="20" uuid="174e4165-ff9c-4286-bada-fa3aed3c2ee9">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="110" y="20" width="140" height="40" uuid="174e4165-ff9c-4286-bada-fa3aed3c2ee9">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
@@ -238,15 +238,15 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{orderNumber}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="250" y="20" width="90" height="20" uuid="578bf85f-ae0e-4023-87c4-473eb9f55367">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="250" y="20" width="90" height="40" isRemoveLineWhenBlank="true" uuid="578bf85f-ae0e-4023-87c4-473eb9f55367">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{item.name}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="420" y="30" width="80" height="20" uuid="20461d8e-2c48-462f-8cdb-11aaa066588c">
+			<textField textAdjust="StretchHeight">
+				<reportElement x="420" y="20" width="80" height="40" uuid="20461d8e-2c48-462f-8cdb-11aaa066588c">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Center"/>
