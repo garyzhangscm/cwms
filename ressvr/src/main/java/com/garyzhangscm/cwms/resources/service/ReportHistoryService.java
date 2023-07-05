@@ -226,6 +226,48 @@ public class ReportHistoryService {
     }
 
 
+    public void printReportInBatch(Long companyId, Long warehouseId,
+                            String type, String filenames,
+                            String findPrinterBy,
+                            String printerName,
+                            Integer copies) {
+        String[] fileNameArray = filenames.split(",");
+
+        String printer = printerName;
+
+        ReportPrinterConfiguration reportPrinterConfiguration =
+                reportPrinterConfigurationService.findByWarehouseIdAndReportTypeAndCriteriaValue(
+                        warehouseId, ReportType.valueOf(type), findPrinterBy);
+
+        // printer name is not passed in , let's get from the configuration
+        if (Strings.isBlank(printerName) && Objects.nonNull(reportPrinterConfiguration)) {
+
+            printer = reportPrinterConfiguration.getPrinterName();
+        }
+        // if copies is not passed in the user, get from the configuration or
+        // default to 1 copy
+        if (Objects.isNull(copies)) {
+            copies = Objects.nonNull(reportPrinterConfiguration) ?
+                    reportPrinterConfiguration.getCopies() :
+                    1;
+        }
+
+        for (String filename : fileNameArray) {
+
+            File reportResultFile = getReportFile(companyId, warehouseId, type,
+                    filename, printerName);
+
+            logger.debug("We find a printer by criertia {} / {} / {} / {}, printer name passed in? {}, IT IS {}",
+                    companyId, warehouseId, type, findPrinterBy, printerName, printer);
+            logger.debug("and will printer copies: {} ", copies );
+
+            printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
+
+            // we will send the printing request to the remote printing service
+
+            logger.debug("file printed!");
+        }
+    }
     public File printReport(Long companyId, Long warehouseId,
                             String type, String filename,
                             String findPrinterBy,

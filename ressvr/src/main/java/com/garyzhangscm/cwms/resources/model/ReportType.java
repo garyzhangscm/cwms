@@ -20,7 +20,8 @@ public enum ReportType {
     RECEIVING_LPN_REPORT(false),
     PARCEL_LABEL(true),
     PARCEL_REPORT(false),
-    BULK_PICK_SHEET(false);
+    BULK_PICK_SHEET(false),
+    PICK_SHEET(false);
 
     private boolean isLabelFlag;
 
