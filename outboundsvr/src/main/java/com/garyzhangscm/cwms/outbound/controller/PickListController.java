@@ -19,10 +19,12 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.Pick;
 import com.garyzhangscm.cwms.outbound.model.PickList;
+import com.garyzhangscm.cwms.outbound.model.ReportHistory;
 import com.garyzhangscm.cwms.outbound.service.PickListService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,4 +97,23 @@ public class PickListController {
         return pickListService.confirmPickList(id, sourceLocationId, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/{id}/pick-report", method = RequestMethod.POST)
+    public ReportHistory generatePickListReport(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print pick sheet for pick list with id: {}", id);
+        return pickListService.generatePickReportByPickList(warehouseId, id, locale);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/pick-report/batch", method = RequestMethod.POST)
+    public List<ReportHistory> generatePickListReportInBatch(
+            @RequestParam String ids,
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return pickListService.generatePickListReportInBatch(warehouseId, ids, locale);
+    }
 }

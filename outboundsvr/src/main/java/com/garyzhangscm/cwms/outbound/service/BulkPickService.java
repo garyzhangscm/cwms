@@ -1106,20 +1106,17 @@ public class BulkPickService {
         return saveOrUpdate(pickReleaseService.releaseBulkPick(bulkPick));
     }
 
-    public ReportHistory generatePickReportByBulkPick(Long id, String locale) throws JsonProcessingException {
-        return generatePickReportByBulkPick(findById(id), locale);
+    public ReportHistory generatePickReportByBulkPick(Long warehouseId, Long id, String locale) throws JsonProcessingException {
+        return generatePickReportByBulkPick(warehouseId, findById(id), locale);
     }
 
-    public ReportHistory generatePickReportByBulkPick(BulkPick bulkPick, String locale)
+    public ReportHistory generatePickReportByBulkPick(Long warehouseId, BulkPick bulkPick, String locale)
             throws JsonProcessingException {
-
-        Long warehouseId = bulkPick.getWarehouseId();
-
 
         // setup the quantity by UOM from the pickable inventory in the source location
         List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
-                bulkPick.getItemId(), bulkPick.getInventoryStatusId(), bulkPick.getSourceLocationId(), null,
-                bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle());
+                bulkPick.getItemId(), bulkPick.getInventoryStatusId(), bulkPick.getSourceLocationId(),
+                bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle(), null);
 
         Report reportData = new Report();
         setupBulkPickReportParameters(
@@ -1131,8 +1128,8 @@ public class BulkPickService {
 
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
-        // logger.debug("####   Report   Data  ######");
-        // logger.debug(reportData.toString());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                         warehouseId, ReportType.BULK_PICK_SHEET, reportData, locale
@@ -1146,6 +1143,7 @@ public class BulkPickService {
 
     private String getQuantityByUOM(Long quantity, List<Inventory> pickableInventory) {
 
+        logger.debug("getQuantityByUOM by quantity {}", quantity);
         StringBuilder pickQuantityByUOM = new StringBuilder();
         pickQuantityByUOM.append(quantity);
 
@@ -1163,6 +1161,7 @@ public class BulkPickService {
             if (Objects.nonNull(stockItemUnitOfMeasure) &&
                     Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
 
+                logger.debug("stockItemUnitOfMeasure: {}", stockItemUnitOfMeasure.getUnitOfMeasure().getName());
                 pickQuantityByUOM.append(" ")
                         .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
             }
@@ -1172,18 +1171,22 @@ public class BulkPickService {
 
                 Long caseQuantity = quantity / caseItemUnitOfMeasure.getQuantity();
                 Long leftOverQuantity = quantity % caseItemUnitOfMeasure.getQuantity();
+                if (caseQuantity > 0) {
 
-                pickQuantityByUOM.append(" (").append(caseQuantity).append(" ")
-                        .append(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
-                if (leftOverQuantity > 0) {
-                    pickQuantityByUOM.append(", ").append(leftOverQuantity);
-                    if (Objects.nonNull(stockItemUnitOfMeasure) &&
-                            Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
-                        pickQuantityByUOM.append(" ")
-                                .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+
+                    pickQuantityByUOM.append(" (").append(caseQuantity).append(" ")
+                            .append(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
+                    if (leftOverQuantity > 0) {
+                        pickQuantityByUOM.append(", ").append(leftOverQuantity);
+                        if (Objects.nonNull(stockItemUnitOfMeasure) &&
+                                Objects.nonNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+                            pickQuantityByUOM.append(" ")
+                                    .append(stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+                        }
                     }
+                    logger.debug("caseItemUnitOfMeasure: {}", caseItemUnitOfMeasure.getUnitOfMeasure().getName());
+                    pickQuantityByUOM.append(")");
                 }
-                pickQuantityByUOM.append(")");
             }
         }
 
@@ -1206,7 +1209,8 @@ public class BulkPickService {
                 .append(Strings.isBlank(bulkPick.getStyle()) ? "" : bulkPick.getStyle());
         report.addParameter("inventoryAttribute", inventoryAttribute.toString());
 
-        report.addParameter("quantiyByUOM", getQuantityByUOM(bulkPick.getQuantity(), pickableInventory));
+        logger.debug("start to get quantity by uom for bulk pick {}", bulkPick.getQuantity());
+        report.addParameter("quantityByUOM", getQuantityByUOM(bulkPick.getQuantity(), pickableInventory));
 
     }
 
@@ -1225,11 +1229,22 @@ public class BulkPickService {
                             .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
-                    pick.setQuantityByUOM(getQuantityByUOM(bulkPick.getQuantity(), pickableInventory));
+                    pick.setQuantityByUOM(getQuantityByUOM(pick.getQuantity(), pickableInventory));
                 }
         );
 
 
         report.setData(bulkPick.getPicks());
+    }
+
+    public List<ReportHistory> generatePickReportByBulkPickInBatch(Long warehouseId, String ids, String locale) throws JsonProcessingException {
+        List<ReportHistory> reportHistories = new ArrayList<>();
+
+        for (String id : (ids.split(","))) {
+            reportHistories.add(
+                    generatePickReportByBulkPick(warehouseId, Long.parseLong(id), locale)
+            );
+        }
+        return reportHistories;
     }
 }

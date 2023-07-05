@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -206,6 +207,17 @@ public class PickController {
                 inventoryStatusId, color, productSize, style, exactMatch,
                 clientRestriction);
 
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/picks/pick-report", method = RequestMethod.POST)
+    public ReportHistory generatePickReport(
+            @RequestParam Long warehouseId,
+            @RequestParam String ids,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print pick sheet for  pick with id: {}", ids);
+        return pickService.generatePickReport(warehouseId, ids, locale);
     }
 
 }

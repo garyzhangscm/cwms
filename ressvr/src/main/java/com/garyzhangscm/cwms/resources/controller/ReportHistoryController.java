@@ -121,4 +121,27 @@ public class ReportHistoryController {
 
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/report-histories/print-in-batch/{companyId}/{warehouseId}/{type}", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String>  printReportInBatch(@RequestParam String filenames,
+                                                    @PathVariable String type,
+                                                    @PathVariable Long companyId,
+                                                    @PathVariable Long warehouseId,
+                                                    @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
+                                                    @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
+            throws FileNotFoundException, IOException {
+
+        logger.debug("Start to print report for {} / {}, copies: {}",
+                type, filenames, copies);
+
+        logger.debug("> will find a printer by name {} / or value {}",
+                printerName, findPrinterBy);
+        // print the report from the printer attached to the server
+        reportHistoryService.printReportInBatch(companyId, warehouseId, type, filenames,
+                        findPrinterBy, printerName, copies);
+        return ResponseBodyWrapper.success(filenames + " printed!");
+
+    }
+
 }

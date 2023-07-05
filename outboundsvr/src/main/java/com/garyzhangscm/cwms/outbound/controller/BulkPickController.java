@@ -140,11 +140,21 @@ public class BulkPickController {
     @RequestMapping(value="/bulk-picks/{id}/pick-report", method = RequestMethod.POST)
     public ReportHistory generateBulkPickReport(
             @PathVariable Long id,
+            @RequestParam Long warehouseId,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
 
         logger.debug("start print pick sheet for bulk pick with id: {}", id);
-        return bulkPickService.generatePickReportByBulkPick(id, locale);
+        return bulkPickService.generatePickReportByBulkPick(warehouseId, id, locale);
     }
 
 
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/pick-report/batch", method = RequestMethod.POST)
+    public List<ReportHistory> generateBulkPickReportInBatch(
+            @RequestParam String ids,
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        return bulkPickService.generatePickReportByBulkPickInBatch(warehouseId, ids, locale);
+    }
 }
