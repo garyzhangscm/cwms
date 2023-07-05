@@ -2166,5 +2166,7 @@
   "releasePickListToWorkTask": "使用工作任务系统",
   "PICK-GROUP-TYPE-BULK_PICK": "组合拣货",
   "PICK-GROUP-TYPE-LIST_PICK": "列表拣货",
-  "PICK-GROUP-TYPE-SINGLE_PICK": "普通拣货"
+  "PICK-GROUP-TYPE-SINGLE_PICK": "普通拣货",
+  "menu.mobile.outbound.pick-by-number": "普通拣货",
+  "menu.mobile.outbound.bulk-pick,bulk_pick": "组合拣货"
 }
