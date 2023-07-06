@@ -708,4 +708,20 @@ public class InventoryController {
                 id, newLPN, mergeWithExistingInventory
         );
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/inventories/relabel", method = RequestMethod.POST)
+    public List<Inventory> relabelInventories(
+            @RequestParam Long warehouseId,
+            @PathVariable String ids,
+            @RequestParam String newLPN,
+            @RequestParam(name = "mergeWithExistingInventory", defaultValue = "false", required = false) Boolean  mergeWithExistingInventory) {
+
+
+        logger.debug("Relabel for inventory with ids {} to {}, mergeWithExistingInventory? {} ",
+                ids, newLPN, mergeWithExistingInventory);
+        return inventoryService.relabelInventories(
+                ids, newLPN, mergeWithExistingInventory
+        );
+    }
 }

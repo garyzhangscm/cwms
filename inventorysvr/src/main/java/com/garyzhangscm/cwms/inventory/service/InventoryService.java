@@ -4196,4 +4196,9 @@ public class InventoryService {
     }
 
 
+    public List<Inventory> relabelInventories(String ids, String newLPN, Boolean mergeWithExistingInventory) {
+        return Arrays.stream(ids.split(",")).map(
+                id -> relabelLPN(Long.parseLong(id), newLPN, mergeWithExistingInventory)
+        ).collect(Collectors.toList());
+    }
 }
