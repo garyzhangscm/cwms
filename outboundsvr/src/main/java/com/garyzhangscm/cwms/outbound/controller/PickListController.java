@@ -116,4 +116,21 @@ public class PickListController {
 
         return pickListService.generatePickListReportInBatch(warehouseId, ids, locale);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/{id}/acknowledge", method = RequestMethod.POST)
+    public PickList acknowledgePickList(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return pickListService.acknowledgePickList(warehouseId, id);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/pick-lists/{id}/unacknowledge", method = RequestMethod.POST)
+    public PickList unacknowledgePickList(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return pickListService.unacknowledgePickList(warehouseId, id);
+    }
 }

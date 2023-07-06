@@ -44,6 +44,11 @@ public class PickList  extends AuditibleEntity<String>{
     @Column(name = "work_task_id")
     private Long workTaskId;
 
+    // the user that current working on this pick list
+    @Column(name = "acknowledged_username")
+    private String acknowledgedUsername;
+
+
     @Transient
     private WorkTask workTask;
 
@@ -117,5 +122,13 @@ public class PickList  extends AuditibleEntity<String>{
 
     public void setWorkTask(WorkTask workTask) {
         this.workTask = workTask;
+    }
+
+    public String getAcknowledgedUsername() {
+        return acknowledgedUsername;
+    }
+
+    public void setAcknowledgedUsername(String acknowledgedUsername) {
+        this.acknowledgedUsername = acknowledgedUsername;
     }
 }

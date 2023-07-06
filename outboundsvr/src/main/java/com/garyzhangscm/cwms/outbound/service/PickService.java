@@ -1349,12 +1349,12 @@ public class PickService {
                             String nextLocationName,
                             boolean pickToContainer, String containerId) {
         return confirmPick(pickId, quantity, nextLocationId, nextLocationName,
-                pickToContainer, containerId, "");
+                pickToContainer, containerId, "", null);
     }
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
-                            String lpn)  {
+                            String lpn, PickMode pickMode)  {
         Pick pick = findById(pickId);
 
         if (Objects.nonNull(pick.getShipmentLine())) {
