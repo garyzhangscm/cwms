@@ -1297,12 +1297,37 @@ public class InventoryService {
 
             String strDate = LocalDateTime.now().format(formatter);
             String newLPN = inventory.getLpn() + "-REM-" + strDate;
-            inventory = relabelLPN(inventory, newLPN);
+            inventory = relabelLPN(inventory, newLPN, false);
         }
         return inventory;
     }
 
-    private Inventory relabelLPN(Inventory inventory, String newLPN) {
+    public List<Inventory> relabelLPN(Long warehouseId, String lpn,
+                                      String newLPN, Boolean mergeWithExistingInventory) {
+
+
+        // make sure the LPN exists
+        List<Inventory> inventories = findByLpn(warehouseId, lpn);
+        if (inventories.isEmpty()) {
+            throw InventoryException.raiseException("Can't find inventory with LPN " + lpn +
+                    ", relabel fail");
+        }
+
+        return inventories.stream().map(inventory -> relabelLPN(inventory, newLPN, mergeWithExistingInventory)).collect(Collectors.toList());
+    }
+    public Inventory relabelLPN(Long id, String newLPN, Boolean mergeWithExistingInventory) {
+
+        return relabelLPN(findById(id), newLPN, mergeWithExistingInventory);
+    }
+    public Inventory relabelLPN(Inventory inventory, String newLPN, Boolean mergeWithExistingInventory) {
+
+        // make sure the new LPN is a valid LPN if
+        // we are not merge the inventory into existing inventory
+        if (!Boolean.TRUE.equals(mergeWithExistingInventory)) {
+
+            logger.debug("start to validate the new LPN is we are not allowed to merge with existing inventory");
+            validateLPN(inventory.getWarehouseId(), newLPN, true);
+        }
 
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.RELABEL_LPN,
                 "LPN", String.valueOf(inventory.getLpn()), newLPN,

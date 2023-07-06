@@ -676,4 +676,36 @@ public class InventoryController {
         );
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/inventories/relabel-lpn", method = RequestMethod.POST)
+    public List<Inventory> relabelLPN(
+            @RequestParam Long warehouseId,
+            @RequestParam String lpn,
+            @RequestParam String newLPN,
+            @RequestParam(name = "mergeWithExistingInventory", defaultValue = "false", required = false) Boolean  mergeWithExistingInventory) {
+
+
+        logger.debug("Relabel from {} to {}, mergeWithExistingInventory? {} ",
+                lpn, newLPN, mergeWithExistingInventory);
+        return inventoryService.relabelLPN(
+                warehouseId, lpn, newLPN, mergeWithExistingInventory
+        );
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/inventories/{id}/relabel", method = RequestMethod.POST)
+    public Inventory relabelLPN(
+            @RequestParam Long warehouseId,
+            @PathVariable Long id,
+            @RequestParam String newLPN,
+            @RequestParam(name = "mergeWithExistingInventory", defaultValue = "false", required = false) Boolean  mergeWithExistingInventory) {
+
+
+        logger.debug("Relabel for inventory id {} to {}, mergeWithExistingInventory? {} ",
+                id, newLPN, mergeWithExistingInventory);
+        return inventoryService.relabelLPN(
+                id, newLPN, mergeWithExistingInventory
+        );
+    }
 }
