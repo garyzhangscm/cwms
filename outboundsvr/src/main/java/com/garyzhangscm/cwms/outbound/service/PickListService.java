@@ -56,6 +56,8 @@ public class PickListService {
     private ListPickConfigurationService listPickConfigurationService;
     @Autowired
     private PickService pickService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -85,6 +87,14 @@ public class PickListService {
     public PickList save(PickList pickList) {
         return pickListRepository.save(pickList);
 
+    }
+
+    public PickList saveOrUpdate(PickList pickList) {
+        if (Objects.isNull(pickList.getId()) &&
+                Objects.nonNull(findByNumber(pickList.getWarehouseId(), pickList.getNumber(), false))) {
+            pickList.setId(findByNumber(pickList.getWarehouseId(), pickList.getNumber(), false).getId());
+        }
+        return save(pickList);
     }
 
     public List<PickList> findAll(Long warehouseId, String number, String numberList) {
@@ -776,5 +786,26 @@ public class PickListService {
             );
         }
         return reportHistories;
+    }
+
+    public PickList acknowledgePickList(Long warehouseId, Long id) {
+        PickList pickList = findById(id);
+        String currentUserName = userService.getCurrentUserName();
+        if (Strings.isNotBlank(pickList.getAcknowledgedUsername()) &&
+            !pickList.getAcknowledgedUsername().equalsIgnoreCase(currentUserName)) {
+            throw PickingException.raiseException("pick list " + pickList.getNumber() +
+                    " is already acknowledged by " + pickList.getAcknowledgedUsername());
+        }
+        pickList.setAcknowledgedUsername(currentUserName);
+
+        return saveOrUpdate(pickList);
+
+    }
+    public PickList unacknowledgePickList(Long warehouseId, Long id) {
+        PickList pickList = findById(id);
+        pickList.setAcknowledgedUsername(null);
+
+        return saveOrUpdate(pickList);
+
     }
 }
