@@ -799,6 +799,40 @@ public class InventoryServiceRestemplateClient {
         );
     }
 
+    public List<Inventory> relabelInventory(Long warehouseId, String lpn, String newLPN, boolean mergeWithExistingInventory)   {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/relabel-lpn")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn)
+                        .queryParam("newLPN", newLPN)
+                        .queryParam("mergeWithExistingInventory", mergeWithExistingInventory);
+
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null);
+    }
+
+    public Inventory relabelInventory(Long warehouseId, Long inventoryId, String newLPN, boolean mergeWithExistingInventory)   {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/{id}/relabel")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("newLPN", newLPN)
+                        .queryParam("mergeWithExistingInventory", mergeWithExistingInventory);
+
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(inventoryId).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
+
     /**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();

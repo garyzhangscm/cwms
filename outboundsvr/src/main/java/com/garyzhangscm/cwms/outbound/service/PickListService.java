@@ -584,7 +584,7 @@ public class PickListService {
                                     Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
-                            String lpn)  {
+                            String lpn, String destinationLPN)  {
         PickList pickList = findById(pickId);
         List<Pick> confirmablePicks = pickList.getPicks().stream().filter(
                 pick -> pick.getSourceLocationId().equals(sourceLocationId) &&
@@ -625,7 +625,8 @@ public class PickListService {
 
             logger.debug("start to confirm pick {} from list {}, with quantity {}",
                     pick.getNumber(), pickList.getNumber(), pickQuantity);
-            pickService.confirmPick(pick.getId(), pickQuantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
+            pickService.confirmPick(pick.getId(), pickQuantity, nextLocationId, nextLocationName,
+                    pickToContainer, containerId, lpn, destinationLPN);
             // remove the picked quantity from the total quantity
             totalPickQuantity -= pickQuantity;
         }

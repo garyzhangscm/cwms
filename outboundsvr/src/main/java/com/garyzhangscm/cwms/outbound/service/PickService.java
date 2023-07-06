@@ -1315,14 +1315,14 @@ public class PickService {
      * @return
      */
     public Pick confirmPick(Pick pick, Long quantity) {
-        return confirmPick(pick, quantity, "");
+        return confirmPick(pick, quantity, "", "");
     }
-    public Pick confirmPick(Pick pick, Long quantity, String lpn) {
+    public Pick confirmPick(Pick pick, Long quantity, String lpn, String destinationLpn) {
         if (pick.getPickMovements().size() == 0) {
 
             logger.debug("There's no movement for this pick: {}",
                     pick.getNumber());
-            return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn);
+            return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn, destinationLpn);
         }
         else {
             Location nextLocation = pick.getPickMovements().get(0).getLocation();
@@ -1341,7 +1341,7 @@ public class PickService {
 
             logger.debug("we get the next location {} from movement for this pick: {}",
                     nextLocation.getName(), pick.getNumber());
-            return confirmPick(pick, quantity, nextLocation, lpn);
+            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
         }
     }
 
@@ -1349,12 +1349,12 @@ public class PickService {
                             String nextLocationName,
                             boolean pickToContainer, String containerId) {
         return confirmPick(pickId, quantity, nextLocationId, nextLocationName,
-                pickToContainer, containerId, "");
+                pickToContainer, containerId, "", "");
     }
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
-                            String lpn )  {
+                            String lpn, String destinationLpn)  {
         Pick pick = findById(pickId);
 
         if (Objects.nonNull(pick.getShipmentLine())) {
@@ -1383,13 +1383,13 @@ public class PickService {
             // on the fly.
             Location nextLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationByContainerId(pick.getWarehouseId(), containerId);
-            return confirmPick(pick, quantity, nextLocation, lpn);
+            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
 
         }
         if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation, lpn);
+                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
             }
             else {
                 throw PickingException.raiseException(
@@ -1400,7 +1400,7 @@ public class PickService {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
                     pick.getWarehouseId(), nextLocationName);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation, lpn);
+                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
             }
             else {
                 logger.debug("Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
@@ -1409,19 +1409,18 @@ public class PickService {
             }
         }
         else {
-            return confirmPick(pick, quantity, lpn);
+            return confirmPick(pick, quantity, lpn, destinationLpn);
         }
     }
 
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
-        return confirmPick(pick, quantity, nextLocation, "");
+        return confirmPick(pick, quantity, nextLocation, "", "");
     }
-    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation, String lpn)   {
+    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation, String lpn, String destinationLpn)   {
 
         logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getCurrentVolume());
-
         // start the ord activity transaction
         OrderActivity orderActivity = orderActivityService.createOrderActivity(
                 pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CONFIRM
@@ -1442,7 +1441,6 @@ public class PickService {
 
 
         synchronized (key) {
-
             List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
             logger.debug(" Get {} valid inventory for pick {}",
                     pickableInventories.size(), pick.getNumber());
@@ -1464,7 +1462,7 @@ public class PickService {
                 if(match(inventory, pick)) {
                     logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
                             inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
-                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation);
+                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation, destinationLpn);
                     logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
                     quantityToBePicked -= pickedQuantity;
                     totalQuantityPicked += pickedQuantity;
@@ -1499,6 +1497,32 @@ public class PickService {
 
     }
 
+    /**
+     * Check if the destination LPN is in the right location. return true if this is a
+     * new LPN that is not even in the system yet. return false if this is an existing LPN
+     * and in the right location. throw exception if the LPN already exists but not in the
+     * right location
+     * @param destinationLocation
+     * @param destinationLpn
+     * @return
+     */
+    private void validatePickDestinationLpn(Long warehouseId, Location destinationLocation, String destinationLpn) {
+        if (Strings.isBlank(destinationLpn)) {
+
+            throw PickingException.raiseException("can't validate the destination LPN as it is empty ");
+        }
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
+                warehouseId, destinationLpn
+        );
+        if (inventories.isEmpty()) {
+            return;
+        }
+        if (inventories.stream().anyMatch(inventory -> !inventory.getLocationId().equals(destinationLocation.getId()))) {
+            throw PickingException.raiseException("Can't pick to " + destinationLpn + " as it is not in the right location " +
+                    destinationLocation.getName());
+        }
+    }
+
     private void sendNotification(Pick pick, Location nextLocation, Long totalQuantityPicked) {
         /*
         *  We will move this piece of logic into the inventory movement, not the pick confirm
@@ -1529,7 +1553,12 @@ public class PickService {
         return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "");
     }
     @Transactional
-    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String newLpn)  {
+    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String destinationLpn)  {
+
+        if (Strings.isNotBlank(destinationLpn)) {
+            validatePickDestinationLpn(pick.getWarehouseId(), nextLocation, destinationLpn);
+        }
+
         if (!match(inventory, pick)) {
             throw PickingException.raiseException( "inventory can't be picked for the pick. Attribute discrepancy found");
         }
@@ -1553,9 +1582,7 @@ public class PickService {
         else {
             // We pick partial quantity from the inventory, Let's split it
             // and give it a new LPN
-            if (StringUtils.isBlank(newLpn)) {
-                newLpn = commonServiceRestemplateClient.getNextNumber(pick.getWarehouseId(), "lpn");
-            }
+            String newLpn = commonServiceRestemplateClient.getNextNumber(pick.getWarehouseId(), "lpn");
             logger.debug("start to split inventory lpn {} into new lpn {} for the pick",
                     inventory.getLpn(), newLpn);
             List<Inventory> inventories = inventoryServiceRestemplateClient.split(inventory, newLpn, quantityToBePicked);
@@ -1564,7 +1591,7 @@ public class PickService {
             }
             inventoryToBePicked = inventories.get(1);
         }
-        logger.debug("Will pick from inventory {} ", inventoryToBePicked.getLpn());
+        logger.debug("Will pick from inventory {} into LPN {} ", inventoryToBePicked.getLpn(), destinationLpn);
 
         logger.debug("==> before move inventory, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
@@ -1572,7 +1599,15 @@ public class PickService {
 
         // Move the inventory to the next location for pick
         // Move the inventory to the next location
-        inventoryServiceRestemplateClient.moveInventory(inventoryToBePicked, pick, nextLocation);
+        Inventory pickedInventory =
+                inventoryServiceRestemplateClient.moveInventory(inventoryToBePicked, pick, nextLocation);
+        if (Strings.isNotBlank(destinationLpn)) {
+
+            logger.debug("start to relabel the picked inventory from {} to {}",
+                    pickedInventory.getLpn(), destinationLpn);
+            pickedInventory = inventoryServiceRestemplateClient.relabelInventory(
+                    pick.getWarehouseId(), pickedInventory.getId(), destinationLpn, true);
+        }
 
         logger.debug("==> after move inventory, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),

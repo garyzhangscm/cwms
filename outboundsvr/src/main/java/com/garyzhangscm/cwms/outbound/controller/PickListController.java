@@ -85,7 +85,8 @@ public class PickListController {
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
                             @RequestParam(name="pickToContainer", required = false, defaultValue = "false") boolean pickToContainer,
                             @RequestParam(name="containerId", required = false, defaultValue = "") String containerId,
-                            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn) {
+                            @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                    @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn) {
         logger.debug("======        Start to confirm pick list  ========");
         logger.debug("=> quantity: {}", quantity);
         logger.debug("=> sourceLocationId: {}", sourceLocationId);
@@ -94,7 +95,9 @@ public class PickListController {
         logger.debug("=> pickToContainer: {}", pickToContainer);
         logger.debug("=> containerId: {}", containerId);
         logger.debug("=> pick from LPN: {}", lpn);
-        return pickListService.confirmPickList(id, sourceLocationId, quantity, nextLocationId, nextLocationName,  pickToContainer, containerId, lpn);
+        logger.debug("=> pick TO destinationLpn: {}", destinationLpn);
+        return pickListService.confirmPickList(id, sourceLocationId, quantity,
+                nextLocationId, nextLocationName,  pickToContainer, containerId, lpn, destinationLpn);
     }
 
     @BillableEndpoint
