@@ -713,7 +713,7 @@ public class InventoryController {
     @RequestMapping(value="/inventories/relabel", method = RequestMethod.POST)
     public List<Inventory> relabelInventories(
             @RequestParam Long warehouseId,
-            @PathVariable String ids,
+            @RequestParam String ids,
             @RequestParam String newLPN,
             @RequestParam(name = "mergeWithExistingInventory", defaultValue = "false", required = false) Boolean  mergeWithExistingInventory) {
 
