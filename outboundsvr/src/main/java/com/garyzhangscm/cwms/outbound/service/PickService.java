@@ -312,7 +312,10 @@ public class PickService {
                     }
                 }
         );
+        logger.debug("Find {} picks that match with the criteria",
+                picks.size());
 
+        logger.debug("load details? {}", loadDetails);
         if (picks.size() > 0 && loadDetails) {
             loadAttribute(picks);
         }
@@ -409,6 +412,7 @@ public class PickService {
     }
 
     public void loadAttribute(Pick pick) {
+        logger.debug("start to load attribute for pick {}", pick.getNumber());
         // Load the details for client and supplier informaiton
         if (pick.getSourceLocationId() != null && pick.getSourceLocation() == null) {
             pick.setSourceLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()));
@@ -2227,6 +2231,9 @@ public class PickService {
         Report reportData = new Report();
         reportData.setParameters(new HashMap<>());
 
+        setupPickReportParameters(
+                reportData, picks
+        );
         setupPickReportData(
                 reportData, picks
         );
@@ -2246,6 +2253,12 @@ public class PickService {
 
     }
 
+    private void setupPickReportParameters(
+            Report report, List<Pick> picks) {
+
+        report.addParameter("pickNumbers", picks.stream().map(Pick::getNumber).collect(Collectors.joining(",")));
+
+    }
     private String getQuantityByUOM(Long quantity, List<Inventory> pickableInventory) {
 
         logger.debug("getQuantityByUOM by quantity {}", quantity);
@@ -2334,5 +2347,25 @@ public class PickService {
 
     }
 
+    public Pick acknowledgePick(Long warehouseId, Long id) {
+        Pick pick = findById(id);
+        String currentUserName = userService.getCurrentUserName();
+        if (Strings.isNotBlank(pick.getAcknowledgedUsername()) &&
+                !pick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName)) {
+            throw PickingException.raiseException("pick  " + pick.getNumber() +
+                    " is already acknowledged by " + pick.getAcknowledgedUsername());
+        }
+        pick.setAcknowledgedUsername(currentUserName);
+
+        return saveOrUpdate(pick);
+
+    }
+    public Pick unacknowledgePick(Long warehouseId, Long id) {
+        Pick pick = findById(id);
+        pick.setAcknowledgedUsername(null);
+
+        return saveOrUpdate(pick);
+
+    }
 
 }

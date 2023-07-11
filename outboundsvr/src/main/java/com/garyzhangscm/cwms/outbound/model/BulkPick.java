@@ -117,7 +117,7 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
     @Column(name="style")
     private String style;
 
-    // the user that current working on this pick list
+    // the user that current working on this pick
     @Column(name = "acknowledged_username")
     private String acknowledgedUsername;
 

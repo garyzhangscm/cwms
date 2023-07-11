@@ -133,7 +133,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png,true,false
 "Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png,true,false
 "Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png,true,false
-"Pick",menu.mobile.outbound.pick-by-number,pick_by_number,4,Mobile-Menu-Outbound,Mobile-Outbound-PickByNumber,menu_outbound_pick_by_number.png,true,false
+"Batch Pick",menu.mobile.outbound.pick-by-number,pick_by_number,4,Mobile-Menu-Outbound,Mobile-Outbound-PickByNumber,menu_outbound_pick_by_number.png,true,false
 "Bulk Pick",menu.mobile.outbound.bulk-pick,pick_by_bulk,5,Mobile-Menu-Outbound,Mobile-Outbound-BulkPick,menu_outbound_bulk_pick.png,true,false
 "Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,menu_inventory.png,true,false
 "Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,menu_inventory_count.png,true,false

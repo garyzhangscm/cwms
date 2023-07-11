@@ -154,6 +154,9 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Transient
     private String bulkPickNumber;
 
+    // the user that current working on this pick
+    @Column(name = "acknowledged_username")
+    private String acknowledgedUsername;
 
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
@@ -641,5 +644,13 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         }
         return getShipmentLine().getShipment().getShipToContactorFirstname() + " , " +
             getShipmentLine().getShipment().getShipToContactorLastname();
+    }
+
+    public String getAcknowledgedUsername() {
+        return acknowledgedUsername;
+    }
+
+    public void setAcknowledgedUsername(String acknowledgedUsername) {
+        this.acknowledgedUsername = acknowledgedUsername;
     }
 }

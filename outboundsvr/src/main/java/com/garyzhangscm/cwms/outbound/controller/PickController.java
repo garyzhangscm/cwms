@@ -223,4 +223,22 @@ public class PickController {
         return pickService.generatePickReport(warehouseId, ids, locale);
     }
 
+
+    @BillableEndpoint
+    @RequestMapping(value="/pick/{id}/acknowledge", method = RequestMethod.POST)
+    public Pick acknowledgePick(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return pickService.acknowledgePick(warehouseId, id);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/pick/{id}/unacknowledge", method = RequestMethod.POST)
+    public Pick unacknowledgePick(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return pickService.unacknowledgePick(warehouseId, id);
+    }
+
 }
