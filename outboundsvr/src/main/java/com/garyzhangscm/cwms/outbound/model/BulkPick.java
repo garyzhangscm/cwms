@@ -117,6 +117,11 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
     @Column(name="style")
     private String style;
 
+    // the user that current working on this pick list
+    @Column(name = "acknowledged_username")
+    private String acknowledgedUsername;
+
+
 
     @JsonIgnore
     public Double getSize() {
@@ -453,5 +458,13 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
 
     public void setWorkTask(WorkTask workTask) {
         this.workTask = workTask;
+    }
+
+    public String getAcknowledgedUsername() {
+        return acknowledgedUsername;
+    }
+
+    public void setAcknowledgedUsername(String acknowledgedUsername) {
+        this.acknowledgedUsername = acknowledgedUsername;
     }
 }
