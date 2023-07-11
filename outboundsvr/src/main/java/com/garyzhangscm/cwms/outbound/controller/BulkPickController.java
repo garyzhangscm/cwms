@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.BulkPick;
-import com.garyzhangscm.cwms.outbound.model.Pick;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.BulkPickService;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -156,5 +153,23 @@ public class BulkPickController {
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
 
         return bulkPickService.generatePickReportByBulkPickInBatch(warehouseId, ids, locale);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/{id}/acknowledge", method = RequestMethod.POST)
+    public BulkPick acknowledge(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return bulkPickService.acknowledge(warehouseId, id);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/bulk-picks/{id}/unacknowledge", method = RequestMethod.POST)
+    public BulkPick unacknowledge(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return bulkPickService.unacknowledge(warehouseId, id);
     }
 }

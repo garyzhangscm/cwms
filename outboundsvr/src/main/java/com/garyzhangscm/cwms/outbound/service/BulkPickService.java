@@ -66,6 +66,8 @@ public class BulkPickService {
     private OrderActivityService orderActivityService;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private UserService userService;
 
 
     public BulkPick findById(Long id) {
@@ -1246,5 +1248,27 @@ public class BulkPickService {
             );
         }
         return reportHistories;
+    }
+
+
+    public BulkPick acknowledge(Long warehouseId, Long id) {
+        BulkPick bulkPick = findById(id);
+        String currentUserName = userService.getCurrentUserName();
+        if (Strings.isNotBlank(bulkPick.getAcknowledgedUsername()) &&
+                !bulkPick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName)) {
+            throw PickingException.raiseException("bulk pick  " + bulkPick.getNumber() +
+                    " is already acknowledged by " + bulkPick.getAcknowledgedUsername());
+        }
+        bulkPick.setAcknowledgedUsername(currentUserName);
+
+        return saveOrUpdate(bulkPick);
+
+    }
+    public BulkPick unacknowledge(Long warehouseId, Long id) {
+        BulkPick bulkPick = findById(id);
+        bulkPick.setAcknowledgedUsername(null);
+
+        return saveOrUpdate(bulkPick);
+
     }
 }
