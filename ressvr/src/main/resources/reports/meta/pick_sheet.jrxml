@@ -3,6 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pick_sheet" pageWidth="612" pageHeight="792" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="pick_sheet" uuid="8baec34c-04ec-43d7-a345-5e1fed03731b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.export.character.encoding" value="UTF-8"/>
+	<parameter name="pickNumbers" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -15,7 +16,7 @@
 	<field name="item.name" class="java.lang.String"/>
 	<field name="inventoryAttribute" class="java.lang.String"/>
 	<pageHeader>
-		<band height="56" splitType="Stretch">
+		<band height="78" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
 				<reportElement x="0" y="0" width="240" height="40" uuid="a92d8d79-8a80-4625-a839-fb50ee77387d">
@@ -27,6 +28,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pick_sheet}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement x="480" y="0" width="81" height="77" uuid="abc6b64c-c545-48de-a8a4-d46c120385a3"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[$P{pickNumbers}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -167,11 +174,6 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 			</rectangle>
-			<textField>
-				<reportElement x="0" y="40" width="110" height="20" uuid="84d29a1e-241a-4e48-84d7-c2c4fe1ff3fe"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
-			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement x="340" y="0" width="80" height="60" uuid="f2409e70-54bb-47e2-a1e2-c871142aecc6">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
@@ -214,15 +216,6 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{sourceLocation.name}]]></textFieldExpression>
 			</textField>
-			<componentElement>
-				<reportElement x="0" y="10" width="110" height="20" uuid="ee536e85-6ae8-4763-ac34-475f5baecc72">
-					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="40">
-					<jr:codeExpression><![CDATA[$F{number}]]></jr:codeExpression>
-				</jr:barbecue>
-			</componentElement>
 			<textField>
 				<reportElement x="110" y="0" width="140" height="20" uuid="73509d21-83b4-4f81-ac6c-864aaf4a74b2">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
@@ -244,6 +237,15 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{inventoryAttribute}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement x="5" y="5" width="100" height="50" uuid="a48c0efc-bab1-4076-ab0b-5755451071f4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="1.0" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$F{number}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
 		</band>
 	</detail>
 </jasperReport>
