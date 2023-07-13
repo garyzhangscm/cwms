@@ -128,6 +128,8 @@ public class PickService {
                               String sourceLocationName,
                               String destinationLocationName,
                               Long trailerAppointmentId,
+                              Boolean includeCompletedPick,
+                              Boolean includeCancelledPick,
                               ClientRestriction clientRestriction,
                               boolean loadDetails) {
 
@@ -293,6 +295,14 @@ public class PickService {
 
                         predicates.add(criteriaBuilder.greaterThan(root.get("quantity"), root.get("pickedQuantity")));
                     }
+                    if (!Boolean.TRUE.equals(includeCancelledPick)) {
+
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"), PickStatus.CANCELLED));
+                    }
+                    if (!Boolean.TRUE.equals(includeCompletedPick)) {
+
+                        predicates.add(criteriaBuilder.notEqual(root.get("status"), PickStatus.COMPLETED));
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     // return criteriaBuilder.and(predicates.toArray(p));
 
@@ -336,13 +346,16 @@ public class PickService {
                               String destinationLocationName,
                               Long trailerAppointmentId,
                               Boolean openPickOnly,
+                              Boolean includeCompletedPick,
+                              Boolean includeCancelledPick,
                               ClientRestriction clientRestriction) {
         return findAll(warehouseId, clientId,  number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
                 itemNumber, sourceLocationName, destinationLocationName,
-                trailerAppointmentId, clientRestriction,
+                trailerAppointmentId, includeCompletedPick, includeCancelledPick,
+                clientRestriction,
                 true);
     }
 
@@ -358,14 +371,14 @@ public class PickService {
         return findAll(order.getWarehouseId(), null, null, order.getId(), null, null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null);
     }
 
     public List<Pick> findByShipment(Shipment shipment) {
         return findAll(shipment.getWarehouseId(),null, null, null, null, shipment.getId(),
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null);
     }
     public List<Pick> findByWorkOrder(WorkOrder workOrder) {
         String workOrderLineIds
@@ -376,28 +389,28 @@ public class PickService {
         return findAll(workOrder.getWarehouseId(), null, null, null, null,  null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, workOrderLineIds, null,null, null, null, null);
+                null, workOrderLineIds, null,null, null, null, null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
         return findAll(wave.getWarehouseId(), null, null, null, null, null,
                 wave.getId(), null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null, null);
+                null, null, null, null,null, null, null, null, null);
     }
     public List<Pick> findByPickList(PickList pickList) {
 
         return findAll(pickList.getWarehouseId(), null, null, null, null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null, null);
+                null, null, null, null,null, null, null, null, null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
         return findAll(cartonization.getWarehouseId(), null, null, null, null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
                 null, null,  null,null, null, null, null,
-                null, null, null, null,null, null, null);
+                null, null, null, null,null, null, null, null, null);
     }
 
     public Pick findByNumber(String number) {
@@ -1993,7 +2006,7 @@ public class PickService {
                 null, true,
                 inventoryStatusId,
                 null,
-                null,null,null,null,null,null,null,
+                null,null,null,null,null,null,null,null,null,
                 clientRestriction, false
         );
         picks = picks.stream().filter(
@@ -2217,7 +2230,7 @@ public class PickService {
                 null, null, null, null, null,
                 null, null, null, null,
                 null, null, null,
-                null, null,
+                null, null,null,null,
                 true);
         if (picks.isEmpty()) {
             throw PickingException.raiseException("can't find picks by " + ids);
@@ -2368,4 +2381,110 @@ public class PickService {
 
     }
 
+    public Integer getPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+        List<Pick> picks =
+                findAll(warehouseId, null, null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null, null, null, null, null, null, null, null, clientRestriction, false);
+
+        return picks.size();
+
+    }
+
+    public Integer getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+        List<Pick> picks =
+                findAll(warehouseId, null, null, null, null, null,
+                        null, null,  null,null, null, null, null,
+                        null, null,  null,true, null, null, null,
+                        null, null, null, null, null, null, null, null, clientRestriction, false);
+
+        return picks.size();
+
+    }
+    public Long getCompletedPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+        List<Pick> picks =
+                findAll(warehouseId, null, null, null, null, null,
+                        null, null,  null,null, null, null, null,
+                        null, null,  null,null, null, null, null,
+                        null, null, null, null, null, null, null, null, clientRestriction, false);
+
+        return picks.stream().filter(pick -> pick.getPickedQuantity() >= pick.getQuantity()).count();
+
+    }
+    public Map<String, Integer[]> getPickCountByLocationGroup(Long warehouseId, ClientRestriction clientRestriction) {
+        List<Pick> picks =
+                findAll(warehouseId, null, null, null, null, null,
+                        null, null,  null,null, null, null, null,
+                        null, null,  null,null, null, null, null,
+                        null, null, null, null, null, null, null, null, clientRestriction, false);
+
+
+        // key: location group name
+        // value: total pick count, total completed
+        Map<String, Integer> pickCountByLocationGroup = new HashMap<>();
+        Map<String, Integer> completedPickCountByLocationGroup = new HashMap<>();
+        // setup the locations for each pick
+        picks.forEach(
+                pick -> {
+                    try {
+                        // Load the details for client and supplier informaiton
+                        if (pick.getSourceLocationId() != null && pick.getSourceLocation() == null) {
+                            pick.setSourceLocation(warehouseLayoutServiceRestemplateClient.getLocationById(pick.getSourceLocationId()));
+                        }
+                        if (Objects.nonNull(pick.getSourceLocation()) && Objects.nonNull(pick.getSourceLocation().getLocationGroup())) {
+                            int accumlativeQuantity = pickCountByLocationGroup.getOrDefault(
+                                    pick.getSourceLocation().getLocationGroup().getName(),
+                                    0
+                            );
+                            pickCountByLocationGroup.put(
+                                    pick.getSourceLocation().getLocationGroup().getName(),
+                                    accumlativeQuantity + 1
+                            );
+                            accumlativeQuantity = completedPickCountByLocationGroup.getOrDefault(
+                                    pick.getSourceLocation().getLocationGroup().getName(),
+                                    0
+                            );
+                            if (pick.getPickedQuantity() >= pick.getQuantity()) {
+
+                                completedPickCountByLocationGroup.put(
+                                        pick.getSourceLocation().getLocationGroup().getName(),
+                                        accumlativeQuantity + 1
+                                );
+                            }
+                            else {
+
+                                completedPickCountByLocationGroup.put(
+                                        pick.getSourceLocation().getLocationGroup().getName(),
+                                        accumlativeQuantity
+                                );
+                            }
+                        }
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+
+                        // ignore any error when get information for the pick
+                    }
+
+                }
+        );
+
+
+        Map<String, Integer[]> result = new HashMap<>();
+        pickCountByLocationGroup.entrySet().forEach(
+                entry -> {
+                    int totalPickCount = entry.getValue();
+                    int totalCompletedPickCount =
+                            completedPickCountByLocationGroup.getOrDefault(
+                                    entry.getKey(), 0
+                    );
+                    result.put(entry.getKey(), new Integer[]{totalPickCount, totalCompletedPickCount});
+                }
+        );
+
+        return result;
+
+
+    }
 }

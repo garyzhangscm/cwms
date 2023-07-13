@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class PickController {
@@ -64,6 +65,8 @@ public class PickController {
                                    @RequestParam(name="sourceLocationName", required = false, defaultValue = "") String sourceLocationName,
                                    @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
                                    @RequestParam(name="openPickOnly", required = false, defaultValue = "false") Boolean openPickOnly,
+                                   @RequestParam(name="includeCompletedPick", required = false, defaultValue = "false") Boolean includeCompletedPick,
+                                   @RequestParam(name="includeCancelledPick", required = false, defaultValue = "false") Boolean includeCancelledPick,
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                    ClientRestriction clientRestriction) {
 
@@ -75,7 +78,8 @@ public class PickController {
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
-                sourceLocationName, destinationLocationName, trailerAppointmentId, clientRestriction,
+                sourceLocationName, destinationLocationName, trailerAppointmentId,
+                includeCompletedPick, includeCancelledPick, clientRestriction,
                 loadDetails);
 
     }
@@ -239,6 +243,24 @@ public class PickController {
             @RequestParam Long warehouseId) {
 
         return pickService.unacknowledgePick(warehouseId, id);
+    }
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/picks/count", method = RequestMethod.GET)
+    public Integer getPickCount(
+            @RequestParam Long warehouseId,
+            ClientRestriction clientRestriction) {
+
+        return pickService.getPickCount(warehouseId, clientRestriction);
+    }
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/picks/count-by-location-group", method = RequestMethod.GET)
+    public Map<String, Integer[]> getPickCountByLocationGroup(
+            @RequestParam Long warehouseId,
+            ClientRestriction clientRestriction) {
+
+        return pickService.getPickCountByLocationGroup(warehouseId, clientRestriction);
     }
 
 }

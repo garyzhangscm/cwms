@@ -411,4 +411,38 @@ public class OrderController {
     }
 
 
+    @RequestMapping(method=RequestMethod.GET, value="/orders/open-order/count")
+    @ClientValidationEndpoint
+    public Integer getOpenOrderCount(Long warehouseId,
+                                     ClientRestriction clientRestriction) {
+
+
+        return orderService.getOpenOrderCount(
+                warehouseId,
+                clientRestriction);
+
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/orders/today-order/count")
+    @ClientValidationEndpoint
+    public Integer getTodayOrderCount(Long warehouseId,
+                                     ClientRestriction clientRestriction) {
+
+
+        return orderService.getTodayOrderCount(
+                warehouseId,
+                clientRestriction);
+
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/orders/today-complete-order/count")
+    @ClientValidationEndpoint
+    public Integer getTodayCompletedOrderCount(Long warehouseId,
+                                      ClientRestriction clientRestriction) {
+
+
+        return orderService.getTodayCompletedOrderCount(
+                warehouseId,
+                clientRestriction);
+
+    }
+
 }
