@@ -2649,6 +2649,8 @@ public class OrderService {
                             "fail", ex.getMessage()
                     ));
                     fileUploadResultMap.put(fileUploadProgressKey, fileUploadResults);
+
+                    fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 1));
                 }
                 finally {
 
@@ -3047,5 +3049,64 @@ public class OrderService {
         // both the order line and the inventory has the attribute setup, let's return true if they
         // have the same value
         return orderLineAttribute.equalsIgnoreCase(inventoryAttribute);
+    }
+
+    public Integer getOpenOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
+
+        List<Order> orders = findAll(warehouseId,
+                null, null, OrderStatus.OPEN.toString(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false, clientRestriction);
+
+        return orders.size();
+    }
+
+    public Integer getTodayOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
+
+        List<Order> orders = findAll(warehouseId,
+                null, null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                LocalDate.now(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                false, clientRestriction);
+
+        return orders.size();
+    }
+    public Integer getTodayCompletedOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
+
+        List<Order> orders = findAll(warehouseId,
+                null, null, OrderStatus.COMPLETE.toString(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                LocalDate.now(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                false, clientRestriction);
+
+        return orders.size();
     }
 }

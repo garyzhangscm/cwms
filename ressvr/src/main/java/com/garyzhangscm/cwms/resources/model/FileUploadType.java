@@ -44,6 +44,7 @@ public class FileUploadType {
         fileUploadTypes.add(new ReceiptFileUpload());
         fileUploadTypes.add(new ReceivingInventoryFileUpload());
         fileUploadTypes.add(new LocationFileUpload());
+        fileUploadTypes.add(new WalmartShippingCartonLabelFileUpload());
         // fileUploadTypes.add(new ShippingTrailerAppointmentFileUpload());
         fileUploadTypes.add(new LoadFileUpload());
 
