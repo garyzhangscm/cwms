@@ -53,13 +53,14 @@ public class WalmartShippingCartonLabelController {
     public List<WalmartShippingCartonLabel> findAllWalmartShippingCartonLabel(
             @RequestParam Long warehouseId,
                                      @RequestParam(name="SSCC18", required = false, defaultValue = "") String SSCC18,
+            @RequestParam(name="SSCC18s", required = false, defaultValue = "") String SSCC18s,
                                      @RequestParam(name="poNumber", required = false, defaultValue = "") String poNumber,
                                      @RequestParam(name="type", required = false, defaultValue = "") String type,
                                      @RequestParam(name="dept", required = false, defaultValue = "") String dept,
                                      @RequestParam(name="itemNumber", required = false, defaultValue = "") String itemNumber
                                      ) {
         return walmartShippingCartonLabelService.findAll(warehouseId,
-                SSCC18, poNumber, type, dept, itemNumber);
+                SSCC18,SSCC18s, poNumber, type, dept, itemNumber);
     }
 
 
@@ -71,7 +72,7 @@ public class WalmartShippingCartonLabelController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/walmart-shipping-carton-labels/upload")
-    public ResponseBodyWrapper uploadOrders(Long warehouseId,
+    public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
@@ -86,20 +87,31 @@ public class WalmartShippingCartonLabelController {
         return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
     @RequestMapping(method=RequestMethod.GET, value="/walmart-shipping-carton-labels/upload/progress")
-    public ResponseBodyWrapper getOrderFileUploadProgress(Long warehouseId,
+    public ResponseBodyWrapper getWalmartShippingCartonLabelsFileUploadProgress(Long warehouseId,
                                                             String key) throws IOException {
 
 
 
         return  ResponseBodyWrapper.success(
-                String.format("%.2f",walmartShippingCartonLabelService.getOrderFileUploadProgress(key)));
+                String.format("%.2f",walmartShippingCartonLabelService.getWalmartShippingCartonLabelsFileUploadProgress(key)));
     }
     @RequestMapping(method=RequestMethod.GET, value="/walmart-shipping-carton-labels/upload/result")
-    public List<FileUploadResult> getOrderFileUploadResult(Long warehouseId,
+    public List<FileUploadResult> getWalmartShippingCartonLabelsFileUploadResult(Long warehouseId,
                                                              String key) throws IOException {
 
 
-        return walmartShippingCartonLabelService.getOrderFileUploadResult(warehouseId, key);
+        return walmartShippingCartonLabelService.getWalmartShippingCartonLabelsFileUploadResult(warehouseId, key);
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/walmart-shipping-carton-labels/generate-label")
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,
+                                                             String SSCC18s,
+                                                             @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                             @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
+
+
+        return walmartShippingCartonLabelService.generateWalmartShippingCartonLabels(
+                warehouseId, SSCC18s, copies, locale);
+
+    }
 }

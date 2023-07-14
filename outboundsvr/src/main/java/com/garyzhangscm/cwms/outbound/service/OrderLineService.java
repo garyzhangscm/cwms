@@ -586,6 +586,10 @@ public class OrderLineService{
             Item item = inventoryServiceRestemplateClient.getItemByName(
                     warehouseId, order.getClientId(),
                     orderLineCSVWrapper.getItem());
+            if (Objects.isNull(item)) {
+                throw OrderOperationException.raiseException("Can't find item with name " + orderLineCSVWrapper.getItem());
+            }
+
             orderLine.setItemId(item.getId());
 
             long unitOfMeasureQuantity = 1l;

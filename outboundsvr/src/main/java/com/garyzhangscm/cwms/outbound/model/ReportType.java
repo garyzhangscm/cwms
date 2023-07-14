@@ -21,7 +21,8 @@ public enum ReportType {
     PARCEL_LABEL(true),
     PARCEL_REPORT(false),
     BULK_PICK_SHEET(false),
-    PICK_SHEET(false);
+    PICK_SHEET(false),
+    WALMART_SHIPPING_CARTON_LABEL(true);
 
     private boolean isLabelFlag;
 

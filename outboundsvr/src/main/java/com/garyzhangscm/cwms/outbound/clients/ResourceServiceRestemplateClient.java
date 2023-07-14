@@ -51,8 +51,7 @@ public class ResourceServiceRestemplateClient {
     private RestTemplateProxy restTemplateProxy;
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                 Report reportData, String locale)
-            throws JsonProcessingException {
+                                 Report reportData, String locale) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)

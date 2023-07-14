@@ -87,6 +87,8 @@ public class OrderService {
     private UserService userService;
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
 
 
 
@@ -3108,5 +3110,101 @@ public class OrderService {
                 false, clientRestriction);
 
         return orders.size();
+    }
+
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                             int copies,
+                                                             String locale)  {
+        return generateWalmartShippingCartonLabels(warehouseId,
+                findById(id), itemName, copies, locale);
+    }
+
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,Order order, String itemName,
+                                                             int copies, String locale)   {
+
+        Report reportData = new Report();
+        setupWalmartShippingCartonLabelData(
+                        warehouseId,
+                reportData, order, itemName,  copies
+                );
+
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("Will print {} labels", reportData.getData().size());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WALMART_SHIPPING_CARTON_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    private void setupWalmartShippingCartonLabelData(Long warehouseId,
+                                                     Report reportData, Order order,
+                                                     String itemName,
+                                                     int copies) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
+
+        walmartShippingCartonLabels.forEach(
+                walmartShippingCartonLabel -> {
+                    // add the shipping label to the result only if
+                    // item name is not passed in
+                    // or item name passed in and the value match with the requirement
+                    if (Strings.isBlank(itemName) || itemName.equalsIgnoreCase(walmartShippingCartonLabel.getItemNumber())) {
+
+                        Map<String, Object> lpnLabelContent =   getWalmartShippingCartonLabelContent(
+                                walmartShippingCartonLabel
+                        );
+                        for (int i = 0; i < copies; i++) {
+
+                            lpnLabelContents.add(lpnLabelContent);
+                        }
+                    }
+
+                }
+        );
+        reportData.setData(lpnLabelContents);
+
+    }
+
+    private Map<String, Object> getWalmartShippingCartonLabelContent(WalmartShippingCartonLabel walmartShippingCartonLabel) {
+        Map<String, Object> lpnLabelContent = new HashMap<>();
+
+        lpnLabelContent.put("address1", walmartShippingCartonLabel.getAddress1());
+        lpnLabelContent.put("BOL", walmartShippingCartonLabel.getBOL());
+        lpnLabelContent.put("carrierNumber", walmartShippingCartonLabel.getCarrierNumber());
+        lpnLabelContent.put("cityStateZip", walmartShippingCartonLabel.getCityStateZip());
+        lpnLabelContent.put("DC", walmartShippingCartonLabel.getDC());
+        lpnLabelContent.put("dept", walmartShippingCartonLabel.getDept());
+        lpnLabelContent.put("poNumber", walmartShippingCartonLabel.getPoNumber());
+        lpnLabelContent.put("shipTo", walmartShippingCartonLabel.getShipTo());
+        lpnLabelContent.put("SSCC18", walmartShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("type", walmartShippingCartonLabel.getType());
+        lpnLabelContent.put("WMIT", walmartShippingCartonLabel.getWMIT());
+
+        return lpnLabelContent;
+    }
+
+    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName) {
+        Order order = findById(id);
+        if (Strings.isBlank(itemName)) {
+
+            return walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
+        }
+        else {
+            return walmartShippingCartonLabelService.findAll(
+                    warehouseId, null, null,
+                    order.getNumber(), null,null,
+                    itemName
+            );
+        }
     }
 }

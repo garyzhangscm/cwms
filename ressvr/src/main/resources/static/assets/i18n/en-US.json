@@ -2171,5 +2171,6 @@
   "PICK-GROUP-TYPE-LIST_PICK": "Pick List",
   "PICK-GROUP-TYPE-SINGLE_PICK": "Single Pick",
   "menu.mobile.outbound.pick-by-number": "Batch Pick",
-  "menu.mobile.outbound.bulk-pick,bulk_pick": "Bulk Pick"
+  "menu.mobile.outbound.bulk-pick,bulk_pick": "Bulk Pick",
+  "walmart-shipping-carton-label": "Walmart Shipping Carton Label"
 }

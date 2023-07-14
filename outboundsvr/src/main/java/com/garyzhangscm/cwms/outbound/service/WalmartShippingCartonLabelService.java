@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.*;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -47,6 +48,8 @@ public class WalmartShippingCartonLabelService {
     private UserService userService;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> fileUploadProgress = new ConcurrentHashMap<>();
@@ -61,6 +64,7 @@ public class WalmartShippingCartonLabelService {
     }
 
     public List<WalmartShippingCartonLabel> findAll(Long warehouseId, String SSCC18,
+                                                    String SSCC18s,
                                                     String poNumber, String type,
                                                     String dept,
                                                     String itemNumber) {
@@ -75,6 +79,17 @@ public class WalmartShippingCartonLabelService {
 
                         predicates.add(criteriaBuilder.equal(root.get("SSCC18"), SSCC18));
                     }
+                    if (Strings.isNotBlank(SSCC18s)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("SSCC18"), SSCC18));
+
+                        CriteriaBuilder.In<String> in = criteriaBuilder.in(root.get("SSCC18"));
+                        for(String sscc18 : SSCC18s.split(",")) {
+                            in.value(sscc18);
+                        }
+                        predicates.add(criteriaBuilder.and(in));
+                    }
+
 
                     if (Strings.isNotBlank(poNumber)) {
 
@@ -105,6 +120,10 @@ public class WalmartShippingCartonLabelService {
 
     public WalmartShippingCartonLabel findBySSCC18(String SSCC18) {
         return walmartShippingCartonLabelRepository.findBySSCC18(SSCC18);
+    }
+
+    public List<WalmartShippingCartonLabel> findByPoNumber(Long warehouseId, String poNumber) {
+        return walmartShippingCartonLabelRepository.findByWarehouseIdAndPoNumber(warehouseId, poNumber);
     }
 
 
@@ -242,13 +261,80 @@ public class WalmartShippingCartonLabelService {
     }
 
 
-    public double getOrderFileUploadProgress(String key) {
+    public double getWalmartShippingCartonLabelsFileUploadProgress(String key) {
         return fileUploadProgress.getOrDefault(key, 100.0);
     }
 
-    public List<FileUploadResult> getOrderFileUploadResult(Long warehouseId, String key) {
+    public List<FileUploadResult> getWalmartShippingCartonLabelsFileUploadResult(Long warehouseId, String key) {
         return fileUploadResultMap.getOrDefault(key, new ArrayList<>());
     }
 
 
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, String SSCC18s, int copies, String locale) {
+        Report reportData = new Report();
+        setupWalmartShippingCartonLabelData(
+                warehouseId,
+                reportData, SSCC18s,  copies
+        );
+
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("Will print {} labels", reportData.getData().size());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WALMART_SHIPPING_CARTON_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    private void setupWalmartShippingCartonLabelData(Long warehouseId,
+                                                     Report reportData,
+                                                     String SSCC18s,
+                                                     int copies) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        if (Strings.isNotBlank(SSCC18s)) {
+            List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                    findAll(warehouseId, null, SSCC18s, null, null, null, null);
+
+            walmartShippingCartonLabels.forEach(
+                    walmartShippingCartonLabel -> {
+                        Map<String, Object> lpnLabelContent =   getWalmartShippingCartonLabelContent(
+                                walmartShippingCartonLabel
+                        );
+                        for (int i = 0; i < copies; i++) {
+
+                            lpnLabelContents.add(lpnLabelContent);
+                        }
+
+                    }
+            );
+        }
+        reportData.setData(lpnLabelContents);
+
+    }
+
+    private Map<String, Object> getWalmartShippingCartonLabelContent(WalmartShippingCartonLabel walmartShippingCartonLabel) {
+        Map<String, Object> lpnLabelContent = new HashMap<>();
+
+        lpnLabelContent.put("address1", walmartShippingCartonLabel.getAddress1());
+        lpnLabelContent.put("BOL", walmartShippingCartonLabel.getBOL());
+        lpnLabelContent.put("carrierNumber", walmartShippingCartonLabel.getCarrierNumber());
+        lpnLabelContent.put("cityStateZip", walmartShippingCartonLabel.getCityStateZip());
+        lpnLabelContent.put("DC", walmartShippingCartonLabel.getDC());
+        lpnLabelContent.put("dept", walmartShippingCartonLabel.getDept());
+        lpnLabelContent.put("poNumber", walmartShippingCartonLabel.getPoNumber());
+        lpnLabelContent.put("shipTo", walmartShippingCartonLabel.getShipTo());
+        lpnLabelContent.put("SSCC18", walmartShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("type", walmartShippingCartonLabel.getType());
+        lpnLabelContent.put("WMIT", walmartShippingCartonLabel.getWMIT());
+
+        return lpnLabelContent;
+    }
 }

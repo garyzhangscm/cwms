@@ -632,7 +632,8 @@ public class ReportService implements TestDataInitiableService{
         String labelContent = labelTemplate;
         for(Map.Entry<String, Object> parameter : parameters.entrySet()) {
             String parameterName = parameter.getKey();
-            String value = parameter.getValue().toString();
+            String value = Objects.isNull(parameter.getValue()) ?
+                "" : parameter.getValue().toString();
 
             // see if we have the parameters in the template
             logger.debug("start to replace variable {}, with value {}",
