@@ -17,3 +17,4 @@ company,warehouse,type,description,fileName,orientation
 , ,BULK_PICK_SHEET,Bulk Pick Sheet,bulk_pick_sheet,PORTRAIT
 , ,PICK_SHEET,Pick Sheet,pick_sheet,PORTRAIT
 , ,PICK_LIST_SHEET,List Pick Sheet,list_pick_sheet,PORTRAIT
+, ,WALMART_SHIPPING_CARTON_LABEL,Walmart Shipping Carton Label,walmart_shipping_carton_label.prn,PORTRAIT

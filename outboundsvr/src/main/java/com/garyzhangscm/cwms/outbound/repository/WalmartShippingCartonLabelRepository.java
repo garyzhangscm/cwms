@@ -24,10 +24,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface WalmartShippingCartonLabelRepository extends JpaRepository<WalmartShippingCartonLabel, Long>, JpaSpecificationExecutor<WalmartShippingCartonLabel> {
 
 
     WalmartShippingCartonLabel findBySSCC18(String SSCC18);
+
+    List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber);
 }

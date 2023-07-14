@@ -445,4 +445,29 @@ public class OrderController {
 
     }
 
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/walmart-shipping-carton-labels/generate")
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,
+                                                            @PathVariable Long id,
+                                                             @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                             @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
+
+
+        return orderService.generateWalmartShippingCartonLabels(
+                warehouseId,
+                id, itemName, copies, locale);
+
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/orders/{id}/walmart-shipping-carton-labels")
+    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId,
+                                                             @PathVariable Long id,
+                                                             @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName)   {
+
+
+        return orderService.getWalmartShippingCartonLabels(
+                warehouseId,
+                id, itemName );
+
+    }
+
 }
