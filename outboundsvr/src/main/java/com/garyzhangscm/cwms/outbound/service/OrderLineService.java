@@ -655,6 +655,21 @@ public class OrderLineService{
         saveOrUpdate(orderLine);
     }
 
+    /**
+     * Return the inprocess quantity back to open quantity. This is normally happens when we
+     * cancel the shipment line for the order line
+     * @param orderLine
+     * @param reducedInprocessQuantity
+     */
+    public void returnInProcessQuantity(OrderLine orderLine, Long reducedInprocessQuantity) {
+        orderLine.setOpenQuantity(
+                Math.min(orderLine.getExpectedQuantity(), orderLine.getOpenQuantity() + reducedInprocessQuantity));
+        orderLine.setInprocessQuantity(
+                Math.max(0, orderLine.getInprocessQuantity() - reducedInprocessQuantity));
+        saveOrUpdate(orderLine);
+    }
+
+
     @Transactional
     public void registerShipmentLineComplete(ShipmentLine shipmentLine, Long quantity) {
         // When we complete a shipment line, we will move the

@@ -404,4 +404,22 @@ public class ShipmentLineService {
         orderLineService.shippingPackage(orderLine, inventory);
 
     }
+
+    public void cancelShipmentLine(Long id) {
+
+        cancelShipmentLine(findById(id));
+    }
+    public void cancelShipmentLine(ShipmentLine shipmentLine) {
+
+        // return the quantity back to order line
+        orderLineService.returnInProcessQuantity(shipmentLine.getOrderLine(), shipmentLine.getQuantity());
+
+        shipmentLine.setStatus(ShipmentLineStatus.CANCELLED);
+        // remove the shipment from the wave and order
+        shipmentLine.setWave(null);
+        shipmentLine.setOrderLine(null);
+        save(shipmentLine);
+
+
+    }
 }

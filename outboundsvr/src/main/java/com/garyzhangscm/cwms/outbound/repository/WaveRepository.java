@@ -27,4 +27,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WaveRepository extends JpaRepository<Wave, Long>, JpaSpecificationExecutor<Wave> {
     Wave findByNumber(String number);
+
+    Wave findByWarehouseIdAndNumber(Long warehouseId, String number);
 }
