@@ -246,6 +246,8 @@ public class ShipmentService {
     }
 
     public void cancelShipment(Shipment shipment) {
+        shipment.setStatus(ShipmentStatus.CANCELLED);
+        save(shipment);
 
     }
     public void cancelShipment(Long id) {

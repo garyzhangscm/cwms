@@ -106,5 +106,11 @@ public class WaveController {
         waveService.delete(waveIds);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/cancel", method = RequestMethod.POST)
+    public Wave cancelWave(@PathVariable Long id) {
+        waveService.cancelWave(id);
+        return waveService.findById(id, false);
+    }
 
 }

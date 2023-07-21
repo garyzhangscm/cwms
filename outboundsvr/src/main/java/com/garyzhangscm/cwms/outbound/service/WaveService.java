@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
@@ -43,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -81,6 +83,8 @@ public class WaveService {
     private BulkPickConfigurationService bulkPickConfigurationService;
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private ShortAllocationService shortAllocationService;
 
     public Wave findById(Long id) {
         return findById(id, true);
@@ -189,13 +193,13 @@ public class WaveService {
         return waves;
     }
 
-    public Wave findByNumber(String number) {
-        return findByNumber(number, true);
+    public Wave findByNumber(Long warehouseId, String number) {
+        return findByNumber(warehouseId, number, true);
     }
 
-    public Wave findByNumber(String number, boolean loadAttribute) {
+    public Wave findByNumber(Long warehouseId, String number, boolean loadAttribute) {
         logger.debug("start to find wave by number {}", number);
-        Wave wave = waveRepository.findByNumber(number);
+        Wave wave = waveRepository.findByWarehouseIdAndNumber(warehouseId, number);
         if (Objects.nonNull(wave) && loadAttribute) {
             loadAttribute(wave);
         }
@@ -253,6 +257,16 @@ public class WaveService {
         return waveRepository.save(wave);
     }
 
+    public Wave saveOrUpdate(Wave wave) {
+        if (Objects.isNull(wave.getId()) &&
+                Objects.nonNull( findByNumber(wave.getWarehouseId(), wave.getNumber(), false)) ) {
+            wave.setId(
+                    findByNumber(wave.getWarehouseId(), wave.getNumber(), false).getId()
+            );
+        }
+        return save(wave);
+    }
+
 
     public void delete(Wave wave) {
         waveRepository.delete(wave);
@@ -271,9 +285,81 @@ public class WaveService {
         }
     }
 
+    @Transactional
     public void cancelWave(Wave wave) {
+        // first cancel all the picks and short allocation
+        logger.debug("start to cancel the wave {}", wave.getNumber());
+        valdiateWaveReadyForCancel(wave);
+
+        Set<Long> shipmentIds = new HashSet<>();
+        logger.debug("we will start from cancelling all the shipment first");
+        wave.getShipmentLines().forEach(
+                shipmentLine -> {
+                    List<Long> pickIds = shipmentLine.getPicks().stream().map(pick -> pick.getId()).collect(Collectors.toList());
+                    pickIds.forEach(
+                            pickId -> pickService.cancelPick(pickId, false, false)
+                    );
+                    logger.debug("picks for the shipment line {} / {} has been cancelled",
+                            shipmentLine.getShipment().getNumber(),
+                            shipmentLine.getNumber());
+
+                    List<Long> shortAllocationIds = shipmentLine.getShortAllocations().stream().map(
+                            shortAllocation -> shortAllocation.getId()).collect(Collectors.toList());
+                    shortAllocationIds.forEach(
+                            shortAllocationId -> shortAllocationService.cancelShortAllocation(shortAllocationId)
+                    );
+                    logger.debug("short allocation for the shipment line {} / {} has been cancelled",
+                            shipmentLine.getShipment().getNumber(),
+                            shipmentLine.getNumber());
+
+                    shipmentLineService.cancelShipmentLine(shipmentLine);
+                    logger.debug("shipment line {} / {} has been cancelled",
+                            shipmentLine.getShipment().getNumber(),
+                            shipmentLine.getNumber());
+
+                    shipmentIds.add(shipmentLine.getShipment().getId());
+                }
+        );
+        // see if we will need to cancel the shipment as well
+        logger.debug("start to check if we will need to cancel the shipments as well");
+        shipmentIds.forEach(
+                shipmentId -> {
+                    Shipment shipment = shipmentService.findById(shipmentId);
+                    // if all the lines has been cancelled, then cancel the shipment
+                    boolean allLineCancelled = !shipment.getShipmentLines().stream().anyMatch(
+                            shipmentLine -> !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED)
+                    );
+                    logger.debug("Do we need to cancel the shipment {} as well? {}",
+                            shipment.getNumber(), allLineCancelled);
+
+                    if (allLineCancelled) {
+                        shipmentService.cancelShipment(shipment);
+                    }
+                }
+        );
+        wave.setStatus(WaveStatus.CANCELLED);
+        save(wave);
 
     }
+
+    /**
+     * Check if wave is ready for cancel. The wave is ready for cancel only if
+     * there's no inventory being picked yet
+     * @param wave
+     */
+    private void valdiateWaveReadyForCancel(Wave wave) {
+        boolean inventoryPicked = wave.getShipmentLines().stream().anyMatch(
+                shipmentLine -> shipmentLine.getPicks().stream().anyMatch(
+                        pick -> pick.getPickedQuantity() > 0
+                )
+        );
+        if (inventoryPicked) {
+            throw OrderOperationException.raiseException("Can't cancel wave " + wave.getNumber() +
+                    " as there's already inventory picked. please unpick the inventory first");
+        }
+    }
+
+    @Transactional
     public void cancelWave(Long id) {
         cancelWave(findById(id));
     }
@@ -288,7 +374,7 @@ public class WaveService {
         }
 
         logger.debug(">> Start to plan {} order lines into wave # {}", orderLineIds.size(), waveNumber);
-        Wave wave = findByNumber(waveNumber);
+        Wave wave = findByNumber(warehouseId, waveNumber);
         if (Objects.isNull(wave)) {
             wave = new Wave();
             wave.setNumber(waveNumber);
@@ -351,7 +437,7 @@ public class WaveService {
 
     public Wave createWave(Long warehouseId, String waveNumber) {
 
-        Wave wave = findByNumber(waveNumber);
+        Wave wave = findByNumber(warehouseId, waveNumber);
         if (wave == null) {
             wave = new Wave();
             wave.setNumber(waveNumber);

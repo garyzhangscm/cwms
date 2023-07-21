@@ -78,3 +78,11 @@ Outbound-Load,confirm-multiple-pick,Confirm Pick
 Outbound-Load,allocate-short-allocation,Allocate Short Allocation
 Outbound-Load,create-work-order,Create Work Order
 Outbound-Load,cancel-short-allocation,Cancel Short Allocation
+Outbound-Wave,allocate-wave,Allocate Wave
+Outbound-Wave,cancel-wave,Cancel Wave
+Outbound-Wave,cancel-single-pick,Cancel Single Pick
+Outbound-Wave,cancel-multiple-pick,Cancel Multiple Pick
+Outbound-Wave,confirm-multiple-pick,Confirm Pick
+Outbound-Wave,allocate-short-allocation,Allocate Short Allocation
+Outbound-Wave,create-work-order,Create Work Order
+Outbound-Wave,cancel-short-allocation,Cancel Short Allocation

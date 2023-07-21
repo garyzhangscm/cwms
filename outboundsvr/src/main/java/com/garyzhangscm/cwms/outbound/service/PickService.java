@@ -498,8 +498,8 @@ public class PickService {
             return findByWorkOrder(workOrderServiceRestemplateClient.getWorkOrderByNumber(warehouseId, containerId));
         }
         // Check if the container id is a wave
-        if (Objects.nonNull(waveService.findByNumber(containerId, false))) {
-            return findByWave(waveService.findByNumber(containerId, false));
+        if (Objects.nonNull(waveService.findByNumber(warehouseId, containerId, false))) {
+            return findByWave(waveService.findByNumber(warehouseId, containerId, false));
         }
         // Check if the container id is pick list
         if (Objects.nonNull(pickListService.findByNumber(warehouseId, containerId, false))) {
@@ -645,6 +645,7 @@ public class PickService {
     }
     @Transactional
     public Pick cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount) {
+        logger.debug("start to cancel pick {}", pick.getNumber());
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
             throw PickingException.raiseException("Can't cancel pick that is already completed!");
         }
