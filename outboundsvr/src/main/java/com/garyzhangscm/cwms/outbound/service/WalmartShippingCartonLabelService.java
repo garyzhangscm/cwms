@@ -81,8 +81,6 @@ public class WalmartShippingCartonLabelService {
                     }
                     if (Strings.isNotBlank(SSCC18s)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("SSCC18"), SSCC18));
-
                         CriteriaBuilder.In<String> in = criteriaBuilder.in(root.get("SSCC18"));
                         for(String sscc18 : SSCC18s.split(",")) {
                             in.value(sscc18);

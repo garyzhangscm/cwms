@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import com.garyzhangscm.cwms.outbound.service.WaveService;
@@ -108,9 +109,9 @@ public class WaveController {
 
     @BillableEndpoint
     @RequestMapping(value="/waves/{id}/cancel", method = RequestMethod.POST)
-    public Wave cancelWave(@PathVariable Long id) {
+    public ResponseBodyWrapper<String> cancelWave(@PathVariable Long id) {
         waveService.cancelWave(id);
-        return waveService.findById(id, false);
+        return ResponseBodyWrapper.success("WAVE " + id + " is cancelled");
     }
 
 }
