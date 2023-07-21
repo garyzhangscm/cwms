@@ -249,6 +249,11 @@ public class ShipmentService {
         shipment.setStatus(ShipmentStatus.CANCELLED);
         save(shipment);
 
+        // release reserved location
+        logger.debug("# Will release the locations that reserved by the shipment {}",
+                shipment.getNumber());
+        warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
+
     }
     public void cancelShipment(Long id) {
         cancelShipment(findById(id));

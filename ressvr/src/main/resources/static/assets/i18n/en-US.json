@@ -2172,5 +2172,10 @@
   "PICK-GROUP-TYPE-SINGLE_PICK": "Single Pick",
   "menu.mobile.outbound.pick-by-number": "Batch Pick",
   "menu.mobile.outbound.bulk-pick,bulk_pick": "Bulk Pick",
-  "walmart-shipping-carton-label": "Walmart Shipping Carton Label"
+  "walmart-shipping-carton-label": "Walmart Shipping Carton Label",
+  "REPORT-TYPE-BULK_PICK_SHEET": "Bulk Pick Sheet",
+  "REPORT-TYPE-PICK_SHEET": "Pick Sheet",
+  "REPORT-TYPE-WALMART_SHIPPING_CARTON_LABEL": "Walmart Shipping Carton Label",
+  "select-all-rows": "Select All Rows",
+  "select-this-page": "Select All Rows In This Page"
 }
