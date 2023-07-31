@@ -20,5 +20,16 @@ The system is designed based on the Micro-Service methodology. It is built with 
   - Front End: Angular based web client, host by NGINX
   - Back End: Spring boot
 - Containerization with Docker, host by Kubernetes
-An Example of hosting on AWS
+ 
+### An Example of hosting on AWS
 
+![aws-host-CWMS](https://github.com/garyzhangscm/cwms/assets/24829203/023f1be8-6de3-4a46-af86-582175c3d9d6)
+
+# Build Your Own WMS
+You can check out all docker container from https://hub.docker.com/repositories/garyzhangscm and build system on your own kubernetes environment, or AWS.
+Sample yaml files(WMS V1.15) is provided.
+- framework.yaml: Inlucdes ZUUL, Kafka & ZooKeeper, Database, Adminer(web client for the database), Redis
+- frontend-app.yaml: Front End Web client HOST by NGINX
+- backend-app.yaml: Back End micro-service. please change the APP keys/tokens if you will need to use google / USPS / quickbook / shipEngine API
+
+Once your server is up, you may need to load the database as well. please check out the database from 
