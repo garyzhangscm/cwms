@@ -2172,5 +2172,7 @@
   "walmart-shipping-carton-label": "Walmart 发货箱标",
   "REPORT-TYPE-BULK_PICK_SHEET": "组合拣货单",
   "REPORT-TYPE-PICK_SHEET": "拣货单",
-  "REPORT-TYPE-WALMART_SHIPPING_CARTON_LABEL": "Walmart 发货箱标"
+  "REPORT-TYPE-WALMART_SHIPPING_CARTON_LABEL": "Walmart 发货箱标",
+  "menu.main.common.reason-code": "原因",
+  "reason-code": "原因"
 }

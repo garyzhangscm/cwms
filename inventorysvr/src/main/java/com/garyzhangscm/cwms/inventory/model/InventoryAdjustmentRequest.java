@@ -123,6 +123,13 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
 
 
 
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Transient
+    private ReasonCode reasonCode;
+
+
     public Long getId() {
         return id;
     }
@@ -134,17 +141,17 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
     public InventoryAdjustmentRequest(Inventory inventory,  Long newQuantity,
                                       InventoryQuantityChangeType inventoryQuantityChangeType,
                                       String username,
-                                      String documentNumber, String comment) {
+                                      String documentNumber, String comment, Long reasonCodeId) {
         this(inventory, inventory.getQuantity(),newQuantity,
                 inventoryQuantityChangeType,
                 username,
                 documentNumber,
-                comment );
+                comment, reasonCodeId);
     }
     public InventoryAdjustmentRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                       InventoryQuantityChangeType inventoryQuantityChangeType,
                                       String username,
-                                      String documentNumber, String comment) {
+                                      String documentNumber, String comment, Long reasonCodeId) {
         setInventoryId(inventory.getId());
         setLpn(inventory.getLpn());
         setLocationId(inventory.getLocationId());
@@ -161,6 +168,7 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         setRequestedByDateTime(ZonedDateTime.now(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
+        this.reasonCodeId = reasonCodeId;
     }
 
     @Override
@@ -327,5 +335,21 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
 
     public void setDocumentNumber(String documentNumber) {
         this.documentNumber = documentNumber;
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
     }
 }

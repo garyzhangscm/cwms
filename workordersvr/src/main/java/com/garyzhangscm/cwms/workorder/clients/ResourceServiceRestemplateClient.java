@@ -48,13 +48,14 @@ import java.util.List;
 public class ResourceServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
-
+/**
     @Autowired
     OAuth2RestOperations restTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
+ **/
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
@@ -69,7 +70,7 @@ public class ResourceServiceRestemplateClient {
         if (Strings.isNotBlank(printerName)) {
             builder = builder.queryParam("printerName", printerName);
         }
-
+/**
         ResponseBodyWrapper<ReportHistory> responseBodyWrapper
                 = restTemplate.exchange(
                         builder.buildAndExpand(warehouseId, type).toUriString(),
@@ -78,6 +79,15 @@ public class ResourceServiceRestemplateClient {
                         new ParameterizedTypeReference<ResponseBodyWrapper<ReportHistory>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.buildAndExpand(warehouseId, type).toUriString(),
+                HttpMethod.POST,
+                reportData
+        );
+
 
     }
     @Cacheable(cacheNames = "WorkOrderService_User", unless="#result == null")
@@ -88,7 +98,7 @@ public class ResourceServiceRestemplateClient {
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
-
+/**
         ResponseBodyWrapper<List<User>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -97,7 +107,13 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<User>>>() {}).getBody();
 
         List<User> users = responseBodyWrapper.getData();
-
+**/
+        List<User> users = restTemplateProxy.exchangeList(
+                User.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (users.size() != 1) {
             return null;
         }
@@ -117,7 +133,7 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
-
+/**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
                 builder.toUriString(),
@@ -126,9 +142,17 @@ public class ResourceServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
 
     }
-
+/**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
@@ -136,5 +160,5 @@ public class ResourceServiceRestemplateClient {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }
-
+*/
 }

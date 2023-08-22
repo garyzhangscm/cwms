@@ -2177,5 +2177,7 @@
   "REPORT-TYPE-PICK_SHEET": "Pick Sheet",
   "REPORT-TYPE-WALMART_SHIPPING_CARTON_LABEL": "Walmart Shipping Carton Label",
   "select-all-rows": "Select All Rows",
-  "select-this-page": "Select All Rows In This Page"
+  "select-this-page": "Select All Rows In This Page",
+  "menu.main.common.reason-code": "Reason Code",
+  "reason-code": "Reason Code"
 }

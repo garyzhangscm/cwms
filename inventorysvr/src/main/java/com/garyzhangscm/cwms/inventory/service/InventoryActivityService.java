@@ -364,7 +364,8 @@ public class InventoryActivityService{
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       ZonedDateTime activityDateTime, String username,
                                       String valueType, String fromValue, String toValue,
-                                      String documentNumber, String comment) {
+                                      String documentNumber, String comment,
+                                      Long reasonCodeId) {
         logger.debug("Start to construct the inventory activities");
 
         InventoryActivity inventoryActivity = new InventoryActivity(
@@ -374,7 +375,7 @@ public class InventoryActivityService{
                 activityDateTime, username,
                 valueType, fromValue, toValue,
                 documentNumber, comment,
-                getRFCode()
+                getRFCode(), reasonCodeId
         );
 
         logger.debug("Will send the activity record to kafka");
@@ -384,14 +385,14 @@ public class InventoryActivityService{
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType) {
         logInventoryActivitiy(inventory, inventoryActivityType,
                 ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
-                "", "", "", "", "");
+                "", "", "", "", "", null);
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       String valueType, String fromValue, String toValue, String documentNumber) {
         logInventoryActivitiy(inventory, inventoryActivityType,
                 ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
-                valueType, fromValue, toValue, documentNumber, "");
+                valueType, fromValue, toValue, documentNumber, "", null);
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
@@ -401,7 +402,7 @@ public class InventoryActivityService{
 
             logInventoryActivitiy(inventory, inventoryActivityType,
                     ZonedDateTime.now(ZoneId.of("UTC")), username,
-                    valueType, fromValue, toValue, "", "");
+                    valueType, fromValue, toValue, "", "", null);
         }
         catch (Exception ex) {
             logger.debug("skip error while log inventory activity: {}", ex.getMessage());
@@ -412,21 +413,22 @@ public class InventoryActivityService{
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                       String username,
                                       String valueType, String fromValue, String toValue,
-                                      String documentNumber, String comment) {
+                                      String documentNumber, String comment,
+                                      Long reasonCodeId) {
         logInventoryActivitiy(inventory, inventoryActivityType,
                 ZonedDateTime.now(ZoneId.of("UTC")),
                 Strings.isBlank(username)? userService.getCurrentUserName() : username,
-                valueType, fromValue, toValue, documentNumber, comment);
+                valueType, fromValue, toValue, documentNumber, comment, reasonCodeId);
     }
 
     public void logInventoryActivitiy(Inventory inventory, InventoryActivityType inventoryActivityType,
                                        String valueType, String fromValue, String toValue,
-                                      String documentNumber, String comment) {
+                                      String documentNumber, String comment, Long reasonCodeId) {
 
         try {
             logInventoryActivitiy(inventory, inventoryActivityType,
                     ZonedDateTime.now(ZoneId.of("UTC")), userService.getCurrentUserName(),
-                    valueType, fromValue, toValue, documentNumber, comment);
+                    valueType, fromValue, toValue, documentNumber, comment, reasonCodeId);
         }
         catch(NullPointerException ex) {
             ex.printStackTrace();

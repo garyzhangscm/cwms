@@ -116,6 +116,13 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     @Transient
     private Client client;
 
+
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Transient
+    private ReasonCode reasonCode;
+
     /**
      * Activity type: Movement / Adjustment / Receiving / Picking / etc
      */
@@ -174,7 +181,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
                              ZonedDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
                              String documentNumber, String comment,
-                             String rfCode) {
+                             String rfCode, Long reasonCodeId) {
         setLpn(inventory.getLpn());
         setClientId(inventory.getClientId());
         setTransactionId(transactionId);
@@ -201,6 +208,8 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
         this.toValue = toValue;
         this.documentNumber = documentNumber;
         this.comment = comment;
+
+        this.reasonCodeId = reasonCodeId;
     }
 
     @Override
@@ -427,5 +436,21 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
     }
 }

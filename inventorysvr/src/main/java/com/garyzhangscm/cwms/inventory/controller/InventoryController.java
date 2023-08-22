@@ -317,29 +317,30 @@ public class InventoryController {
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
     public Inventory addInventoryByReceiving(@RequestBody Inventory inventory,
                                              @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
-                                             @RequestParam(name = "comment", required = false, defaultValue = "") String comment) {
-        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}",
-                inventory.getLpn(), documentNumber, comment);
+                                             @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
+                                             @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId) {
+        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}, reason code id: {}",
+                inventory.getLpn(), documentNumber, comment, reasonCodeId);
         // We may receive  from a receipt, or a work order
         if (Objects.nonNull(inventory.getReceiptId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment, reasonCodeId);
         }
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment, reasonCodeId);
         }
         else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment, reasonCodeId);
         }
         else if (Objects.nonNull(inventory.getWorkOrderId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment, reasonCodeId);
         }
         else {
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN, documentNumber, comment, reasonCodeId);
         }
     }
 
