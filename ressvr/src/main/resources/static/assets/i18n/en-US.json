@@ -2179,5 +2179,13 @@
   "select-all-rows": "Select All Rows",
   "select-this-page": "Select All Rows In This Page",
   "menu.main.common.reason-code": "Reason Code",
-  "reason-code": "Reason Code"
+  "reason-code": "Reason Code",
+  "REASON-CODE-TYPE-Inventory_Status": "Inventory Status",
+  "REASON-CODE-TYPE-Inventory_Adjust": "Inventory Adjust",
+  "reasonRequiredWhenReceiving": "Required Reason When Receiving",
+  "reasonRequiredWhenProducing": "Required Reason When Producing",
+  "reasonRequiredWhenAdjusting": "Required Reason When Adjusting",
+  "reasonOptionalWhenReceiving": "Reason is Optional When Receiving",
+  "reasonOptionalWhenProducing": "Reason is Optional When Producing",
+  "reasonOptionalWhenAdjusting": "Reason is Optional When Adjusting"
 }
