@@ -72,6 +72,14 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @JoinColumn(name = "consume_by_bom_id")
     private BillOfMaterial consumeByBom;
 
+
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Transient
+    private ReasonCode reasonCode;
+
+
     @Override
     public String toString() {
         try {
@@ -179,5 +187,21 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void addWorkOrderReverseProductionInventories(WorkOrderReverseProductionInventory workOrderReverseProductionInventory) {
         this.workOrderReverseProductionInventories.add(workOrderReverseProductionInventory);
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
     }
 }

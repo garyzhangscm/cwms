@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>workorderserver</artifactId>
-    <version>v1.16</version>
+    <version>v1.17</version>
     <name>Work Order Server</name>
     <description>Work Order Server - BOM / Work Order / Production</description>
 

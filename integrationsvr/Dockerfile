@@ -7,7 +7,7 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/integrationserver-v1.16.jar /usr/local/service/
+ADD target/integrationserver-v1.17.jar /usr/local/service/
 
 
-ENTRYPOINT ["java","-jar","/usr/local/service/integrationserver-v1.16.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/integrationserver-v1.17.jar"]
