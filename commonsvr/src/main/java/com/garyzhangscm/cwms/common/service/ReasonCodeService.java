@@ -185,4 +185,12 @@ public class ReasonCodeService implements  TestDataInitiableService{
         return reasonCode;
 
     }
+
+    public void removeReasonCode(Long id) {
+        reasonCodeRepository.deleteById(id);
+    }
+
+    public ReasonCode addReasonCode(ReasonCode reasonCode) {
+        return saveOrUpdate(reasonCode);
+    }
 }

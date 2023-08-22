@@ -2174,5 +2174,13 @@
   "REPORT-TYPE-PICK_SHEET": "拣货单",
   "REPORT-TYPE-WALMART_SHIPPING_CARTON_LABEL": "Walmart 发货箱标",
   "menu.main.common.reason-code": "原因",
-  "reason-code": "原因"
+  "reason-code": "原因",
+  "REASON-CODE-TYPE-Inventory_Status": "库存状态相关",
+  "REASON-CODE-TYPE-Inventory_Adjust": "库存调整相关",
+  "reasonRequiredWhenReceiving": "收货时需要填写原因",
+  "reasonRequiredWhenProducing": "完工入库时需要填写原因",
+  "reasonRequiredWhenAdjusting": "库存调整时需要填写原因",
+  "reasonOptionalWhenReceiving": "收货时选填原因",
+  "reasonOptionalWhenProducing": "完工入库时选填原因",
+  "reasonOptionalWhenAdjusting": "库存调整时选填原因"
 }
