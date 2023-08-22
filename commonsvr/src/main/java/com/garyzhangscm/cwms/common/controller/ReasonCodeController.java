@@ -18,12 +18,9 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.common.exception.GenericException;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
-import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.ReasonCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,12 +36,8 @@ public class ReasonCodeController {
     @RequestMapping(value="/reason-codes", method = RequestMethod.GET)
     public List<ReasonCode> findAllReasonCodes(@RequestParam Long warehouseId,
                                                @RequestParam(value = "type", required = false, defaultValue = "") String type) {
-        if (type.isEmpty()) {
-            return reasonCodeService.findAll(warehouseId);
-        }
-        else {
-            return reasonCodeService.findByType(type);
-        }
+
+        return reasonCodeService.findAll(warehouseId, type);
 
     }
 
