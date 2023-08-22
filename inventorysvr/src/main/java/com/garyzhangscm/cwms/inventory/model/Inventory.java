@@ -156,6 +156,12 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private String style;
 
 
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Transient
+    private ReasonCode reasonCode;
+
     // date used when we will need to sort the inventory based on fifo
     @Column(name = "fifo_date")
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
@@ -573,5 +579,21 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setReceiptLine(ReceiptLine receiptLine) {
         this.receiptLine = receiptLine;
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
     }
 }

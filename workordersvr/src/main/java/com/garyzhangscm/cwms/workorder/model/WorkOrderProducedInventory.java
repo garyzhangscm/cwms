@@ -60,6 +60,9 @@ public class WorkOrderProducedInventory extends AuditibleEntity<String> {
         inventory.setWarehouseId(workOrder.getWarehouseId());
 
         inventory.setCreateInventoryTransactionId(workOrderProduceTransaction.getId());
+
+        inventory.setReasonCodeId(workOrderProduceTransaction.getReasonCodeId());
+
         return inventory;
     }
     public Long getId() {

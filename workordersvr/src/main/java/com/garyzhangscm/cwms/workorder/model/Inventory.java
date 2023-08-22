@@ -69,6 +69,11 @@ public class Inventory implements Serializable {
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+
+    private Long reasonCodeId;
+
+    private ReasonCode reasonCode;
+
     @Override
     public String toString() {
         try {
@@ -230,5 +235,21 @@ public class Inventory implements Serializable {
 
     public void setWorkOrderByProductId(Long workOrderByProductId) {
         this.workOrderByProductId = workOrderByProductId;
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
     }
 }

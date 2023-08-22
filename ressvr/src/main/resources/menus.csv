@@ -91,6 +91,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,,true,false
 "ABC Category",menu.main.common.abc-category,/common/abc-category,5,Main-Menu-Common,Common-ABCCategory,,true,false
 "Velocity",menu.main.common.velocity,/common/velocity,6,Main-Menu-Common,Common-Velocity,,true,false
+"Reason Code",menu.main.common.reason-code,/common/reason-code,7,Main-Menu-Common,Common-ReasonCode,,true,false
 "Tractor",menu.main.transport.tractor,/transportation/tractor,1,Main-Menu-transport,transport-Tractor,,true,false
 "Trailer",menu.main.transport.trailer,/transportation/trailer,2,Main-Menu-transport,transport-Trailer,,true,false
 "Carrier",menu.main.transport.carrier,/transportation/carrier,3,Main-Menu-transport,transport-carrier,,true,false

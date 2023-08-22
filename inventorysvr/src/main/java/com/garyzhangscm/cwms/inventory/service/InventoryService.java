@@ -1186,19 +1186,19 @@ public class InventoryService {
         Inventory inventory = findById(id);
         logger.debug("Start to reverse production of inventory with lpn {}",
                 inventory.getLpn());
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment, null);
     }
 
     public Inventory reverseByProduct(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         logger.debug("Start to reverse by product of inventory with lpn {}",
                 inventory.getLpn());
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_BY_PRODUCT, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_BY_PRODUCT, documentNumber, comment, null);
     }
 
     public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment, null);
     }
     public List<Inventory> removeInventoryByLocation(Long locationId) {
         return removeInventoryByLocation(locationId, true);
@@ -1218,30 +1218,30 @@ public class InventoryService {
         return removeInventory(inventory, documentNumber, comment);
     }
     public Inventory removeInventory(Inventory inventory, String documentNumber, String comment) {
-        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment, null);
     }
 
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
-        return removeInventory(inventory, inventoryQuantityChangeType, "", "");
+        return removeInventory(inventory, inventoryQuantityChangeType, "", "", null);
 
     }
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                            String documentNumber, String comment) {
+                                            String documentNumber, String comment, Long reasonCodeId) {
 
         logger.debug("Start to remove inventory");
         if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,
-                    inventoryQuantityChangeType, documentNumber, comment);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processRemoveInventory(inventory, inventoryQuantityChangeType, documentNumber, comment);
+            return processRemoveInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
         }
     }
     public Inventory processRemoveInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                     String documentNumber, String comment) {
+                                     String documentNumber, String comment, Long reasonCodeId) {
 
         InventoryActivityType inventoryActivityType;
         switch (inventoryQuantityChangeType) {
@@ -1268,7 +1268,7 @@ public class InventoryService {
         }
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                 "quantity", String.valueOf(inventory.getQuantity()), "0",
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId);
 
         // ignore the integration when it is consumption of work order material
         // if (!inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)) {
@@ -1331,7 +1331,7 @@ public class InventoryService {
 
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.RELABEL_LPN,
                 "LPN", String.valueOf(inventory.getLpn()), newLPN,
-                "", "");
+                "", "", null);
         inventory.setLpn(newLPN);
 
         return saveOrUpdate(inventory);
@@ -2072,13 +2072,18 @@ public class InventoryService {
      */
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment) {
+                                  String documentNumber, String comment, Long reasonCodeId) {
         return addInventory(userService.getCurrentUserName(), inventory, inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId);
+    }
+    @Transactional
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                  String documentNumber, String comment) {
+        return addInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, null);
     }
     @Transactional
     public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment) {
+                                  String documentNumber, String comment,  Long reasonCodeId) {
 
         logger.debug("Start to add inventory with LPN {}",
                 Strings.isBlank(inventory.getLpn()) ? "N/A" : inventory.getLpn());
@@ -2098,12 +2103,12 @@ public class InventoryService {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,  inventory.getQuantity(),
-                    inventoryQuantityChangeType, documentNumber, comment);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
             inventory.setLockedForAdjust(true);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber, comment);
+            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
         }
     }
 
@@ -2121,16 +2126,17 @@ public class InventoryService {
 
     private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
-                                             String documentNumber, String comment) {
+                                             String documentNumber, String comment, Long reasonCodeId) {
 
 
         writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
                 inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId);
     }
     private void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
-                                             String documentNumber, String comment) {
+                                             String documentNumber, String comment,
+                                             Long reasonCodeId) {
 
         // if we are manupulating an existing inventory, let's lock teh inventory first
         if (Objects.nonNull(inventory.getId())) {
@@ -2141,7 +2147,7 @@ public class InventoryService {
             inventory.setLockedForAdjust(true);
         }
         inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType,
-                  documentNumber,  comment);
+                  documentNumber,  comment, reasonCodeId);
 
     }
 
@@ -2174,15 +2180,15 @@ public class InventoryService {
     }
 
     public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment) {
+                                         String documentNumber, String comment, Long reasonCodeId) {
         return processAddInventory(
                 userService.getCurrentUserName(),
                 inventory, inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId);
     }
     public Inventory processAddInventory(String username,
                                          Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment) {
+                                         String documentNumber, String comment, Long reasonCodeId) {
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType, inventory.getWarehouseId());
@@ -2244,7 +2250,7 @@ public class InventoryService {
             inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                     username,
                     "quantity", "0", String.valueOf(inventory.getQuantity()),
-                    documentNumber, comment);
+                    documentNumber, comment, reasonCodeId);
 
         }
         catch (Exception ex) {
@@ -2319,7 +2325,7 @@ public class InventoryService {
         }
 
         if (isApprovalNeededForInventoryAdjust(inventory, newQuantity, inventoryQuantityChangeType)) {
-            writeInventoryAdjustRequest(inventory, newQuantity, inventoryQuantityChangeType, documentNumber, comment);
+            writeInventoryAdjustRequest(inventory, newQuantity, inventoryQuantityChangeType, documentNumber, comment, null);
             return inventory;
         } else {
             return processAdjustInventoryQuantity(inventory, newQuantity, documentNumber, comment);
@@ -2334,7 +2340,7 @@ public class InventoryService {
                 inventory.getQuantity(), newQuantity);
         if (newQuantity == 0) {
             // a specific case where we are actually removing an inventory
-            resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
+            resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment, null);
         }
         else if (inventory.getQuantity() > newQuantity) {
             // OK we are adjust down, let's split the original inventory
@@ -2342,7 +2348,7 @@ public class InventoryService {
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
             logger.debug("Will reduce the quantity from {} to {}",
                     inventory.getQuantity(), newQuantity);
 
@@ -2356,7 +2362,7 @@ public class InventoryService {
                     "LPN-quantity",
                     inventory.getLpn() + "-" + inventory.getQuantity(),
                     newLpn + "-" + (inventory.getQuantity() - newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
 
             Inventory newInventory = inventory.split(newLpn, inventory.getQuantity() - newQuantity);
 
@@ -2366,7 +2372,7 @@ public class InventoryService {
             logger.debug("Inventory is split");
 
             // Remove the new inventory
-            processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
+            processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "", null);
             logger.debug("The inventory with reduced quantity has been removed");
             resultInventory =  inventory;
         }
@@ -2377,7 +2383,7 @@ public class InventoryService {
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
             logger.debug("Will increase the quantity from {} to {}",
                     inventory.getQuantity(), newQuantity);
 
@@ -2435,7 +2441,7 @@ public class InventoryService {
 
             logger.debug("Will start to add inventory after the change is approved");
             processAddInventory(inventory, inventoryAdjustmentRequest.getInventoryQuantityChangeType(),
-                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
+                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment(), null);
         }
         else {
 
@@ -3403,7 +3409,7 @@ public class InventoryService {
 
                     addInventory(username, inventory,
                             InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                            "", "");
+                            "", "", null);
 
                     // we complete this inventory
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
