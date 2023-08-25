@@ -319,8 +319,14 @@ public class InventoryController {
                                              @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
                                              @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
                                              @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId) {
-        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}, reason code id: {}",
-                inventory.getLpn(), documentNumber, comment, reasonCodeId);
+        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}, reason code id: {} / {}",
+                inventory.getLpn(), documentNumber, comment, reasonCodeId, inventory.getReasonCodeId());
+
+        // if the reason code is not passed in explicitly, use the one from the inventory
+        if (Objects.isNull(reasonCodeId)) {
+            reasonCodeId = inventory.getReasonCodeId();
+        }
+
         // We may receive  from a receipt, or a work order
         if (Objects.nonNull(inventory.getReceiptId())){
 

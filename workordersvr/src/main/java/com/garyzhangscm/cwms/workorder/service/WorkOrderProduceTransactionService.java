@@ -781,7 +781,7 @@ public class WorkOrderProduceTransactionService  {
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
 
-        inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder,inventory);
+        inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder, inventory);
 
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
