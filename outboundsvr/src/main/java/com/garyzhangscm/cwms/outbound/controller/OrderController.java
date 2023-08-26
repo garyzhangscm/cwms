@@ -130,7 +130,7 @@ public class OrderController {
             }
     )
     public Order allocateOrder(@PathVariable Long id,
-                               @RequestParam(name = "asynchronous", required = false, defaultValue = "false") Boolean asynchronous){
+                               @RequestParam(name = "asynchronous", required = false, defaultValue = "") Boolean asynchronous){
 
         return orderService.allocate(id, asynchronous);
     }

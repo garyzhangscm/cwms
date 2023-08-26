@@ -69,7 +69,8 @@ public class OutboundConfigurationService {
         if (Boolean.TRUE.equals(outboundConfiguration.getAsynchronousAllocation())) {
             return true;
         }
-        if (Objects.nonNull(outboundConfiguration.getAsynchronousAllocationPalletThreshold())) {
+        if (Objects.nonNull(outboundConfiguration.getAsynchronousAllocationPalletThreshold()) &&
+                outboundConfiguration.getAsynchronousAllocationPalletThreshold() > 0) {
             // if the configuration is not setup to explicitly allow asynchronous allocation
             // then check if the total pallet quantity that is to be allocated exceed the
             // threshold. If there're too many pallets to be allocated, then we will use

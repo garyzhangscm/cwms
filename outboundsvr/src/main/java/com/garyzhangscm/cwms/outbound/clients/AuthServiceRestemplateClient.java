@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 @Component
@@ -96,16 +97,20 @@ public class AuthServiceRestemplateClient {
 
 
     public User getCurrentLoginUser() throws IOException{
+        logger.debug("we have current login user? {}",
+                Objects.isNull(currentLoginUser) ? "N/A" : currentLoginUser.getUsername());
         if (currentLoginUser == null) {
             return login();
         }
         else if (currentLoginUser.getTime().toLocalDateTime().plusSeconds(currentLoginUser.getRefreshIn()).isBefore(LocalDateTime.now())) {
+            logger.debug("current login user {} is expired, will need to re-login", currentLoginUser.getUsername());
             // The login is expired, let's log in again
             return login();
         }
         else {
             // current login is still valid
 
+            logger.debug("current login user {} is valid", currentLoginUser.getUsername());
             return currentLoginUser;
         }
     }
