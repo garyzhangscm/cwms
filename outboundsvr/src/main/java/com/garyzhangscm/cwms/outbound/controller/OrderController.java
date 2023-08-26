@@ -129,9 +129,10 @@ public class OrderController {
                     @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
             }
     )
-    public Order allocateOrder(@PathVariable Long id){
+    public Order allocateOrder(@PathVariable Long id,
+                               @RequestParam(name = "asynchronous", required = false, defaultValue = "false") Boolean asynchronous){
 
-        return orderService.allocate(id);
+        return orderService.allocate(id, asynchronous);
     }
 
     @BillableEndpoint

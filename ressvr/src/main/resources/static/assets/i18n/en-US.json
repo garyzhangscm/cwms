@@ -2181,11 +2181,16 @@
   "menu.main.common.reason-code": "Reason Code",
   "reason-code": "Reason Code",
   "REASON-CODE-TYPE-Inventory_Status": "Inventory Status",
-  "REASON-CODE-TYPE-Inventory_Adjust": "Inventory Adjust",
   "reasonRequiredWhenReceiving": "Required Reason When Receiving",
   "reasonRequiredWhenProducing": "Required Reason When Producing",
   "reasonRequiredWhenAdjusting": "Required Reason When Adjusting",
   "reasonOptionalWhenReceiving": "Reason is Optional When Receiving",
   "reasonOptionalWhenProducing": "Reason is Optional When Producing",
-  "reasonOptionalWhenAdjusting": "Reason is Optional When Adjusting"
+  "reasonOptionalWhenAdjusting": "Reason is Optional When Adjusting",
+  "REASON-CODE-TYPE-Inventory_Adjust": "Inventory Adjust",
+  "menu.main.outbound.outbound-configuration": "Outbound Configuration",
+  "outbound-configuration": "Outbound Configuration",
+  "shortAutoReallocation": "Auto Reallocate Shorts",
+  "asynchronousAllocation": "Asynchronous Allocation",
+  "asynchronousAllocationPalletThreshold": "Asynchronous Allocation Pallet Threshold"
 }

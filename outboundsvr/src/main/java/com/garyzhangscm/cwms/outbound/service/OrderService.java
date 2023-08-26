@@ -1048,10 +1048,10 @@ public class OrderService {
     }
 
     @Transactional
-    public Order allocate(Long orderId) {
+    public Order allocate(Long orderId, Boolean asynchronous) {
         Order order = findById(orderId);
-        logger.debug(">>>    Start to allocate order  {}  <<<",
-                order.getNumber());
+        logger.debug(">>>    Start to allocate order  {} ,asynchronous? : {}  <<<",
+                order.getNumber(), asynchronous);
 
         // if the order is already cancelled or request cancellation,
         // raise an error
@@ -1083,18 +1083,44 @@ public class OrderService {
         }
         shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
 
-        // ok, if we are here, we may ends up with multiple shipments
-        // with lines for the order,
-        // let's allocate all of the shipment lines
-        List<AllocationResult> allocationResults
-                    = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
+        order.setStatus(OrderStatus.ALLOCATING);
+
+        if (Boolean.TRUE.equals(asynchronous)) {
+            new Thread(() -> {
+
+                // ok, if we are here, we may ends up with multiple shipments
+                // with lines for the order,
+                // let's allocate all of the shipment lines
+                List<AllocationResult> allocationResults
+                        = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
                         .stream()
-                         .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
+                        .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
                         .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
                         .collect(Collectors.toList());
 
-        postAllocationProcess(allocationResults);
-        return order;
+                postAllocationProcess(allocationResults);
+                order.setStatus(OrderStatus.INPROCESS);
+
+                saveOrUpdate(order);
+            }).start();
+
+        }
+        else {
+
+            // ok, if we are here, we may ends up with multiple shipments
+            // with lines for the order,
+            // let's allocate all of the shipment lines
+            List<AllocationResult> allocationResults
+                    = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
+                    .stream()
+                    .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
+                    .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
+                    .collect(Collectors.toList());
+
+            postAllocationProcess(allocationResults);
+            order.setStatus(OrderStatus.INPROCESS);
+        }
+        return saveOrUpdate(order);
 
     }
 

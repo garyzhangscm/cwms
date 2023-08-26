@@ -9,18 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.OAuth2RefreshToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -36,7 +26,7 @@ public class ShortAllocationProcessingJob {
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
-    private OutboundConfiguration outboundConfiguration;
+    private OutboundConfigurationService outboundConfigurationService;
 
     @Autowired
     ShortAllocationService shortAllocationService;
@@ -48,10 +38,11 @@ public class ShortAllocationProcessingJob {
 
 
 
+    /**
     @Scheduled(fixedDelay = 15000)
     public void processShortAllocation() throws IOException {
         logger.debug("# start JOB to process short allocation data @ {}", LocalDateTime.now());
-        if (!outboundConfiguration.isShortAutoAllocationEnabled()){
+        if (!outboundConfigurationService.isShortAutoReallocationEnabled()){
             logger.debug("Short allocation auto allocating is not enabled, return");
             return;
         }
@@ -64,8 +55,9 @@ public class ShortAllocationProcessingJob {
         );
         logger.debug("# {} short allocation allocated @ {}",
                 shortAllocationList.size() , LocalDateTime.now());
-
     }
+     **/
+
 
 
     /**
