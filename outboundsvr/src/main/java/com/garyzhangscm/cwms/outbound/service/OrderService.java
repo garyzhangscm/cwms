@@ -61,6 +61,8 @@ public class OrderService {
     private KafkaSender kafkaSender;
     @Autowired
     private OrderCancellationRequestService orderCancellationRequestService;
+    @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
 
     @Autowired
     private PickService pickService;
@@ -1049,7 +1051,9 @@ public class OrderService {
 
     @Transactional
     public Order allocate(Long orderId, Boolean asynchronous) {
+
         Order order = findById(orderId);
+
         logger.debug(">>>    Start to allocate order  {} ,asynchronous? : {}  <<<",
                 order.getNumber(), asynchronous);
 
@@ -1084,6 +1088,20 @@ public class OrderService {
         shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
 
         order.setStatus(OrderStatus.ALLOCATING);
+
+
+        // check if we will need to allocate asynchronously
+        // 1. if the client explicitly want asynchronous
+        // 2. if the warehouse is configured to allocate asynchronously
+        if (!Boolean.TRUE.equals(asynchronous)) {
+            // TO-DO: Will need to use pallet quantity instead of quantity
+            long totalPalletQuantity = allocatableOrderLines.stream().map(
+                    orderLine -> orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
+            ).mapToLong(Long::longValue).sum();
+
+            asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
+                    order.getWarehouseId(),totalPalletQuantity);
+        }
 
         if (Boolean.TRUE.equals(asynchronous)) {
             new Thread(() -> {
