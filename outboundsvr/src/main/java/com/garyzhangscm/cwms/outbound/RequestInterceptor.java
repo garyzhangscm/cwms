@@ -64,6 +64,8 @@ public class RequestInterceptor implements ClientHttpRequestInterceptor {
         HttpHeaders headers = request.getHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
+        logger.debug("append the token {} to the http header for auto login user ",
+                token);
         headers.set("Authorization", "Bearer "+token);
 
         // Add

@@ -5,12 +5,14 @@ import com.garyzhangscm.cwms.outbound.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class UserService {
@@ -19,9 +21,16 @@ public class UserService {
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
+    @Value("${outbound.login.username}")
+    private String outboundUsername;
+
     private static Map<String, ServletRequestAttributes> userServletRequestAttributes = new HashMap<>();
 
     public String getCurrentUserName() {
+        // if we are not in the http context, return the default user
+        if (Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
+            return outboundUsername;
+        }
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 

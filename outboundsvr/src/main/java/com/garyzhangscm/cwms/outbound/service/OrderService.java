@@ -1081,11 +1081,10 @@ public class OrderService {
                 order.getOrderLines().stream().filter(
                         orderLine -> !Boolean.TRUE.equals(orderLine.getNonAllocatable())
                 ).collect(Collectors.toList());
+
         if (allocatableOrderLines.size() == 0) {
             throw OrderOperationException.raiseException("There's no allocatable order line in this order");
-
         }
-        shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
 
         order.setStatus(OrderStatus.ALLOCATING);
 
@@ -1093,7 +1092,7 @@ public class OrderService {
         // check if we will need to allocate asynchronously
         // 1. if the client explicitly want asynchronous
         // 2. if the warehouse is configured to allocate asynchronously
-        if (!Boolean.TRUE.equals(asynchronous)) {
+        if (Objects.isNull(asynchronous)) {
             // TO-DO: Will need to use pallet quantity instead of quantity
             long totalPalletQuantity = allocatableOrderLines.stream().map(
                     orderLine -> orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
@@ -1103,42 +1102,46 @@ public class OrderService {
                     order.getWarehouseId(),totalPalletQuantity);
         }
 
+        logger.debug("allocate Asynchronously or Synchronously? {}",
+                Boolean.TRUE.equals(asynchronous) ? "Asynchronously" : "Synchronously");
         if (Boolean.TRUE.equals(asynchronous)) {
             new Thread(() -> {
 
-                // ok, if we are here, we may ends up with multiple shipments
-                // with lines for the order,
-                // let's allocate all of the shipment lines
-                List<AllocationResult> allocationResults
-                        = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
-                        .stream()
-                        .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
-                        .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
-                        .collect(Collectors.toList());
+                logger.debug("start to allocate the order asynchronously");
+                allocate(order, allocatableOrderLines);
 
-                postAllocationProcess(allocationResults);
+                logger.debug("Asynchronously allocation is done");
                 order.setStatus(OrderStatus.INPROCESS);
 
                 saveOrUpdate(order);
-            }).start();
 
+            }).start();
         }
         else {
+            allocate(order, allocatableOrderLines);
+            logger.debug("Synchronously allocation is done");
+            order.setStatus(OrderStatus.INPROCESS);
 
-            // ok, if we are here, we may ends up with multiple shipments
-            // with lines for the order,
-            // let's allocate all of the shipment lines
-            List<AllocationResult> allocationResults
-                    = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
+        }
+        return saveOrUpdate(order);
+    }
+
+    @Transactional
+    public void allocate(Order order, List<OrderLine> allocatableOrderLines) {
+        shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
+
+
+        // ok, if we are here, we may ends up with multiple shipments
+        // with lines for the order,
+        // let's allocate all of the shipment lines
+        List<AllocationResult> allocationResults
+                = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
                     .stream()
                     .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
                     .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
                     .collect(Collectors.toList());
 
-            postAllocationProcess(allocationResults);
-            order.setStatus(OrderStatus.INPROCESS);
-        }
-        return saveOrUpdate(order);
+        postAllocationProcess(allocationResults);
 
     }
 
