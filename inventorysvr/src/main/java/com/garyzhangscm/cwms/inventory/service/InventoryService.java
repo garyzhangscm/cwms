@@ -183,7 +183,8 @@ public class InventoryService {
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
-                                   ClientRestriction clientRestriction) {
+                                   ClientRestriction clientRestriction,
+                                   Integer maxLPNCount) {
         return findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
@@ -193,7 +194,7 @@ public class InventoryService {
                 pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
-                true);
+                true, maxLPNCount);
     }
 
 
@@ -225,7 +226,8 @@ public class InventoryService {
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
                                    ClientRestriction clientRestriction,
-                                   boolean includeDetails) {
+                                   boolean includeDetails,
+                                   Integer maxLPNCount) {
 
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
         logger.debug("====> Start to find all inventory that match criteria @ {}", currentLocalDateTime );
@@ -463,6 +465,28 @@ public class InventoryService {
 
                 }
         );
+
+        if (Objects.nonNull(maxLPNCount)) {
+            logger.debug("we will only return {} LPNs as restrict", maxLPNCount);
+            List<Inventory> lpnInventories = new ArrayList<>();
+            Set<String> processedLPN = new HashSet<>();
+            for(Inventory inventory : inventories) {
+                if (maxLPNCount <= 0) {
+                    break;
+                }
+                else if (processedLPN.contains(inventory.getLpn())) {
+                    lpnInventories.add(inventory);
+                }
+                else {
+                    lpnInventories.add(inventory);
+                    processedLPN.add(inventory.getLpn());
+                    maxLPNCount--;
+                }
+            }
+            inventories = lpnInventories;
+            logger.debug("after apply the LPN Count restriction, we only have {} inventory record left", inventories.size());
+        }
+
         inventories.sort((inventory1, inventory2) -> {
             if(inventory1.getLocationId().equals(inventory2.getLocationId())) {
                 return inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn());
@@ -603,6 +627,7 @@ public class InventoryService {
                 null,
                 null,
                 locationIds,
+                null,
                 null,
                 null,
                 null,
@@ -789,8 +814,8 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null,
-                null, includeDetails);
+                null, null, includeDetails,
+                null);
     }
 
     public List<Inventory> findByLocationId(Long locationId, boolean includeDetails) {
@@ -838,7 +863,8 @@ public class InventoryService {
                 null,
                 null,
                 null, null,
-                includeDetails
+                includeDetails, null
+
         );
     }
 
@@ -2566,7 +2592,8 @@ public class InventoryService {
                         null,
                         null,
                         null,
-                        null, null, null
+                        null, null, null,
+                        null
                 );
                 // Let's remove those inventories
                 pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
@@ -2618,7 +2645,8 @@ public class InventoryService {
                     null,
                     null,
                     null,
-                    null, null, null
+                    null, null, null,
+                    null
             );
             // we will only return the inventory without any pick attached to it
             return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
@@ -2657,7 +2685,8 @@ public class InventoryService {
                         null,
                         null,
                         null,
-                        null, null, null
+                        null, null, null,
+                        null
                 );
             }
             return pickedInventories;
@@ -3166,7 +3195,8 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null, null);
+                null, null,
+                null);
 
 
     }
@@ -3280,7 +3310,8 @@ public class InventoryService {
                 pickIds, lpn, color, productSize, style,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
-                false);
+                false,
+                null);
 
         logger.debug("find {} inventory to REMOVE by criteria {}",
                 inventories.size(),
@@ -3889,7 +3920,8 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null, includeDetails);
+                null, includeDetails,
+                null);
     }
 
     /**
