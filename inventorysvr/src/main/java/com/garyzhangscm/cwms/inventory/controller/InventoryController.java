@@ -34,8 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 public class InventoryController {
@@ -75,12 +74,16 @@ public class InventoryController {
                                               @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
                                               @RequestParam(name="style", required = false, defaultValue = "") String style,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                              @RequestParam(name = "maxLPNCount", defaultValue = "", required = false) Integer maxLPNCount,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
                                               ClientRestriction clientRestriction) {
 
 
+
+        logger.debug("see if we have restriction on the max LPN we can return: {}",
+                Objects.nonNull(maxLPNCount) ? maxLPNCount : "No Restriction");
 
         return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
                 itemPackageTypeName, clientId,  clientIds,
@@ -90,7 +93,8 @@ public class InventoryController {
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn, color, productSize, style, inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
-                includeDetails);
+                includeDetails, maxLPNCount);
+
 
 
     }
@@ -132,7 +136,7 @@ public class InventoryController {
                 customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
-                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false).size();
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)

@@ -999,7 +999,7 @@ public class ItemService {
                         null,null,null,null,null,
                         null,null,null,null, null,null,null,
                         null,null,null,
-                        false, null)
+                        false, null, null)
                 .stream().filter(
                         existingInventory -> Objects.equals(item.getClientId(), existingInventory.getClientId())
                 ).collect(Collectors.toList());

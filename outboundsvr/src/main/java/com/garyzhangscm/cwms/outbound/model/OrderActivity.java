@@ -274,7 +274,7 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     }
 
     public OrderActivity withShipment(Shipment shipment) {
-        setShipment(shipment);
+        // setShipment(shipment);
         setClientId(shipment.getClientId());
 
         if (Objects.isNull(shipment)) {
@@ -284,7 +284,13 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         return this;
     }
     public OrderActivity withShipmentLine(ShipmentLine shipmentLine) {
-        setShipmentLine(shipmentLine);
+        // we will not setup the shipment line here. instead we will
+        // use the information from the shipment line.
+        // as the shipment line contains information of picks,
+        // setup the shipment line in the order activity history may
+        // contains too many unnecessary information
+
+        // setShipmentLine(shipmentLine);
 
         if (Objects.isNull(shipmentLine)) {
             return this;

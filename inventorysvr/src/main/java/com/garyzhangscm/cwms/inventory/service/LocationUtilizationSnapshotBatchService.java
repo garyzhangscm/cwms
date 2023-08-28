@@ -703,7 +703,8 @@ public class LocationUtilizationSnapshotBatchService {
                             null,
                             null,
                             null, null,
-                            false );
+                            false ,
+                            null);
 
                     // add the location utilization details to the result set
                     // the location utilization details is from current inventory list
