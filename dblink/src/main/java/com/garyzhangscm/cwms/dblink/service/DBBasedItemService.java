@@ -36,12 +36,15 @@ public class DBBasedItemService {
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
+    @Value("${dblink.item.filter:\"\"}")
+    String filter;
+
 
     public List<DBBasedItem> findAll() {
         return dbBasedItemRepository.findAll();
     }
 
-    private List<DBBasedItem> findPendingIntegration() {
+    private List<DBBasedItem> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
 
         Page<DBBasedItem> dbBasedItemPage = dbBasedItemRepository.findAll(
@@ -64,7 +67,7 @@ public class DBBasedItemService {
     }
 
     public void sendIntegrationData() {
-        List<DBBasedItem> pendingDBBasedItem = findPendingIntegration();
+        List<DBBasedItem> pendingDBBasedItem = findPendingIntegration(filter);
         logger.debug("# find " +  pendingDBBasedItem.size() + " pendingDBBasedItem");
 
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
@@ -80,7 +83,7 @@ public class DBBasedItemService {
                     String result = "";
                     String errorMessage = "";
                     try {
-                        result = integrationServiceRestemplateClient.sendIntegrationData("item", dbBasedItem);
+                        result = integrationServiceRestemplateClient.sendIntegrationData("items", dbBasedItem);
                         logger.debug("# get result " + result);
                         dbBasedItem.setStatus(IntegrationStatus.COMPLETED);
                         dbBasedItem.setErrorMessage("");

@@ -142,15 +142,21 @@ public class GridLocationConfigurationService implements TestDataInitiableServic
         gridLocationConfigurations.forEach(this::loadAttribute);
     }
     private void loadAttribute(GridLocationConfiguration gridLocationConfiguration) {
-        LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                gridLocationConfiguration.getLocationGroupId()
-        );
-        gridLocationConfiguration.setLocationGroup(locationGroup);
+        try {
+            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                    gridLocationConfiguration.getLocationGroupId()
+            );
+            gridLocationConfiguration.setLocationGroup(locationGroup);
+        }
+        catch (Exception ex) {}
 
-        Location location = warehouseLayoutServiceRestemplateClient.getLocationById(
-                gridLocationConfiguration.getLocationId()
-        );
-        gridLocationConfiguration.setLocation(location);
+        try {
+            Location location = warehouseLayoutServiceRestemplateClient.getLocationById(
+                    gridLocationConfiguration.getLocationId()
+            );
+            gridLocationConfiguration.setLocation(location);
+        }
+        catch (Exception ex) {}
     }
 
     public List<GridLocationConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {

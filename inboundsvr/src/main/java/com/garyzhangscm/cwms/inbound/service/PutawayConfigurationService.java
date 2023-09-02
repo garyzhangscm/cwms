@@ -134,32 +134,58 @@ public class PutawayConfigurationService implements TestDataInitiableService{
     private void loadAttribute(PutawayConfiguration putawayConfiguration) {
 
         if (putawayConfiguration.getItemId() != null && putawayConfiguration.getItem() == null) {
-            putawayConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(putawayConfiguration.getItemId()));
+            try{
+
+                putawayConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(putawayConfiguration.getItemId()));
+            }
+            catch (Exception ex){}
         }
         if (putawayConfiguration.getItemFamilyId() != null && putawayConfiguration.getItemFamily() == null) {
-            putawayConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(putawayConfiguration.getItemFamilyId()));
+            try{
+                putawayConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(putawayConfiguration.getItemFamilyId()));
+            }
+            catch (Exception ex){}
         }
 
         if (putawayConfiguration.getInventoryStatusId() != null && putawayConfiguration.getInventoryStatus() == null) {
-            putawayConfiguration.setInventoryStatus(inventoryServiceRestemplateClient.getInventoryStatusById(putawayConfiguration.getInventoryStatusId()));
+            try{
+                putawayConfiguration.setInventoryStatus(inventoryServiceRestemplateClient.getInventoryStatusById(
+                    putawayConfiguration.getInventoryStatusId()));
+            }
+            catch (Exception ex){}
         }
 
 
         if (putawayConfiguration.getLocationId() != null && putawayConfiguration.getLocation() == null) {
-            putawayConfiguration.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(putawayConfiguration.getLocationId()));
+            try{
+                putawayConfiguration.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(
+                    putawayConfiguration.getLocationId()));
+            }
+            catch (Exception ex){}
         }
         if (putawayConfiguration.getLocationGroupId() != null && putawayConfiguration.getLocationGroup() == null) {
-            putawayConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(putawayConfiguration.getLocationGroupId()));
+            try{
+                putawayConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                    putawayConfiguration.getLocationGroupId()));
+            }
+            catch (Exception ex){}
         }
         if (putawayConfiguration.getLocationGroupTypeId() != null && putawayConfiguration.getLocationGroupType() == null) {
-            putawayConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(putawayConfiguration.getLocationGroupTypeId()));
+            try{
+                putawayConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
+                    putawayConfiguration.getLocationGroupTypeId()));
+            }
+            catch (Exception ex){}
         }
 
         if (!StringUtils.isBlank(putawayConfiguration.getStrategies()) && putawayConfiguration.getPutawayConfigurationStrategies().size() == 0) {
 
-            putawayConfiguration.setPutawayConfigurationStrategies(
+            try{
+                putawayConfiguration.setPutawayConfigurationStrategies(
                     Arrays.stream(putawayConfiguration.getStrategies().split(","))
                             .map(strategy -> PutawayConfigurationStrategy.valueOf(strategy)).collect(Collectors.toList()));
+            }
+            catch (Exception ex){}
         }
     }
 

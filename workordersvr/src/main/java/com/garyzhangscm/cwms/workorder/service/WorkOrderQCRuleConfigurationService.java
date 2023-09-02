@@ -89,11 +89,14 @@ public class WorkOrderQCRuleConfigurationService {
                     if (Objects.nonNull(workOrderQCRuleConfigurationRule.getQcRuleId()) &&
                             Objects.isNull(workOrderQCRuleConfigurationRule.getQcRule())) {
 
-                        workOrderQCRuleConfigurationRule.setQcRule(
-                                inventoryServiceRestemplateClient.getQCRuleById(
-                                        workOrderQCRuleConfigurationRule.getQcRuleId()
-                                )
-                        );
+                        try {
+                            workOrderQCRuleConfigurationRule.setQcRule(
+                                    inventoryServiceRestemplateClient.getQCRuleById(
+                                            workOrderQCRuleConfigurationRule.getQcRuleId()
+                                    )
+                            );
+                        }
+                        catch (Exception ex) {}
                     }
                 }
         );

@@ -326,22 +326,35 @@ public class ItemService {
     private void loadAttribute(Item item) {
 
         if (item.getClientId() != null && item.getClient() == null) {
-            item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+            try {
+                item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+            }
+            catch (Exception ex) {}
         }
         if (item.getAbcCategoryId() != null && item.getAbcCategory() == null) {
-            item.setAbcCategory(commonServiceRestemplateClient.getABCCategoryById(item.getAbcCategoryId()));
+            try {
+                item.setAbcCategory(commonServiceRestemplateClient.getABCCategoryById(item.getAbcCategoryId()));
+            }
+            catch (Exception ex) {}
         }
         if (item.getVelocityId() != null && item.getVelocity() == null) {
-            item.setVelocity(commonServiceRestemplateClient.getVelocityById(item.getVelocityId()));
+            try {
+                item.setVelocity(commonServiceRestemplateClient.getVelocityById(item.getVelocityId()));
+            }
+            catch (Exception ex) {}
         }
         // Setup the unit of measure information for each item package type
         item.getItemPackageTypes().stream().forEach(itemPackageType -> {
             itemPackageType.getItemUnitOfMeasures()
                     .stream().filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure() == null)
                     .forEach(itemUnitOfMeasure -> {
-                itemUnitOfMeasure.setUnitOfMeasure(
-                        commonServiceRestemplateClient.getUnitOfMeasureById(
-                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        try {
+                            itemUnitOfMeasure.setUnitOfMeasure(
+                                    commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        }
+                        catch (Exception ex) {}
+
             });
 
         });

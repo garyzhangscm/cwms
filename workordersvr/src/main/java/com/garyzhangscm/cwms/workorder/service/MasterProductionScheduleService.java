@@ -86,11 +86,14 @@ public class MasterProductionScheduleService   {
     private void loadAttributes(MasterProductionSchedule masterProductionSchedule) {
         if (Objects.nonNull(masterProductionSchedule.getItemId())) {
 
-            masterProductionSchedule.setItem(
-                    inventoryServiceRestemplateClient.getItemById(
-                            masterProductionSchedule.getItemId()
-                    )
-            );
+            try {
+                masterProductionSchedule.setItem(
+                        inventoryServiceRestemplateClient.getItemById(
+                                masterProductionSchedule.getItemId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
     }
 

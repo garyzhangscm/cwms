@@ -182,36 +182,62 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     private void loadAttribute(EmergencyReplenishmentConfiguration emergencyReplenishmentConfiguration) {
 
         if (emergencyReplenishmentConfiguration.getUnitOfMeasureId() != null && emergencyReplenishmentConfiguration.getUnitOfMeasure() == null) {
-            emergencyReplenishmentConfiguration.setUnitOfMeasure(
-                    commonServiceRestemplateClient.getUnitOfMeasureById(emergencyReplenishmentConfiguration.getUnitOfMeasureId()));
+            try {
+                emergencyReplenishmentConfiguration.setUnitOfMeasure(
+                        commonServiceRestemplateClient.getUnitOfMeasureById(emergencyReplenishmentConfiguration.getUnitOfMeasureId()));
+            }
+            catch (Exception ex) {}
         }
         if (emergencyReplenishmentConfiguration.getItemId() != null && emergencyReplenishmentConfiguration.getItem() == null) {
-            emergencyReplenishmentConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(emergencyReplenishmentConfiguration.getItemId()));
+            try {
+                emergencyReplenishmentConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(
+                        emergencyReplenishmentConfiguration.getItemId()));
+            }
+            catch (Exception ex) {}
         }
         if (emergencyReplenishmentConfiguration.getItemFamilyId() != null && emergencyReplenishmentConfiguration.getItemFamily() == null) {
-            emergencyReplenishmentConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(emergencyReplenishmentConfiguration.getItemFamilyId()));
+            try {
+                emergencyReplenishmentConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(
+                        emergencyReplenishmentConfiguration.getItemFamilyId()));
+            }
+            catch (Exception ex) {}
         }
         if (emergencyReplenishmentConfiguration.getSourceLocationId() != null && emergencyReplenishmentConfiguration.getSourceLocation() == null) {
-            emergencyReplenishmentConfiguration.setSourceLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            emergencyReplenishmentConfiguration.getSourceLocationId()));
+            try {
+                emergencyReplenishmentConfiguration.setSourceLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                emergencyReplenishmentConfiguration.getSourceLocationId()));
+            }
+            catch (Exception ex) {}
         }
-        if (emergencyReplenishmentConfiguration.getSourceLocationGroupId() != null && emergencyReplenishmentConfiguration.getSourceLocationGroup() == null) {
-            emergencyReplenishmentConfiguration.setSourceLocationGroup(
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                            emergencyReplenishmentConfiguration.getSourceLocationGroupId()));
+        if (emergencyReplenishmentConfiguration.getSourceLocationGroupId() != null
+                && emergencyReplenishmentConfiguration.getSourceLocationGroup() == null) {
+            try {
+                emergencyReplenishmentConfiguration.setSourceLocationGroup(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                                emergencyReplenishmentConfiguration.getSourceLocationGroupId()));
+            }
+            catch (Exception ex) {}
         }
 
 
-        if (emergencyReplenishmentConfiguration.getDestinationLocationId() != null && emergencyReplenishmentConfiguration.getDestinationLocation() == null) {
-            emergencyReplenishmentConfiguration.setDestinationLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            emergencyReplenishmentConfiguration.getDestinationLocationId()));
+        if (emergencyReplenishmentConfiguration.getDestinationLocationId() != null
+                && emergencyReplenishmentConfiguration.getDestinationLocation() == null) {
+            try {
+                emergencyReplenishmentConfiguration.setDestinationLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                emergencyReplenishmentConfiguration.getDestinationLocationId()));
+            }
+            catch (Exception ex) {}
         }
-        if (emergencyReplenishmentConfiguration.getDestinationLocationGroupId() != null && emergencyReplenishmentConfiguration.getDestinationLocationGroup() == null) {
-            emergencyReplenishmentConfiguration.setDestinationLocationGroup(
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                            emergencyReplenishmentConfiguration.getDestinationLocationGroupId()));
+        if (emergencyReplenishmentConfiguration.getDestinationLocationGroupId() != null
+                && emergencyReplenishmentConfiguration.getDestinationLocationGroup() == null) {
+            try {
+                emergencyReplenishmentConfiguration.setDestinationLocationGroup(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                                emergencyReplenishmentConfiguration.getDestinationLocationGroupId()));
+            }
+            catch (Exception ex) {}
         }
 
 

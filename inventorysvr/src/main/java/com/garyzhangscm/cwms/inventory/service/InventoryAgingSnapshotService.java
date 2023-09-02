@@ -153,12 +153,15 @@ public class InventoryAgingSnapshotService {
 
         if (Objects.nonNull(clientInventoryAgingSnapshot.getClientId()) &&
                 Objects.isNull(clientInventoryAgingSnapshot.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    clientInventoryAgingSnapshot.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                clientInventoryAgingSnapshot.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        clientInventoryAgingSnapshot.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    clientInventoryAgingSnapshot.setClient(client);
+                }
             }
+            catch (Exception ex){}
         }
 
     }

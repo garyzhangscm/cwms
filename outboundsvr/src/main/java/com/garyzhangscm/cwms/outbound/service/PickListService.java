@@ -158,10 +158,13 @@ public class PickListService {
         }
         if (Objects.nonNull(pickList.getWorkTaskId()) &&
                 Objects.isNull(pickList.getWorkTask())) {
-            pickList.setWorkTask(resourceServiceRestemplateClient.getWorkTaskById(
-                    pickList.getWarehouseId(),
-                    pickList.getWorkTaskId()
-            ));
+            try {
+                pickList.setWorkTask(resourceServiceRestemplateClient.getWorkTaskById(
+                        pickList.getWarehouseId(),
+                        pickList.getWorkTaskId()
+                ));
+            }
+            catch (Exception ex) {}
         }
         pickService.loadAttribute(pickList.getPicks());
 
