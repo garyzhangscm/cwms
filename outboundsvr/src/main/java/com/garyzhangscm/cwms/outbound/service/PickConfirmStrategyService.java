@@ -169,35 +169,51 @@ public class PickConfirmStrategyService implements TestDataInitiableService {
 
     private void loadAttribute(PickConfirmStrategy pickConfirmStrategy) {
 
+
         if (pickConfirmStrategy.getItemId() != null &&
                 pickConfirmStrategy.getItem() == null) {
-            pickConfirmStrategy.setItem(
-                    inventoryServiceRestemplateClient.getItemById(
-                            pickConfirmStrategy.getItemId()));
+            try {
+                pickConfirmStrategy.setItem(
+                        inventoryServiceRestemplateClient.getItemById(
+                                pickConfirmStrategy.getItemId()));
+            }
+            catch (Exception ex) {}
         }
         if (pickConfirmStrategy.getItemFamilyId() != null &&
                 pickConfirmStrategy.getItemFamily() == null) {
-            pickConfirmStrategy.setItemFamily(
-                    inventoryServiceRestemplateClient.getItemFamilyById(
-                            pickConfirmStrategy.getItemFamilyId()));
+            try {
+                pickConfirmStrategy.setItemFamily(
+                        inventoryServiceRestemplateClient.getItemFamilyById(
+                                pickConfirmStrategy.getItemFamilyId()));
+            }
+            catch (Exception ex) {}
         }
         if (pickConfirmStrategy.getLocationId() != null
                 && pickConfirmStrategy.getLocation() == null) {
-            pickConfirmStrategy.setLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            pickConfirmStrategy.getLocationId()));
+            try {
+                pickConfirmStrategy.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                pickConfirmStrategy.getLocationId()));
+            }
+            catch (Exception ex) {}
         }
         if (pickConfirmStrategy.getLocationGroupId() != null &&
                 pickConfirmStrategy.getLocationGroup() == null) {
-            pickConfirmStrategy.setLocationGroup(
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                            pickConfirmStrategy.getLocationGroupId()));
+            try {
+                pickConfirmStrategy.setLocationGroup(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                                pickConfirmStrategy.getLocationGroupId()));
+            }
+            catch (Exception ex) {}
         }
         if (pickConfirmStrategy.getLocationGroupTypeId() != null &&
                 pickConfirmStrategy.getLocationGroupType() == null) {
-            pickConfirmStrategy.setLocationGroupType(
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
-                            pickConfirmStrategy.getLocationGroupTypeId()));
+            try {
+                pickConfirmStrategy.setLocationGroupType(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
+                                pickConfirmStrategy.getLocationGroupTypeId()));
+            }
+            catch (Exception ex) {}
         }
 
 

@@ -98,12 +98,12 @@ public class ProductionLineAssignmentService   {
 
     private void loadAttribute(ProductionLineAssignment productionLineAssignment) {
         if (Objects.nonNull(productionLineAssignment.getWorkOrder())) {
-            productionLineAssignment.setWorkOrderId(
-                    productionLineAssignment.getWorkOrder().getId()
-            );
-            productionLineAssignment.setWorkOrderNumber(
-                    productionLineAssignment.getWorkOrder().getNumber()
-            );
+                productionLineAssignment.setWorkOrderId(
+                        productionLineAssignment.getWorkOrder().getId()
+                );
+                productionLineAssignment.setWorkOrderNumber(
+                        productionLineAssignment.getWorkOrder().getNumber()
+                );
         }
     }
 

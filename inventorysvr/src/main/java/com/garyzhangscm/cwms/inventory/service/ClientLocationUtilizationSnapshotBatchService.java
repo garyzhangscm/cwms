@@ -131,11 +131,14 @@ public class ClientLocationUtilizationSnapshotBatchService {
 
         if (Objects.nonNull(clientLocationUtilizationSnapshotBatch.getClientId()) &&
                 Objects.isNull(clientLocationUtilizationSnapshotBatch.getClient())) {
-            clientLocationUtilizationSnapshotBatch.setClient(
-                    commonServiceRestemplateClient.getClientById(
-                            clientLocationUtilizationSnapshotBatch.getClientId()
-                    )
-            );
+            try {
+                clientLocationUtilizationSnapshotBatch.setClient(
+                        commonServiceRestemplateClient.getClientById(
+                                clientLocationUtilizationSnapshotBatch.getClientId()
+                        )
+                );
+            }
+            catch (Exception ex){}
         }
     }
 

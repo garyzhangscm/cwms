@@ -157,12 +157,15 @@ public class LocationUtilizationSnapshotBatchService {
 
         if (Objects.nonNull(clientLocationUtilizationSnapshotBatch.getClientId()) &&
                 Objects.isNull(clientLocationUtilizationSnapshotBatch.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    clientLocationUtilizationSnapshotBatch.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                clientLocationUtilizationSnapshotBatch.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        clientLocationUtilizationSnapshotBatch.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    clientLocationUtilizationSnapshotBatch.setClient(client);
+                }
             }
+            catch (Exception ex) {}
         }
         clientLocationUtilizationSnapshotBatch.getLocationUtilizationSnapshots().forEach(
                 locationUtilizationSnapshot -> loadAttribute(locationUtilizationSnapshot)
@@ -173,12 +176,15 @@ public class LocationUtilizationSnapshotBatchService {
 
         if (Objects.nonNull(locationUtilizationSnapshot.getClientId()) &&
                 Objects.isNull(locationUtilizationSnapshot.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    locationUtilizationSnapshot.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                locationUtilizationSnapshot.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        locationUtilizationSnapshot.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    locationUtilizationSnapshot.setClient(client);
+                }
             }
+            catch (Exception ex) {}
         }
     }
 

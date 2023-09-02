@@ -167,42 +167,54 @@ public class InventoryMixRestrictionService {
     private void loadAttribute(InventoryMixRestriction inventoryMixRestriction) {
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupTypeId()) &&
             Objects.isNull(inventoryMixRestriction.getLocationGroupType())) {
-            inventoryMixRestriction.setLocationGroupType(
+            try {
+                inventoryMixRestriction.setLocationGroupType(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
-                            inventoryMixRestriction.getLocationGroupTypeId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
+                                inventoryMixRestriction.getLocationGroupTypeId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupId()) &&
                 Objects.isNull(inventoryMixRestriction.getLocationGroup())) {
-            inventoryMixRestriction.setLocationGroup(
+            try {
+                inventoryMixRestriction.setLocationGroup(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                            inventoryMixRestriction.getLocationGroupId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                                inventoryMixRestriction.getLocationGroupId()
+                        )
+                );
+            }
+            catch (Exception ex){}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getLocationId()) &&
                 Objects.isNull(inventoryMixRestriction.getLocation())) {
-            inventoryMixRestriction.setLocation(
+            try {
+                inventoryMixRestriction.setLocation(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            inventoryMixRestriction.getLocationId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventoryMixRestriction.getLocationId()
+                        )
+                );
+            }
+            catch (Exception ex){}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getClientId()) &&
                 Objects.isNull(inventoryMixRestriction.getClient())) {
-            inventoryMixRestriction.setClient(
+            try {
+                inventoryMixRestriction.setClient(
 
-                    commonServiceRestemplateClient.getClientById(
-                            inventoryMixRestriction.getClientId()
-                    )
-            );
+                        commonServiceRestemplateClient.getClientById(
+                                inventoryMixRestriction.getClientId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
 
     }

@@ -85,16 +85,19 @@ public class AuditCountRequestService {
 
         if (Objects.nonNull(auditCountRequest.getLocationId())) {
 
-            logger.debug(">> location id is not null: {}",
-                    auditCountRequest.getLocationId());
-            auditCountRequest.setLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            auditCountRequest.getLocationId()
-                    )
-            );
-            logger.debug("Get location {} by id {}",
-                    auditCountRequest.getLocation().getName(),
-                    auditCountRequest.getLocationId());
+            try {
+                logger.debug(">> location id is not null: {}",
+                        auditCountRequest.getLocationId());
+                auditCountRequest.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                auditCountRequest.getLocationId()
+                        )
+                );
+                logger.debug("Get location {} by id {}",
+                        auditCountRequest.getLocation().getName(),
+                        auditCountRequest.getLocationId());
+            }
+            catch (Exception ex){}
         }
     }
 

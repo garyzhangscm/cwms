@@ -73,11 +73,14 @@ public class QCRuleConfigurationService {
     private void loadAttribute(QCRuleConfiguration qcRuleConfiguration) {
         if (Objects.nonNull(qcRuleConfiguration.getSupplierId()) &&
                 Objects.isNull(qcRuleConfiguration.getSupplier())) {
-            qcRuleConfiguration.setSupplier(
-                    commonServiceRestemplateClient.getSupplierById(
-                            qcRuleConfiguration.getSupplierId()
-                    )
-            );
+            try {
+                qcRuleConfiguration.setSupplier(
+                        commonServiceRestemplateClient.getSupplierById(
+                                qcRuleConfiguration.getSupplierId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
     }
 

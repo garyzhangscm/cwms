@@ -44,6 +44,9 @@ public class DBBasedWorkOrderService {
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
+    @Value("${integration.filter.workOrder:\"\"}")
+    String filter;
+
 
     public DBBasedWorkOrder findById(Long id) {
         return dbBasedWorkOrderRepository.findById(id)
@@ -116,7 +119,7 @@ public class DBBasedWorkOrderService {
     }
 
 
-    private List<DBBasedWorkOrder> findPendingIntegration() {
+    private List<DBBasedWorkOrder> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
 
         Page<DBBasedWorkOrder> dbBasedWorkOrders =  dbBasedWorkOrderRepository.findAll(
@@ -124,6 +127,20 @@ public class DBBasedWorkOrderService {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
+
+                    if (Strings.isNotBlank(filter)) {
+                        logger.debug("will filter based on criteria: {}", filter);
+                        // filter should be in the format of foo1=bar1&foo2=bar2
+                        String[] filterArray = filter.split("&");
+                        for(String singleFilter : filterArray) {
+                            String[] fieldValue = singleFilter.split("=");
+                            if (fieldValue.length != 2) {
+                                continue;
+                            }
+                            predicates.add(criteriaBuilder.equal(root.get(fieldValue[0]), fieldValue[1]));
+                        }
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -139,7 +156,7 @@ public class DBBasedWorkOrderService {
     }
 
     public void sendIntegrationData() {
-        List<DBBasedWorkOrder> pendingDBBasedWorkOrder = findPendingIntegration();
+        List<DBBasedWorkOrder> pendingDBBasedWorkOrder = findPendingIntegration(filter);
         logger.debug("# find " +  pendingDBBasedWorkOrder.size() + " pendingDBBasedWorkOrder");
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicReference<LocalDateTime> lastProcessingDateTime = new AtomicReference<>(LocalDateTime.now());

@@ -238,10 +238,17 @@ public class ShipmentService {
     }
     private void loadAttribute(Shipment shipment) {
         if (shipment.getCarrierId() != null && shipment.getCarrier() == null) {
-            shipment.setCarrier(commonServiceRestemplateClient.getCarrierById(shipment.getCarrierId()));
+            try {
+                shipment.setCarrier(commonServiceRestemplateClient.getCarrierById(shipment.getCarrierId()));
+            }
+            catch (Exception ex) {}
         }
         if (shipment.getCarrierServiceLevelId() != null && shipment.getCarrierServiceLevel() == null) {
-            shipment.setCarrierServiceLevel(commonServiceRestemplateClient.getCarrierServiceLevelById(shipment.getCarrierServiceLevelId()));
+            try {
+                shipment.setCarrierServiceLevel(
+                        commonServiceRestemplateClient.getCarrierServiceLevelById(shipment.getCarrierServiceLevelId()));
+            }
+            catch (Exception ex) {}
         }
     }
 

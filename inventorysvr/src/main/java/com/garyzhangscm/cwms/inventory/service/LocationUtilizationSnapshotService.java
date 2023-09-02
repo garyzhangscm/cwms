@@ -126,11 +126,14 @@ public class LocationUtilizationSnapshotService   {
 
         if (Objects.nonNull(locationUtilizationSnapshot.getClientId()) &&
                 Objects.isNull(locationUtilizationSnapshot.getClient())) {
-            locationUtilizationSnapshot.setClient(
-                    commonServiceRestemplateClient.getClientById(
-                            locationUtilizationSnapshot.getClientId()
-                    )
-            );
+            try {
+                locationUtilizationSnapshot.setClient(
+                        commonServiceRestemplateClient.getClientById(
+                                locationUtilizationSnapshot.getClientId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
     }
 

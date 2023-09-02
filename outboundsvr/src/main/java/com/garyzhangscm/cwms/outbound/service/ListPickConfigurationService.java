@@ -177,10 +177,13 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                 Objects.isNull(listPickConfiguration.getWarehouse())) {
             listPickConfiguration.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(listPickConfiguration.getWarehouseId()));
         }
-        if (Objects.nonNull(listPickConfiguration.getCustomerId()) &&
-                Objects.isNull(listPickConfiguration.getCustomer())) {
-            listPickConfiguration.setCustomer(commonServiceRestemplateClient.getCustomerById(listPickConfiguration.getCustomerId()));
+        try {
+            if (Objects.nonNull(listPickConfiguration.getCustomerId()) &&
+                    Objects.isNull(listPickConfiguration.getCustomer())) {
+                listPickConfiguration.setCustomer(commonServiceRestemplateClient.getCustomerById(listPickConfiguration.getCustomerId()));
+            }
         }
+        catch (Exception ex) {}
     }
 
     private void loadAttribute(List<ListPickConfiguration> listPickConfigurations) {

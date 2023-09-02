@@ -127,7 +127,11 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     private void loadAttribute(ShippingStageAreaConfiguration shippingStageAreaConfiguration) {
 
         if (shippingStageAreaConfiguration.getLocationGroupId() != null && shippingStageAreaConfiguration.getLocationGroup() == null) {
-            shippingStageAreaConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(shippingStageAreaConfiguration.getLocationGroupId()));
+            try {
+                shippingStageAreaConfiguration.setLocationGroup(
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(shippingStageAreaConfiguration.getLocationGroupId()));
+            }
+            catch (Exception ex) {}
         }
 
     }

@@ -231,20 +231,31 @@ public class QCInspectionRequestService {
 
         if (Objects.nonNull(qcInspectionRequest.getWorkOrderQCSampleId()) &&
                 Objects.isNull(qcInspectionRequest.getWorkOrderQCSample())) {
-            qcInspectionRequest.setWorkOrderQCSample(
-                    workOrderServiceRestemplateClient.getWorkOrderQCSampleById(
-                            qcInspectionRequest.getWorkOrderQCSampleId()
-                    )
-            );
+            try {
+                qcInspectionRequest.setWorkOrderQCSample(
+                        workOrderServiceRestemplateClient.getWorkOrderQCSampleById(
+                                qcInspectionRequest.getWorkOrderQCSampleId()
+                        )
+                );
+            }
+            catch(Exception ex) {
+                // ignore the exception
+            }
         }
 
         if (Objects.nonNull(qcInspectionRequest.getWorkOrderId()) &&
                 Objects.isNull(qcInspectionRequest.getWorkOrder())) {
-            qcInspectionRequest.setWorkOrder(
-                    workOrderServiceRestemplateClient.getWorkOrderById(
-                            qcInspectionRequest.getWorkOrderId()
-                    )
-            );
+
+            try {
+                qcInspectionRequest.setWorkOrder(
+                        workOrderServiceRestemplateClient.getWorkOrderById(
+                                qcInspectionRequest.getWorkOrderId()
+                        )
+                );
+            }
+            catch(Exception ex) {
+                // ignore the exception
+            }
         }
     }
 
