@@ -53,7 +53,8 @@ public class DBBasedWorkOrderIntegration {
 
     public List<DBBasedWorkOrder> findAll(String companyCode,
                                           Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
-                                          String statusList, Long id) {
+                                          String statusList, Long id,
+                                          String workOrderNumber) {
 
         return dbBasedWorkOrderRepository.findAll(
                 (Root<DBBasedWorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -97,6 +98,11 @@ public class DBBasedWorkOrderIntegration {
                     if (Objects.nonNull(id)) {
                         predicates.add(criteriaBuilder.equal(
                                 root.get("id"), id));
+
+                    }
+                    if (Strings.isNotBlank(workOrderNumber)) {
+                        predicates.add(criteriaBuilder.equal(
+                                root.get("number"), workOrderNumber));
 
                     }
                     Predicate[] p = new Predicate[predicates.size()];

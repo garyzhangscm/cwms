@@ -272,7 +272,7 @@ public class ShipmentLineService {
         return allocationResult;
     }
 
-    private boolean isAllocatable(ShipmentLine shipmentLine) {
+    public boolean isAllocatable(ShipmentLine shipmentLine) {
         return shipmentLine.getShipment().getStatus().equals(ShipmentStatus.PENDING) ||
                 shipmentLine.getShipment().getStatus().equals(ShipmentStatus.INPROCESS);
     }

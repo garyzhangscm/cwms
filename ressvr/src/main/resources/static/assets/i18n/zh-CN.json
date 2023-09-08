@@ -2187,5 +2187,13 @@
   "outbound-configuration": "出库配置",
   "shortAutoReallocation": "自动分配缺货请求",
   "asynchronousAllocation": "异步分配",
-  "asynchronousAllocationPalletThreshold": "异步分配托盘总数量阈值"
+  "asynchronousAllocationPalletThreshold": "异步分配托盘总数量阈值",
+  "warehouse-configuration": "仓库配置",
+  "archive-configuration": "备份配置",
+  "inventoryArchiveEnabled": "备份库存",
+  "removedInventoryArchiveDays": "几天后备份删除的库存",
+  "upload-image": "上传图片",
+  "upload-workorder-sop": "上传SOP",
+  "work-order-sop": "工单 SOP",
+  "WAVE-STATUS-ALLOCATING": "分配中"
 }

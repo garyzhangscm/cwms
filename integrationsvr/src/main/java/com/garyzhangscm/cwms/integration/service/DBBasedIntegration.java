@@ -410,9 +410,10 @@ public class DBBasedIntegration implements Integration{
             String companyCode,
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date,
             String statusList,
-            Long id) {
+            Long id, String workOrderNumber) {
         return dbBasedWorkOrderIntegration.findAll(companyCode,
-                warehouseId, startTime, endTime, date, statusList, id
+                warehouseId, startTime, endTime, date, statusList, id,
+                workOrderNumber
         );
     }
 

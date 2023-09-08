@@ -73,6 +73,9 @@ public class WaveService {
     private ShipmentLineService shipmentLineService;
 
     @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
+
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -469,21 +472,91 @@ public class WaveService {
                 clientRestriction, MAX_ORDER_PER_WAVE);
     }
 
-    public Wave allocateWave(Long id) {
-        return allocateWave(findById(id));
+    public Wave allocateWave(Long id, Boolean asynchronous) {
+        return allocateWave(findById(id), asynchronous);
     }
-    public Wave allocateWave(Wave wave) {
+    public Wave allocateWave(Wave wave, Boolean asynchronous) {
 
-        // Allocate each open shipment line
+
+        logger.debug(">>>    Start to allocate wave  {} ,asynchronous? : {}  <<<",
+                wave.getNumber(), asynchronous);
+
+        if (wave.getStatus().equals(WaveStatus.ALLOCATING)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is allocating, please wait for it to complete");
+        }
+        if (wave.getStatus().equals(WaveStatus.CANCELLED)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is already cancelled, can't allocate it");
+        }
+        if (wave.getStatus().equals(WaveStatus.COMPLETED)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is already completed, can't allocate it");
+        }
+
+        List<ShipmentLine> allocatableShipmentLines =
+                wave.getShipmentLines().stream().filter(
+                        shipmentLine -> shipmentLineService.isAllocatable(shipmentLine) && shipmentLine.getOpenQuantity() > 0 )
+                        .collect(Collectors.toList());
+
+        wave.setStatus(WaveStatus.ALLOCATING);
+        saveOrUpdate(wave);
+
+        // check if we will need to allocate asynchronously
+        // 1. if the client explicitly want asynchronous
+        // 2. if the warehouse is configured to allocate asynchronously
+        if (Objects.isNull(asynchronous)) {
+            // TO-DO: Will need to use pallet quantity instead of quantity
+            long totalPalletQuantity = allocatableShipmentLines.stream().map(
+                    shipmentLine -> orderLineService.getPalletQuantityEstimation(
+                            shipmentLine.getOrderLine(), shipmentLine.getOpenQuantity()
+                    )
+            ).mapToLong(Long::longValue).sum();
+
+            asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
+                    wave.getWarehouseId(), totalPalletQuantity);
+        }
+
+
+        logger.debug("allocate wave {} Asynchronously or Synchronously? {}",
+                wave.getNumber(),
+                Boolean.TRUE.equals(asynchronous) ? "Asynchronously" : "Synchronously");
+
+        if (Boolean.TRUE.equals(asynchronous)) {
+            new Thread(() -> {
+
+                logger.debug("start to allocate the wave asynchronously");
+                Wave finalWave = findById(wave.getId());
+                allocateWave(finalWave, allocatableShipmentLines);
+
+                logger.debug("Asynchronously wave allocation for {} is done",
+                        finalWave.getNumber());
+
+
+            }).start();
+        }
+        else {
+            // Allocate each open shipment line
+            allocateWave(wave, allocatableShipmentLines);
+            logger.debug("Synchronously wave allocation for {} is done",
+                    wave.getNumber());
+
+        }
+        return saveOrUpdate(wave);
+
+    }
+
+    private Wave allocateWave(Wave wave, List<ShipmentLine> allocatableShipmentLines) {
+
         List<AllocationResult> allocationResults = new ArrayList<>();
-        wave.getShipmentLines().forEach(shipmentLine -> {
+        allocatableShipmentLines.forEach(shipmentLine -> {
             allocationResults.add(shipmentLineService.allocateShipmentLine(shipmentLine));
         });
 
         wave.setStatus(WaveStatus.ALLOCATED);
 
         // return the latest information
-        wave = save(wave);
+        wave = saveOrUpdate(wave);
 
         // post allocation process
         // 1. bulk pick
@@ -492,8 +565,7 @@ public class WaveService {
         postAllocationProcess(wave.getWarehouseId(),
                 wave.getNumber(),  allocationResults);
 
-        logger.debug("Wave {} is allocated", wave.getNumber());
-        return wave;
+        return saveOrUpdate(wave);
     }
 
     /**

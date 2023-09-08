@@ -155,6 +155,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Column(name = "work_order_sop_url")
+    private String workOrderSOPUrl;
+
     @Column(name = "active_flag")
     private Boolean activeFlag = true;
 
@@ -538,5 +541,13 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setHandlingRateByUnit(Double handlingRateByUnit) {
         this.handlingRateByUnit = handlingRateByUnit;
+    }
+
+    public String getWorkOrderSOPUrl() {
+        return workOrderSOPUrl;
+    }
+
+    public void setWorkOrderSOPUrl(String workOrderSOPUrl) {
+        this.workOrderSOPUrl = workOrderSOPUrl;
     }
 }

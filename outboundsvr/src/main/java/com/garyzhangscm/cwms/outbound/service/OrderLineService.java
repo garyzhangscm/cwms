@@ -783,15 +783,40 @@ public class OrderLineService{
         );
     }
 
-    /**
-     * Assign order line to the trailer appointment
-     * @param orderLineId
-     * @param trailerAppointment
-     */
-    public void assignTrailerAppointment(long orderLineId, TrailerAppointment trailerAppointment) {
-        OrderLine orderLine = findById(orderLineId);
+    public Long getPalletQuantityEstimation(OrderLine orderLine, Long quantity) {
+        return getPalletQuantityEstimation(orderLine.getItemId(), quantity);
+    }
+    public Long getPalletQuantityEstimation(Long itemId, Long quantity) {
+        Item item = inventoryServiceRestemplateClient.getItemById(itemId);
+        if (Objects.isNull(item)) {
+            return quantity;
+        }
+        // get the default item package type from the item
+        return getPalletQuantityEstimation(item, quantity);
+    }
+    public Long getPalletQuantityEstimation(Item item, Long quantity) {
+        ItemPackageType defaultItemPackageType = item.getDefaultItemPackageType();
+        if (Objects.isNull(defaultItemPackageType)) {
+            logger.debug("Can't find default item package type for item {}", item.getName());
+            return quantity;
+        }
+        return getPalletQuantityEstimation(defaultItemPackageType, quantity);
 
-        // see if we have shipment lines for this order line
+    }
 
+    public Long getPalletQuantityEstimation(ItemPackageType itemPackageType, Long quantity) {
+        // get the LPN uom or max UOM
+        Long palletQuantity = 1l;
+        if (Objects.nonNull(itemPackageType.getTrackingLpnUOM())) {
+            palletQuantity = itemPackageType.getTrackingLpnUOM().getQuantity();
+        }
+        else {
+            for (ItemUnitOfMeasure itemUnitOfMeasure : itemPackageType.getItemUnitOfMeasures()) {
+                if (itemUnitOfMeasure.getQuantity() > palletQuantity) {
+                    palletQuantity = itemUnitOfMeasure.getQuantity();
+                }
+            }
+        }
+        return (long)Math.ceil(quantity * 1.0 / palletQuantity);
     }
 }

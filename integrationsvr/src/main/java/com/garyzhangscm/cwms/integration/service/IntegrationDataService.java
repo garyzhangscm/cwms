@@ -157,9 +157,9 @@ public class IntegrationDataService {
     public List<? extends IntegrationWorkOrderData> getWorkOrderData(
             String companyCode,
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
-            Long id) {
+            Long id, String workOrderNumber) {
         return integration.getWorkOrderData(
-                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id, workOrderNumber);
     }
     public IntegrationWorkOrderData getWorkOrderData(Long id) {
         return integration.getWorkOrderData(id);
