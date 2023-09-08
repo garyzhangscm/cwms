@@ -2192,5 +2192,13 @@
   "outbound-configuration": "Outbound Configuration",
   "shortAutoReallocation": "Auto Reallocate Shorts",
   "asynchronousAllocation": "Asynchronous Allocation",
-  "asynchronousAllocationPalletThreshold": "Asynchronous Allocation Pallet Threshold"
+  "asynchronousAllocationPalletThreshold": "Asynchronous Allocation Pallet Threshold",
+  "warehouse-configuration": "Warehouse Configuration",
+  "archive-configuration": "Archive Configuration",
+  "inventoryArchiveEnabled": "Inventory Archive Enabled",
+  "removedInventoryArchiveDays": "Archive Removed Inventory after Days",
+  "upload-image": "Upload Image",
+  "upload-workorder-sop": "Upload SOP",
+  "work-order-sop": "Work Order SOP",
+  "WAVE-STATUS-ALLOCATING": "Allocating"
 }

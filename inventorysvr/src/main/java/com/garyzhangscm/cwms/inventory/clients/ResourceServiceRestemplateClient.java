@@ -234,4 +234,22 @@ public class ResourceServiceRestemplateClient {
         );
 
     }
+
+
+    @Cacheable(cacheNames = "InventoryService_ArchiveConfiguration", unless="#result == null")
+    public ArchiveConfiguration getArchiveConfiguration(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/archive-configuration")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                ArchiveConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 }

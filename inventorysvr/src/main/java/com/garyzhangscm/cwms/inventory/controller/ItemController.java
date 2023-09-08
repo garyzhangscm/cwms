@@ -25,21 +25,30 @@ import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
 @RestController
 public class ItemController {
+    private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
     @Autowired
     ItemService itemService;
 
@@ -135,6 +144,25 @@ public class ItemController {
         return  itemService.uploadItemImages(id, file);
     }
 
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/items/{id}/work-order-sop/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+            }
+    )
+    public Item uploadItemWorkOrderSOP(@PathVariable Long id,
+                                 @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        return  itemService.uploadItemWorkOrderSOP(id, file);
+    }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/items")
@@ -173,8 +201,67 @@ public class ItemController {
             }
     )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
-
         return itemService.changeItem(id, item);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/thumbnail")
+    public ResponseEntity<Resource> getThumbnail(@RequestParam Long warehouseId,
+                                                 @PathVariable Long id) throws FileNotFoundException {
+
+
+
+        File thumbnailFile = itemService.getThumbnail(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(thumbnailFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + thumbnailFile.getName())
+                .contentLength(thumbnailFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/image")
+    public ResponseEntity<Resource> getImage(@RequestParam Long warehouseId,
+                                                 @PathVariable Long id,
+                                             @RequestParam(required = false,name = "download", defaultValue = "true") Boolean download) throws FileNotFoundException {
+
+        logger.debug("start get image for item id {}, download? {}",
+                id, download);
+        File imageFile = itemService.getImage(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(imageFile));
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+
+                        (Boolean.FALSE.equals(download) ? "inline" : "attachment") +
+                                ";fileName=" + imageFile.getName())
+                .contentLength(imageFile.length())
+                .contentType(Boolean.FALSE.equals(download) ? MediaType.IMAGE_PNG : MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/work-order-sop")
+    public ResponseEntity<Resource> getWorkOrderSOP(@RequestParam Long warehouseId,
+                                             @PathVariable Long id,
+                                                    @RequestParam(required = false,name = "download", defaultValue = "true") Boolean download) throws FileNotFoundException {
+
+
+        logger.debug("start get work order sop for item id {}, download? {}",
+                id, download);
+
+        File workOrderSOPFile = itemService.getWorkOrderSOP(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(workOrderSOPFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+                        (Boolean.FALSE.equals(download) ? "inline" : "attachment") +
+                                ";fileName=" + workOrderSOPFile.getName())
+                .contentLength(workOrderSOPFile.length())
+                .contentType(Boolean.FALSE.equals(download) ? MediaType.APPLICATION_PDF : MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/items/validate-new-item-name")

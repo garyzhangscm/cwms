@@ -116,6 +116,9 @@ public class ItemService {
     @Value("${fileupload.directory.upload.item.thumbnail:images/item/thumbnail/}")
     String itemThumbnailFolder;
 
+    @Value("${fileupload.directory.upload.item.workordersop:sop/item/work-order-sop/}")
+    String workOrderSOPFolder;
+
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> fileUploadProgressMap = new ConcurrentHashMap<>();
@@ -1537,4 +1540,64 @@ public class ItemService {
             kafkaSender.send(alert);
         }
     }
+
+    public File getThumbnail(Long id) {
+
+        Item item = findById(id);
+        if (Strings.isBlank(item.getThumbnailUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a thumbnail yet");
+        }
+
+        String thumbnailDestination =  uploadFolder +  item.getThumbnailUrl();
+        logger.debug("Will get thumbnail file from {}", thumbnailDestination);
+        return new File(thumbnailDestination);
+    }
+
+    public File getImage(Long id) {
+
+        Item item = findById(id);
+        if (Strings.isBlank(item.getImageUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a image yet");
+        }
+
+        String imageDestination =  uploadFolder +  item.getImageUrl();
+        logger.debug("Will get image file from {}", imageDestination);
+        return new File(imageDestination);
+    }
+
+    public File getWorkOrderSOP(Long id) {
+        Item item = findById(id);
+        if (Strings.isBlank(item.getWorkOrderSOPUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a work order SOP yet");
+        }
+
+        String workOrderSOPDestination =  uploadFolder +  item.getWorkOrderSOPUrl();
+        logger.debug("Will get work order SOP file from {}", workOrderSOPDestination);
+        return new File(workOrderSOPDestination);
+    }
+
+
+    public Item uploadItemWorkOrderSOP(Long id, MultipartFile file) throws IOException {
+        Item item = findById(id);
+        logger.debug("Start to save item image: name: {} original fle name:  {} , content type: {}",
+                file.getName(), file.getOriginalFilename(), file.getContentType());
+
+
+        String newFileName  = item.getName() + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String workOrderSOPDestination =   uploadFolder + workOrderSOPFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName;
+
+
+        logger.debug("start to save item {}'s work order SOP to destination: {}",
+                item.getName(), workOrderSOPDestination);
+        fileService.saveFile(file, workOrderSOPDestination);
+
+        logger.debug("item {}'s work order SOP is saved to destination: {}",
+                item.getName(), workOrderSOPDestination);
+        item.setWorkOrderSOPUrl(workOrderSOPFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName);
+
+
+        return saveOrUpdate(item);
+
+    }
+
 }

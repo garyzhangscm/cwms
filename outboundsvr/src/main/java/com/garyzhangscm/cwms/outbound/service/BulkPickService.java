@@ -500,7 +500,7 @@ public class BulkPickService {
                     if (lpnWithQuantityEntry.getValue() < totalPickQuantity) {
                         matchedLPN = lpnWithQuantityEntry.getKey();
 
-                        logger.debug("we found a LPN that has more quantity ({}) than the required quantity {}? {}",
+                        logger.debug("we found a LPN that has less quantity ({}) than the required quantity {}? {}",
                                 lpnWithQuantityEntry.getValue(),
                                 totalPickQuantity,
                                 matchedLPN);
@@ -518,6 +518,10 @@ public class BulkPickService {
             if (lpnQuantity.equals(totalPickQuantity)) {
                 // OK, we found a LPN for all the picks in the list
                 BulkPick bulkPick = createBulkPick(waveNumber, picksForCurrentBulkGroup, bulkPickUnitOfMeasure);
+                saveOrUpdate(bulkPick);
+                logger.debug("Bulk Pick {} created!", bulkPick.getNumber());
+                // attach the picks to the bulk pick
+                bulkPick.setPicks(picksForCurrentBulkGroup);
                 // attach the picks to the bulk pick
                 bulkPick.getPicks().forEach(
                         pickByBulk -> {
@@ -529,9 +533,11 @@ public class BulkPickService {
                         }
                 );
                 saveOrUpdate(bulkPick);
-                releaseBulkPick(bulkPick);
-                logger.debug("Bulk pick {} / {} saved!",
+                logger.debug("Bulk Pick {} / {} saved  with picks!!",
                         bulkPick.getId(), bulkPick.getNumber());
+                releaseBulkPick(bulkPick);
+                logger.debug("Bulk Pick {} released!", bulkPick.getNumber());
+
 
                 // clear the pick list
                 totalPickQuantity = 0l;
@@ -546,7 +552,10 @@ public class BulkPickService {
                 BulkPick bulkPick = createBulkPick(waveNumber, picksForCurrentBulkGroup, lpnQuantity,
                         bulkPickUnitOfMeasure);
 
+                saveOrUpdate(bulkPick);
+                logger.debug("Bulk Pick {} created!", bulkPick.getNumber());
                 // attach the picks to the bulk pick
+                bulkPick.setPicks(picksForCurrentBulkGroup);
                 bulkPick.getPicks().forEach(
                         pickByBulk -> {
                             logger.debug("2. set pick {} / {}'s bulk pick to {}",
@@ -557,15 +566,20 @@ public class BulkPickService {
                         }
                 );
                 saveOrUpdate(bulkPick);
+                logger.debug("Bulk Pick {} / {} saved  with picks!!",
+                        bulkPick.getId(), bulkPick.getNumber());
                 releaseBulkPick(bulkPick);
+                logger.debug("Bulk Pick {} released!", bulkPick.getNumber());
 
                 // split the remaining quantity into a new pick,
                 // add the pick back to the list
                 // and then add the pick back to the allocation result
                 Pick newPick = splitPickForBulkPick(pick, totalPickQuantity - lpnQuantity);
+                logger.debug("get a new pick {} split due to the bulk pick!", newPick.getNumber());
                 AllocationResult allocationResult =  allocationResultMap.get(pick.getNumber());
                 if (Objects.nonNull(allocationResult)) {
                     allocationResult.addPick(newPick);
+                    logger.debug("add the new pick {} to the allocation result!", newPick.getNumber());
                 }
                 // reset the quantity and list
                 totalPickQuantity = newPick.getQuantity();
@@ -574,6 +588,7 @@ public class BulkPickService {
 
                 // once we found the match, let's remove the LPN from the map so that the remaining
                 // picks will only look at the remaining LPNs
+                logger.debug("remove LPN {} from bulk pick inventory candidate as we already reserved it!", matchedLPN);
                 lpnWithQuantityMap.remove(matchedLPN);
             }
 
@@ -622,7 +637,7 @@ public class BulkPickService {
         bulkPick.setWaveNumber(waveNumber);
         bulkPick.setSourceLocationId(pick.getSourceLocationId());
         bulkPick.setItemId(pick.getItemId());
-        bulkPick.setPicks(picksForCurrentBulkGroup);
+        // bulkPick.setPicks(picksForCurrentBulkGroup);
         bulkPick.setQuantity(bulkPickQuantity);
         bulkPick.setPickedQuantity(0l);
         // release the bulk pick by default

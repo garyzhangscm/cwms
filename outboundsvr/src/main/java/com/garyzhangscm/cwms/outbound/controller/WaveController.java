@@ -86,8 +86,9 @@ public class WaveController {
 
     @BillableEndpoint
     @RequestMapping(value="/waves/{id}/allocate", method = RequestMethod.POST)
-    public Wave allocateWave(@PathVariable Long id) {
-        return waveService.allocateWave(id);
+    public Wave allocateWave(@PathVariable Long id,
+                             @RequestParam(name = "asynchronous", required = false, defaultValue = "") Boolean asynchronous) {
+        return waveService.allocateWave(id, asynchronous);
     }
 
     @RequestMapping(value="/waves/{id}", method = RequestMethod.GET)

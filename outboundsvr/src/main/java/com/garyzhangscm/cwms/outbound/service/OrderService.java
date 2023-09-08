@@ -1095,7 +1095,9 @@ public class OrderService {
         if (Objects.isNull(asynchronous)) {
             // TO-DO: Will need to use pallet quantity instead of quantity
             long totalPalletQuantity = allocatableOrderLines.stream().map(
-                    orderLine -> orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
+                    orderLine -> orderLineService.getPalletQuantityEstimation(
+                            orderLine, orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
+                    )
             ).mapToLong(Long::longValue).sum();
 
             asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
