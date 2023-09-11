@@ -36,6 +36,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -212,7 +214,7 @@ public class MasterProductionScheduleService   {
 
 
     public List<MasterProductionScheduleLineDate> findAllMasterProductionScheduleLineDate(
-            Long warehouseId, LocalDateTime beginDateTime, LocalDateTime endDateTime, Long productionLineId) {
+            Long warehouseId, ZonedDateTime beginDateTime, ZonedDateTime endDateTime, Long productionLineId) {
 
         return masterProductionScheduleLineDateRepository.findAll(
                 (Root<MasterProductionScheduleLineDate> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -401,7 +403,7 @@ public class MasterProductionScheduleService   {
                                     // the planned date is not before the start date, let's move the date
                                     logger.debug("start to move date from {}", masterProductionScheduleLineDate.getPlannedDate().toLocalDate());
                                     masterProductionScheduleLineDate.setPlannedDate(
-                                            masterProductionScheduleLineDate.getPlannedDate().toLocalDate().plusDays(movedDays).atStartOfDay()
+                                            masterProductionScheduleLineDate.getPlannedDate().plusDays(movedDays).toLocalDate().atStartOfDay().atZone(ZoneOffset.UTC)
                                     );
                                     logger.debug("==> to {}", masterProductionScheduleLineDate.getPlannedDate().toLocalDate());
                                 }
@@ -472,7 +474,7 @@ public class MasterProductionScheduleService   {
                 for (MasterProductionScheduleLineDate masterProductionScheduleLineDate : masterProductionScheduleLine.getMasterProductionScheduleLineDates()) {
                     if (Objects.isNull(mpsLastDay) ||
                             mpsLastDay.toLocalDate().isBefore(masterProductionScheduleLineDate.getPlannedDate().toLocalDate())) {
-                        mpsLastDay = masterProductionScheduleLineDate.getPlannedDate();
+                        mpsLastDay = masterProductionScheduleLineDate.getPlannedDate().toLocalDateTime();
                     }
                 }
             }
@@ -491,7 +493,7 @@ public class MasterProductionScheduleService   {
                 for (MasterProductionScheduleLineDate masterProductionScheduleLineDate : masterProductionScheduleLine.getMasterProductionScheduleLineDates()) {
                     if (Objects.isNull(mpsFirstDay) ||
                             mpsFirstDay.toLocalDate().isAfter(masterProductionScheduleLineDate.getPlannedDate().toLocalDate())) {
-                        mpsFirstDay = masterProductionScheduleLineDate.getPlannedDate();
+                        mpsFirstDay = masterProductionScheduleLineDate.getPlannedDate().toLocalDateTime();
                     }
                 }
             }
@@ -499,25 +501,26 @@ public class MasterProductionScheduleService   {
         return  mpsFirstDay;
     }
 
-    public Set<LocalDateTime> getAvailableDate(Long warehouseId, Long productionLineId, String beginDateTime, String endDateTime) {
+    public Set<LocalDateTime> getAvailableDate(Long warehouseId, Long productionLineId, ZonedDateTime beginDateTime, ZonedDateTime endDateTime) {
 
 
         List<MasterProductionScheduleLineDate> masterProductionScheduleLineDates =
                 findAllMasterProductionScheduleLineDate(
                         warehouseId,
-                        LocalDateTime.parse(beginDateTime),
-                        LocalDateTime.parse(endDateTime),
+                        beginDateTime,
+                        endDateTime,
                         productionLineId);
-        return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getPlannedDate).collect(Collectors.toSet());
+        return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getPlannedDate)
+                .map(ZonedDateTime::toLocalDateTime).collect(Collectors.toSet());
     }
 
     public Collection<MasterProductionSchedule> getExistingMPSs(Long warehouseId, Long productionLineId,
-                                                                String beginDateTime, String endDateTime) {
+                                                                ZonedDateTime beginDateTime, ZonedDateTime endDateTime) {
         List<MasterProductionScheduleLineDate> masterProductionScheduleLineDates =
                 findAllMasterProductionScheduleLineDate(
                         warehouseId,
-                        LocalDateTime.parse(beginDateTime),
-                        LocalDateTime.parse(endDateTime),
+                        beginDateTime,
+                        endDateTime,
                         productionLineId);
         return masterProductionScheduleLineDates.stream().map(MasterProductionScheduleLineDate::getMasterProductionScheduleLine)
                 .map(MasterProductionScheduleLine::getMasterProductionSchedule).collect(Collectors.toSet());
