@@ -44,8 +44,11 @@ public class DBBasedWorkOrderService {
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
+    // filter will be in the format of
+    // foo1=bar1&foo2=bar2, the same format like URL parameters
     @Value("${integration.filter.workOrder:\"\"}")
     String filter;
+
 
 
     public DBBasedWorkOrder findById(Long id) {
@@ -122,6 +125,9 @@ public class DBBasedWorkOrderService {
     private List<DBBasedWorkOrder> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
 
+        logger.debug("start to find pending work order integration by filter: {}",
+                filter);
+
         Page<DBBasedWorkOrder> dbBasedWorkOrders =  dbBasedWorkOrderRepository.findAll(
                 (Root<DBBasedWorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -129,18 +135,19 @@ public class DBBasedWorkOrderService {
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
 
                     if (Strings.isNotBlank(filter)) {
-                        logger.debug("will filter based on criteria: {}", filter);
-                        // filter should be in the format of foo1=bar1&foo2=bar2
-                        String[] filterArray = filter.split("&");
-                        for(String singleFilter : filterArray) {
-                            String[] fieldValue = singleFilter.split("=");
-                            if (fieldValue.length != 2) {
+                        String[] parameters = filter.split("&");
+                        for(String parameter : parameters) {
+                            String[] nameValue = parameter.split("=");
+                            if (nameValue.length != 2) {
                                 continue;
                             }
-                            predicates.add(criteriaBuilder.equal(root.get(fieldValue[0]), fieldValue[1]));
-                        }
+                            logger.debug("apply filter {} = {} to find pending item integration",
+                                    nameValue[0], nameValue[1]);
 
+                            predicates.add(criteriaBuilder.equal(root.get(nameValue[0]), nameValue[1]));
+                        }
                     }
+
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));

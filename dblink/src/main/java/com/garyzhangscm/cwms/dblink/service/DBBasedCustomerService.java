@@ -6,6 +6,7 @@ import com.garyzhangscm.cwms.dblink.model.DBBasedItem;
 import com.garyzhangscm.cwms.dblink.model.IntegrationStatus;
 import com.garyzhangscm.cwms.dblink.repository.DBBasedCustomerRepository;
 import com.garyzhangscm.cwms.dblink.repository.DBBasedItemRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,19 +39,40 @@ public class DBBasedCustomerService {
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
+    // filter will be in the format of
+    // foo1=bar1&foo2=bar2, the same format like URL parameters
+    @Value("${integration.filter.customer:\"\"}")
+    String filter;
 
     public List<DBBasedCustomer> findAll() {
         return dbBasedCustomerRepository.findAll();
     }
 
-    private List<DBBasedCustomer> findPendingIntegration() {
+    private List<DBBasedCustomer> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
+
+        logger.debug("start to find pending customer integration by filter: {}",
+                filter);
 
         Page<DBBasedCustomer> dbBasedCustomerPage = dbBasedCustomerRepository.findAll(
                 (Root<DBBasedCustomer> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
+
+                    if (Strings.isNotBlank(filter)) {
+                        String[] parameters = filter.split("&");
+                        for(String parameter : parameters) {
+                            String[] nameValue = parameter.split("=");
+                            if (nameValue.length != 2) {
+                                continue;
+                            }
+                            logger.debug("apply filter {} = {} to find pending item integration",
+                                    nameValue[0], nameValue[1]);
+
+                            predicates.add(criteriaBuilder.equal(root.get(nameValue[0]), nameValue[1]));
+                        }
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -66,7 +88,7 @@ public class DBBasedCustomerService {
     }
 
     public void sendIntegrationData() {
-        List<DBBasedCustomer> pendingDBBasedCustomer = findPendingIntegration();
+        List<DBBasedCustomer> pendingDBBasedCustomer = findPendingIntegration(filter);
         logger.debug("# find " +  pendingDBBasedCustomer.size() + " pendingDBBasedCustomer");
 
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
