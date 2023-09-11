@@ -10,6 +10,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  *
@@ -37,11 +38,14 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
     private Long plannedQuantity;
 
     @Column(name = "planned_date")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    // @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    // @JsonSerialize(using = LocalDateTimeSerializer.class)
     // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime plannedDate;
+    private ZonedDateTime plannedDate;
 
 
     public Long getId() {
@@ -68,11 +72,11 @@ public class MasterProductionScheduleLineDate extends AuditibleEntity<String>{
         this.plannedQuantity = plannedQuantity;
     }
 
-    public LocalDateTime getPlannedDate() {
+    public ZonedDateTime getPlannedDate() {
         return plannedDate;
     }
 
-    public void setPlannedDate(LocalDateTime plannedDate) {
+    public void setPlannedDate(ZonedDateTime plannedDate) {
         this.plannedDate = plannedDate;
     }
 }
