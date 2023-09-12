@@ -14,6 +14,6 @@ RUN mkdir -p /usr/local/reports/templates_temp
 
 RUN mkdir -p /usr/local/service
 
-ADD target/resourceserver-v1.20.jar /usr/local/service/
+ADD target/resourceserver-v1.21.jar /usr/local/service/
 
-ENTRYPOINT ["java",   "-jar", "/usr/local/service/resourceserver-v1.20.jar", "-Dfile.encoding=UTF-8", "-Dloader.path=/usr/local/reports/templates/", "org.springframework.boot.loader.PropertiesLauncher"]
+ENTRYPOINT ["java",   "-jar", "/usr/local/service/resourceserver-v1.21.jar", "-Dfile.encoding=UTF-8", "-Dloader.path=/usr/local/reports/templates/", "org.springframework.boot.loader.PropertiesLauncher"]
