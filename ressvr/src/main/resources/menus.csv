@@ -85,6 +85,8 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Production Line Status Display",menu.main.work-order.production-line-status-display,/work-order/production-line-status/display,19,Main-Menu-WorkOrder,Production-Line-Status-Display,,true,false
 "Silo",menu.main.work-order.silo,/work-order/silo,20,Main-Menu-WorkOrder,Work-Order-Silo,,true,false
 "Silo Configuration",menu.main.work-order.silo-configuration,/work-order/silo-configuration,21,Main-Menu-WorkOrder,Work-Order-SiloConfiguration,,true,false
+"Light MES Status Dashboard",menu.main.work-order.light-mes-status-dashboard,/work-order/light-mes-status-dashboard,22,Main-Menu-WorkOrder,Work-Order-LightMESStatusDashboard,,true,false
+"Light MES Configuration",menu.main.work-order.light-mes-configuration,/work-order/light-mes-configuration,23,Main-Menu-WorkOrder,Work-Order-LightMESConfiguration,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
