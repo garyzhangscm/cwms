@@ -2195,5 +2195,20 @@
   "upload-image": "上传图片",
   "upload-workorder-sop": "上传SOP",
   "work-order-sop": "工单 SOP",
-  "WAVE-STATUS-ALLOCATING": "分配中"
+  "WAVE-STATUS-ALLOCATING": "分配中",
+  "menu.main.work-order.light-mes-configuration": "三色灯配置",
+  "light-mes-configuration": "三色灯配置",
+  "accessKeyId": "Access Key",
+  "accessKeySecret": "Access Key Secret",
+  "protocol": "Protocol",
+  "host": "Host",
+  "port": "Port",
+  "endpoint": "Endpoint",
+  "singleLightStatusQueryUrl": "通过sim卡号查询三色灯当前状态",
+  "batchLightStatusQueryUrl": "批量获取三色灯状态",
+  "singleLightPulseQueryUrl": "获取三色灯指定时间段内的脉冲计数之和",
+  "singleMachineDetailQueryUrl": "通过mid或者sim查询设备详情",
+  "machineListQueryUrl": "查询团队下的设备信息",
+  "menu.main.work-order.light-mes-status-dashboard": "三色灯状态看板",
+  "light-mes-status-dashboard": "三色灯状态看板"
 }

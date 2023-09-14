@@ -2200,5 +2200,20 @@
   "upload-image": "Upload Image",
   "upload-workorder-sop": "Upload SOP",
   "work-order-sop": "Work Order SOP",
-  "WAVE-STATUS-ALLOCATING": "Allocating"
+  "WAVE-STATUS-ALLOCATING": "Allocating",
+  "menu.main.work-order.light-mes-configuration": "Light MES Configuration",
+  "light-mes-configuration": "Light MES Configuration",
+  "accessKeyId": "Access Key ID",
+  "accessKeySecret": "Access Key Secret",
+  "protocol": "Protocol",
+  "host": "Host",
+  "port": "Port",
+  "endpoint": "Endpoint",
+  "singleLightStatusQueryUrl": "Single Light Status Query URL",
+  "batchLightStatusQueryUrl": "Batch Light Status Query URL",
+  "singleLightPulseQueryUrl": "Single Light Pulse Query URL",
+  "singleMachineDetailQueryUrl": "Single Machine Detail Information Query URL",
+  "machineListQueryUrl": "Machine List Query URL",
+  "menu.main.work-order.light-mes-status-dashboard": "Light Status Dashboard",
+  "light-mes-status-dashboard": "Light Status Dashboard"
 }
