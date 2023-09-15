@@ -28,6 +28,9 @@ public class MachineStatistics {
     private ZonedDateTime shiftEndTime;
 
     private Long producedQuantity;
+    private Long shiftEstimationQuantity;
+    private double achievementRate;
+
     private int pulseCount;
 
     public MachineStatistics(){
@@ -40,6 +43,10 @@ public class MachineStatistics {
 
         this.itemName = itemName;
         this.workOrderNumber = workOrderNumber;
+        this.producedQuantity = 0l;
+        this.shiftEstimationQuantity = 0l;
+        this.achievementRate = 0.0;
+        this.pulseCount = 0;
     }
 
 
@@ -89,5 +96,21 @@ public class MachineStatistics {
 
     public void setPulseCount(int pulseCount) {
         this.pulseCount = pulseCount;
+    }
+
+    public double getAchievementRate() {
+        return achievementRate;
+    }
+
+    public void setAchievementRate(double achievementRate) {
+        this.achievementRate = achievementRate;
+    }
+
+    public Long getShiftEstimationQuantity() {
+        return shiftEstimationQuantity;
+    }
+
+    public void setShiftEstimationQuantity(Long shiftEstimationQuantity) {
+        this.shiftEstimationQuantity = shiftEstimationQuantity;
     }
 }

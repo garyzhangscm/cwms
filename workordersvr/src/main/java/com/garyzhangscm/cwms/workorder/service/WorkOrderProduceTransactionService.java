@@ -821,5 +821,56 @@ public class WorkOrderProduceTransactionService  {
 
 
 
+    private List<WorkOrderProduceTransaction> findByTimeRange(Long warehouseId, String workOrderNumber,
+                                                              Long productionLineId,
+                                                              ZonedDateTime startTime, ZonedDateTime endTime) {
+        return findByTimeRange(warehouseId, workOrderNumber, productionLineId,
+                startTime, endTime, true);
+
+    }
+    private List<WorkOrderProduceTransaction> findByTimeRange(Long warehouseId, String workOrderNumber,
+                                                              Long productionLineId,
+                                                              ZonedDateTime startTime, ZonedDateTime endTime,
+                                                              boolean loadDetails) {
+        return findAll(warehouseId, workOrderNumber,
+                productionLineId, false,
+                    startTime, endTime, null, loadDetails);
+    }
+
+    /**
+     * Get the total produced quantity,
+     * key: production line id - work order id
+     * value: total quantity within the time range
+     * @param warehouseId
+     * @param workOrderNumber
+     * @param productionLineId
+     * @param startTime
+     * @param endTime
+     * @param loadDetails
+     * @return
+     */
+    public Map<String, Long> getProducedQuantityByTimeRange(Long warehouseId, String workOrderNumber,
+                                                  Long productionLineId,
+                                                  ZonedDateTime startTime, ZonedDateTime endTime,
+                                                  boolean loadDetails) {
+        List<WorkOrderProduceTransaction> workOrderProduceTransactions = findAll(warehouseId, workOrderNumber,
+                productionLineId, false,
+                startTime, endTime, null, loadDetails);
+        logger.debug("get {} work order produce transactions between the time [{}, {}]",
+                workOrderProduceTransactions.size(),
+                startTime, endTime);
+
+        Map<String, Long> producedQuantityMap = new HashMap<>();
+        workOrderProduceTransactions.forEach(
+                workOrderProduceTransaction -> {
+                    String key = workOrderProduceTransaction.getProductionLine().getId() + "-" +
+                            workOrderProduceTransaction.getWorkOrder().getId();
+                    Long quantity = producedQuantityMap.getOrDefault(key, 0l);
+                    quantity += workOrderProduceTransaction.getWorkOrderProducedInventories().stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum();
+                    producedQuantityMap.put(key, quantity);
+                }
+        );
+        return producedQuantityMap;
+    }
 
 }

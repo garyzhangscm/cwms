@@ -26,12 +26,14 @@ import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionShiftScheduleRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +43,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -377,5 +378,128 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
     @Transactional
     public WorkOrderConfiguration changeWorkOrderConfiguration(WorkOrderConfiguration workOrderConfiguration) {
         return saveOrUpdate(workOrderConfiguration);
+    }
+
+    /**
+     * Return the current shift's start and end time in the pair
+     * @return
+     */
+    public Pair<ZonedDateTime, ZonedDateTime> getCurrentShift(Long warehouseId){
+        logger.debug("start to get current shift's start and end time");
+        WorkOrderConfiguration workOrderConfiguration = getWorkOrderConfiguration(null, warehouseId);
+        if (Objects.isNull(workOrderConfiguration)) {
+            // throw WorkOrderException.raiseException("Shift is not setup by work order configuration");
+            logger.debug("Shift is not setup by work order configuration");
+            return null;
+        }
+
+
+        WarehouseConfiguration warehouseConfiguration = layoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+        ZoneId timeZone = ZoneId.systemDefault();
+        if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
+            timeZone = ZoneId.of(warehouseConfiguration.getTimeZone());
+        }
+
+        logger.debug("the warehouse {}'s time zone is {}",
+                warehouseId, timeZone);
+
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate tomorrow = today.plusDays(1);
+
+        List<Pair<ZonedDateTime, ZonedDateTime>> shifts = new ArrayList<>();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        for (ProductionShiftSchedule productionShiftSchedule : workOrderConfiguration.getProductionShiftSchedules()) {
+
+            LocalTime shiftStartTime = LocalTime.parse(productionShiftSchedule.getShiftStartTime());
+            LocalTime shiftEndTime = LocalTime.parse(productionShiftSchedule.getShiftEndTime());
+
+            logger.debug("start to process shift [{}, {}]",
+                    shiftStartTime.format(formatter), shiftEndTime.format(formatter));
+
+            // if the shift is across 2 days, then we will add 2 shift, one starts from yesterday and end today
+            // and another starts today and ends tomorrow
+            // if the shift is within 1 day, then we will only have 1 shift
+            // all date and time are in zoned date time with zone information from the warehouse
+            if (Boolean.TRUE.equals(productionShiftSchedule.getShiftEndNextDay())) {
+                // shift 1: starts from yesterday and ends today
+                logger.debug("since the shift cross 2 days, we will have 2 different shift derived from this shift");
+                logger.debug("shift 1: [{}, {}]",
+                        ZonedDateTime.of(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone)
+                        );
+
+                shifts.add(Pair.of(
+                        ZonedDateTime.of(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone)
+                        ));
+
+                // shift 2: starts from today and ends tomorrow
+                logger.debug("shift 2: [{}, {}]",
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone));
+
+                shifts.add(Pair.of(
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(tomorrow.getYear(), tomorrow.getMonthValue(), tomorrow.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone)
+                ));
+
+
+            }
+            else {
+                // shift start today and end the same day
+
+                logger.debug("the shift is within the same day");
+                logger.debug("shift: [{}, {}]",
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone));
+                shifts.add(Pair.of(
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftStartTime.getHour(), shiftStartTime.getMinute(), shiftStartTime.getSecond(), shiftStartTime.getNano(),
+                                timeZone),
+                        ZonedDateTime.of(today.getYear(), today.getMonthValue(), today.getDayOfMonth(),
+                                shiftEndTime.getHour(), shiftEndTime.getMinute(), shiftEndTime.getSecond(), shiftEndTime.getNano(),
+                                timeZone)
+                ));
+            }
+
+        }
+
+        ZonedDateTime now = ZonedDateTime.now();
+        logger.debug("start to check the current time {} is within those {} shifts",
+                now, shifts.size());
+        // check if now is within any shift
+        return shifts.stream().filter(
+                shift -> {
+                    logger.debug("start to compare shift [{}, {}], with now {}",
+                            shift.getFirst(), shift.getSecond(), now);
+                    logger.debug("start time is no later than now? {}, end time is not before now? {}",
+                            !shift.getFirst().isAfter(now),
+                            !shift.getSecond().isBefore(now));
+                    return !shift.getFirst().isAfter(now) && !shift.getSecond().isBefore(now);
+                }
+        ).findFirst().orElse(null);
     }
 }
