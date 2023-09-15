@@ -1,5 +1,12 @@
 package com.garyzhangscm.cwms.workorder.model.lightMES;
 
+import com.garyzhangscm.cwms.workorder.model.ProductionLine;
+import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
+import com.garyzhangscm.cwms.workorder.model.WorkOrder;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Machine {
 
     String mid;
@@ -9,6 +16,10 @@ public class Machine {
     String sim;
 
     Integer status;
+
+    // 三色灯状态码：001-绿灯，010-黄灯，100-红灯，000-关灯
+    String currentState;
+    List<MachineStatistics> machineStatistics = new ArrayList<>();
 
     String machineBrand;
     String machineModel;
@@ -166,5 +177,25 @@ public class Machine {
 
     public void setUseTime(String useTime) {
         this.useTime = useTime;
+    }
+
+    public String getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(String currentState) {
+        this.currentState = currentState;
+    }
+
+    public List<MachineStatistics> getMachineStatistics() {
+        return machineStatistics;
+    }
+
+    public void setMachineStatistics(List<MachineStatistics> machineStatistics) {
+        this.machineStatistics = machineStatistics;
+    }
+
+    public void addMachineStatistics(MachineStatistics machineStatistics) {
+        this.machineStatistics.add(machineStatistics);
     }
 }

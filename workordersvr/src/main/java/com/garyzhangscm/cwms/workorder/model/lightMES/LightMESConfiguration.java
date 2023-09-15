@@ -54,6 +54,9 @@ public class LightMESConfiguration extends AuditibleEntity<String> {
     @Column(name = "machine_list_query_url")
     private String machineListQueryUrl;
 
+    @Column(name = "time_zone")
+    private String timeZone = "UTC";
+
     public Long getId() {
         return id;
     }
@@ -156,5 +159,13 @@ public class LightMESConfiguration extends AuditibleEntity<String> {
 
     public void setAccessKeySecret(String accessKeySecret) {
         this.accessKeySecret = accessKeySecret;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }

@@ -44,6 +44,8 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @Transient
     private String workOrderNumber;
     @Transient
+    private String itemNumber;
+    @Transient
     private Long workOrderItemId;
 
 
@@ -261,5 +263,19 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
             return workOrder.getItemId();
         }
         return null;
+    }
+
+    public String getItemNumber() {
+        if (Strings.isNotBlank(itemNumber)) {
+            return itemNumber;
+        }
+        else if (Objects.nonNull(workOrder) && Objects.nonNull(workOrder.getItem())) {
+            return workOrder.getItem().getName();
+        }
+        return null;
+    }
+
+    public void setItemNumber(String itemNumber) {
+        this.itemNumber = itemNumber;
     }
 }

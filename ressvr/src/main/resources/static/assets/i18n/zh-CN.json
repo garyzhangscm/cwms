@@ -2211,5 +2211,6 @@
   "machineListQueryUrl": "查询团队下的设备信息",
   "menu.main.work-order.light-mes-status-dashboard": "三色灯状态看板",
   "light-mes-status-dashboard": "三色灯状态看板",
-  "time-zone": "时区"
+  "time-zone": "时区",
+  "miscellaneous": "其他"
 }

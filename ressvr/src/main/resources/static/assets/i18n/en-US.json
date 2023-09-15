@@ -2216,5 +2216,6 @@
   "machineListQueryUrl": "Machine List Query URL",
   "menu.main.work-order.light-mes-status-dashboard": "Light Status Dashboard",
   "light-mes-status-dashboard": "Light Status Dashboard",
-  "time-zone": "Time Zone"
+  "time-zone": "Time Zone",
+  "miscellaneous": "Miscellaneous"
 }

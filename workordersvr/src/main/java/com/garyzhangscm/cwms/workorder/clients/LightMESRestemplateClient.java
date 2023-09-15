@@ -42,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -134,6 +135,61 @@ public class LightMESRestemplateClient {
                     lightMESResponseWrapper.getData().getSim(),
                     lightMESResponseWrapper.getData().getCurrentState());
             return lightMESResponseWrapper.getData();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
+    }
+
+
+    public List<LightStatus> getLightStatusInBatch(Long warehouseId, List<String> simList) {
+
+        LightMESConfiguration lightMESConfiguration = getLightMESConfiguration(warehouseId);
+        if (Strings.isBlank(lightMESConfiguration.getMachineListQueryUrl())) {
+
+            throw WorkOrderException.raiseException("Endpoint for query machine list is not setup for Light MES system in the current warehouse");
+        }
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(lightMESConfiguration.getProtocol())
+                        .host(lightMESConfiguration.getHost())
+                        .port(lightMESConfiguration.getPort())
+                        .path(lightMESConfiguration.getBatchLightStatusQueryUrl());
+
+        String requestBody = "{ \"simList\":[";
+        requestBody += simList.stream().map(sim -> "\"" + sim + "\"").collect(Collectors.joining(","));
+        requestBody += "]}";
+
+        logger.debug("will get current state for a list of sim: \n {}", requestBody);
+
+        HttpEntity<String> entity = getHttpEntity(lightMESConfiguration.getAccessKeyId(),
+                lightMESConfiguration.getAccessKeySecret(),
+                requestBody);
+        String url = builder.toUriString();
+
+        logger.debug("start to send getLightStatusInBatch request with entity \n {}",
+                entity);
+
+        LightMESResponseWrapper lightMESResponseWrapper
+                = getSiloRestTemplate().exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                LightMESResponseWrapper.class).getBody();
+        try {
+            if (!Boolean.TRUE.equals(lightMESResponseWrapper.getSuccess())) {
+                throw WorkOrderException.raiseException("Error " + lightMESResponseWrapper.getMessage() +
+                        " while try to get machine list");
+            }
+
+            String json = objectMapper.writeValueAsString(lightMESResponseWrapper.getData());
+            List<LightStatus> lightStatuses = objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, LightStatus.class));
+
+            return lightStatuses;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
