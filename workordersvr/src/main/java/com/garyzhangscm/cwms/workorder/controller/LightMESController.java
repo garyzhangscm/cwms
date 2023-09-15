@@ -44,6 +44,14 @@ public class LightMESController {
     }
 
 
+    @RequestMapping(value="/light-mes/machine-status", method = RequestMethod.GET)
+    public List<Machine> getMachineStatus(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "machineNo", required = false, defaultValue = "") String machineNo) {
+        return lightMESService.getMachineStatus(warehouseId, machineNo);
+    }
+
+
     @RequestMapping(value="/light-mes/light-status/single", method = RequestMethod.GET)
     public LightStatus getSingleLightStatus(
             @RequestParam Long warehouseId,
