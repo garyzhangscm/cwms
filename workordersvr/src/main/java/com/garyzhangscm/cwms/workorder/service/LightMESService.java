@@ -19,23 +19,23 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.garyzhangscm.cwms.workorder.clients.LightMESRestemplateClient;
-import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
+import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
+import com.garyzhangscm.cwms.workorder.model.ProductionLineCapacity;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
 import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
 import com.garyzhangscm.cwms.workorder.model.lightMES.MachineStatistics;
-import com.garyzhangscm.cwms.workorder.repository.LightMESConfigurationRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -48,6 +48,15 @@ public class LightMESService {
 
     @Autowired
     private ProductionLineService productionLineService;
+
+    @Autowired
+    private WorkOrderConfigurationService workOrderConfigurationService;
+
+    @Autowired
+    private WorkOrderProduceTransactionService workOrderProduceTransactionService;
+
+    @Autowired
+    private ProductionLineCapacityService productionLineCapacityService;
 
     public List<Machine> getMachineList(Long warehouseId) {
         return lightMESRestemplateClient.getMachineList(warehouseId);
@@ -88,16 +97,33 @@ public class LightMESService {
                 lightStatus -> lightStatusMap.put(lightStatus.getSim(), lightStatus.getCurrentState())
         );
 
+        Pair<ZonedDateTime, ZonedDateTime> currentShift = workOrderConfigurationService.getCurrentShift(warehouseId);
+        Map<String, Long> producedQuantityMap = new HashMap<>();
+        if (Objects.nonNull(currentShift)) {
+            logger.debug("find shift: [{}, {}]",
+                    currentShift.getFirst(), currentShift.getSecond());
+            producedQuantityMap = workOrderProduceTransactionService.getProducedQuantityByTimeRange(
+                    warehouseId, null, null,
+                    currentShift.getFirst(), currentShift.getSecond(), true);
+            logger.debug("get {} produced quantity information within the shift",
+                    producedQuantityMap.size());
+        }
+        else {
+            logger.debug("we can't find any shift information, we will ignore some of the statistics data for the machine(production line)");
+        }
 
+
+        Map<String, Long> finalProducedQuantityMap = producedQuantityMap;
         machines.forEach(
                 machine -> {
                     ProductionLine productionLine = productionLineMap.get(machine.getMachineNo());
                     if (Objects.nonNull(productionLine) && !productionLine.getProductionLineAssignments().isEmpty()) {
                         productionLine.getProductionLineAssignments().forEach(
                                 productionLineAssignment -> {
-                                    MachineStatistics machineStatistics = new MachineStatistics(
-                                            productionLineAssignment.getWorkOrder().getItem().getName(),
-                                            productionLineAssignment.getWorkOrder().getNumber()
+                                    MachineStatistics machineStatistics = getMachineStatistics(
+                                            warehouseId,
+                                            productionLine, productionLineAssignment,
+                                            currentShift, finalProducedQuantityMap
                                     );
                                     machine.addMachineStatistics(machineStatistics);
                                 }
@@ -108,8 +134,66 @@ public class LightMESService {
                     );
                 }
         );
+        Collections.sort(machines, Comparator.comparing(Machine::getMachineNo));
         return machines;
 
+
+    }
+
+    private MachineStatistics getMachineStatistics(Long warehouseId,
+                                                   ProductionLine productionLine,
+                                                   ProductionLineAssignment productionLineAssignment,
+                                                   Pair<ZonedDateTime, ZonedDateTime> currentShift,
+                                                   Map<String, Long> producedQuantityMap) {
+        MachineStatistics machineStatistics = new MachineStatistics(
+                productionLineAssignment.getWorkOrder().getItem().getName(),
+                productionLineAssignment.getWorkOrder().getNumber()
+        );
+        if (Objects.nonNull(currentShift)) {
+            machineStatistics.setShiftStartTime(currentShift.getFirst());
+            machineStatistics.setShiftEndTime(currentShift.getSecond());
+            String key = productionLine.getId() + "-" + productionLineAssignment.getWorkOrder().getId();
+            if (producedQuantityMap.containsKey(key)) {
+                machineStatistics.setProducedQuantity(producedQuantityMap.get(key));
+                // get the expected produced quantity in this shift
+                ProductionLineCapacity productionLineCapacity = productionLineCapacityService.findByProductionLineAndItem(
+                        warehouseId, productionLine.getId(),
+                        productionLineAssignment.getWorkOrder().getItemId(),
+                        false);
+                if (Objects.nonNull(productionLineCapacity)) {
+                    logger.debug("we find the capacity setup for production line {} / {}, item {}",
+                            productionLine.getId(),
+                            productionLine.getName(),
+                            productionLineAssignment.getWorkOrder().getItemId());
+                    // see how many we are supposed to produce in this shift
+                    int hours = (int)ChronoUnit.HOURS.between(currentShift.getFirst(), currentShift.getSecond());
+                    logger.debug("there're {} hours difference between {} and {}",
+                            hours, currentShift.getFirst(), currentShift.getSecond());
+                    Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantity(
+                            productionLineCapacity, hours
+                    );
+                    machineStatistics.setShiftEstimationQuantity(expectedProducedQuantity);
+
+                    logger.debug("we should produce {} unit based on the estimation, within current shift",
+                            expectedProducedQuantity);
+
+                    logger.debug("set the achivement rate to {}",
+                            machineStatistics.getProducedQuantity() * 1.0 / expectedProducedQuantity);
+                    machineStatistics.setAchievementRate(
+                            machineStatistics.getProducedQuantity()  * 1.0 / expectedProducedQuantity
+                    );
+
+                }
+                else {
+
+                    logger.debug("NO capacity setup for production line {} / {}, item {}",
+                            productionLine.getId(),
+                            productionLine.getName(),
+                            productionLineAssignment.getWorkOrder().getItemId());
+                }
+            }
+        }
+        return machineStatistics;
 
     }
 }

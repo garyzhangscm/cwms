@@ -36,6 +36,8 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     private Boolean newLPNPrintLabelAtProducingFlag;
     private Boolean newLPNPrintLabelAtAdjustmentFlag;
 
+    private String timeZone;
+
     public Long getId() {
         return id;
     }
@@ -82,5 +84,13 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     public void setNewLPNPrintLabelAtAdjustmentFlag(Boolean newLPNPrintLabelAtAdjustmentFlag) {
         this.newLPNPrintLabelAtAdjustmentFlag = newLPNPrintLabelAtAdjustmentFlag;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 }
