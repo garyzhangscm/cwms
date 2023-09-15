@@ -34,16 +34,23 @@ public class ProductionShiftSchedule extends AuditibleEntity<String>{
 
 
     @Column(name = "shift_start_time")
+    /**
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime shiftStartTime;
+     **/
+    private String shiftStartTime;
 
     @Column(name = "shift_end_time")
+    /**
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime shiftEndTime;
+    **/
+    private String shiftEndTime;
+
 
 
     // whether shift end next day or the same day as
@@ -67,19 +74,19 @@ public class ProductionShiftSchedule extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
-    public LocalTime getShiftStartTime() {
+    public String getShiftStartTime() {
         return shiftStartTime;
     }
 
-    public void setShiftStartTime(LocalTime shiftStartTime) {
+    public void setShiftStartTime(String shiftStartTime) {
         this.shiftStartTime = shiftStartTime;
     }
 
-    public LocalTime getShiftEndTime() {
+    public String getShiftEndTime() {
         return shiftEndTime;
     }
 
-    public void setShiftEndTime(LocalTime shiftEndTime) {
+    public void setShiftEndTime(String shiftEndTime) {
         this.shiftEndTime = shiftEndTime;
     }
 

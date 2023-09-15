@@ -42,6 +42,8 @@ import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -291,22 +293,26 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
         LocalDateTime[] endTimes = new LocalDateTime[shiftNumbers];
 
         int index = 0;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         // the start time and end time will be added to today and then we will do the compare
         for (ProductionShiftSchedule productionShiftSchedule : workOrderConfiguration.getProductionShiftSchedules()) {
-            startTimes[index] = LocalDateTime.now().withHour(productionShiftSchedule.getShiftStartTime().getHour())
-                    .withMinute(productionShiftSchedule.getShiftStartTime().getMinute())
-                    .withSecond(productionShiftSchedule.getShiftStartTime().getSecond());
+            LocalTime shiftStart = LocalTime.parse(productionShiftSchedule.getShiftStartTime(), formatter);
+            LocalTime shiftEnd = LocalTime.parse(productionShiftSchedule.getShiftEndTime(), formatter);
+
+            startTimes[index] = LocalDateTime.now().withHour(shiftStart.getHour())
+                    .withMinute(shiftStart.getMinute())
+                    .withSecond(shiftStart.getSecond());
             if (Boolean.TRUE.equals(productionShiftSchedule.getShiftEndNextDay())) {
                 endTimes[index] = LocalDateTime.now().plusDays(1)
-                        .withHour(productionShiftSchedule.getShiftEndTime().getHour())
-                        .withMinute(productionShiftSchedule.getShiftEndTime().getMinute())
-                        .withSecond(productionShiftSchedule.getShiftEndTime().getSecond());
+                        .withHour(shiftEnd.getHour())
+                        .withMinute(shiftEnd.getMinute())
+                        .withSecond(shiftEnd.getSecond());
             }
             else {
                 endTimes[index] = LocalDateTime.now()
-                        .withHour(productionShiftSchedule.getShiftEndTime().getHour())
-                        .withMinute(productionShiftSchedule.getShiftEndTime().getMinute())
-                        .withSecond(productionShiftSchedule.getShiftEndTime().getSecond());
+                        .withHour(shiftEnd.getHour())
+                        .withMinute(shiftEnd.getMinute())
+                        .withSecond(shiftEnd.getSecond());
             }
             index++;
 
@@ -316,8 +322,8 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
             for (int j = i + 1; j < shiftNumbers; j ++) {
                 if (isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j], endTimes[j])) {
                     throw WorkOrderException.raiseException("Can't setup the shift schedule as the following time overlapping: " +
-                            "[" + startTimes[i] + "," + endTimes[i] + "] and " +
-                            "[" + startTimes[j] + "," +  endTimes[j] + "]");
+                            "[" + startTimes[i].toLocalTime().format(formatter) + "," + endTimes[i].toLocalTime().format(formatter) + "] and " +
+                            "[" + startTimes[j].toLocalTime().format(formatter) + "," +  endTimes[j].toLocalTime().format(formatter)+ "]");
                 }
 
             }
@@ -340,13 +346,16 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
         // not over lapping if one of the following condition meet
         // 1. end time 1 < start time 2
         // 2. start time 1 > end time 2
+        logger.debug("check if [{}, {}] is overlapping with [{}, {}]",
+                startTime1, endTime1,
+                startTime2, endTime2);
         if (endTime1.isBefore(startTime2)) {
             return false;
         }
         else if (startTime1.isAfter(endTime2)) {
             return false;
         }
-        return false;
+        return true;
     }
 
     private void loadProductionShiftSchedule(List<WorkOrderConfiguration> workOrderConfigurations) {
