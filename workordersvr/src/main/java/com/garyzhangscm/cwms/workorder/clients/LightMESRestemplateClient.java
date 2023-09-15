@@ -63,11 +63,6 @@ public class LightMESRestemplateClient {
 
         if (Objects.isNull(restTemplate)) {
             restTemplate = new RestTemplate();
-
-            restTemplate.setInterceptors(
-                    Arrays.asList(new ClientHttpRequestInterceptor[]{
-                            new JsonMimeInterceptor()}));
-            // restTemplate.getInterceptors().add(new StatefulRestTemplateInterceptor());
         }
 
         return restTemplate;
@@ -167,23 +162,30 @@ public class LightMESRestemplateClient {
                 "{ \"pageNum\": 1, \"pageSize\": 100 }");
         String url = builder.toUriString();
 
-        ResponseEntity<String> responseBodyWrapper
+        logger.debug("start to send getMachineList request with entity \n {}",
+                entity);
+
+        LightMESResponseWrapper lightMESResponseWrapper
                 = getSiloRestTemplate().exchange(
                 url,
                 HttpMethod.POST,
                 entity,
-                String.class);
+                LightMESResponseWrapper.class).getBody();
 
-
-        logger.debug("get response from getMachineList request: \n {}",
-                responseBodyWrapper.getBody());
 
         try {
-            LightMESResponseWrapper<List<Machine>> lightMESResponseWrapper =
-                    objectMapper.readValue(responseBodyWrapper.getBody(), LightMESResponseWrapper.class);
 
 
-            for(Machine machine : lightMESResponseWrapper.getData()) {
+            if (!Boolean.TRUE.equals(lightMESResponseWrapper.getSuccess())) {
+                throw WorkOrderException.raiseException("Error " + lightMESResponseWrapper.getMessage() +
+                        " while try to get machine list");
+            }
+
+            String json = objectMapper.writeValueAsString(lightMESResponseWrapper.getData());
+            List<Machine> machines = objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, Machine.class));
+
+            for(Machine machine : machines) {
 
                 logger.debug("machine {}: mid - {}, sim - {}, status - {}",
                         machine.getMachineNo(),
@@ -191,7 +193,7 @@ public class LightMESRestemplateClient {
                         machine.getSim(),
                         machine.getStatus());
             }
-            return lightMESResponseWrapper.getData();
+            return machines;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
@@ -206,6 +208,7 @@ public class LightMESRestemplateClient {
         // headers.setContentType(type);
         // headers.add("Accept", "application/json, text/plain, */*");
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        headers.add("Content-Type", "application/json");
         // headers.add("accept-encoding", "gzip, deflate, br");
         headers.add("AccessKeyId", accessKeyId);
         headers.add("AccessKeySecret", accessKeySecret);
