@@ -30,6 +30,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 
 @RestController
 public class SiteInformationController {
@@ -68,6 +74,16 @@ public class SiteInformationController {
 
             return userService.getMobileSiteInformation(companyId, userService.getCurrentUserName());
 
+    }
+
+    @RequestMapping(value = "/site-information/available-zone-ids", method = RequestMethod.GET)
+    public List<String> getAvailableZoneIds() {
+
+        List<String> zoneIds = new ArrayList(ZoneId.getAvailableZoneIds());
+        Collections.sort(zoneIds);
+
+
+        return zoneIds;
     }
 
 }

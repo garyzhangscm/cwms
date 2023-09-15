@@ -2215,5 +2215,6 @@
   "singleMachineDetailQueryUrl": "Single Machine Detail Information Query URL",
   "machineListQueryUrl": "Machine List Query URL",
   "menu.main.work-order.light-mes-status-dashboard": "Light Status Dashboard",
-  "light-mes-status-dashboard": "Light Status Dashboard"
+  "light-mes-status-dashboard": "Light Status Dashboard",
+  "time-zone": "Time Zone"
 }
