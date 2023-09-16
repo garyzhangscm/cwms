@@ -137,23 +137,32 @@ public class LightMESService {
         Collections.sort(machines, Comparator.comparing(Machine::getMachineNo));
 
         // setup the machine's pulse count
+
         for (Machine machine : machines) {
 
-            if (Strings.isNotBlank(machine.getSim())) {
-                ZonedDateTime endTime = ZonedDateTime.now();
-                ZonedDateTime startTime = endTime.minusHours(1);
-                int lastHourPulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(
+            setupPulseCountAndCycleTime(warehouseId, machine, currentShift);
+        }
+        return machines;
+
+
+    }
+
+    private void setupPulseCountAndCycleTime(Long warehouseId,
+                                             Machine machine,
+                                             Pair<ZonedDateTime, ZonedDateTime> currentShift) {
+        if (Strings.isNotBlank(machine.getSim())) {
+            // last hour cycle time and pulse count
+            ZonedDateTime endTime = ZonedDateTime.now();
+            ZonedDateTime startTime = endTime.minusHours(1);
+            int lastHourPulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(
                         warehouseId, startTime, endTime, machine.getSim()
-                );
-                machine.setPulseCount(lastHourPulseCount);
-                if (lastHourPulseCount <= 0) {
-                    machine.setCycleTime(0);
-                }
-                else {
-
-                    machine.setCycleTime(60 * 60 / lastHourPulseCount);
-                }
-
+            );
+            machine.setLastHourPulseCount(lastHourPulseCount);
+            if (lastHourPulseCount <= 0) {
+                machine.setLastHourCycleTime(0);
+            }
+            else {
+                machine.setLastHourCycleTime(60 * 60 / lastHourPulseCount);
             }
             // sleep 0.1 second as we are only allowed to call the getSingleLightPulseByTimeRange endpoint
             // 10 times per second
@@ -162,9 +171,31 @@ public class LightMESService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
-        return machines;
 
+            // current shift cycle time and pulse count
+            if (Objects.nonNull(currentShift)) {
+                // this shift cycle time and pulse count
+                int shiftPulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(
+                        warehouseId, currentShift.getFirst(), currentShift.getSecond(), machine.getSim()
+                );
+                machine.setShiftPulseCount(shiftPulseCount);
+                if (shiftPulseCount <= 0) {
+                    machine.setShiftCycleTime(0);
+                }
+                else {
+
+                    machine.setShiftCycleTime((int)ChronoUnit.MINUTES.between(currentShift.getFirst(), currentShift.getSecond()) / lastHourPulseCount);
+                }
+                // sleep 0.1 second as we are only allowed to call the getSingleLightPulseByTimeRange endpoint
+                // 10 times per second
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
 
     }
 

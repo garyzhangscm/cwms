@@ -36,10 +36,17 @@ public class Machine {
     String useTime;
 
     // last hour pulse count
-    private int pulseCount;
+    private int lastHourPulseCount;
 
     // cycle time in seconds
-    private int cycleTime;
+    private int lastHourCycleTime;
+
+    // last hour pulse count
+    private int shiftPulseCount;
+
+    // cycle time in seconds
+    private int shiftCycleTime;
+
 
     public String getMid() {
         return mid;
@@ -205,19 +212,35 @@ public class Machine {
         this.machineStatistics.add(machineStatistics);
     }
 
-    public int getCycleTime() {
-        return cycleTime;
+    public int getLastHourPulseCount() {
+        return lastHourPulseCount;
     }
 
-    public void setCycleTime(int cycleTime) {
-        this.cycleTime = cycleTime;
+    public void setLastHourPulseCount(int lastHourPulseCount) {
+        this.lastHourPulseCount = lastHourPulseCount;
     }
 
-    public int getPulseCount() {
-        return pulseCount;
+    public int getLastHourCycleTime() {
+        return lastHourCycleTime;
     }
 
-    public void setPulseCount(int pulseCount) {
-        this.pulseCount = pulseCount;
+    public void setLastHourCycleTime(int lastHourCycleTime) {
+        this.lastHourCycleTime = lastHourCycleTime;
+    }
+
+    public int getShiftPulseCount() {
+        return shiftPulseCount;
+    }
+
+    public void setShiftPulseCount(int shiftPulseCount) {
+        this.shiftPulseCount = shiftPulseCount;
+    }
+
+    public int getShiftCycleTime() {
+        return shiftCycleTime;
+    }
+
+    public void setShiftCycleTime(int shiftCycleTime) {
+        this.shiftCycleTime = shiftCycleTime;
     }
 }
