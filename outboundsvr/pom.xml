@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>outboundserver</artifactId>
-    <version>v1.21</version>
+    <version>v1.22</version>
 	<name>Outbound Server</name>
 	<description>Outbound Server - order / shipment / wave / etc</description>
 
