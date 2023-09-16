@@ -23,10 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.JsonMimeInterceptor;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESResponseWrapper;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
-import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
+import com.garyzhangscm.cwms.workorder.model.lightMES.*;
 import com.garyzhangscm.cwms.workorder.service.LightMESConfigurationService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -39,6 +36,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -198,6 +198,69 @@ public class LightMESRestemplateClient {
 
     }
 
+    public int getSingleLightPulseByTimeRange(Long warehouseId,
+                                           ZonedDateTime startTime, ZonedDateTime endTime,
+                                           String sim) {
+
+        logger.debug("start to get pulse count for sim {}, within time range [{}, {}]",
+                sim,
+                startTime, endTime);
+
+        LightMESConfiguration lightMESConfiguration = getLightMESConfiguration(warehouseId);
+        if (Strings.isBlank(lightMESConfiguration.getSingleLightPulseQueryUrl())) {
+
+            throw WorkOrderException.raiseException("Endpoint for query single light pulse count is not setup for Light MES system in the current warehouse");
+        }
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        if (Strings.isNotBlank(lightMESConfiguration.getTimeZone())) {
+            zoneId = ZoneId.of(lightMESConfiguration.getTimeZone());
+        }
+        logger.debug("will convert the time into Light MES's zone {}", zoneId);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme(lightMESConfiguration.getProtocol())
+                        .host(lightMESConfiguration.getHost())
+                        .port(lightMESConfiguration.getPort())
+                        .path(lightMESConfiguration.getSingleLightPulseQueryUrl());
+
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        HttpEntity<String> entity = getHttpEntity(lightMESConfiguration.getAccessKeyId(),
+                lightMESConfiguration.getAccessKeySecret(),
+                "{ \"sim\": \"" + sim + "\", " +
+                      "  \"startTime\": \"" + startTime.withZoneSameInstant(zoneId).format(formatter) + "\", " +
+                        "  \"endTime\": \"" + endTime.withZoneSameInstant(zoneId).format(formatter) + "\"" +
+                      "}");
+
+        logger.debug("start to send getSingleLightPulseByTimeRange request with entity \n {}",
+                entity);
+
+        String url = builder.toUriString();
+
+        LightMESResponseWrapper lightMESResponseWrapper
+                = getSiloRestTemplate().exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                LightMESResponseWrapper.class).getBody();
+        try {
+            if (!Boolean.TRUE.equals(lightMESResponseWrapper.getSuccess())) {
+                throw WorkOrderException.raiseException("Error " + lightMESResponseWrapper.getMessage() +
+                        " while try to get machine " +  sim + "'s pulse count");
+            }
+
+            String json = objectMapper.writeValueAsString(lightMESResponseWrapper.getData());
+            PulseCount pulseCount = objectMapper.readValue(json, PulseCount.class);
+
+            return pulseCount.getCountSize();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
     public List<Machine> getMachineList(Long warehouseId) {
 
         LightMESConfiguration lightMESConfiguration = getLightMESConfiguration(warehouseId);

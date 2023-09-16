@@ -35,6 +35,12 @@ public class Machine {
     String documents;
     String useTime;
 
+    // last hour pulse count
+    private int pulseCount;
+
+    // cycle time in seconds
+    private int cycleTime;
+
     public String getMid() {
         return mid;
     }
@@ -197,5 +203,21 @@ public class Machine {
 
     public void addMachineStatistics(MachineStatistics machineStatistics) {
         this.machineStatistics.add(machineStatistics);
+    }
+
+    public int getCycleTime() {
+        return cycleTime;
+    }
+
+    public void setCycleTime(int cycleTime) {
+        this.cycleTime = cycleTime;
+    }
+
+    public int getPulseCount() {
+        return pulseCount;
+    }
+
+    public void setPulseCount(int pulseCount) {
+        this.pulseCount = pulseCount;
     }
 }

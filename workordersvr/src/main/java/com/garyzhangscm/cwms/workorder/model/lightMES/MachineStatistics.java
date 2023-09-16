@@ -31,7 +31,6 @@ public class MachineStatistics {
     private Long shiftEstimationQuantity;
     private double achievementRate;
 
-    private int pulseCount;
 
     public MachineStatistics(){
 
@@ -46,7 +45,6 @@ public class MachineStatistics {
         this.producedQuantity = 0l;
         this.shiftEstimationQuantity = 0l;
         this.achievementRate = 0.0;
-        this.pulseCount = 0;
     }
 
 
@@ -90,13 +88,7 @@ public class MachineStatistics {
         this.producedQuantity = producedQuantity;
     }
 
-    public int getPulseCount() {
-        return pulseCount;
-    }
 
-    public void setPulseCount(int pulseCount) {
-        this.pulseCount = pulseCount;
-    }
 
     public double getAchievementRate() {
         return achievementRate;
@@ -113,4 +105,5 @@ public class MachineStatistics {
     public void setShiftEstimationQuantity(Long shiftEstimationQuantity) {
         this.shiftEstimationQuantity = shiftEstimationQuantity;
     }
+
 }

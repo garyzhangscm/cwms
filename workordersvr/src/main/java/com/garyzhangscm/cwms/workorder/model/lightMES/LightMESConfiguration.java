@@ -168,4 +168,5 @@ public class LightMESConfiguration extends AuditibleEntity<String> {
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
+
 }
