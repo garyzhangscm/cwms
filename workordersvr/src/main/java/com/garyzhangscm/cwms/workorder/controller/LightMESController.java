@@ -19,12 +19,14 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
 import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
 import com.garyzhangscm.cwms.workorder.service.LightMESConfigurationService;
 import com.garyzhangscm.cwms.workorder.service.LightMESService;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,8 +49,8 @@ public class LightMESController {
     @RequestMapping(value="/light-mes/machine-status", method = RequestMethod.GET)
     public List<Machine> getMachineStatus(
             @RequestParam Long warehouseId,
-            @RequestParam(name = "machineNo", required = false, defaultValue = "") String machineNo) {
-        return lightMESService.getMachineStatus(warehouseId, machineNo);
+            @RequestParam(name = "machineNo", required = false, defaultValue = "") String machineNo) throws JsonProcessingException {
+        return lightMESService.getMachineStatusWithCache(warehouseId, machineNo);
     }
 
 

@@ -109,6 +109,18 @@ public class WarehouseLayoutServiceRestemplateClient {
             return companies.get(0);
         }
     }
+    public List<Company> getAllCompanies() {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies");
+        return  restTemplateProxy.exchangeList(
+                Company.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
     @Cacheable(cacheNames = "WorkOrderService_Location", unless="#result == null")
     public Location getLocationById(Long id) {
@@ -242,6 +254,23 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
     }
 
+    public List<Warehouse> getWarehouseByCompany(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId);
+
+        logger.debug("Start to get warehouse by companyId: {}, /n >> {}",
+                companyId, builder.toUriString());
+
+        return restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
     @Cacheable(cacheNames = "WorkOrderService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
