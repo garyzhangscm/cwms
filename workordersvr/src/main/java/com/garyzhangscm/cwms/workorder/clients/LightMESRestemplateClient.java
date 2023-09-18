@@ -253,6 +253,7 @@ public class LightMESRestemplateClient {
             }
 
             String json = objectMapper.writeValueAsString(lightMESResponseWrapper.getData());
+            logger.debug("Get result {} for getSingleLightPulseByTimeRange", json);
             PulseCount pulseCount = objectMapper.readValue(json, PulseCount.class);
 
             return pulseCount.getCountSize();
