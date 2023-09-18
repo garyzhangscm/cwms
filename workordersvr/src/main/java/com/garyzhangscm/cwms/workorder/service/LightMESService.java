@@ -69,6 +69,9 @@ public class LightMESService {
     }
 
     public List<Machine> getMachineStatus(Long warehouseId, String machineNo) {
+        logger.debug("start to get machine status, for single machine? {}",
+                Strings.isBlank(machineNo) ? "N/A" : machineNo);
+
         List<Machine> machines = getMachineList(warehouseId);
         if (Strings.isNotBlank(machineNo)) {
             machines = machines.stream().filter(machine -> machineNo.equalsIgnoreCase(machine.getMachineNo())).collect(Collectors.toList());
@@ -78,12 +81,14 @@ public class LightMESService {
         if (machines.isEmpty()) {
             return machines;
         }
-
+        logger.debug("Get {} machines", machines.size());
         // machine from light MES should be configured to have the same machine number
         // as the production line setup in the system
         String productionLineNames = machines.stream().map(machine -> machine.getMachineNo()).collect(Collectors.joining(","));
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
                 productionLineNames, false, true);
+        logger.debug("Got {} production lines from the machine list", productionLines.size());
+
         Map<String, ProductionLine> productionLineMap = new HashMap<>();
         productionLines.forEach(productionLine -> productionLineMap.put(productionLine.getName(), productionLine));
 
@@ -92,6 +97,7 @@ public class LightMESService {
         // 三色灯状态码：001-绿灯，010-黄灯，100-红灯，000-关灯
         List<String> simList  = machines.stream().map(machine -> machine.getSim()).collect(Collectors.toList());
         List<LightStatus> lightStatuses = lightMESRestemplateClient.getLightStatusInBatch(warehouseId, simList);
+        logger.debug("Get {} light status", lightStatuses.size());
         Map<String, String> lightStatusMap = new HashMap<>();
         lightStatuses.forEach(
                 lightStatus -> lightStatusMap.put(lightStatus.getSim(), lightStatus.getCurrentState())
@@ -166,11 +172,12 @@ public class LightMESService {
             }
             // sleep 0.1 second as we are only allowed to call the getSingleLightPulseByTimeRange endpoint
             // 10 times per second
+            /**
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }**/
 
             // current shift cycle time and pulse count
             if (Objects.nonNull(currentShift)) {
@@ -184,15 +191,21 @@ public class LightMESService {
                 }
                 else {
 
-                    machine.setShiftCycleTime((int)ChronoUnit.MINUTES.between(currentShift.getFirst(), currentShift.getSecond()) / lastHourPulseCount);
+                    logger.debug("production line {}, minutes {}, shift pulse {}",
+                            machine.getMachineNo(),
+                            ChronoUnit.SECONDS.between(currentShift.getFirst(), ZonedDateTime.now()),
+                            shiftPulseCount);
+                    machine.setShiftCycleTime((int)ChronoUnit.SECONDS.between(currentShift.getFirst(), ZonedDateTime.now()) / shiftPulseCount);
                 }
                 // sleep 0.1 second as we are only allowed to call the getSingleLightPulseByTimeRange endpoint
                 // 10 times per second
+                /**
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                 **/
             }
 
         }
@@ -211,44 +224,54 @@ public class LightMESService {
         if (Objects.nonNull(currentShift)) {
             machineStatistics.setShiftStartTime(currentShift.getFirst());
             machineStatistics.setShiftEndTime(currentShift.getSecond());
+
+            // get the expected produced quantity in this shift
+            ProductionLineCapacity productionLineCapacity = productionLineCapacityService.findByProductionLineAndItem(
+                    warehouseId, productionLine.getId(),
+                    productionLineAssignment.getWorkOrder().getItemId(),
+                    false);
+
+
+            if (Objects.nonNull(productionLineCapacity)) {
+                logger.debug("we find the capacity setup for production line {} / {}, item {}",
+                        productionLine.getId(),
+                        productionLine.getName(),
+                        productionLineAssignment.getWorkOrder().getItemId());
+                // see how many we are supposed to produce in this shift
+                int hours = (int)ChronoUnit.HOURS.between(currentShift.getFirst(), currentShift.getSecond());
+                logger.debug("there're {} hours difference between {} and {}",
+                        hours, currentShift.getFirst(), currentShift.getSecond());
+                Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantity(
+                        productionLineCapacity, hours
+                );
+                machineStatistics.setShiftEstimationQuantity(expectedProducedQuantity);
+
+                logger.debug("we should produce {} unit based on the estimation, within current shift",
+                        expectedProducedQuantity);
+
+            }
+            else {
+
+                logger.debug("NO capacity setup for production line {} / {}, item {}",
+                        productionLine.getId(),
+                        productionLine.getName(),
+                        productionLineAssignment.getWorkOrder().getItemId());
+            }
+
             String key = productionLine.getId() + "-" + productionLineAssignment.getWorkOrder().getId();
             if (producedQuantityMap.containsKey(key)) {
                 machineStatistics.setProducedQuantity(producedQuantityMap.get(key));
-                // get the expected produced quantity in this shift
-                ProductionLineCapacity productionLineCapacity = productionLineCapacityService.findByProductionLineAndItem(
-                        warehouseId, productionLine.getId(),
-                        productionLineAssignment.getWorkOrder().getItemId(),
-                        false);
-                if (Objects.nonNull(productionLineCapacity)) {
-                    logger.debug("we find the capacity setup for production line {} / {}, item {}",
-                            productionLine.getId(),
-                            productionLine.getName(),
-                            productionLineAssignment.getWorkOrder().getItemId());
-                    // see how many we are supposed to produce in this shift
-                    int hours = (int)ChronoUnit.HOURS.between(currentShift.getFirst(), currentShift.getSecond());
-                    logger.debug("there're {} hours difference between {} and {}",
-                            hours, currentShift.getFirst(), currentShift.getSecond());
-                    Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantity(
-                            productionLineCapacity, hours
-                    );
-                    machineStatistics.setShiftEstimationQuantity(expectedProducedQuantity);
 
-                    logger.debug("we should produce {} unit based on the estimation, within current shift",
-                            expectedProducedQuantity);
+                if (machineStatistics.getShiftEstimationQuantity() > 0) {
 
                     logger.debug("set the achivement rate to {}",
-                            machineStatistics.getProducedQuantity() * 1.0 / expectedProducedQuantity);
+                            machineStatistics.getProducedQuantity() * 1.0 / machineStatistics.getShiftEstimationQuantity());
                     machineStatistics.setAchievementRate(
-                            machineStatistics.getProducedQuantity()  * 1.0 / expectedProducedQuantity
+                            machineStatistics.getProducedQuantity()  * 1.0 / machineStatistics.getShiftEstimationQuantity()
                     );
-
                 }
                 else {
-
-                    logger.debug("NO capacity setup for production line {} / {}, item {}",
-                            productionLine.getId(),
-                            productionLine.getName(),
-                            productionLineAssignment.getWorkOrder().getItemId());
+                    machineStatistics.setAchievementRate(0);
                 }
             }
         }
