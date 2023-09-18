@@ -18,10 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.clients.LightMESRestemplateClient;
-import com.garyzhangscm.cwms.workorder.model.ProductionLine;
-import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
-import com.garyzhangscm.cwms.workorder.model.ProductionLineCapacity;
+import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
 import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
 import com.garyzhangscm.cwms.workorder.model.lightMES.MachineStatistics;
@@ -29,10 +30,13 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.util.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -58,6 +62,17 @@ public class LightMESService {
     @Autowired
     private ProductionLineCapacityService productionLineCapacityService;
 
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private final static String REDIS_KEY_MACHINE_STATUS = "lightMES_machine_status";
+
     public List<Machine> getMachineList(Long warehouseId) {
         return lightMESRestemplateClient.getMachineList(warehouseId);
 
@@ -68,6 +83,36 @@ public class LightMESService {
 
     }
 
+    public List<Machine> getMachineStatusWithCache(Long warehouseId, String machineNo) throws JsonProcessingException {
+        if (Strings.isNotBlank(machineNo)) {
+            // for status of single machine, we will get the status without consider the cache
+            return getMachineStatus(warehouseId, machineNo);
+        }
+        else {
+
+            logger.debug("start to get cached machine status");
+            Object machineStatus = redisTemplate.opsForValue().get(REDIS_KEY_MACHINE_STATUS);
+            if (Objects.nonNull(machineStatus)) {
+                logger.debug("get machine status from cache:\n{}", machineStatus);
+                String json = objectMapper.writeValueAsString(machineStatus);
+                List<Machine> machines = objectMapper.readValue(json,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, Machine.class));
+
+                return machines;
+            }
+            else {
+                logger.debug("machine status is not in the redis cache, let's get the real time data and save it to the cache");
+                List<Machine> machines = getMachineStatus(warehouseId, null);
+
+                // save the result to the redis
+                redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(2));
+
+                return machines;
+
+            }
+        }
+
+    }
     public List<Machine> getMachineStatus(Long warehouseId, String machineNo) {
         logger.debug("start to get machine status, for single machine? {}",
                 Strings.isBlank(machineNo) ? "N/A" : machineNo);
@@ -278,4 +323,39 @@ public class LightMESService {
         return machineStatistics;
 
     }
+
+    /**
+     * Refresh machine status every minute and save it to the redis. The web user then can get the data
+     * from cache
+     */
+    @Scheduled(fixedDelay = 60000)
+    public void refreshMachineStatus(){
+
+        List<Company> companies = warehouseLayoutServiceRestemplateClient.getAllCompanies();
+        for (Company company : companies) {
+            List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
+            for (Warehouse warehouse : warehouses) {
+                logger.debug("Start to refresh the machine status for warehouse {} / {} in redis",
+                        company.getName(), warehouse.getName());
+                refreshMachineStatus(warehouse.getId());
+            }
+        }
+    }
+
+    private void refreshMachineStatus(Long warehouseId){
+        try {
+            List<Machine> machines = getMachineStatus(warehouseId, null);
+
+            // save the result to the redis
+            redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(2));
+
+        }
+        catch (Exception ex) {
+            // ignore the exception
+            logger.debug("Ignore exception {} when refresh the light MES machine status in redis",
+                    ex.getMessage());
+        }
+
+    }
+
 }
