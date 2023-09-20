@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.workorder.clients.LightMESRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
 import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
 import com.garyzhangscm.cwms.workorder.model.lightMES.MachineStatistics;
@@ -49,6 +50,8 @@ public class LightMESService {
 
     @Autowired
     private LightMESRestemplateClient lightMESRestemplateClient;
+    @Autowired
+    private LightMESConfigurationService lightMESConfigurationService;
 
     @Autowired
     private ProductionLineService productionLineService;
@@ -221,11 +224,14 @@ public class LightMESService {
 
         Collections.sort(resultMachines, Comparator.comparing(Machine::getMachineNo));
 
+
+        LightMESConfiguration lightMESConfiguration = lightMESConfigurationService.findByWarehouse(warehouseId);
+
         // setup the machine's pulse count
 
         for (Machine machine : resultMachines) {
 
-            setupPulseCountAndCycleTime(warehouseId, machine, currentShift);
+            setupPulseCountAndCycleTime(warehouseId, lightMESConfiguration, machine, currentShift);
         }
         return resultMachines;
 
@@ -233,21 +239,34 @@ public class LightMESService {
     }
 
     private void setupPulseCountAndCycleTime(Long warehouseId,
+                                             LightMESConfiguration lightMESConfiguration,
                                              Machine machine,
                                              Pair<ZonedDateTime, ZonedDateTime> currentShift) {
         if (Strings.isNotBlank(machine.getSim())) {
             // last hour cycle time and pulse count
+            int pulseCountTimeWindow = Objects.isNull(lightMESConfiguration.getCycleTimeWindow()) ? 1 :
+                    lightMESConfiguration.getCycleTimeWindow();
+            if (pulseCountTimeWindow < 1) {
+                pulseCountTimeWindow = 1;
+            }
+            logger.debug("start to calculate cycle time based on the pulse count window {} for machine {}",
+                    pulseCountTimeWindow,
+                    machine.getMachineNo());
             ZonedDateTime endTime = ZonedDateTime.now();
-            ZonedDateTime startTime = endTime.minusHours(1);
-            int lastHourPulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(
+            ZonedDateTime startTime = endTime.minusMinutes(pulseCountTimeWindow);
+
+            int lastTimeWindowPulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(
                         warehouseId, startTime, endTime, machine.getSim()
             );
-            machine.setLastHourPulseCount(lastHourPulseCount);
-            if (lastHourPulseCount <= 0) {
-                machine.setLastHourCycleTime(0);
+            logger.debug("get {} pulse for machine in the past {} minutes",
+                    machine.getMachineNo(),
+                    pulseCountTimeWindow);
+            machine.setLastTimeWindowPulseCount(lastTimeWindowPulseCount);
+            if (lastTimeWindowPulseCount <= 0) {
+                machine.setLastTimeWindowCycleTime(0);
             }
             else {
-                machine.setLastHourCycleTime(60 * 60 / lastHourPulseCount);
+                machine.setLastTimeWindowCycleTime(pulseCountTimeWindow * 60 / lastTimeWindowPulseCount);
             }
             // sleep 0.1 second as we are only allowed to call the getSingleLightPulseByTimeRange endpoint
             // 10 times per second

@@ -2216,5 +2216,6 @@
   "menu.main.work-order.production-line-type": "生产线类型",
   "production-line-type": "生产线类型",
   "menu.main.production-line-type.maintenance": "生产线类型维护",
-  "showConfiguration": "现在配置"
+  "showConfiguration": "现在配置",
+  "cycle-time-window-in-minutes": "Cycle Time 计算时间窗口(单位：分钟)"
 }
