@@ -27,9 +27,12 @@ import com.garyzhangscm.cwms.workorder.service.WorkOrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -56,6 +59,13 @@ public class WorkOrderConfigurationController {
     }
 
 
+    @RequestMapping(value="/work-order-configuration/current-shift", method = RequestMethod.GET)
+    public Pair<String, String> getCurrentShift(@RequestParam Long warehouseId) {
+        Pair<ZonedDateTime, ZonedDateTime> currentShift = workOrderConfigurationService.getCurrentShift(warehouseId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        return Pair.of( currentShift.getFirst().format(formatter),
+                currentShift.getSecond().format(formatter));
+    }
 
 
 
