@@ -37,11 +37,11 @@ public class Machine {
     String documents;
     String useTime;
 
-    // last hour pulse count
-    private int lastHourPulseCount;
+    // last time window pulse count
+    private int lastTimeWindowPulseCount;
 
     // cycle time in seconds
-    private int lastHourCycleTime;
+    private int lastTimeWindowCycleTime;
 
     // last hour pulse count
     private int shiftPulseCount;
@@ -219,20 +219,20 @@ public class Machine {
         this.machineStatistics.add(machineStatistics);
     }
 
-    public int getLastHourPulseCount() {
-        return lastHourPulseCount;
+    public int getLastTimeWindowPulseCount() {
+        return lastTimeWindowPulseCount;
     }
 
-    public void setLastHourPulseCount(int lastHourPulseCount) {
-        this.lastHourPulseCount = lastHourPulseCount;
+    public void setLastTimeWindowPulseCount(int lastTimeWindowPulseCount) {
+        this.lastTimeWindowPulseCount = lastTimeWindowPulseCount;
     }
 
-    public int getLastHourCycleTime() {
-        return lastHourCycleTime;
+    public int getLastTimeWindowCycleTime() {
+        return lastTimeWindowCycleTime;
     }
 
-    public void setLastHourCycleTime(int lastHourCycleTime) {
-        this.lastHourCycleTime = lastHourCycleTime;
+    public void setLastTimeWindowCycleTime(int lastTimeWindowCycleTime) {
+        this.lastTimeWindowCycleTime = lastTimeWindowCycleTime;
     }
 
     public int getShiftPulseCount() {

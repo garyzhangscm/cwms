@@ -57,6 +57,12 @@ public class LightMESConfiguration extends AuditibleEntity<String> {
     @Column(name = "time_zone")
     private String timeZone = "UTC";
 
+    // how many minutes to look back for the pulse to calculate
+    // the cycle time
+    @Column(name = "cycle_time_window")
+    private Integer cycleTimeWindow;
+
+
     public Long getId() {
         return id;
     }
@@ -169,4 +175,11 @@ public class LightMESConfiguration extends AuditibleEntity<String> {
         this.timeZone = timeZone;
     }
 
+    public Integer getCycleTimeWindow() {
+        return cycleTimeWindow;
+    }
+
+    public void setCycleTimeWindow(Integer cycleTimeWindow) {
+        this.cycleTimeWindow = cycleTimeWindow;
+    }
 }

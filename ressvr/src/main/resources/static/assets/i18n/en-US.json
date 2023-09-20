@@ -2221,5 +2221,6 @@
   "menu.main.work-order.production-line-type": "Production Line Type",
   "production-line-type": "Production Line Type",
   "menu.main.production-line-type.maintenance": "Production Line Type Maintenance",
-  "showConfiguration": "Show Configuration"
+  "showConfiguration": "Show Configuration",
+  "cycle-time-window-in-minutes": "Cycle Time Window(In Minutes)"
 }
