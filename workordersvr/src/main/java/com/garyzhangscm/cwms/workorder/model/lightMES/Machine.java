@@ -1,11 +1,11 @@
 package com.garyzhangscm.cwms.workorder.model.lightMES;
 
+
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
-import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
-import com.garyzhangscm.cwms.workorder.model.WorkOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Machine {
 
@@ -20,6 +20,8 @@ public class Machine {
     // 三色灯状态码：001-绿灯，010-黄灯，100-红灯，000-关灯
     String currentState;
     List<MachineStatistics> machineStatistics = new ArrayList<>();
+
+    String productionLineTypeName;
 
     String machineBrand;
     String machineModel;
@@ -48,6 +50,11 @@ public class Machine {
     private int shiftCycleTime;
 
 
+    public Machine(){}
+    public Machine(ProductionLine productionLine) {
+        this.machineNo = productionLine.getName();
+        this.productionLineTypeName = Objects.isNull(productionLine) ? "" : productionLine.getType().getName();
+    }
     public String getMid() {
         return mid;
     }
@@ -242,5 +249,13 @@ public class Machine {
 
     public void setShiftCycleTime(int shiftCycleTime) {
         this.shiftCycleTime = shiftCycleTime;
+    }
+
+    public String getProductionLineTypeName() {
+        return productionLineTypeName;
+    }
+
+    public void setProductionLineTypeName(String productionLineTypeName) {
+        this.productionLineTypeName = productionLineTypeName;
     }
 }

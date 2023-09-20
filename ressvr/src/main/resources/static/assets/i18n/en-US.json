@@ -2217,5 +2217,9 @@
   "menu.main.work-order.light-mes-status-dashboard": "Light Status Dashboard",
   "light-mes-status-dashboard": "Light Status Dashboard",
   "time-zone": "Time Zone",
-  "miscellaneous": "Miscellaneous"
+  "miscellaneous": "Miscellaneous",
+  "menu.main.work-order.production-line-type": "Production Line Type",
+  "production-line-type": "Production Line Type",
+  "menu.main.production-line-type.maintenance": "Production Line Type Maintenance",
+  "showConfiguration": "Show Configuration"
 }

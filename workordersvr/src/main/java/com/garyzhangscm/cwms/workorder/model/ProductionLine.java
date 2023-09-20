@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -47,6 +49,11 @@ public class ProductionLine extends AuditibleEntity<String>{
     @Transient
     private Location productionLineLocation;
 
+
+    @ManyToOne
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "production_line_type_id")
+    private ProductionLineType type;
 
     @OneToMany(mappedBy = "productionLine")
     @JsonIgnore
@@ -237,5 +244,13 @@ public class ProductionLine extends AuditibleEntity<String>{
 
     public void setGenericPurpose(Boolean genericPurpose) {
         this.genericPurpose = genericPurpose;
+    }
+
+    public ProductionLineType getType() {
+        return type;
+    }
+
+    public void setType(ProductionLineType type) {
+        this.type = type;
     }
 }
