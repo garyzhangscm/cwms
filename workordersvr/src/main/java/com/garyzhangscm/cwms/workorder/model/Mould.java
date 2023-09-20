@@ -24,6 +24,9 @@ public class Mould extends AuditibleEntity<String>{
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "cavity")
+    private Integer cavity;
+
     @Override
     public String toString() {
         try {
@@ -67,5 +70,13 @@ public class Mould extends AuditibleEntity<String>{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Integer getCavity() {
+        return cavity;
+    }
+
+    public void setCavity(Integer cavity) {
+        this.cavity = cavity;
     }
 }

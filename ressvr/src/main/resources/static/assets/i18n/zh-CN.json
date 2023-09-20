@@ -2212,5 +2212,9 @@
   "menu.main.work-order.light-mes-status-dashboard": "三色灯状态看板",
   "light-mes-status-dashboard": "三色灯状态看板",
   "time-zone": "时区",
-  "miscellaneous": "其他"
+  "miscellaneous": "其他",
+  "menu.main.work-order.production-line-type": "生产线类型",
+  "production-line-type": "生产线类型",
+  "menu.main.production-line-type.maintenance": "生产线类型维护",
+  "showConfiguration": "现在配置"
 }

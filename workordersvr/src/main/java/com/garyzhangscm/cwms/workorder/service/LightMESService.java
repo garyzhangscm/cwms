@@ -83,10 +83,12 @@ public class LightMESService {
 
     }
 
-    public List<Machine> getMachineStatusWithCache(Long warehouseId, String machineNo) throws JsonProcessingException {
+    public List<Machine> getMachineStatusWithCache(Long warehouseId, String machineNo,
+                                                   String type) throws JsonProcessingException {
         if (Strings.isNotBlank(machineNo)) {
             // for status of single machine, we will get the status without consider the cache
-            return getMachineStatus(warehouseId, machineNo);
+            return getMachineStatus(warehouseId, machineNo,
+                    type);
         }
         else {
 
@@ -97,15 +99,26 @@ public class LightMESService {
                 String json = objectMapper.writeValueAsString(machineStatus);
                 List<Machine> machines = objectMapper.readValue(json,
                         objectMapper.getTypeFactory().constructCollectionType(List.class, Machine.class));
+                if (Strings.isNotBlank(type)) {
+                    machines = machines.stream().filter(
+                            machine -> type.equalsIgnoreCase(machine.getProductionLineTypeName())
+                    ).collect(Collectors.toList());
+                }
 
                 return machines;
             }
             else {
                 logger.debug("machine status is not in the redis cache, let's get the real time data and save it to the cache");
-                List<Machine> machines = getMachineStatus(warehouseId, null);
+                List<Machine> machines = getMachineStatus(warehouseId, null, type);
 
                 // save the result to the redis
-                redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(2));
+                redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(3));
+
+                if (Strings.isNotBlank(type)) {
+                    machines = machines.stream().filter(
+                            machine -> type.equalsIgnoreCase(machine.getProductionLineTypeName())
+                    ).collect(Collectors.toList());
+                }
 
                 return machines;
 
@@ -113,9 +126,18 @@ public class LightMESService {
         }
 
     }
-    public List<Machine> getMachineStatus(Long warehouseId, String machineNo) {
-        logger.debug("start to get machine status, for single machine? {}",
-                Strings.isBlank(machineNo) ? "N/A" : machineNo);
+    public List<Machine> getMachineStatus(Long warehouseId, String machineNo,
+                                          String type) {
+        logger.debug("start to get machine status, for single machine? {}, of type {}",
+                Strings.isBlank(machineNo) ? "N/A" : machineNo,
+                Strings.isBlank(type) ? "N/A" : type);
+
+        List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
+                null, type, true, false, true);
+
+        List<Machine> resultMachines = new ArrayList<>();
+
+        logger.debug("Got {} production lines from the machine list", productionLines.size());
 
         List<Machine> machines = getMachineList(warehouseId);
         if (Strings.isNotBlank(machineNo)) {
@@ -127,15 +149,13 @@ public class LightMESService {
             return machines;
         }
         logger.debug("Get {} machines", machines.size());
-        // machine from light MES should be configured to have the same machine number
-        // as the production line setup in the system
-        String productionLineNames = machines.stream().map(machine -> machine.getMachineNo()).collect(Collectors.joining(","));
-        List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
-                productionLineNames, false, true);
-        logger.debug("Got {} production lines from the machine list", productionLines.size());
+        // convert the machines from list to map so we can get the machine easily from the production line's name
+        // we will always assume that the machine's name is the same as production line's name
+        Map<String, Machine> machineMap = new HashMap<>();
+        machines.forEach(
+                machine -> machineMap.put(machine.getMachineNo(), machine)
+        );
 
-        Map<String, ProductionLine> productionLineMap = new HashMap<>();
-        productionLines.forEach(productionLine -> productionLineMap.put(productionLine.getName(), productionLine));
 
 
         // setup the current state of the machine
@@ -163,37 +183,51 @@ public class LightMESService {
             logger.debug("we can't find any shift information, we will ignore some of the statistics data for the machine(production line)");
         }
 
+        // loop through each production line. if there's machine setup for the production line, then get the data
+        // from the server. otherwise, leave those data blank
+        for (ProductionLine productionLine : productionLines) {
+            logger.debug("start to get LES machine information for production line {}", productionLine.getName());
+            Machine machine = machineMap.getOrDefault(productionLine.getName(), new Machine());
+            logger.debug("machine found BY NAME {} ? {}",
+                    productionLine.getName(),
+                    Strings.isBlank(machine.getSim()) ? "N/A" : machine.getMachineNo());
 
-        Map<String, Long> finalProducedQuantityMap = producedQuantityMap;
-        machines.forEach(
-                machine -> {
-                    ProductionLine productionLine = productionLineMap.get(machine.getMachineNo());
-                    if (Objects.nonNull(productionLine) && !productionLine.getProductionLineAssignments().isEmpty()) {
-                        productionLine.getProductionLineAssignments().forEach(
-                                productionLineAssignment -> {
-                                    MachineStatistics machineStatistics = getMachineStatistics(
-                                            warehouseId,
-                                            productionLine, productionLineAssignment,
-                                            currentShift, finalProducedQuantityMap
-                                    );
-                                    machine.addMachineStatistics(machineStatistics);
-                                }
-                        );
-                    }
-                    machine.setCurrentState(
-                            lightStatusMap.getOrDefault(machine.getSim(), "")
+            machine.setProductionLineTypeName(Objects.isNull(productionLine.getType()) ? "" : productionLine.getType().getName());
+            if (Strings.isBlank(machine.getMachineNo())) {
+                machine.setMachineNo(productionLine.getName());
+            }
+            logger.debug("the production line has {} assignment",
+                    productionLine.getProductionLineAssignments().size());
+
+            if (!productionLine.getProductionLineAssignments().isEmpty()) {
+
+                logger.debug(">> start to setup the machine's statictis data based on the production line's assignment");
+                for (ProductionLineAssignment productionLineAssignment : productionLine.getProductionLineAssignments()) {
+                    MachineStatistics machineStatistics = getMachineStatistics(
+                            warehouseId,
+                            productionLine, productionLineAssignment,
+                            currentShift, producedQuantityMap
                     );
+                    machine.addMachineStatistics(machineStatistics);
                 }
-        );
-        Collections.sort(machines, Comparator.comparing(Machine::getMachineNo));
+
+            }
+
+            machine.setCurrentState(
+                    lightStatusMap.getOrDefault(machine.getSim(), "")
+            );
+            resultMachines.add(machine);
+        }
+
+        Collections.sort(resultMachines, Comparator.comparing(Machine::getMachineNo));
 
         // setup the machine's pulse count
 
-        for (Machine machine : machines) {
+        for (Machine machine : resultMachines) {
 
             setupPulseCountAndCycleTime(warehouseId, machine, currentShift);
         }
-        return machines;
+        return resultMachines;
 
 
     }
@@ -344,10 +378,10 @@ public class LightMESService {
 
     private void refreshMachineStatus(Long warehouseId){
         try {
-            List<Machine> machines = getMachineStatus(warehouseId, null);
+            List<Machine> machines = getMachineStatus(warehouseId, null, null);
 
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(2));
+            redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(3));
 
         }
         catch (Exception ex) {
