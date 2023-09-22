@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class WorkOrder extends AuditibleEntity<String>{
      ***/
 
     @OneToMany(mappedBy = "workOrder")
+    @Where(clause = "deassigned = null or deassigned = false")
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
     @Column(name = "item_id")

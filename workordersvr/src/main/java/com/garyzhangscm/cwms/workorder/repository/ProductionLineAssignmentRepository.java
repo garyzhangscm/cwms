@@ -35,7 +35,7 @@ public interface ProductionLineAssignmentRepository extends JpaRepository<Produc
 
     @Query("select a from ProductionLineAssignment a where a.workOrder.warehouseId = :warehouseId " +
             " and (" +
-            "        (a.assignedTime <= :startTime and (a.deassigned = false or a.deassignedTime > :startTime))" + // assigned before start time and still assigned at start time
+            "        (a.assignedTime <= :startTime and (a.deassigned = null or a.deassigned = false or a.deassignedTime > :startTime))" + // assigned before start time and still assigned at start time
             "        or " +
             "        (a.assignedTime >= :startTime and a.assignedTime < :endTime)   " + // assigned between the start and end time
             "     ) ")

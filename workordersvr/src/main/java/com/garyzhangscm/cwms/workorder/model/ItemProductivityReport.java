@@ -1,5 +1,8 @@
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +49,17 @@ public class ItemProductivityReport {
         this.actualQuantity = actualQuantity;
         this.finishRate = finishRate;
         this.estimatedFinishRate = estimatedFinishRate;
+    }
+
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public long getWarehouseId() {
