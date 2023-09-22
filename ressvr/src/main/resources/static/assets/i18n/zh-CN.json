@@ -2221,5 +2221,10 @@
   "menu.main.work-order.finish-good-productivity-report": "成品生产效率报表",
   "finish-good-productivity-report": "成品生产效率报表",
   "menu.main.work-order.production-mold-count-history": "产线脉冲历史记录",
-  "production-mold-count-history": "产线脉冲历史记录"
+  "production-mold-count-history": "产线脉冲历史记录",
+  "realTimeGoal": "实时目标",
+  "actualPalletQuantity": "实际产量（托盘数）",
+  "actualQuantity": "实际产量",
+  "finishRate": "达成率",
+  "estimatedFinishRate": "目标达成率"
 }

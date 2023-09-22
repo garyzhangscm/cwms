@@ -33,7 +33,7 @@ public class ItemProductivityReportController {
     ItemProductivityReportService itemProductivityReportService;
 
     @RequestMapping(value="/item-productivity-report/current-shift", method = RequestMethod.GET)
-    public List<ItemProductivityReport> findAllMoulds(@RequestParam Long warehouseId,
+    public List<ItemProductivityReport> getItemProductivityReportForCurrentShift(@RequestParam Long warehouseId,
                                      @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                      @RequestParam(name="itemFamilyName", required = false, defaultValue = "") String itemFamilyName) throws JsonProcessingException {
         return itemProductivityReportService.getItemProductivityReportForCurrentShiftWithCache(warehouseId, itemFamilyName, itemName);
