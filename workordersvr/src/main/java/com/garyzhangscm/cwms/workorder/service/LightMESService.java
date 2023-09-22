@@ -96,7 +96,8 @@ public class LightMESService {
         else {
 
             logger.debug("start to get cached machine status");
-            Object machineStatus = redisTemplate.opsForValue().get(REDIS_KEY_MACHINE_STATUS);
+            String redisKey = REDIS_KEY_MACHINE_STATUS + "-" + warehouseId;
+            Object machineStatus = redisTemplate.opsForValue().get(redisKey);
             if (Objects.nonNull(machineStatus)) {
                 logger.debug("get machine status from cache:\n{}", machineStatus);
                 String json = objectMapper.writeValueAsString(machineStatus);
@@ -115,7 +116,7 @@ public class LightMESService {
                 List<Machine> machines = getMachineStatus(warehouseId, null, type);
 
                 // save the result to the redis
-                redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(3));
+                redisTemplate.opsForValue().set(redisKey, machines, Duration.ofMinutes(3));
 
                 if (Strings.isNotBlank(type)) {
                     machines = machines.stream().filter(
@@ -402,7 +403,7 @@ public class LightMESService {
             List<Machine> machines = getMachineStatus(warehouseId, null, null);
 
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS, machines, Duration.ofMinutes(3));
+            redisTemplate.opsForValue().set(REDIS_KEY_MACHINE_STATUS + "-" + warehouseId, machines, Duration.ofMinutes(3));
 
         }
         catch (Exception ex) {

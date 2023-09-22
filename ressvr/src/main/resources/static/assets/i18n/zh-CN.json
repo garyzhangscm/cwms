@@ -2226,5 +2226,6 @@
   "actualPalletQuantity": "实际产量（托盘数）",
   "actualQuantity": "实际产量",
   "finishRate": "达成率",
-  "estimatedFinishRate": "目标达成率"
+  "estimatedFinishRate": "目标达成率",
+  "autoRecordItemProductivity": "自动记录成品生产效率"
 }

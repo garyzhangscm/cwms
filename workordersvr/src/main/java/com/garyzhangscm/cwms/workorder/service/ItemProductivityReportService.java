@@ -78,7 +78,9 @@ public class ItemProductivityReportService   {
                                                                             String itemFamilyName,
                                                                             String itemName) throws JsonProcessingException {
 
-        Object itemProductivityReportsObj = redisTemplate.opsForValue().get(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT);
+        String redisCacheKey = REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId;
+
+        Object itemProductivityReportsObj = redisTemplate.opsForValue().get(redisCacheKey);
 
         if (Objects.nonNull(itemProductivityReportsObj)) {
             logger.debug("get item productivity reports from cache:\n{}", itemProductivityReportsObj);
@@ -105,7 +107,7 @@ public class ItemProductivityReportService   {
             List<ItemProductivityReport> itemProductivityReports = getItemProductivityReportForCurrentShift(warehouseId, itemFamilyName, itemName);
 
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT, itemProductivityReports, REDIS_CACHE_DURATION);
+            redisTemplate.opsForValue().set(redisCacheKey, itemProductivityReports, REDIS_CACHE_DURATION);
 
             if (Strings.isNotBlank(itemName)) {
                 itemProductivityReports = itemProductivityReports.stream().filter(
@@ -161,6 +163,8 @@ public class ItemProductivityReportService   {
                 productionLineAssignmentService.getProductionAssignmentByTimeRange(warehouseId,
                         startTime, endTime);
 
+        logger.debug("get {} production line assignment within the time range [{}, {}]",
+                productionLineAssignments.size(), startTime, endTime);
         if (Strings.isNotBlank(itemName)) {
             productionLineAssignments = productionLineAssignments.stream().filter(
                     productionLineAssignment -> itemName.equalsIgnoreCase(productionLineAssignment.getItemName())
@@ -179,7 +183,13 @@ public class ItemProductivityReportService   {
         ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
 
         for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
+            logger.debug("start to process production line assignment with work order {}, production line {}",
+                    productionLineAssignment.getWorkOrder().getNumber(),
+                    productionLineAssignment.getProductionLine().getName());
             if (Strings.isBlank(productionLineAssignment.getItemName())) {
+                logger.debug("the process production line assignment with work order {}, production line {}, item name is blank",
+                        productionLineAssignment.getWorkOrder().getNumber(),
+                        productionLineAssignment.getProductionLine().getName());
                 continue;
             }
             ZonedDateTime reportStartTime = startTime;
@@ -188,6 +198,7 @@ public class ItemProductivityReportService   {
             }
 
             ZonedDateTime reportEndTime = endTime;
+
             ItemProductivityReport itemProductivityReport =
                     itemProductivityReportMap.getOrDefault(productionLineAssignment.getItemName(),
                             new ItemProductivityReport(
@@ -196,34 +207,56 @@ public class ItemProductivityReportService   {
                                     productionLineAssignment.getItemFamilyName(),
                                     productionLineAssignment.getProductionLine().getName()
                             ));
+            logger.debug("Before process, the item productivity report for item {}  is \n {} ",
+                    productionLineAssignment.getItemName(),
+                    itemProductivityReport);
             itemProductivityReport.addProductionLineName(productionLineAssignment.getProductionLine().getName());
+
 
             long realTimeGoal = getRealTimeGoal(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime, currentTime);
             itemProductivityReport.setRealTimeGoal(itemProductivityReport.getRealTimeGoal() + realTimeGoal);
+            logger.debug(">>  real time goal within time range [{}, {}]: {}",
+                    reportStartTime, reportEndTime, realTimeGoal);
 
             Pair<Integer, Long> actualQuantities = getActualQuantity(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime, currentTime);
             itemProductivityReport.setActualPalletQuantity(actualQuantities.getFirst());
             itemProductivityReport.setActualQuantity(actualQuantities.getSecond());
+            logger.debug(">>  actual quantities within time range [{}, {}]: {} / {}",
+                    reportStartTime, reportEndTime,
+                    actualQuantities.getFirst(), actualQuantities.getSecond());
 
             Long expectedProducedQuantity = getExpectedProducedQuantity(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime);
+
+            logger.debug(">>  expected produced quantity within time range [{}, {}]: {} / {}",
+                    reportStartTime, reportEndTime, expectedProducedQuantity);
             if (expectedProducedQuantity > 0) {
                 itemProductivityReport.setFinishRate(itemProductivityReport.getActualQuantity() * 1.0 / expectedProducedQuantity);
             }
             else {
                 itemProductivityReport.setFinishRate(0);
             }
+            logger.debug(">>  finish rate within time range [{}, {}]: {} / {}",
+                    reportStartTime, reportEndTime, itemProductivityReport.getFinishRate());
+
             itemProductivityReport.setEstimatedFinishRate(
                       ChronoUnit.MINUTES.between(reportStartTime, currentTime) * 1.0 /
                              ChronoUnit.MINUTES.between(reportStartTime, reportEndTime)
             );
 
+            logger.debug(">>  estimated finish rate within time range [{}, {}]: {} / {}",
+                    reportStartTime, reportEndTime, itemProductivityReport.getEstimatedFinishRate());
+
             itemProductivityReportMap.put(productionLineAssignment.getItemName(), itemProductivityReport);
 
         }
-        return itemProductivityReportMap.values().stream().collect(Collectors.toList());
+        List<ItemProductivityReport> itemProductivityReports =
+                itemProductivityReportMap.values().stream().collect(Collectors.toList());
+        logger.debug("We get {} item productivity reports", itemProductivityReports.size());
+
+        return itemProductivityReports;
 
     }
 
@@ -264,7 +297,7 @@ public class ItemProductivityReportService   {
             List<ItemProductivityReport> itemProductivityReports = getItemProductivityReportForCurrentShift(warehouseId, null, null);
 
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT, itemProductivityReports, REDIS_CACHE_DURATION);
+            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId, itemProductivityReports, REDIS_CACHE_DURATION);
 
         }
         catch (Exception ex) {

@@ -635,6 +635,8 @@ public class ProductionLineAssignmentService   {
                                                                               ZonedDateTime startTime,
                                                                               ZonedDateTime endTime,
                                                                              Boolean loadDetails) {
+        logger.debug("start to get production line assignment between [{}, {}] for warehouse {}",
+                startTime, endTime, warehouseId);
         List<ProductionLineAssignment> productionLineAssignments =
                 productionLineAssignmentRepository.getProductionAssignmentByTimeRange(
                         warehouseId, startTime, endTime

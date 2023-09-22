@@ -2231,5 +2231,6 @@
   "actualPalletQuantity": "Actual Pallet",
   "actualQuantity": "Actual Quantity",
   "finishRate": "Finish Rate",
-  "estimatedFinishRate": "Should Finish"
+  "estimatedFinishRate": "Should Finish",
+  "autoRecordItemProductivity": "Auto Record Item Productivity"
 }
