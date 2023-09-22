@@ -172,7 +172,9 @@ public class LightMESService {
         );
 
         Pair<ZonedDateTime, ZonedDateTime> currentShift = workOrderConfigurationService.getCurrentShift(warehouseId);
-        Map<String, Long> producedQuantityMap = new HashMap<>();
+        // key: production line id - work order id
+        // value: Pair of LPN quantity and total quantity within the time range
+        Map<String, Pair<Integer, Long>> producedQuantityMap = new HashMap<>();
         if (Objects.nonNull(currentShift)) {
             logger.debug("find shift: [{}, {}]",
                     currentShift.getFirst(), currentShift.getSecond());
@@ -314,7 +316,7 @@ public class LightMESService {
                                                    ProductionLine productionLine,
                                                    ProductionLineAssignment productionLineAssignment,
                                                    Pair<ZonedDateTime, ZonedDateTime> currentShift,
-                                                   Map<String, Long> producedQuantityMap) {
+                                                   Map<String, Pair<Integer, Long>> producedQuantityMap) {
         MachineStatistics machineStatistics = new MachineStatistics(
                 productionLineAssignment.getWorkOrder().getItem().getName(),
                 productionLineAssignment.getWorkOrder().getNumber()
@@ -339,7 +341,7 @@ public class LightMESService {
                 int hours = (int)ChronoUnit.HOURS.between(currentShift.getFirst(), currentShift.getSecond());
                 logger.debug("there're {} hours difference between {} and {}",
                         hours, currentShift.getFirst(), currentShift.getSecond());
-                Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantity(
+                Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantityByHours(
                         productionLineCapacity, hours
                 );
                 machineStatistics.setShiftEstimationQuantity(expectedProducedQuantity);
@@ -358,7 +360,7 @@ public class LightMESService {
 
             String key = productionLine.getId() + "-" + productionLineAssignment.getWorkOrder().getId();
             if (producedQuantityMap.containsKey(key)) {
-                machineStatistics.setProducedQuantity(producedQuantityMap.get(key));
+                machineStatistics.setProducedQuantity(producedQuantityMap.get(key).getSecond());
 
                 if (machineStatistics.getShiftEstimationQuantity() > 0) {
 

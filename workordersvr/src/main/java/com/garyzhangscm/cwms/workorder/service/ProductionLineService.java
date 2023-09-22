@@ -228,8 +228,13 @@ public class ProductionLineService implements TestDataInitiableService {
             logger.debug("> production line is disabled");
             return false;
         }
+        List<ProductionLineAssignment> currentProductionLineAssignment =
+                productionLine.getProductionLineAssignments().stream().filter(
+                        productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                ).collect(Collectors.toList());
+
         if (productionLine.getWorkOrderExclusiveFlag() &&
-            productionLine.getProductionLineAssignments().size() > 0) {
+                currentProductionLineAssignment.size() > 0) {
 
             logger.debug("> production line is assigned and setup as exclusive");
             return false;
@@ -600,7 +605,10 @@ public class ProductionLineService implements TestDataInitiableService {
                 productionLines.size(), warehouseId);
         productionLines =
                 productionLines.stream()
-                        .filter(productionLine ->  productionLine.getProductionLineAssignments().size() > 0
+                        .filter(
+                                productionLine ->  productionLine.getProductionLineAssignments().stream().anyMatch(
+                                                        productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                                                    )
                         )
                         .collect(Collectors.toList());
 
