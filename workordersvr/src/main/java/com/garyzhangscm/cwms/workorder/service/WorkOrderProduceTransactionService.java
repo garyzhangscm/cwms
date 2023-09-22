@@ -30,6 +30,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -840,7 +841,7 @@ public class WorkOrderProduceTransactionService  {
     /**
      * Get the total produced quantity,
      * key: production line id - work order id
-     * value: total quantity within the time range
+     * value: Pair of LPN quantity and total quantity within the time range
      * @param warehouseId
      * @param workOrderNumber
      * @param productionLineId
@@ -849,10 +850,10 @@ public class WorkOrderProduceTransactionService  {
      * @param loadDetails
      * @return
      */
-    public Map<String, Long> getProducedQuantityByTimeRange(Long warehouseId, String workOrderNumber,
-                                                  Long productionLineId,
-                                                  ZonedDateTime startTime, ZonedDateTime endTime,
-                                                  boolean loadDetails) {
+    public Map<String, Pair<Integer, Long>> getProducedQuantityByTimeRange(Long warehouseId, String workOrderNumber,
+                                                                 Long productionLineId,
+                                                                 ZonedDateTime startTime, ZonedDateTime endTime,
+                                                                 boolean loadDetails) {
         List<WorkOrderProduceTransaction> workOrderProduceTransactions = findAll(warehouseId, workOrderNumber,
                 productionLineId, false,
                 startTime, endTime, null, loadDetails);
@@ -860,14 +861,20 @@ public class WorkOrderProduceTransactionService  {
                 workOrderProduceTransactions.size(),
                 startTime, endTime);
 
-        Map<String, Long> producedQuantityMap = new HashMap<>();
+        Map<String, Pair<Integer, Long>> producedQuantityMap = new HashMap<>();
         workOrderProduceTransactions.forEach(
                 workOrderProduceTransaction -> {
                     String key = workOrderProduceTransaction.getProductionLine().getId() + "-" +
                             workOrderProduceTransaction.getWorkOrder().getId();
-                    Long quantity = producedQuantityMap.getOrDefault(key, 0l);
-                    quantity += workOrderProduceTransaction.getWorkOrderProducedInventories().stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum();
-                    producedQuantityMap.put(key, quantity);
+                    Pair<Integer, Long> quantities = producedQuantityMap.getOrDefault(key, Pair.of(0, 0l));
+                    Integer lpnQuantity = quantities.getFirst() +
+                            (int)workOrderProduceTransaction.getWorkOrderProducedInventories().stream().map(
+                                    WorkOrderProducedInventory::getLpn
+                            ).distinct().count();
+
+                    Long quantity = quantities.getSecond() +
+                            workOrderProduceTransaction.getWorkOrderProducedInventories().stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum();
+                    producedQuantityMap.put(key, Pair.of(lpnQuantity, quantity));
                 }
         );
         return producedQuantityMap;

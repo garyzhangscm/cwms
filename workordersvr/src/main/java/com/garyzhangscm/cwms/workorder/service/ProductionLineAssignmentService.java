@@ -36,18 +36,12 @@ import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -94,6 +88,11 @@ public class ProductionLineAssignmentService   {
             loadAttribute(productionLineAssignment);
         }
         return productionLineAssignment;
+    }
+    public void loadAttribute(List<ProductionLineAssignment> productionLineAssignments) {
+        productionLineAssignments.forEach(
+                productionLineAssignment -> loadAttribute(productionLineAssignment)
+        );
     }
 
     public void loadAttribute(ProductionLineAssignment productionLineAssignment) {
@@ -212,6 +211,8 @@ public class ProductionLineAssignmentService   {
         for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
 
             assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
+            productionLineAssignment.setAssignedTime(ZonedDateTime.now(ZoneOffset.UTC));
+            productionLineAssignment.setDeassigned(false);
 
         }
         // if the work order is still in PENDING status, change it into work in process
@@ -453,7 +454,11 @@ public class ProductionLineAssignmentService   {
         workOrderQCSampleService.removeQCSamples(productionLineAssignment);
 
         // remove the produdction line assignment
-        delete(productionLineAssignment);
+        productionLineAssignment.setDeassignedTime(ZonedDateTime.now(ZoneOffset.UTC));
+        productionLineAssignment.setDeassigned(true);
+        productionLineAssignment = saveOrUpdate(productionLineAssignment);
+
+        // delete(productionLineAssignment);
         logger.debug("production line assignment removed, let's start to process the material");
 
         processReturnableMaterial(
@@ -617,5 +622,34 @@ public class ProductionLineAssignmentService   {
         else {
             return 0L;
         }
+    }
+
+    /**
+     * Get all production line assignment that was assigned between start time and end time
+     * @param warehouseId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId,
+                                                                              ZonedDateTime startTime,
+                                                                              ZonedDateTime endTime,
+                                                                             Boolean loadDetails) {
+        List<ProductionLineAssignment> productionLineAssignments =
+                productionLineAssignmentRepository.getProductionAssignmentByTimeRange(
+                        warehouseId, startTime, endTime
+                );
+        if (loadDetails) {
+            loadAttribute(productionLineAssignments);
+        }
+        return productionLineAssignments;
+    }
+
+    public List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId,
+                                                                             ZonedDateTime startTime,
+                                                                             ZonedDateTime endTime) {
+        return getProductionAssignmentByTimeRange(
+                warehouseId, startTime, endTime, true
+        );
     }
 }

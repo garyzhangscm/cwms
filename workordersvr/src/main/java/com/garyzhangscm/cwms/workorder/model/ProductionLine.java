@@ -183,6 +183,7 @@ public class ProductionLine extends AuditibleEntity<String>{
     }
 
     public List<ProductionLineAssignment> getProductionLineAssignments() {
+
         return productionLineAssignments;
     }
 

@@ -2222,5 +2222,9 @@
   "production-line-type": "Production Line Type",
   "menu.main.production-line-type.maintenance": "Production Line Type Maintenance",
   "showConfiguration": "Show Configuration",
-  "cycle-time-window-in-minutes": "Cycle Time Window(In Minutes)"
+  "cycle-time-window-in-minutes": "Cycle Time Window(In Minutes)",
+  "menu.main.work-order.finish-good-productivity-report": "Finish Goods Productivity Report",
+  "finish-good-productivity-report": "Finish Goods Productivity Report",
+  "menu.main.work-order.production-mold-count-history": "Production Mold Count History",
+  "production-mold-count-history": "Production Mold Count History"
 }

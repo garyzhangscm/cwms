@@ -36,6 +36,10 @@ public class WorkOrderConfiguration extends AuditibleEntity<String>{
     @Column(name = "over_produce_is_allowed")
     private Boolean overProduceIsAllowed;
 
+    @Column(name = "auto_record_item_productivity")
+    private Boolean autoRecordItemProductivity;
+
+
     @Transient
     private List<ProductionShiftSchedule> productionShiftSchedules = new ArrayList<>();
 
@@ -96,5 +100,13 @@ public class WorkOrderConfiguration extends AuditibleEntity<String>{
 
     public void setProductionShiftSchedules(List<ProductionShiftSchedule> productionShiftSchedules) {
         this.productionShiftSchedules = productionShiftSchedules;
+    }
+
+    public Boolean getAutoRecordItemProductivity() {
+        return autoRecordItemProductivity;
+    }
+
+    public void setAutoRecordItemProductivity(Boolean autoRecordItemProductivity) {
+        this.autoRecordItemProductivity = autoRecordItemProductivity;
     }
 }

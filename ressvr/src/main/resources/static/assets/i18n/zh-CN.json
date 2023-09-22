@@ -2217,5 +2217,9 @@
   "production-line-type": "生产线类型",
   "menu.main.production-line-type.maintenance": "生产线类型维护",
   "showConfiguration": "现在配置",
-  "cycle-time-window-in-minutes": "Cycle Time 计算时间窗口(单位：分钟)"
+  "cycle-time-window-in-minutes": "Cycle Time 计算时间窗口(单位：分钟)",
+  "menu.main.work-order.finish-good-productivity-report": "成品生产效率报表",
+  "finish-good-productivity-report": "成品生产效率报表",
+  "menu.main.work-order.production-mold-count-history": "产线脉冲历史记录",
+  "production-mold-count-history": "产线脉冲历史记录"
 }
