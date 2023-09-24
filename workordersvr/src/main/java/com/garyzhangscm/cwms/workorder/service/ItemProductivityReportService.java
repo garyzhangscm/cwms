@@ -246,8 +246,11 @@ public class ItemProductivityReportService   {
                              ChronoUnit.MINUTES.between(reportStartTime, reportEndTime)
             );
 
-            logger.debug(">>  estimated finish rate within time range [{}, {}]: {} / {}",
-                    reportStartTime, reportEndTime, itemProductivityReport.getEstimatedFinishRate());
+            logger.debug(">>  estimated finish rate within time range [{}, {}], by {}: {} / {} = {}",
+                    reportStartTime, reportEndTime, currentTime,
+                    ChronoUnit.MINUTES.between(reportStartTime, currentTime),
+                    ChronoUnit.MINUTES.between(reportStartTime, reportEndTime),
+                    itemProductivityReport.getEstimatedFinishRate());
 
             itemProductivityReportMap.put(productionLineAssignment.getItemName(), itemProductivityReport);
 
