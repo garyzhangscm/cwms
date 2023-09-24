@@ -210,9 +210,11 @@ public class ProductionLineAssignmentService   {
 
         for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
 
-            assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
             productionLineAssignment.setAssignedTime(ZonedDateTime.now(ZoneOffset.UTC));
+            productionLineAssignment.setDeassignedTime(null);
             productionLineAssignment.setDeassigned(false);
+
+            assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
 
         }
         // if the work order is still in PENDING status, change it into work in process
