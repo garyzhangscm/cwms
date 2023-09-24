@@ -20,16 +20,19 @@ public class MachineStatistics {
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
     @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private ZonedDateTime shiftStartTime;
+    private ZonedDateTime startTime;
 
     @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
     @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private ZonedDateTime shiftEndTime;
+    private ZonedDateTime endTime;
 
     private Long producedQuantity;
-    private Long shiftEstimationQuantity;
+    private Long estimationQuantity;
     private double achievementRate;
+
+    // if the item is an active assignment on the machine
+    private boolean isActive;
 
 
     public MachineStatistics(){
@@ -43,7 +46,7 @@ public class MachineStatistics {
         this.itemName = itemName;
         this.workOrderNumber = workOrderNumber;
         this.producedQuantity = 0l;
-        this.shiftEstimationQuantity = 0l;
+        this.estimationQuantity = 0l;
         this.achievementRate = 0.0;
     }
 
@@ -64,20 +67,21 @@ public class MachineStatistics {
         this.workOrderNumber = workOrderNumber;
     }
 
-    public ZonedDateTime getShiftStartTime() {
-        return shiftStartTime;
+
+    public ZonedDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setShiftStartTime(ZonedDateTime shiftStartTime) {
-        this.shiftStartTime = shiftStartTime;
+    public void setStartTime(ZonedDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public ZonedDateTime getShiftEndTime() {
-        return shiftEndTime;
+    public ZonedDateTime getEndTime() {
+        return endTime;
     }
 
-    public void setShiftEndTime(ZonedDateTime shiftEndTime) {
-        this.shiftEndTime = shiftEndTime;
+    public void setEndTime(ZonedDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public Long getProducedQuantity() {
@@ -98,12 +102,19 @@ public class MachineStatistics {
         this.achievementRate = achievementRate;
     }
 
-    public Long getShiftEstimationQuantity() {
-        return shiftEstimationQuantity;
+    public Long getEstimationQuantity() {
+        return estimationQuantity;
     }
 
-    public void setShiftEstimationQuantity(Long shiftEstimationQuantity) {
-        this.shiftEstimationQuantity = shiftEstimationQuantity;
+    public void setEstimationQuantity(Long estimationQuantity) {
+        this.estimationQuantity = estimationQuantity;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

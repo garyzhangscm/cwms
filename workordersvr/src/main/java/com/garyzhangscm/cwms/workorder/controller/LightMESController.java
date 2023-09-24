@@ -46,12 +46,12 @@ public class LightMESController {
     }
 
 
-    @RequestMapping(value="/light-mes/machine-status", method = RequestMethod.GET)
-    public List<Machine> getMachineStatus(
+    @RequestMapping(value="/light-mes/machine-status/current-shift", method = RequestMethod.GET)
+    public List<Machine> getCurrentShiftMachineStatus(
             @RequestParam Long warehouseId,
             @RequestParam(name = "machineNo", required = false, defaultValue = "") String machineNo,
             @RequestParam(name = "type", required = false, defaultValue = "") String type) throws JsonProcessingException {
-        return lightMESService.getMachineStatusWithCache(warehouseId, machineNo,  type);
+        return lightMESService.getCurrentShiftMachineStatusWithCache(warehouseId, machineNo,  type);
     }
 
 

@@ -44,10 +44,10 @@ public class Machine {
     private int lastTimeWindowCycleTime;
 
     // last hour pulse count
-    private int shiftPulseCount;
+    private int pulseCount;
 
     // cycle time in seconds
-    private int shiftCycleTime;
+    private int cycleTime;
 
 
     public Machine(){}
@@ -235,20 +235,20 @@ public class Machine {
         this.lastTimeWindowCycleTime = lastTimeWindowCycleTime;
     }
 
-    public int getShiftPulseCount() {
-        return shiftPulseCount;
+    public int getPulseCount() {
+        return pulseCount;
     }
 
-    public void setShiftPulseCount(int shiftPulseCount) {
-        this.shiftPulseCount = shiftPulseCount;
+    public void setPulseCount(int pulseCount) {
+        this.pulseCount = pulseCount;
     }
 
-    public int getShiftCycleTime() {
-        return shiftCycleTime;
+    public int getCycleTime() {
+        return cycleTime;
     }
 
-    public void setShiftCycleTime(int shiftCycleTime) {
-        this.shiftCycleTime = shiftCycleTime;
+    public void setCycleTime(int cycleTime) {
+        this.cycleTime = cycleTime;
     }
 
     public String getProductionLineTypeName() {
