@@ -442,12 +442,22 @@ public class ItemProductivityReportService   {
                     productionLineAssignment.getProductionLine().getId(),
                     productionLineAssignment.getProductionLine().getName(),
                     productionLineAssignment.getWorkOrder().getItemId());
+
+            ZonedDateTime actualStartTime = productionLineAssignment.getAssignedTime().isBefore(startTime) ?
+                    startTime : productionLineAssignment.getAssignedTime();
+
+            // check if the item is actively assigned to the production line during the start and end time
+            boolean isActive = Objects.isNull(productionLineAssignment.getDeassignedTime())
+                    || productionLineAssignment.getDeassignedTime().isAfter(endTime);
+            ZonedDateTime actualEndTime = isActive?
+                    endTime : productionLineAssignment.getDeassignedTime();
+
             // see how many we are supposed to produce in this shift
-            int hours = (int) ChronoUnit.MINUTES.between(startTime, endTime);
-            logger.debug("there're {} hours difference between {} and {}",
-                    hours, startTime, endTime);
-            Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantityByHours(
-                    productionLineCapacity, hours
+            int minutes = (int) ChronoUnit.MINUTES.between(actualStartTime, actualEndTime);
+            logger.debug("there're {} minutes difference between {} and {}",
+                    minutes, actualStartTime, actualEndTime);
+            Long expectedProducedQuantity = productionLineCapacityService.getExpectedProduceQuantityByMinutes(
+                    productionLineCapacity, minutes
             );
 
 

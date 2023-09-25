@@ -24,12 +24,15 @@ import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
 import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
 import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
+import com.garyzhangscm.cwms.workorder.model.lightMES.PulseCountHistoryByItem;
 import com.garyzhangscm.cwms.workorder.service.LightMESConfigurationService;
 import com.garyzhangscm.cwms.workorder.service.LightMESService;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 
@@ -63,4 +66,13 @@ public class LightMESController {
     }
 
 
+    @RequestMapping(value="/light-mes/pulse-count-history", method = RequestMethod.GET)
+    public List<PulseCountHistoryByItem> getPulseCountHistory(
+            @RequestParam Long warehouseId,
+            @RequestParam(name = "itemName", required = false, defaultValue = "") String itemName,
+            @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime
+            ) throws JsonProcessingException {
+        return lightMESService.getPulseCountHistory(warehouseId, itemName,  startTime, endTime);
+    }
 }
