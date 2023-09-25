@@ -24,10 +24,7 @@ import com.garyzhangscm.cwms.workorder.clients.LightMESRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightMESConfiguration;
-import com.garyzhangscm.cwms.workorder.model.lightMES.LightStatus;
-import com.garyzhangscm.cwms.workorder.model.lightMES.Machine;
-import com.garyzhangscm.cwms.workorder.model.lightMES.MachineStatistics;
+import com.garyzhangscm.cwms.workorder.model.lightMES.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -470,4 +468,107 @@ public class LightMESService {
 
     }
 
+    /**
+     * Get the pulse count for each item in the time range
+     * @param warehouseId
+     * @param itemName
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public List<PulseCountHistoryByItem> getPulseCountHistory(Long warehouseId, String itemName, ZonedDateTime startTime, ZonedDateTime endTime) {
+
+        // key: item name
+        // value: PulseCountHistoryByItem
+        Map<String, PulseCountHistoryByItem> pulseCountHistoryByItemMap = new HashMap<>();
+
+        List<Machine> machines = getMachineList(warehouseId);
+
+        // get the production lines and its active work order
+        if (machines.isEmpty()) {
+            return new ArrayList<>();
+        }
+        logger.debug("Get {} machines to get pulse count history",
+                machines.size());
+        // key: machine number
+        // value: sim
+        Map<String, String> machineSimMap = new HashMap<>();
+        machines.forEach(
+                machine -> machineSimMap.put(machine.getMachineNo(), machine.getSim())
+        );
+
+        String productionLineNames = machines.stream().map(Machine::getMachineNo).collect(Collectors.joining(","));
+        List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
+                productionLineNames, "", true, false, true);
+        logger.debug("Get {} production lines out of {} machines, by name {}",
+                productionLines.size(),
+                machines.size(),
+                productionLineNames);
+
+        for (ProductionLine productionLine : productionLines) {
+            logger.debug("start to process production line {}", productionLine.getName());
+            for (ProductionLineAssignment productionLineAssignment : productionLine.getProductionLineAssignments()) {
+                // there're 4 times:
+                // 1. production line assigned time
+                // 2. production line deassigned time(if deassigned)
+                // 3. start time
+                // 4. end time
+                logger.debug(">> work order {}, item {} of production line {}",
+                        productionLineAssignment.getWorkOrderNumber(),
+                        productionLineAssignment.getItemName(),
+                        productionLine.getName());
+
+                // item name is specified, we will only return the production line assignment with
+                // the specified item only
+                if (Strings.isNotBlank(itemName) && !itemName.equalsIgnoreCase(productionLineAssignment.getItemName())) {
+                    continue;
+                }
+
+                if (productionLineAssignmentWithinTimeRange(productionLineAssignment, startTime, endTime)) {
+                    ZonedDateTime reportStartTime = productionLineAssignment.getAssignedTime().isBefore(startTime) ?
+                            startTime : productionLineAssignment.getAssignedTime();
+                    ZonedDateTime reportEndTime = endTime;
+                    if (Objects.nonNull(productionLineAssignment.getDeassignedTime()) &&
+                        productionLineAssignment.getDeassignedTime().isBefore(endTime)) {
+                        reportEndTime = productionLineAssignment.getDeassignedTime();
+                    }
+
+                    logger.debug(">>>> start to get pulse count for work order {}, item {} of production line {}   " +
+                                    " within required range [{}, {}]",
+                            productionLineAssignment.getWorkOrderNumber(),
+                            productionLineAssignment.getItemName(),
+                            productionLine.getName(),
+                            reportStartTime, reportEndTime);
+
+                    // get the pulse count for this production line between the start and end time
+                    int pulseCount = lightMESRestemplateClient.getSingleLightPulseByTimeRange(warehouseId,
+                            reportStartTime, reportEndTime, machineSimMap.get(productionLine.getName()));
+                    PulseCountHistoryByItem pulseCountHistoryByItem = pulseCountHistoryByItemMap.getOrDefault(
+                            productionLineAssignment.getItemName(),
+                            new PulseCountHistoryByItem(productionLineAssignment.getItemName())
+                    );
+                    logger.debug(">>>> add count {} to item {}",
+                            pulseCount, productionLineAssignment.getItemName());
+
+                    pulseCountHistoryByItem.setCount(pulseCountHistoryByItem.getCount() + pulseCount);
+                    pulseCountHistoryByItemMap.put(productionLineAssignment.getItemName(),
+                            pulseCountHistoryByItem);
+                }
+                else {
+                    logger.debug(">>>> ignore work order {}, item {} of production line {} as " +
+                            "  the production assignment [{}, {}] is not within required range [{}, {}]",
+                            productionLineAssignment.getWorkOrderNumber(),
+                            productionLineAssignment.getItemName(),
+                            productionLine.getName(),
+                            productionLineAssignment.getAssignedTime(),
+                            Objects.isNull(productionLineAssignment.getDeassignedTime()) ? "N/A" : productionLineAssignment.getDeassignedTime(),
+                            startTime,
+                            endTime);
+                }
+            }
+        }
+
+        return pulseCountHistoryByItemMap.values().stream().collect(Collectors.toList());
+
+    }
 }

@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.workorder.model.lightMES;
 
 public class PulseCount {
 
+
     String sim;
     int countSize;
 
