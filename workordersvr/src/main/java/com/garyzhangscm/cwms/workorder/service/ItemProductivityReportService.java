@@ -38,10 +38,7 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -204,25 +201,29 @@ public class ItemProductivityReportService   {
                             new ItemProductivityReport(
                                     warehouseId,
                                     productionLineAssignment.getItemName(),
-                                    productionLineAssignment.getItemFamilyName(),
-                                    productionLineAssignment.getProductionLine().getName()
+                                    productionLineAssignment.getItemFamilyName()
                             ));
             logger.debug("Before process, the item productivity report for item {}  is \n {} ",
                     productionLineAssignment.getItemName(),
                     itemProductivityReport);
-            itemProductivityReport.addProductionLineName(productionLineAssignment.getProductionLine().getName());
 
+            ItemProductionLineProductivityReport itemProductionLineProductivityReport =
+                    new ItemProductionLineProductivityReport(
+                            warehouseId,
+                            productionLineAssignment.getItemName(),
+                            productionLineAssignment.getItemFamilyName(),
+                            productionLineAssignment.getProductionLine().getName());
 
             long realTimeGoal = getRealTimeGoal(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime, currentTime);
-            itemProductivityReport.setRealTimeGoal(itemProductivityReport.getRealTimeGoal() + realTimeGoal);
+            itemProductionLineProductivityReport.setRealTimeGoal(realTimeGoal);
             logger.debug(">>  real time goal within time range [{}, {}]: {}",
                     reportStartTime, reportEndTime, realTimeGoal);
 
             Pair<Integer, Long> actualQuantities = getActualQuantity(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime, currentTime);
-            itemProductivityReport.setActualPalletQuantity(actualQuantities.getFirst());
-            itemProductivityReport.setActualQuantity(actualQuantities.getSecond());
+            itemProductionLineProductivityReport.setActualPalletQuantity(actualQuantities.getFirst());
+            itemProductionLineProductivityReport.setActualQuantity(actualQuantities.getSecond());
             logger.debug(">>  actual quantities within time range [{}, {}]: {} / {}",
                     reportStartTime, reportEndTime,
                     actualQuantities.getFirst(), actualQuantities.getSecond());
@@ -230,36 +231,69 @@ public class ItemProductivityReportService   {
             Long expectedProducedQuantity = getExpectedProducedQuantity(warehouseId,
                     productionLineAssignment, reportStartTime, reportEndTime);
 
+            itemProductionLineProductivityReport.setExpectedProducedQuantity(expectedProducedQuantity);
+
             logger.debug(">>  expected produced quantity within time range [{}, {}]: {} / {}",
-                    reportStartTime, reportEndTime, expectedProducedQuantity);
-            if (expectedProducedQuantity > 0) {
-                itemProductivityReport.setFinishRate(itemProductivityReport.getActualQuantity() * 1.0 / expectedProducedQuantity);
-            }
-            else {
-                itemProductivityReport.setFinishRate(0);
-            }
-            logger.debug(">>  finish rate within time range [{}, {}]: {} / {}",
-                    reportStartTime, reportEndTime, itemProductivityReport.getFinishRate());
+                    reportStartTime, reportEndTime, itemProductionLineProductivityReport.getExpectedProducedQuantity());
 
-            itemProductivityReport.setEstimatedFinishRate(
-                      ChronoUnit.MINUTES.between(reportStartTime, currentTime) * 1.0 /
-                             ChronoUnit.MINUTES.between(reportStartTime, reportEndTime)
-            );
+            logger.debug("add itemProductionLineProductivityReport:\n {}", itemProductionLineProductivityReport);
+            itemProductivityReport.addItemProductionLineProductivityReport(itemProductionLineProductivityReport);
 
-            logger.debug(">>  estimated finish rate within time range [{}, {}], by {}: {} / {} = {}",
-                    reportStartTime, reportEndTime, currentTime,
-                    ChronoUnit.MINUTES.between(reportStartTime, currentTime),
-                    ChronoUnit.MINUTES.between(reportStartTime, reportEndTime),
-                    itemProductivityReport.getEstimatedFinishRate());
 
-            itemProductivityReportMap.put(productionLineAssignment.getItemName(), itemProductivityReport);
+            logger.debug("after process, the item productivity report for item {}  is \n {} ",
+                    productionLineAssignment.getItemName(),
+                    itemProductivityReport);
+
+            itemProductivityReportMap.put(productionLineAssignment.getItemName(),
+                    itemProductivityReport);
 
         }
         List<ItemProductivityReport> itemProductivityReports =
                 itemProductivityReportMap.values().stream().collect(Collectors.toList());
         logger.debug("We get {} item productivity reports", itemProductivityReports.size());
 
+        // sort by item name
+        Collections.sort(itemProductivityReports, Comparator.comparing(ItemProductivityReport::getItemName));
         return itemProductivityReports;
+
+    }
+
+    /**
+     * Get the estimated finish rate based on the time, and whether the production line is still assigned
+     * @param startTime
+     * @param endTime
+     * @param productionLineAssignment
+     * @return
+     */
+    private double getEstimatedFinishRate(ZonedDateTime startTime, ZonedDateTime endTime, ProductionLineAssignment productionLineAssignment) {
+        ZonedDateTime productionStartTime = startTime;
+        ZonedDateTime productionEndTime = endTime;
+        if (productionLineAssignment.getAssignedTime().isAfter(startTime)) {
+            productionStartTime = productionLineAssignment.getAssignedTime();
+        }
+        if (Objects.nonNull(productionLineAssignment.getDeassignedTime()) && productionLineAssignment.getDeassignedTime().isBefore(endTime)) {
+            productionEndTime = productionLineAssignment.getDeassignedTime();
+        }
+        ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
+
+        logger.debug(">>  start to calculate estimated finish rate within time range [{}, {}], by {}: {} / {} = {}",
+                productionStartTime, productionEndTime, currentTime);
+
+        if (currentTime.isBefore(productionStartTime)) {
+            // the machine is not start yet at the start time
+            return 0;
+        }
+        else if (currentTime.isAfter(productionEndTime)) {
+            // the production activity is already end, we assume that the finish
+            // rate should be 100% when the production is done
+            return 1;
+        }
+        else {
+
+
+            return ChronoUnit.MINUTES.between(productionStartTime, currentTime) * 1.0 /
+                    ChronoUnit.MINUTES.between(productionStartTime, productionEndTime);
+        }
 
     }
 

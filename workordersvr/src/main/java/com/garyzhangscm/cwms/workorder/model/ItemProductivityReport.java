@@ -3,7 +3,9 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ItemProductivityReport {
@@ -21,20 +23,22 @@ public class ItemProductivityReport {
 
     private long actualQuantity;
 
+
     private double finishRate;
 
     // estimated finish rate based on the estimation
     // of productivity and the hours already passed in this shift
     private double estimatedFinishRate;
 
+    List<ItemProductionLineProductivityReport> itemProductionLineProductivityReports = new ArrayList<>();
+
     public ItemProductivityReport(){}
 
-    public ItemProductivityReport(long warehouseId, String itemName, String itemFamilyName, String productionLineName ) {
+    public ItemProductivityReport(long warehouseId, String itemName, String itemFamilyName) {
         this.warehouseId = warehouseId;
         this.itemName = itemName;
         this.itemFamilyName = itemFamilyName;
         this.productionLineNames = new HashSet<>();
-        this.productionLineNames.add(productionLineName);
     }
 
     public ItemProductivityReport(long warehouseId, String itemName, String itemFamilyName,
@@ -135,5 +139,35 @@ public class ItemProductivityReport {
 
     public void setItemFamilyName(String itemFamilyName) {
         this.itemFamilyName = itemFamilyName;
+    }
+
+
+    public List<ItemProductionLineProductivityReport> getItemProductionLineProductivityReports() {
+        return itemProductionLineProductivityReports;
+    }
+
+    public void setItemProductionLineProductivityReports(List<ItemProductionLineProductivityReport> itemProductionLineProductivityReports) {
+        this.itemProductionLineProductivityReports = itemProductionLineProductivityReports;
+    }
+
+    public void addItemProductionLineProductivityReport(ItemProductionLineProductivityReport itemProductionLineProductivityReport) {
+        this.itemProductionLineProductivityReports.add(itemProductionLineProductivityReport);
+
+        this.productionLineNames.add(itemProductionLineProductivityReport.getProductionLineName());
+
+        // calculate all the quantites
+        this.realTimeGoal += itemProductionLineProductivityReport.getRealTimeGoal();
+
+        this.actualPalletQuantity += itemProductionLineProductivityReport.getActualPalletQuantity();
+
+        this.actualQuantity += itemProductionLineProductivityReport.getActualQuantity();
+
+        this.finishRate = this.actualQuantity * 1.0 / this.realTimeGoal;
+
+        long totalExpectedProducedQuantity = this.itemProductionLineProductivityReports.stream().mapToLong(
+                ItemProductionLineProductivityReport::getExpectedProducedQuantity
+        ).sum();
+
+        this.estimatedFinishRate = this.realTimeGoal * 1.0 / totalExpectedProducedQuantity;
     }
 }
