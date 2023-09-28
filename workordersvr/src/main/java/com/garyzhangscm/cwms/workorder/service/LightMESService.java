@@ -96,6 +96,10 @@ public class LightMESService {
 
             logger.debug("start to get cached machine status");
             String redisKey = REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId;
+
+            logger.debug("start to get machine status from redis with key {}",
+                    redisKey);
+
             Object machineStatus = redisTemplate.opsForValue().get(redisKey);
             if (Objects.nonNull(machineStatus)) {
                 logger.debug("get machine status from cache:\n{}", machineStatus);
@@ -115,7 +119,10 @@ public class LightMESService {
                 List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, type);
 
                 // save the result to the redis
+                logger.debug("within http session: save {} machines to redis with key {}",
+                        machines.size(), redisKey);
                 redisTemplate.opsForValue().set(redisKey, machines, Duration.ofMinutes(3));
+                logger.debug("within http session: redis cached!");
 
                 if (Strings.isNotBlank(type)) {
                     machines = machines.stream().filter(
@@ -456,9 +463,11 @@ public class LightMESService {
         try {
             List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, null);
 
+            logger.debug("By schedule: save {} machines to redis with key {}",
+                    machines.size(), REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId);
             // save the result to the redis
             redisTemplate.opsForValue().set(REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId, machines, Duration.ofMinutes(3));
-
+            logger.debug("By schedule: redis cached!");
         }
         catch (Exception ex) {
             // ignore the exception

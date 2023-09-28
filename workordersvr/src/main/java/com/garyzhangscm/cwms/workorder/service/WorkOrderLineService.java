@@ -368,7 +368,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
         WorkOrder workOrder = workOrderLine.getWorkOrder();
         List<ProductionLineAssignment> productionLineAssignments =
                 productionLineAssignmentService.findAll(workOrderLine.getWorkOrder().getWarehouseId(),
-                        null,"", workOrder.getId(), null);
+                        null,"", workOrder.getId(), null, false);
         // loop through all production line assignment until we find the one match with the pick's destination location id
         // which should be the production line's in staging location
         long workOrderLineId = workOrderLine.getId();

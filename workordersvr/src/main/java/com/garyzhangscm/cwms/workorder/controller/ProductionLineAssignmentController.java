@@ -41,8 +41,10 @@ public class ProductionLineAssignmentController {
                 @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                 @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
                 @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
-                @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames) {
-        return productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, workOrderId, productionLineNames);
+                @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames,
+                @RequestParam(name="includeDeassigned", required = false, defaultValue = "") Boolean includeDeassigned) {
+        return productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, workOrderId,
+                productionLineNames, includeDeassigned);
     }
 
 
@@ -72,12 +74,12 @@ public class ProductionLineAssignmentController {
 
     @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/deassign", method = RequestMethod.POST)
-    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
             @RequestParam Long workOrderId,
             @RequestParam Long productionLineId,
             @RequestBody List<Inventory> returnableMaterial) {
 
-        return productionLineAssignmentService.deassignWorkOrderToProductionLines(workOrderId,
+        return productionLineAssignmentService.deassignWorkOrderFromProductionLines(workOrderId,
                 productionLineId, returnableMaterial);
     }
 
