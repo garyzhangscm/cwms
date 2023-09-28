@@ -71,7 +71,8 @@ public class ProductionLineKanbanService {
                 currentLocalDateTime );
 
         List<ProductionLineAssignment> productionLineAssignments
-                = productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, null, productionLineNames);
+                = productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, null,
+                productionLineNames, false);
 
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {},we found all production line assignment",

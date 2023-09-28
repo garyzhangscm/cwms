@@ -112,8 +112,10 @@ public class ProductionLineAssignmentService   {
                                                   Long productionLineId,
                                                   String productionLineIds,
                                                   Long workOrderId,
-                                                  String productionLineNames) {
-        return productionLineAssignmentRepository.findAll(
+                                                  String productionLineNames,
+                                                  Boolean includeDeassigned) {
+        List<ProductionLineAssignment> productionLineAssignments =
+                productionLineAssignmentRepository.findAll(
                         (Root<ProductionLineAssignment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                             List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -149,11 +151,19 @@ public class ProductionLineAssignmentService   {
                                 predicates.add(criteriaBuilder.equal(joinWorkOrder.get("id"), workOrderId));
 
                             }
+
                             Predicate[] p = new Predicate[predicates.size()];
                             return criteriaBuilder.and(predicates.toArray(p));
                         }
                 );
 
+        if (!Boolean.TRUE.equals(includeDeassigned)) {
+            productionLineAssignments = productionLineAssignments.stream().filter(
+                    productionLineAssignment ->
+                        Objects.isNull(productionLineAssignment.getDeassigned()) || productionLineAssignment.getDeassigned().equals(false))
+                    .collect(Collectors.toList());
+        }
+        return productionLineAssignments;
     }
 
     public ProductionLineAssignment findByWorkOrderAndProductionLine(Long productionLineId,
@@ -196,7 +206,7 @@ public class ProductionLineAssignmentService   {
 
     public void removeProductionLineAssignmentForWorkOrder(Long warehouseId, Long workOrderId) {
         List<ProductionLineAssignment> productionLineAssignments = findAll(
-                warehouseId, null, null, workOrderId, null
+                warehouseId, null, null, workOrderId, null, false
         );
         productionLineAssignments.forEach(productionLineAssignment -> {
             delete(productionLineAssignment);
@@ -229,9 +239,11 @@ public class ProductionLineAssignmentService   {
             workOrderService.save(workOrder);
         }
 
-        return findAll(workOrder.getWarehouseId(), null, null, workOrderId, null);
+        return findAll(workOrder.getWarehouseId(), null, null, workOrderId, null, false);
 
     }
+
+    /**
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(Long warehouseId, Long workOrderId, String productionLineIds, String quantities) {
         // remove the assignment for the work order first
 
@@ -266,7 +278,7 @@ public class ProductionLineAssignmentService   {
 
         return findAll(warehouseId, null, null, workOrderId, null);
     }
-
+**/
 
 
 
@@ -335,7 +347,7 @@ public class ProductionLineAssignmentService   {
 
     public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long warehouseId, Long productionLineId) {
         List<ProductionLineAssignment> productionLineAssignments =
-                findAll(warehouseId, productionLineId, null, null, null);
+                findAll(warehouseId, productionLineId, null, null, null, false);
 
         logger.debug("get {} assignment from production line {}, warehouse id {}",
             productionLineAssignments.size(), productionLineId, warehouseId);
@@ -433,7 +445,13 @@ public class ProductionLineAssignmentService   {
     }
 
     @Transactional
-    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
+            Long workOrderId, Long productionLineId) {
+        return deassignWorkOrderFromProductionLines(workOrderId,
+                productionLineId, new ArrayList<>());
+    }
+    @Transactional
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
             Long workOrderId, Long productionLineId, List<Inventory> returnableMaterial) {
 
         logger.debug("Start to deassign work order {} from production line {}",
@@ -442,6 +460,7 @@ public class ProductionLineAssignmentService   {
         ProductionLineAssignment productionLineAssignment =
                 workOrder.getProductionLineAssignments().stream().filter(
                         existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)
+                            && (Objects.isNull(existingProductionLineAssignment.getDeassigned()) || existingProductionLineAssignment.getDeassigned().equals(false))
                 ).findFirst()
                         .orElseThrow(() ->
                                 WorkOrderException.raiseException(
@@ -463,8 +482,11 @@ public class ProductionLineAssignmentService   {
         // delete(productionLineAssignment);
         logger.debug("production line assignment removed, let's start to process the material");
 
-        processReturnableMaterial(
-                workOrder, productionLineAssignment.getProductionLine(), returnableMaterial);
+        if (Objects.nonNull(returnableMaterial) && !returnableMaterial.isEmpty()) {
+            logger.debug("start to return material");
+            processReturnableMaterial(
+                    workOrder, productionLineAssignment.getProductionLine(), returnableMaterial);
+        }
 
         // we will cancell all the existsing picks that will come into this production line
         logger.debug("Start to cancel pick that will go into the production line {}",
