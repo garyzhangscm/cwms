@@ -41,6 +41,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -853,6 +854,7 @@ public class WorkOrderProduceTransactionService  {
     public Map<String, Pair<Integer, Long>> getProducedQuantityByTimeRange(Long warehouseId, String workOrderNumber,
                                                                  Long productionLineId,
                                                                  ZonedDateTime startTime, ZonedDateTime endTime,
+                                                                 Boolean includeNonAvailableQuantity,
                                                                  boolean loadDetails) {
         List<WorkOrderProduceTransaction> workOrderProduceTransactions = findAll(warehouseId, workOrderNumber,
                 productionLineId, false,
@@ -862,18 +864,54 @@ public class WorkOrderProduceTransactionService  {
                 startTime, endTime);
 
         Map<String, Pair<Integer, Long>> producedQuantityMap = new HashMap<>();
+
+        // in case the user only want to count the available quantity
+        InventoryStatus availableInventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(warehouseId);
+
         workOrderProduceTransactions.forEach(
                 workOrderProduceTransaction -> {
+                    // get the produced LPN count and total quantity from this production transaction
                     String key = workOrderProduceTransaction.getProductionLine().getId() + "-" +
                             workOrderProduceTransaction.getWorkOrder().getId();
                     Pair<Integer, Long> quantities = producedQuantityMap.getOrDefault(key, Pair.of(0, 0l));
+
+                    List<WorkOrderProducedInventory> workOrderProducedInventories =
+                            workOrderProduceTransaction.getWorkOrderProducedInventories();
+                    // see if we will need to include non available inventories
+                    if (Objects.nonNull(availableInventoryStatus) && !Boolean.TRUE.equals(includeNonAvailableQuantity)) {
+                        // we don't want to include the non available status
+                        workOrderProducedInventories = workOrderProducedInventories.stream().filter(
+                                workOrderProducedInventory ->
+                                        availableInventoryStatus.getId().equals(workOrderProducedInventory.getInventoryStatusId())
+                        ).collect(Collectors.toList());
+                    }
+
+                    // get all the reversed LPN as we will need to deduct the quantity and LPN count
+                    Map<String, Long> reversedLPNs = new HashMap<>();
+                    Long totalReversedQuantity = 0l;
+                    for (WorkOrderReverseProductionInventory workOrderReverseProductionInventory :
+                        workOrderProduceTransaction.getWorkOrderReverseProductionInventories()) {
+
+                        long lpnAlreadyReversedQuantity = reversedLPNs.getOrDefault(
+                                workOrderReverseProductionInventory.getLpn(), 0l
+                        );
+                        reversedLPNs.put(workOrderReverseProductionInventory.getLpn(),
+                                    lpnAlreadyReversedQuantity + workOrderReverseProductionInventory.getQuantity());
+
+                        totalReversedQuantity += workOrderReverseProductionInventory.getQuantity();
+                    }
+
                     Integer lpnQuantity = quantities.getFirst() +
-                            (int)workOrderProduceTransaction.getWorkOrderProducedInventories().stream().map(
-                                    WorkOrderProducedInventory::getLpn
-                            ).distinct().count();
+                            // filter out the reversed inventory
+                            (int)workOrderProducedInventories.stream()
+                                    .filter(workOrderProducedInventory ->
+                                                    workOrderProducedInventory.getQuantity() >
+                                                            reversedLPNs.getOrDefault(workOrderProducedInventory.getLpn(), 0l)
+                                            ).map(WorkOrderProducedInventory::getLpn).distinct().count();
 
                     Long quantity = quantities.getSecond() +
-                            workOrderProduceTransaction.getWorkOrderProducedInventories().stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum();
+                            workOrderProducedInventories.stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum()
+                            - totalReversedQuantity;
                     producedQuantityMap.put(key, Pair.of(lpnQuantity, quantity));
                 }
         );

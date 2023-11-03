@@ -33,10 +33,14 @@ public class ItemProductivityReportController {
     ItemProductivityReportService itemProductivityReportService;
 
     @RequestMapping(value="/item-productivity-report/current-shift", method = RequestMethod.GET)
-    public List<ItemProductivityReport> getItemProductivityReportForCurrentShift(@RequestParam Long warehouseId,
-                                     @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                     @RequestParam(name="itemFamilyName", required = false, defaultValue = "") String itemFamilyName) throws JsonProcessingException {
-        return itemProductivityReportService.getItemProductivityReportForCurrentShiftWithCache(warehouseId, itemFamilyName, itemName);
+    public List<ItemProductivityReport> getItemProductivityReportForCurrentShift(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+            @RequestParam(name="itemFamilyName", required = false, defaultValue = "") String itemFamilyName,
+            @RequestParam(name = "includeNonAvailableQuantity", required = false, defaultValue = "false") Boolean includeNonAvailableQuantity)
+            throws JsonProcessingException {
+        return itemProductivityReportService.getItemProductivityReportForCurrentShiftWithCache(
+                warehouseId, itemFamilyName, itemName, includeNonAvailableQuantity);
     }
 
 
