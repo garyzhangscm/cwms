@@ -783,6 +783,19 @@ public class InventoryServiceRestemplateClient {
         );
 
     }
+    public InventoryStatus getAvailableInventoryStatus(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory-statuses/available")
+                        .queryParam("warehouseId", warehouseId);
 
+        return restTemplateProxy.exchange(
+                InventoryStatus.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
 }

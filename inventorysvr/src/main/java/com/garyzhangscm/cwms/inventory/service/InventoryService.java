@@ -1042,7 +1042,14 @@ public class InventoryService {
                      inventory.getPickId(),
                      inventory.getId(),
                      inventory.getLpn());
-            inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+             try {
+
+                 inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+             }
+             catch (Exception ex) {
+                 // ignore the error
+                 ex.printStackTrace();
+             }
          }
          logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the allocated by pick for LPN {}",
          ChronoUnit.MILLIS.between(
@@ -1053,7 +1060,14 @@ public class InventoryService {
 
          if (Objects.nonNull(inventory.getWorkOrderId()) &&
                 Objects.isNull(inventory.getWorkOrder())) {
-             inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+             try {
+
+                 inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+             }
+             catch (Exception ex) {
+                 ex.printStackTrace();
+                 // ignore the error
+             }
 
          }
          logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",
@@ -1064,19 +1078,33 @@ public class InventoryService {
 
         if (Objects.nonNull(inventory.getReceiptId()) &&
                 Objects.isNull(inventory.getReceipt())) {
-            inventory.setReceipt(inboundServiceRestemplateClient.getReceiptById(inventory.getReceiptId()));
+            try {
+
+                inventory.setReceipt(inboundServiceRestemplateClient.getReceiptById(inventory.getReceiptId()));
+            }
+            catch (Exception ex) {
+                // ignore the error
+                ex.printStackTrace();
+            }
 
         }
         if (Objects.nonNull(inventory.getReceiptLineId()) &&
                 Objects.isNull(inventory.getReceiptLine()) &&
                 Objects.nonNull(inventory.getReceipt())) {
 
-            inventory.setReceiptLine(
-                    inventory.getReceipt().getReceiptLines().stream().filter(
-                            receiptLine -> inventory.getReceiptLineId().equals(receiptLine.getId())
-                    ).findFirst().orElse(null)
-            );
+            try {
 
+                inventory.setReceiptLine(
+                        inventory.getReceipt().getReceiptLines().stream().filter(
+                                receiptLine -> inventory.getReceiptLineId().equals(receiptLine.getId())
+                        ).findFirst().orElse(null)
+                );
+
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                // ignore the error
+            }
         }
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",

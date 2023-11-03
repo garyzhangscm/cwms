@@ -72,10 +72,16 @@ public class ItemProductivityReportService   {
     private ObjectMapper objectMapper;
 
     public List<ItemProductivityReport> getItemProductivityReportForCurrentShiftWithCache(Long warehouseId,
-                                                                            String itemFamilyName,
-                                                                            String itemName) throws JsonProcessingException {
+                                                                                            String itemFamilyName,
+                                                                                            String itemName,
+                                                                                          Boolean includeNonAvailableQuantity) throws JsonProcessingException {
 
-        String redisCacheKey = REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId;
+        // default to include the non available quantity
+        if (Objects.isNull(includeNonAvailableQuantity)) {
+            includeNonAvailableQuantity = false;
+        }
+
+        String redisCacheKey = REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId + "-" + includeNonAvailableQuantity;
 
         Object itemProductivityReportsObj = redisTemplate.opsForValue().get(redisCacheKey);
 
@@ -101,7 +107,8 @@ public class ItemProductivityReportService   {
         }
         else {
             logger.debug("item productivity reports is not in the redis cache, let's get the real time data and save it to the cache");
-            List<ItemProductivityReport> itemProductivityReports = getItemProductivityReportForCurrentShift(warehouseId, itemFamilyName, itemName);
+            List<ItemProductivityReport> itemProductivityReports =
+                    getItemProductivityReportForCurrentShift(warehouseId, itemFamilyName, itemName, includeNonAvailableQuantity);
 
             // save the result to the redis
             redisTemplate.opsForValue().set(redisCacheKey, itemProductivityReports, REDIS_CACHE_DURATION);
@@ -126,13 +133,15 @@ public class ItemProductivityReportService   {
 
     public List<ItemProductivityReport> getItemProductivityReportForCurrentShift(Long warehouseId,
                                                                                  String itemFamilyName,
-                                                                                 String itemName) {
+                                                                                 String itemName,
+                                                                                 Boolean includeNonAvailableQuantity) {
 
 
         Pair<ZonedDateTime, ZonedDateTime> currentShift = workOrderConfigurationService.getCurrentShift(warehouseId);
         return getItemProductivityReports(warehouseId,
                 currentShift.getFirst(), currentShift.getSecond(),
-                itemFamilyName, itemName);
+                itemFamilyName, itemName,
+                includeNonAvailableQuantity);
 
     }
 
@@ -140,7 +149,8 @@ public class ItemProductivityReportService   {
                                                                    ZonedDateTime startTime,
                                                                    ZonedDateTime endTime,
                                                                    String itemFamilyName,
-                                                                   String itemName) {
+                                                                   String itemName,
+                                                                   Boolean includeNonAvailableQuantity) {
         if (Objects.isNull(startTime)) {
             throw WorkOrderException.raiseException("can't get item productivity report as there's no start time");
         }
@@ -221,7 +231,9 @@ public class ItemProductivityReportService   {
                     reportStartTime, reportEndTime, realTimeGoal);
 
             Pair<Integer, Long> actualQuantities = getActualQuantity(warehouseId,
-                    productionLineAssignment, reportStartTime, reportEndTime, currentTime);
+                    productionLineAssignment,
+                    reportStartTime, reportEndTime, currentTime,
+                    includeNonAvailableQuantity);
             itemProductionLineProductivityReport.setActualPalletQuantity(actualQuantities.getFirst());
             itemProductionLineProductivityReport.setActualQuantity(actualQuantities.getSecond());
             logger.debug(">>  actual quantities within time range [{}, {}]: {} / {}",
@@ -331,10 +343,18 @@ public class ItemProductivityReportService   {
 
     private void refreshItemProductivityReportForCurrentShift(Long warehouseId){
         try {
-            List<ItemProductivityReport> itemProductivityReports = getItemProductivityReportForCurrentShift(warehouseId, null, null);
+            List<ItemProductivityReport> itemProductivityReports =
+                    getItemProductivityReportForCurrentShift(warehouseId, null, null, true);
 
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId, itemProductivityReports, REDIS_CACHE_DURATION);
+            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId + "-true", itemProductivityReports, REDIS_CACHE_DURATION);
+
+            itemProductivityReports =
+                    getItemProductivityReportForCurrentShift(warehouseId, null, null, false);
+
+            // save the result to the redis
+            redisTemplate.opsForValue().set(REDIS_KEY_ITEM_PRODUCTIVITY_REPORT + "-" + warehouseId + "-false", itemProductivityReports, REDIS_CACHE_DURATION);
+
 
         }
         catch (Exception ex) {
@@ -425,8 +445,11 @@ public class ItemProductivityReportService   {
      * @return
      */
     public Pair<Integer, Long> getActualQuantity(Long warehouseId,
-                                ProductionLineAssignment productionLineAssignment, ZonedDateTime startTime,
-                                ZonedDateTime endTime, ZonedDateTime currentTime) {
+                                                 ProductionLineAssignment productionLineAssignment,
+                                                 ZonedDateTime startTime,
+                                                 ZonedDateTime endTime,
+                                                 ZonedDateTime currentTime,
+                                                 Boolean includeNonAvailableQuantity) {
 
         ZonedDateTime reportStartTime = startTime;
         if (productionLineAssignment.getAssignedTime().isAfter(reportStartTime)) {
@@ -448,8 +471,10 @@ public class ItemProductivityReportService   {
         // key: production line id - work order id
         // value: Pair of LPN quantity and total quantity within the time range
         Map<String, Pair<Integer, Long>>  producedQuantityMap = workOrderProduceTransactionService.getProducedQuantityByTimeRange(
-                warehouseId, productionLineAssignment.getWorkOrder().getNumber(), productionLineAssignment.getProductionLine().getId(),
-                reportStartTime, reportEndTime, true);
+                warehouseId, productionLineAssignment.getWorkOrder().getNumber(),
+                productionLineAssignment.getProductionLine().getId(),
+                reportStartTime, reportEndTime, includeNonAvailableQuantity,
+                true);
 
         // there should be only one record in the above map
         if (producedQuantityMap.size() != 1) {

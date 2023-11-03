@@ -162,11 +162,16 @@ public class ItemProductivityReport {
 
         this.actualQuantity += itemProductionLineProductivityReport.getActualQuantity();
 
-        this.finishRate = this.actualQuantity * 1.0 / this.realTimeGoal;
+
 
         long totalExpectedProducedQuantity = this.itemProductionLineProductivityReports.stream().mapToLong(
                 ItemProductionLineProductivityReport::getExpectedProducedQuantity
         ).sum();
+
+        // this.finishRate = this.actualQuantity * 1.0 / this.realTimeGoal;
+        // finish rate  = actual quantity / (estimation of the productivity for the whole shift,
+        //                                    not the productivity of the times already passed in the current shift)
+        this.finishRate = this.actualQuantity * 1.0 / totalExpectedProducedQuantity;
 
         this.estimatedFinishRate = this.realTimeGoal * 1.0 / totalExpectedProducedQuantity;
     }
