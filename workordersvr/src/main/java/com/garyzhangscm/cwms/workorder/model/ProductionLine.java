@@ -260,13 +260,18 @@ public class ProductionLine extends AuditibleEntity<String>{
     /**
      * return assigned work order's name and finish good name & description
      */
-    public List<Triple<String, String, String>> getAssignedWorkOrders() {
+    public List<Quintuple<String, String, String, Long, Long>> getAssignedWorkOrders() {
         return getProductionLineAssignments().stream()
                 .filter(productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
                         && Objects.isNull(productionLineAssignment.getDeassignedTime()))  // only return the work order that is not deassigned yet
                 .map(productionLineAssignment ->
-                        new Triple<String, String, String>(productionLineAssignment.getWorkOrderNumber(),
-                                productionLineAssignment.getItemName(), productionLineAssignment.getItemDescription())
+                        new Quintuple<String, String, String, Long, Long>(
+                                Objects.isNull(productionLineAssignment.getWorkOrderNumber()) ? "" : productionLineAssignment.getWorkOrderNumber(),
+                                Objects.isNull(productionLineAssignment.getItemName()) ? "" : productionLineAssignment.getItemName(),
+                                Objects.isNull(productionLineAssignment.getItemDescription()) ? "" : productionLineAssignment.getItemDescription(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getProducedQuantity(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getExpectedQuantity()
+                        )
         ).collect(Collectors.toList());
     }
 }
