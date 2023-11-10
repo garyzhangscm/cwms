@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.model.lightMES.*;
+import org.apache.kafka.common.protocol.types.Field;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,16 +87,21 @@ public class LightMESService {
     }
 
     public List<Machine> getCurrentShiftMachineStatusWithCache(Long warehouseId, String machineNo,
-                                                   String type) throws JsonProcessingException {
+                                                               String type, Boolean includeNonAvailableQuantity) throws JsonProcessingException {
+        // default to include the non available quantity
+        if (Objects.isNull(includeNonAvailableQuantity)) {
+            includeNonAvailableQuantity = false;
+        }
+
         if (Strings.isNotBlank(machineNo)) {
             // for status of single machine, we will get the status without consider the cache
             return getCurrentShiftMachineStatus(warehouseId, machineNo,
-                    type);
+                    type, includeNonAvailableQuantity);
         }
         else {
 
             logger.debug("start to get cached machine status");
-            String redisKey = REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId;
+            String redisKey = REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId + "-" + includeNonAvailableQuantity;
 
             logger.debug("start to get machine status from redis with key {}",
                     redisKey);
@@ -116,7 +122,7 @@ public class LightMESService {
             }
             else {
                 logger.debug("machine status is not in the redis cache, let's get the real time data and save it to the cache");
-                List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, type);
+                List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, type, includeNonAvailableQuantity);
 
                 // save the result to the redis
                 logger.debug("within http session: save {} machines to redis with key {}",
@@ -138,7 +144,7 @@ public class LightMESService {
     }
 
     public List<Machine> getCurrentShiftMachineStatus(Long warehouseId, String machineNo,
-                                          String type) {
+                                          String type, Boolean includeNonAvailableQuantity) {
 
 
         Pair<ZonedDateTime, ZonedDateTime> currentShift = workOrderConfigurationService.getCurrentShift(warehouseId);
@@ -146,7 +152,7 @@ public class LightMESService {
             throw WorkOrderException.raiseException("Shift is not setup. fail to get production line data");
         }
         return getMachineStatus(warehouseId, machineNo, type,
-                currentShift.getFirst(), currentShift.getSecond());
+                currentShift.getFirst(), currentShift.getSecond(), includeNonAvailableQuantity);
     }
 
     /**
@@ -162,7 +168,8 @@ public class LightMESService {
     public List<Machine> getMachineStatus(Long warehouseId, String machineNo,
                                           String type,
                                           ZonedDateTime startTime,
-                                          ZonedDateTime endTime) {
+                                          ZonedDateTime endTime,
+                                          Boolean includeNonAvailableQuantity) {
         logger.debug("start to get machine status, for single machine? {}, of type {}",
                 Strings.isBlank(machineNo) ? "N/A" : machineNo,
                 Strings.isBlank(type) ? "N/A" : type);
@@ -208,7 +215,7 @@ public class LightMESService {
         Map<String, Pair<Integer, Long>> producedQuantityMap =
                 workOrderProduceTransactionService.getProducedQuantityByTimeRange(
                     warehouseId, null, null,
-                    startTime, endTime, true);
+                    startTime, endTime, includeNonAvailableQuantity, true);
         logger.debug("get {} produced quantity information within the time range[{}, {}]",
                     producedQuantityMap.size(),
                 startTime, endTime);
@@ -461,13 +468,22 @@ public class LightMESService {
 
     private void refreshMachineStatus(Long warehouseId){
         try {
-            List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, null);
+            List<Machine> machines = getCurrentShiftMachineStatus(warehouseId, null, null, true);
 
             logger.debug("By schedule: save {} machines to redis with key {}",
-                    machines.size(), REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId);
+                    machines.size(), REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId + "-true");
             // save the result to the redis
-            redisTemplate.opsForValue().set(REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId, machines, Duration.ofMinutes(3));
+            redisTemplate.opsForValue().set(REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId + "-true", machines, Duration.ofMinutes(3));
             logger.debug("By schedule: redis cached!");
+
+            machines = getCurrentShiftMachineStatus(warehouseId, null, null, false);
+
+            logger.debug("By schedule: save {} machines to redis with key {}",
+                    machines.size(), REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId + "-false");
+            // save the result to the redis
+            redisTemplate.opsForValue().set(REDIS_KEY_CURRENT_SHIFT_MACHINE_STATUS + "-" + warehouseId + "-false", machines, Duration.ofMinutes(3));
+            logger.debug("By schedule: redis cached!");
+
         }
         catch (Exception ex) {
             // ignore the exception

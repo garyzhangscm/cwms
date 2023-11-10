@@ -86,9 +86,9 @@ public class ProductionLineService implements TestDataInitiableService {
     public ProductionLine findById(Long id, boolean loadDetails) {
         ProductionLine productionLine = productionLineRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line not found by id: " + id));
-        if (loadDetails) {
-            loadAttribute(productionLine);
-        }
+
+        loadAttribute(productionLine, loadDetails);
+
         return productionLine;
     }
 
@@ -153,8 +153,8 @@ public class ProductionLineService implements TestDataInitiableService {
         );
 
 
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails);
         }
         return productionLines;
     }
@@ -183,8 +183,8 @@ public class ProductionLineService implements TestDataInitiableService {
                         .filter(productionLine ->
                                 isAvailableForNewWorkOrder(productionLine, itemId))
                             .collect(Collectors.toList());
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails);
         }
         return productionLines;
 
@@ -200,8 +200,8 @@ public class ProductionLineService implements TestDataInitiableService {
                         .filter(productionLine ->
                                 isAvailableForFutureWorkOrder(productionLine, itemId))
                         .collect(Collectors.toList());
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails);
         }
         return productionLines;
 
@@ -311,8 +311,8 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public ProductionLine findByName(Long warehouseId, String name, boolean loadDetails) {
         ProductionLine productionLine = productionLineRepository.findByWarehouseIdAndName(warehouseId, name);
-        if (productionLine != null && loadDetails) {
-            loadAttribute(productionLine);
+        if (productionLine != null) {
+            loadAttribute(productionLine, loadDetails);
         }
         return productionLine;
     }
@@ -329,8 +329,8 @@ public class ProductionLineService implements TestDataInitiableService {
                 .mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
 
         List<ProductionLine> productionLines = productionLineRepository.findByIds(warehouseId, productionLineIdList);
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails);
         }
         return productionLines;
     }
@@ -339,13 +339,29 @@ public class ProductionLineService implements TestDataInitiableService {
         return findByIds(warehouseId, productionLineIds, true);
     }
 
-    public void loadAttribute(List<ProductionLine> productionLines) {
+    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails) {
         for (ProductionLine productionLine : productionLines) {
-            loadAttribute(productionLine);
+            loadAttribute(productionLine, loadDetails);
         }
     }
 
-    public void loadAttribute(ProductionLine productionLine) {
+    public void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
+
+        // we will load the details for the production line assignment any way
+        productionLine.getProductionLineAssignments().stream().filter(
+                productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
+                        Objects.isNull(productionLineAssignment.getDeassignedTime())
+        ).forEach(
+                productionLineAssignment ->
+                        productionLineAssignmentService.loadAttribute(productionLineAssignment)
+        );
+
+
+        if (!loadDetails) {
+            return;
+        }
+
+        // continue loading other attribute
 
         if (productionLine.getWarehouseId() != null && productionLine.getWarehouse() == null) {
             productionLine.setWarehouse(
@@ -388,11 +404,6 @@ public class ProductionLineService implements TestDataInitiableService {
                 }
         );
 
-        productionLine.getProductionLineAssignments().forEach(
-                productionLineAssignment ->
-                        productionLineAssignmentService.loadAttribute(productionLineAssignment)
-        );
-
 
         // productionLine.getWorkOrders().forEach(workOrder -> workOrderService.loadAttribute(workOrder));
 
@@ -402,7 +413,7 @@ public class ProductionLineService implements TestDataInitiableService {
 
     public ProductionLine save(ProductionLine productionLine) {
         ProductionLine newProductionLine = productionLineRepository.save(productionLine);
-        loadAttribute(newProductionLine);
+        loadAttribute(newProductionLine, true);
         return newProductionLine;
     }
 
@@ -614,8 +625,8 @@ public class ProductionLineService implements TestDataInitiableService {
 
         logger.debug("We have {} ASSIGNED production lines for warehouse id {}",
                 productionLines.size(), warehouseId);
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails);
         }
         return productionLines;
     }

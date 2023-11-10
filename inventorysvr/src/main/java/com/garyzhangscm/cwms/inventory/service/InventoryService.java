@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -646,25 +647,14 @@ public class InventoryService {
                 null);
     }
 
-    public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId) {
-        return findPickableInventories(itemId, inventoryStatusId, true);
+    public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId, int lpnLimit) {
+        return findPickableInventories(itemId, inventoryStatusId, lpnLimit, true);
     }
     public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
+                                                   Long inventoryStatusId, int lpnLimit,
                                                    boolean includeDetails) {
         return findPickableInventories(itemId, inventoryStatusId, null, null,
-                null, null, null, null, includeDetails);
-    }
-    public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
-                                                   Long locationId,
-                                                   String lpn,
-                                                   String color,
-                                                   String productSize,
-                                                   String style,
-                                                   String receiptNumber) {
-        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, receiptNumber, true);
+                null, null, null, null, lpnLimit, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -674,12 +664,28 @@ public class InventoryService {
                                                    String productSize,
                                                    String style,
                                                    String receiptNumber,
+                                                   int lpnLimit) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+                color, productSize, style, receiptNumber, lpnLimit, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   String lpn,
+                                                   String color,
+                                                   String productSize,
+                                                   String style,
+                                                   String receiptNumber,
+                                                   int lpnLimit,
                                                    boolean includeDetails) {
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
-                        inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId)
+                        inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
+                                PageRequest.of(0, lpnLimit))
                         :
-                        inventoryRepository.findByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId);
+                        inventoryRepository.findByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId,
+                                PageRequest.of(0, lpnLimit));
+
 
         List<Inventory>  pickableInventories
                 =  availableInventories
@@ -3237,14 +3243,14 @@ public class InventoryService {
 
     }
 
-    public Long getAvailableQuantityForMPS(Long warehouseId, Long itemId, String itemName) {
+    public Long getAvailableQuantityForMPS(Long warehouseId, Long itemId, String itemName, int lpnLimit) {
 
-        return getAvailableInventoryForMPS(warehouseId, itemId, itemName).stream()
+        return getAvailableInventoryForMPS(warehouseId, itemId, itemName, lpnLimit).stream()
                 .mapToLong(Inventory::getQuantity).sum();
 
     }
 
-    public List<Inventory> getAvailableInventoryForMPS(Long warehouseId, Long itemId, String itemName) {
+    public List<Inventory> getAvailableInventoryForMPS(Long warehouseId, Long itemId, String itemName, int lpnLimit) {
 
         // we will only return available inventory status
         Optional<InventoryStatus> availableInventoryStatus =
@@ -3260,7 +3266,8 @@ public class InventoryService {
         Stream<Inventory> inventoryStream;
         if (Objects.nonNull(itemId)) {
             inventoryStream = inventoryRepository
-                    .findByItemIdAndInventoryStatusId(itemId, availableInventoryStatus.get().getId())
+                    .findByItemIdAndInventoryStatusId(itemId, availableInventoryStatus.get().getId(),
+                            PageRequest.of(0, lpnLimit))
                     .stream();
 
         }

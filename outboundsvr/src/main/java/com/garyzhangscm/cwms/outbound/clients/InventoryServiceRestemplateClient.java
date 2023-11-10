@@ -258,7 +258,8 @@ public class InventoryServiceRestemplateClient {
                         .path("/api/inventory/inventories/pickable")
                         .queryParam("includeDetails", false)
                         .queryParam("itemId", itemId)
-                        .queryParam("inventoryStatusId", inventoryStatusId);
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("lpnLimit", 500);
 
         if (Objects.nonNull(locationId)) {
             builder = builder.queryParam("locationId", locationId);

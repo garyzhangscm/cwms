@@ -785,15 +785,18 @@ public class WorkOrderProduceTransactionService  {
 
         inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder, inventory);
 
+        WarehouseConfiguration warehouseConfiguration =
+                warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(workOrder.getWarehouseId());
+
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
-            // try {
-                // printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
+            try {
+                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
 
-            // } catch (JsonProcessingException e) {
-            //     e.printStackTrace();
-            // }
-            logger.debug("Print LPN Label is disabled from server right now. ");
+            } catch (JsonProcessingException e) {
+                logger.debug("Print LPN Label error ");
+                 e.printStackTrace();
+            }
         }
         return inventory;
     }
@@ -810,7 +813,12 @@ public class WorkOrderProduceTransactionService  {
             return;
         }
         String printerName = getPrinterName(productionLine);
-        logger.debug("We will print LPN label for new LPN ");
+        if (Strings.isBlank(printerName)) {
+            logger.debug("No printer is setup for production line {}, we will not print labels",
+                    productionLine.getName());
+            return;
+        }
+        logger.debug("We will print LPN label for new LPN from printer {}", printerName);
 
         // warehouse is configured to print new lpn label when producing
         workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
@@ -818,7 +826,7 @@ public class WorkOrderProduceTransactionService  {
     }
 
     private String getPrinterName(ProductionLine productionLine) {
-        return "";
+        return productionLine.getLabelPrinterName();
     }
 
 
