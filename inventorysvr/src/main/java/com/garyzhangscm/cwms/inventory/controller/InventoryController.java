@@ -152,11 +152,12 @@ public class InventoryController {
                                                    @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
                                                    @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                                    @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
-                                                   @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
+                                                   @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
+                                                   @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
         return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, receiptNumber);
+                color, productSize, style, receiptNumber, lpnLimit);
     }
 
 
@@ -548,22 +549,24 @@ public class InventoryController {
     public Long getAvailableQuantityForMPS(
             @RequestParam Long warehouseId,
             @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
-            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+            @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) Integer lpnLimit) {
 
         return inventoryService.getAvailableQuantityForMPS(warehouseId,
 
-                itemId, itemName);
+                itemId, itemName, lpnLimit);
     }
 
     @RequestMapping(value="/inventories/available-for-mps/inventory-ignore-order", method = RequestMethod.GET)
     public List<Inventory> getAvailableInventoryForMPS(
             @RequestParam Long warehouseId,
             @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
-            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+            @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) Integer lpnLimit) {
 
         return inventoryService.getAvailableInventoryForMPS(warehouseId,
 
-                itemId, itemName);
+                itemId, itemName, lpnLimit);
     }
 
     @RequestMapping(value="/inventories/summary/quickbook-desktop", method = RequestMethod.GET)

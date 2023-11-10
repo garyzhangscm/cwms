@@ -53,8 +53,9 @@ public class LightMESController {
     public List<Machine> getCurrentShiftMachineStatus(
             @RequestParam Long warehouseId,
             @RequestParam(name = "machineNo", required = false, defaultValue = "") String machineNo,
-            @RequestParam(name = "type", required = false, defaultValue = "") String type) throws JsonProcessingException {
-        return lightMESService.getCurrentShiftMachineStatusWithCache(warehouseId, machineNo,  type);
+            @RequestParam(name = "type", required = false, defaultValue = "") String type,
+            @RequestParam(name = "includeNonAvailableQuantity", required = false, defaultValue = "false") Boolean includeNonAvailableQuantity) throws JsonProcessingException {
+        return lightMESService.getCurrentShiftMachineStatusWithCache(warehouseId, machineNo,  type, includeNonAvailableQuantity);
     }
 
 

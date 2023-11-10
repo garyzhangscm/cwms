@@ -6,10 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import org.springframework.data.util.Pair;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "production_line")
@@ -58,7 +61,6 @@ public class ProductionLine extends AuditibleEntity<String>{
     @OneToMany(mappedBy = "productionLine")
     @JsonIgnore
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
-
 
     @OneToMany(mappedBy = "productionLine", cascade = CascadeType.ALL,
             orphanRemoval = true)
@@ -253,5 +255,18 @@ public class ProductionLine extends AuditibleEntity<String>{
 
     public void setType(ProductionLineType type) {
         this.type = type;
+    }
+
+    /**
+     * return assigned work order's name and finish good name & description
+     */
+    public List<Triple<String, String, String>> getAssignedWorkOrders() {
+        return getProductionLineAssignments().stream()
+                .filter(productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                        && Objects.isNull(productionLineAssignment.getDeassignedTime()))  // only return the work order that is not deassigned yet
+                .map(productionLineAssignment ->
+                        new Triple<String, String, String>(productionLineAssignment.getWorkOrderNumber(),
+                                productionLineAssignment.getItemName(), productionLineAssignment.getItemDescription())
+        ).collect(Collectors.toList());
     }
 }

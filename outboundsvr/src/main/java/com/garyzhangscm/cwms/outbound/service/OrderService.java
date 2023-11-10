@@ -1155,6 +1155,8 @@ public class OrderService {
      */
     private void postAllocationProcess(List<AllocationResult> allocationResults) {
 
+        logger.debug("start post allocation process for {} allocation result",
+                allocationResults.size());
 
         releaseSinglePicks(allocationResults);
 

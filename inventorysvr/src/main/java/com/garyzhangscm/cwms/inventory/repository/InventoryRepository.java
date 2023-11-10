@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.repository;
 
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.QuickbookDesktopInventorySummary;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,12 +36,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     List<Inventory> findByLocationId(Long locationId);
 
-    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId and inv.inventoryStatus.id = :inventoryStatusId")
-    List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId);
+    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
+            " and inv.inventoryStatus.id = :inventoryStatusId ")
+    List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
-            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId")
-    List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId);
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId" )
+    List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where inv.warehouseId = :warehouseId" +
             "    and inv.inventoryStatus.id = :inventoryStatusId " +
