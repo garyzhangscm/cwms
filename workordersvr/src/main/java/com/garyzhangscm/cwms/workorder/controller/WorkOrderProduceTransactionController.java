@@ -54,8 +54,9 @@ public class WorkOrderProduceTransactionController {
     @BillableEndpoint
     @RequestMapping(value="/work-order-produce-transactions", method = RequestMethod.POST)
     public WorkOrderProduceTransaction addWorkOrderProduceTransaction(
-            @RequestBody WorkOrderProduceTransaction workOrderProduceTransaction) {
-        return workOrderProduceTransactionService.startNewTransaction(workOrderProduceTransaction);
+            @RequestBody WorkOrderProduceTransaction workOrderProduceTransaction,
+            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return workOrderProduceTransactionService.startNewTransaction(workOrderProduceTransaction, rfCode);
     }
 
 

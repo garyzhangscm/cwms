@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
@@ -74,6 +75,8 @@ public class WorkOrderProduceTransactionService  {
     private ProductionLineService productionLineService;
     @Autowired
     private WorkOrderConfigurationService workOrderConfigurationService;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
         WorkOrderProduceTransaction workOrderProduceTransaction
@@ -229,7 +232,7 @@ public class WorkOrderProduceTransactionService  {
      */
     @Transactional
     public WorkOrderProduceTransaction startNewTransaction(
-            WorkOrderProduceTransaction workOrderProduceTransaction) {
+            WorkOrderProduceTransaction workOrderProduceTransaction, String rfCode) {
 
         setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
 
@@ -242,6 +245,7 @@ public class WorkOrderProduceTransactionService  {
         // 2. we are not over consume
         validateWorkOrderProduceTransaction(workOrderProduceTransaction);
 
+        logger.debug("The transaction pass the validation, let's save it");
 
         // save the transaction first
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
@@ -259,7 +263,7 @@ public class WorkOrderProduceTransactionService  {
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
-            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction);
+            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
 
         }
         // Change the produced quantity of the work order
@@ -770,7 +774,8 @@ public class WorkOrderProduceTransactionService  {
 
     private Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder,
                                                     WorkOrderProducedInventory workOrderProducedInventory,
-                                                    WorkOrderProduceTransaction workOrderProduceTransaction)   {
+                                                    WorkOrderProduceTransaction workOrderProduceTransaction,
+                                                    String rfCode)   {
         logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
         logger.debug("Inventory's item package typ is setup to \n{}",
                 workOrderProducedInventory.getItemPackageType());
@@ -791,7 +796,7 @@ public class WorkOrderProduceTransactionService  {
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
             try {
-                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
+                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine(), rfCode);
 
             } catch (JsonProcessingException e) {
                 logger.debug("Print LPN Label error ");
@@ -803,7 +808,8 @@ public class WorkOrderProduceTransactionService  {
 
     private void printNEWLPNLabel(Inventory inventory,
                                   WorkOrder workOrder,
-                                  ProductionLine productionLine) throws JsonProcessingException {
+                                  ProductionLine productionLine,
+                                  String rfCode) throws JsonProcessingException {
 
 
         WarehouseConfiguration warehouseConfiguration
@@ -812,7 +818,21 @@ public class WorkOrderProduceTransactionService  {
             logger.debug("The warehouse is configured to not print LPN label for new LPN from work order");
             return;
         }
-        String printerName = getPrinterName(productionLine);
+        // if we have rfCode passed in , then try get the printer that attached to the RF first
+        String printerName = "";
+        if (Strings.isNotBlank(rfCode)) {
+            logger.debug("RF code {} is passed, let's see if there's print setup for this RF",rfCode);
+            RF rf = resourceServiceRestemplateClient.getRFByCode(workOrder.getWarehouseId(), rfCode);
+            if (Objects.nonNull(rf)) {
+                printerName = rf.getPrinterName();
+                logger.debug("We got printer {} from the RF {}", printerName, rfCode);
+            }
+        }
+        if (Strings.isBlank(printerName)) {
+            // if we can't get printer from the rf, let's try if there's printer attached to the production line
+            printerName = getPrinterNameFromProductionLine(productionLine);
+        }
+
         if (Strings.isBlank(printerName)) {
             logger.debug("No printer is setup for production line {}, we will not print labels",
                     productionLine.getName());
@@ -825,7 +845,7 @@ public class WorkOrderProduceTransactionService  {
                 productionLine.getName(), "", printerName);
     }
 
-    private String getPrinterName(ProductionLine productionLine) {
+    private String getPrinterNameFromProductionLine(ProductionLine productionLine) {
         return productionLine.getLabelPrinterName();
     }
 

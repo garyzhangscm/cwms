@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
+import java.util.Objects;
+
 public class Triple<T, U, V> {
 
     private final T first;

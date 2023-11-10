@@ -22,10 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.Report;
-import com.garyzhangscm.cwms.workorder.model.ReportHistory;
-import com.garyzhangscm.cwms.workorder.model.ReportType;
-import com.garyzhangscm.cwms.workorder.model.User;
+import com.garyzhangscm.cwms.workorder.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,6 +149,29 @@ public class ResourceServiceRestemplateClient {
         );
 
     }
+
+    public RF getRFByCode(Long warehouseId, String rfCode) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/rfs")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("rfCode", rfCode);
+
+        List<RF> rfs = restTemplateProxy.exchangeList(
+                RF.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+        if (rfs.size() != 1) {
+            return null;
+        }
+        else {
+            return rfs.get(0);
+        }
+    }
+
 /**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
