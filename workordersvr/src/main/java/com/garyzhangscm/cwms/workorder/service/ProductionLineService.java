@@ -348,10 +348,16 @@ public class ProductionLineService implements TestDataInitiableService {
     public void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
 
         // we will load the details for the production line assignment any way
-        productionLine.getProductionLineAssignments().stream().filter(
+        productionLine.getProductionLineAssignments().stream()
+                /**
+                 * WE will load the details even if the production line is already deassigned
+                 *
+                .filter(
                 productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
                         Objects.isNull(productionLineAssignment.getDeassignedTime())
-        ).forEach(
+        )
+                 **/
+                .forEach(
                 productionLineAssignment ->
                         productionLineAssignmentService.loadAttribute(productionLineAssignment)
         );

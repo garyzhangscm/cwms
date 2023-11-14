@@ -205,7 +205,32 @@ public class ResourceServiceRestemplateClient {
         );
     }
 
+    public String printReport(Long companyId,
+                            Long warehouseId,
+                            ReportType type,
+                            String fileName,
+                            String printerName) {
+        logger.debug("start to print report with ");
+        logger.debug("# company id: {}", companyId);
+        logger.debug("# warehouse id: {}", warehouseId);
+        logger.debug("# type: {}", type);
+        logger.debug("# file name: {}", fileName);
+        logger.debug("# printer name: {}", printerName);
 
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/report-histories/print/{companyId}/{warehouseId}/{type}/{fileName}")
+                        .queryParam("printerName", printerName)
+                        .queryParam("copies", 1);
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(companyId, warehouseId, type, fileName).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
     public String validateCSVFile(Long warehouseId,
                                   String type, String headers) {
 
