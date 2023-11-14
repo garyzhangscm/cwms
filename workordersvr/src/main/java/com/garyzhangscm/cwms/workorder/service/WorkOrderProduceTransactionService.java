@@ -841,8 +841,21 @@ public class WorkOrderProduceTransactionService  {
         logger.debug("We will print LPN label for new LPN from printer {}", printerName);
 
         // warehouse is configured to print new lpn label when producing
-        workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
-                productionLine.getName(), "", printerName);
+        ReportHistory reportHistory =
+                workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
+                    productionLine.getName(), "", printerName);
+
+
+        logger.debug("Get the label files {}, let's print it from printer {}",
+                reportHistory.getFileName(), printerName);
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId())
+                .getCompanyId();
+        String result = resourceServiceRestemplateClient.printReport(companyId, workOrder.getWarehouseId(),
+                ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportHistory.getFileName(),
+                printerName, 2);
+        logger.debug("print label result: {}", result);
+
     }
 
     private String getPrinterNameFromProductionLine(ProductionLine productionLine) {

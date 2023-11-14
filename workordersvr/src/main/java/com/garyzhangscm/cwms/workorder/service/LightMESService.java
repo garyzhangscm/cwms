@@ -533,6 +533,7 @@ public class LightMESService {
         for (ProductionLine productionLine : productionLines) {
             logger.debug("start to process production line {}", productionLine.getName());
             for (ProductionLineAssignment productionLineAssignment : productionLine.getProductionLineAssignments()) {
+
                 // there're 4 times:
                 // 1. production line assigned time
                 // 2. production line deassigned time(if deassigned)

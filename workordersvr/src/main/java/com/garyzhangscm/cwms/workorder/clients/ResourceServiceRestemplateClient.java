@@ -172,6 +172,35 @@ public class ResourceServiceRestemplateClient {
         }
     }
 
+    public String printReport(Long companyId,
+                              Long warehouseId,
+                              ReportType type,
+                              String fileName,
+                              String printerName,
+                              int copies) {
+        logger.debug("start to print report with ");
+        logger.debug("# company id: {}", companyId);
+        logger.debug("# warehouse id: {}", warehouseId);
+        logger.debug("# type: {}", type);
+        logger.debug("# file name: {}", fileName);
+        logger.debug("# printer name: {}", printerName);
+        logger.debug("# copies: {}", copies);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/report-histories/print/{companyId}/{warehouseId}/{type}/{fileName}")
+                        .queryParam("printerName", printerName)
+                        .queryParam("copies", copies);
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(companyId, warehouseId, type, fileName).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
+
 /**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
