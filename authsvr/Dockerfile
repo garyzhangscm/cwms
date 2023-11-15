@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/authenticationserver-v1.24.jar /usr/local/service/
+ADD target/authenticationserver-v1.25.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/authenticationserver-v1.24.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/authenticationserver-v1.25.jar"]
