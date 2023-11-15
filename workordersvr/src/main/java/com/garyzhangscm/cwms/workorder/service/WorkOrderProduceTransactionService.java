@@ -234,45 +234,78 @@ public class WorkOrderProduceTransactionService  {
     public WorkOrderProduceTransaction startNewTransaction(
             WorkOrderProduceTransaction workOrderProduceTransaction, String rfCode) {
 
+        logger.debug("1. startNewTransaction / start new work order product transaction @{}", System.currentTimeMillis());
+
         setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
+        logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
 
         // get the latest information
         WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
         workOrderProduceTransaction.setWorkOrder(workOrder);
+        logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
         // make sure
         // 1. we are not over produce
         // 2. we are not over consume
         validateWorkOrderProduceTransaction(workOrderProduceTransaction);
+        logger.debug("4. startNewTransaction / new product transaction passed the validation @{}", System.currentTimeMillis());
 
-        logger.debug("The transaction pass the validation, let's save it");
 
         // save the transaction first
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
+        logger.debug("5. startNewTransaction / new product transaction persist in DB @{}", System.currentTimeMillis());
 
         // total work order produced quantity
         Long totalProducedQuantity = 0L;
+        int index = 0;
+        logger.debug("6. startNewTransaction / start to produce each inventory @{}", System.currentTimeMillis());
         for(WorkOrderProducedInventory workOrderProducedInventory :
                 newWorkOrderProduceTransaction.getWorkOrderProducedInventories()) {
+            index++;
+
+            logger.debug("6.{}.1 startNewTransaction / produce inventory {} of {} @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
+
             // skip the record with incorrect value
             if (StringUtils.isBlank(workOrderProducedInventory.getLpn()) ||
                     Objects.isNull(workOrderProducedInventory.getInventoryStatus()) ||
                     Objects.isNull(workOrderProducedInventory.getItemPackageType()) ||
                     Objects.isNull(workOrderProducedInventory.getQuantity())  ) {
+
+                logger.debug("6.{}.2 startNewTransaction / inventory record is not correct, skip this inventory @{}",
+                        index,
+                        System.currentTimeMillis());
+
                 continue;
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
-            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
+
+            logger.debug("6.{}.3 startNewTransaction / start receive the inventory {} of {} @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
+
+            // asynchronously receive the inventory to increase the productivity
+            new Thread(() -> {
+                logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
+                receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
+
+            }).start();
+            logger.debug("6.{}.4 startNewTransaction / inventory {} of {} received @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
 
         }
         // Change the produced quantity of the work order
         workOrderService.produce(workOrder, totalProducedQuantity);
+        logger.debug("7. startNewTransaction / quantity on work order updated @{}", System.currentTimeMillis());
 
         // change each work order line's consumed quantity
         for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
             consumeQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
+        logger.debug("8. startNewTransaction / quantity on work order line updated @{}", System.currentTimeMillis());
 
         // produce the byproduct if there's any
         workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
@@ -282,6 +315,7 @@ public class WorkOrderProduceTransactionService  {
                                 workOrderProduceTransaction.getProductionLine().getOutboundStageLocation()
                         )
         );
+        logger.debug("9. startNewTransaction / by product received @{}", System.currentTimeMillis());
 
         // save the transaction itself
         // before we save everything, we will need to setup some missing information so
@@ -298,6 +332,7 @@ public class WorkOrderProduceTransactionService  {
         );
 
         processWorkOrderKPI(newWorkOrderProduceTransaction, totalProducedQuantity);
+        logger.debug("10. startNewTransaction / work order KPI saved @{}", System.currentTimeMillis());
 
 
         return newWorkOrderProduceTransaction;
@@ -785,13 +820,13 @@ public class WorkOrderProduceTransactionService  {
                                 workOrder.getWarehouseId(),
                                 workOrderProducedInventory.getLpn()).size() == 0;
 
+        logger.debug("The LPN is new LPN? {}", newLPN);
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
+        logger.debug("Inventory structure created, sent to inventory service for persist");
 
         inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder, inventory);
-
-        WarehouseConfiguration warehouseConfiguration =
-                warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(workOrder.getWarehouseId());
+        logger.debug("Inventory persisted");
 
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
