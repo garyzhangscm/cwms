@@ -341,6 +341,33 @@ public class WorkOrderProduceTransactionService  {
 
     private void setupNewWorkOrderProduceTransactionData(WorkOrderProduceTransaction workOrderProduceTransaction) {
 
+        if (Objects.isNull(workOrderProduceTransaction.getWorkOrder())) {
+            // work order information is not passed in, let's see if we can get the work order from
+            // the warehouse id and work order number that passed in
+            logger.debug("Work order is not setup in the produce transaction yet, let's see if we can get from the other parameters");
+            logger.debug("work order number: {}\nwarehouse id: {}",
+                    workOrderProduceTransaction.getWorkOrderNumber(),
+                    workOrderProduceTransaction.getWarehouseId());
+
+            if (Strings.isBlank(workOrderProduceTransaction.getWorkOrderNumber()) ||
+                Objects.isNull(workOrderProduceTransaction.getWarehouseId())) {
+
+                throw WorkOrderException.raiseException("can't get work order information for this produce transaction");
+            }
+            else {
+                WorkOrder workOrder = workOrderService.findByNumber(
+                        workOrderProduceTransaction.getWarehouseId(),
+                        workOrderProduceTransaction.getWorkOrderNumber()
+                );
+                if (Objects.isNull(workOrder)) {
+
+                    throw WorkOrderException.raiseException("can't get work order information from the value passed in ");
+                }
+                else {
+                    workOrderProduceTransaction.setWorkOrder(workOrder);
+                }
+            }
+        }
         // setup the location for later use
         if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
             workOrderProduceTransaction.getProductionLine().setInboundStageLocation(

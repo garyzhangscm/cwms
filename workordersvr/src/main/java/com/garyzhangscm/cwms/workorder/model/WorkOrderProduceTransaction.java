@@ -19,9 +19,15 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @ManyToOne
     @JoinColumn(name = "work_order_id")
     private WorkOrder workOrder;
+
+    @Transient
+    private String workOrderNumber;
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
@@ -111,12 +117,28 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
         this.id = id;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
     public WorkOrder getWorkOrder() {
         return workOrder;
     }
 
     public void setWorkOrder(WorkOrder workOrder) {
         this.workOrder = workOrder;
+    }
+
+    public String getWorkOrderNumber() {
+        return workOrderNumber;
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
     }
 
     public List<WorkOrderLineConsumeTransaction> getWorkOrderLineConsumeTransactions() {
