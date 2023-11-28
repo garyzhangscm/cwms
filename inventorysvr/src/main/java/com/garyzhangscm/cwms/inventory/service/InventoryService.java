@@ -1618,23 +1618,28 @@ public class InventoryService {
         // so we can know whether the inventory become a virtual inventory
        if (destination.getLocationGroup() == null || destination.getLocationGroup().getLocationGroupType() == null) {
             // Refresh the location's information from layout service
-            destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
+           logger.debug("destination's group is not passed in, let's load the group and group type for it");
+           destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
 
 
-        }
-        if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
+       }
+
+       if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
             // The inventory is moved to the virtual location, let's mark the inventory
             // as virtual
             inventory.setVirtual(true);
-        }
-        else {
+            logger.debug("inventory is set to virtual as it is moved into a virtual location");
+       }
+       else {
 
             inventory.setVirtual(false);
-        }
+            logger.debug("inventory is set to NON virtual as it is moved into a NON virtual location");
+       }
         // Check if we have finished any movement
 
         if (Objects.isNull(pickId)) {
             recalculateMovementPathForInventoryMovement(inventory, destination);
+            logger.debug("recalculated the movement path for the inventory ");
         }
         else {
 
@@ -1650,6 +1655,7 @@ public class InventoryService {
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
                 "location", sourceLocation.getName(), destination.getName());
 
+        logger.debug("inventory activity logged for the movement");
         // if we are moving inventory to a production line inbound area, let's update the delivery
         // quantity of the work order
 
@@ -1682,6 +1688,8 @@ public class InventoryService {
         }
 
         // Reset the destination location's size
+        logger.debug("start to recalculate the location's volume after we move new inventory into this destination location {}",
+                destination.getName());
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
 
 
