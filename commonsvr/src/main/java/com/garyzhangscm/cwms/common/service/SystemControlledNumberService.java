@@ -55,6 +55,8 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     String testDataFile;
 
     Map<String, String> systemControlledNumberLocks = new HashMap<>();
+    Map<String, Integer> systemControlledNumberCurrentNumber = new HashMap<>();
+
     @Autowired
     public SystemControlledNumberService(SystemControlledNumberRepository systemControlledNumberRepository,
                                          FileService fileService,
@@ -179,9 +181,14 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
             SystemControlledNumber systemControlledNumber = findByVariable(warehouseId, variable);
             logger.debug("{}'s current number is {}", systemControlledNumber.getVariable(),
                     systemControlledNumber.getCurrentNumber());
+            // we will get from the cached number first, then from the database
+            // just in case the previous number has not been saved into the databse yet
+            int currentNumber = systemControlledNumberCurrentNumber.getOrDefault(
+                    key, systemControlledNumber.getCurrentNumber());
+
             // Check if we already reaches the maximum number allowed
             int maxNumber = (int)Math.pow(10, systemControlledNumber.getLength());
-            int nextNumber = systemControlledNumber.getCurrentNumber() + 1;
+            int nextNumber = currentNumber + 1;
             if (nextNumber > maxNumber && !systemControlledNumber.getRollover()) {
                 throw SystemControlledNumberException.raiseException(variable + " has reached the maximum number allowed and Rollover now allowed for this variable");
             }
@@ -195,6 +202,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                     nextNumber);
             systemControlledNumber.setCurrentNumber(nextNumber);
 
+            systemControlledNumberCurrentNumber.put(key, nextNumber);
             systemControlledNumber = save(systemControlledNumber, false);
 
             systemControlledNumber.setNextNumber(

@@ -102,6 +102,7 @@ public class ProductionLineService implements TestDataInitiableService {
                                         String type,
                                         Boolean enabled,
                                         boolean genericMatch,
+                                        boolean loadDetailsForDeassignedWorkOrder,
                                         boolean loadDetails) {
         List<ProductionLine> productionLines
                 =  productionLineRepository.findAll(
@@ -154,14 +155,22 @@ public class ProductionLineService implements TestDataInitiableService {
 
 
         if (productionLines.size() > 0) {
-            loadAttribute(productionLines, loadDetails);
+            loadAttribute(productionLines, loadDetails, loadDetailsForDeassignedWorkOrder);
         }
         return productionLines;
     }
 
     public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, String productionLineNames,
                                         String type, Boolean enabled, boolean genericMatch) {
-        return findAll(warehouseId, name, productionLineIds, productionLineNames,type, enabled, genericMatch, true);
+        return findAll(warehouseId, name, productionLineIds, productionLineNames,type, enabled, genericMatch,
+                false);
+    }
+
+    public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, String productionLineNames,
+                                        String type, Boolean enabled, boolean genericMatch, boolean loadDetailsForDeassignedWorkOrder) {
+        return findAll(warehouseId, name, productionLineIds, productionLineNames,type, enabled, genericMatch,
+                loadDetailsForDeassignedWorkOrder,
+                true);
     }
 
     public List<ProductionLine> findAllAvailableProductionLines(
@@ -339,29 +348,50 @@ public class ProductionLineService implements TestDataInitiableService {
         return findByIds(warehouseId, productionLineIds, true);
     }
 
-    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails) {
+    private void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails) {
+        loadAttribute(productionLines, loadDetails, false);
+    }
+    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder) {
         for (ProductionLine productionLine : productionLines) {
-            loadAttribute(productionLine, loadDetails);
+            loadAttribute(productionLine, loadDetails, loadDetailsForDeassignedWorkOrder);
         }
     }
 
-    public void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
+    private void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
+        loadAttribute(productionLine, loadDetails, false);
+    }
+    public void loadAttribute(ProductionLine productionLine, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder) {
 
         // we will load the details for the production line assignment any way
-        productionLine.getProductionLineAssignments().stream()
-                /**
-                 * WE will load the details even if the production line is already deassigned
-                 *
-                .filter(
-                productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
-                        Objects.isNull(productionLineAssignment.getDeassignedTime())
-        )
-                 **/
-                .forEach(
-                productionLineAssignment ->
-                        productionLineAssignmentService.loadAttribute(productionLineAssignment)
-        );
+        if (Boolean.TRUE.equals(loadDetailsForDeassignedWorkOrder)) {
 
+            productionLine.getProductionLineAssignments().stream()
+                    /**
+                     * WE will load the details even if the production line is already deassigned
+                     *
+                     .filter(
+                     productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
+                     Objects.isNull(productionLineAssignment.getDeassignedTime())
+                     )
+                     **/
+                    .forEach(
+                            productionLineAssignment ->
+                                    productionLineAssignmentService.loadAttribute(productionLineAssignment)
+                    );
+
+        }
+        else {
+            productionLine.getProductionLineAssignments().stream()
+                     .filter(
+                         productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
+                         Objects.isNull(productionLineAssignment.getDeassignedTime())
+                     )
+                    .forEach(
+                            productionLineAssignment ->
+                                    productionLineAssignmentService.loadAttribute(productionLineAssignment)
+                    );
+
+        }
 
         if (!loadDetails) {
             return;
