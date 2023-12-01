@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.PrinterConfiguration;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.Printer;
 import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
 import net.sf.jasperreports.engine.json.expression.filter.FilterExpression;
@@ -52,7 +53,7 @@ public class PrintingServiceRestemplateClient  {
     @Autowired
     private PrinterConfiguration printerConfiguration;
 
-    public List<String> getPrinters() {
+    public List<Printer> getPrinters() {
 
         String url = printerConfiguration.getUrl() + "/printers";
 
@@ -61,12 +62,12 @@ public class PrintingServiceRestemplateClient  {
         RestTemplate restTemplate = new RestTemplate();
 
 
-        List<String> printers
+        List<Printer> printers
                 = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<String>>() {}).getBody();
+                new ParameterizedTypeReference<List<Printer>>() {}).getBody();
         return printers;
 
 

@@ -131,7 +131,7 @@ public class PrinterService  {
         printerRepository.deleteById(id);
 
     }
-    public List<String> getServerPrinters(Long warehouseId, String printingStrategyName) {
+    public List<Printer> getServerPrinters(Long warehouseId, String printingStrategyName) {
         // there're 3 ways to print document
         // 1. print from the server that host this resource service
         // 2. print from a centralized client but data from server
@@ -171,7 +171,7 @@ public class PrinterService  {
         }
         else if (printingStrategy.equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA)) {
             // option 2: get printers from the printer table
-            return findAll(warehouseId, null, null).stream().map(Printer::getName).collect(Collectors.toList());
+            return findAll(warehouseId, null, null).stream().collect(Collectors.toList());
         }
         else {
 
