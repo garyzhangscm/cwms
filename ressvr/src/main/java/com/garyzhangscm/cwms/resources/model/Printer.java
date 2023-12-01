@@ -2,6 +2,8 @@ package com.garyzhangscm.cwms.resources.model;
 
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "printer")
@@ -29,6 +31,16 @@ public class Printer extends AuditibleEntity<String> {
     @JoinColumn(name="printer_type_id")
     private PrinterType printerType;
 
+    @Transient
+    private Integer jobCount;
+
+    // active printing jobs. Since it is not
+    // easy to get the actual jobs from the queue , we
+    // may cache the printing jobs that request from
+    // this local plugin and show to the user. Any request
+    // from outside system won't be included in this list
+    @Transient
+    private List<PrintingJob> printingJobs = new ArrayList<>();
 
     public Long getId() {
         return id;
