@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>resourceserver</artifactId>
-	<version>v1.25</version>
+	<version>v1.26</version>
 	<name>Resource Server</name>
 	<description>Resource Server - Menu, HTML Control Access</description>
 

@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>dblink</artifactId>
-    <version>v1.25</version>
+    <version>v1.26</version>
     <name>DBlink</name>
     <description>DBLink</description>
     <modelVersion>4.0.0</modelVersion>
