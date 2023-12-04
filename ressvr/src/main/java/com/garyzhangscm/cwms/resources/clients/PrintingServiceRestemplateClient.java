@@ -41,6 +41,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,18 +55,34 @@ public class PrintingServiceRestemplateClient  {
     @Autowired
     private PrinterConfiguration printerConfiguration;
 
-    public List<Printer> getPrinters() {
+    public List<Printer> getPrinters(String name, String printerType) throws URISyntaxException {
 
         String url = printerConfiguration.getUrl() + "/printers";
 
-        logger.debug("Start to get printers from {}", url);
+        logger.debug("start to get printers from the server {}, \n filter by name: {}, type {}",
+                url,
+                Strings.isBlank(name) ? "N/A" : name,
+                Strings.isBlank(printerType) ? "N/A" : name);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .uri(new URI(url));
+        if (Strings.isNotBlank(name)) {
+            builder = builder.queryParam("name", name);
+        }
+        if (Strings.isNotBlank(printerType)) {
+            builder = builder.queryParam("printerType", printerType);
+        }
+
+        logger.debug("start to get printers from URL {}",
+                builder.toUriString());
 
         RestTemplate restTemplate = new RestTemplate();
 
 
         List<Printer> printers
                 = restTemplate.exchange(
-                url,
+                builder.toUriString(),
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<Printer>>() {}).getBody();
