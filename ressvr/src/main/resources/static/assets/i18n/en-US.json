@@ -2232,5 +2232,7 @@
   "actualQuantity": "Actual Quantity",
   "finishRate": "Finish Rate",
   "estimatedFinishRate": "Should Finish",
-  "autoRecordItemProductivity": "Auto Record Item Productivity"
+  "autoRecordItemProductivity": "Auto Record Item Productivity",
+  "printer.job-count": "Job Count",
+  "printer.queued-jobs": "Queued Jobs"
 }
