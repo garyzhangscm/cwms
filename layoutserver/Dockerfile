@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/layoutserver-v1.26.jar /usr/local/service/
+ADD target/layoutserver-v1.27.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/layoutserver-v1.26.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/layoutserver-v1.27.jar"]
