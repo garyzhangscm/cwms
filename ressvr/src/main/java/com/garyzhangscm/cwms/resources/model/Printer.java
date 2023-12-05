@@ -89,4 +89,20 @@ public class Printer extends AuditibleEntity<String> {
     public void setPrinterType(PrinterType printerType) {
         this.printerType = printerType;
     }
+
+    public Integer getJobCount() {
+        return jobCount;
+    }
+
+    public void setJobCount(Integer jobCount) {
+        this.jobCount = jobCount;
+    }
+
+    public List<PrintingJob> getPrintingJobs() {
+        return printingJobs;
+    }
+
+    public void setPrintingJobs(List<PrintingJob> printingJobs) {
+        this.printingJobs = printingJobs;
+    }
 }
