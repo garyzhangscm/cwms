@@ -738,4 +738,26 @@ public class InventoryController {
                 ids, newLPN, mergeWithExistingInventory
         );
     }
+
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/inventories/dry-run-allocation", method = RequestMethod.GET)
+    public List<AllocationDryRunResult> getAllocationDryRunResult(
+            @RequestParam Long warehouseId,
+            @RequestParam Long  itemId,
+            @RequestParam Long  inventoryStatusId,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long  clientId,
+            @RequestParam(name = "locationId", defaultValue = "", required = false) Long  locationId,
+            @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
+            ClientRestriction clientRestriction) {
+
+
+
+        return inventoryService.getAllocationDryRunResult(warehouseId, clientId,
+                itemId, inventoryStatusId,
+                locationId, lpn,
+                clientRestriction
+        );
+    }
+
 }

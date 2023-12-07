@@ -172,6 +172,21 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name = "parcel_signature_required")
     private Boolean parcelSignatureRequired;
 
+
+    // Right now we will get the client information from
+    // the order, which means the order can
+    // only allocate the inventory from the same owner of
+    // the order. We may consider to change logic to allow
+    // different owner for order and order line so that
+    // the owner of the order is who get paid from the customer
+    // while the owner of the order line ships the inventory
+    // this may requires support from ERP as well
+    @Transient
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
     @Override
     public String toString() {
         try {
@@ -487,5 +502,27 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setParcelSignatureRequired(Boolean parcelSignatureRequired) {
         this.parcelSignatureRequired = parcelSignatureRequired;
+    }
+
+    public Long getClientId() {
+        if (Objects.isNull(clientId)) {
+            return order.getClientId();
+        }
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        if (Objects.isNull(client)) {
+            return order.getClient();
+        }
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }
