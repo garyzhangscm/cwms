@@ -4282,4 +4282,106 @@ public class InventoryService {
                 id -> relabelLPN(Long.parseLong(id), newLPN, mergeWithExistingInventory)
         ).collect(Collectors.toList());
     }
+
+    /**
+     * Check if we can allocate the item from certain location and lpn(both are optional) for certain
+     * # order line
+     * # work order
+     * # work order line
+     * @param warehouseId
+     * @param itemId
+     * @param inventoryStatusId
+     * @param locationId
+     * @param lpn
+     * @return
+     */
+    public List<AllocationDryRunResult> getAllocationDryRunResult(Long warehouseId, Long clientId,
+                                                                  Long itemId, Long inventoryStatusId,
+                                                                  Long locationId, String lpn,
+                                                                  ClientRestriction clientRestriction) {
+
+        // let's get all the inventory based on the criteria
+        List<Inventory> availableInventories =
+                findAll(warehouseId, itemId,
+                        null, null, null,
+                        clientId, null, null,
+                        inventoryStatusId, null,
+                        locationId, null, null,
+                        null, null, null, null,
+                        null, null, null,
+                        lpn, null, null, null,
+                        null, null, false, clientRestriction,
+                         false, null );
+        return availableInventories.stream().map(inventory -> dryrunAllocation(inventory)).collect(Collectors.toList());
+    }
+
+    /**
+     * see if we can allocate from the inventory only if
+     * # the inventory has no hold / lock / existing picks / etc that prevent the allocation
+     * # the location of the inventory allows allocation
+     * @param inventory
+     * @return
+     */
+    private AllocationDryRunResult dryrunAllocation(Inventory inventory) {
+        AllocationDryRunResult result = new AllocationDryRunResult(inventory);
+
+        // check if we can allocate from the inventory
+        if (Objects.nonNull(inventory.getPickId())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is picked by pick work with id " + inventory.getPickId());
+        }
+
+        if (Objects.nonNull(inventory.getAllocatedByPickId())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is allocated by pick work with id " + inventory.getAllocatedByPickId());
+        }
+        if (Boolean.TRUE.equals(inventory.getVirtual())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is a virtual inventory, can't allocate from it");
+        }
+        if (Boolean.TRUE.equals(inventory.getInboundQCRequired())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " requires inbound QC, please complete the QC first");
+        }
+        if (Boolean.TRUE.equals(inventory.getLockedForAdjust())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is locked for inventory adjustment, please complete the inventory adjustment first");
+        }
+        if (inventory.getLocks().stream().anyMatch(
+                inventoryWithLock -> Boolean.TRUE.equals(inventoryWithLock.getLock().getAllowPick()))
+        ) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " has locks that prevent it from being allocated");
+        }
+
+        // check if the location allows allocation
+        if (Objects.nonNull(inventory.getLocationId()) &&
+                Objects.isNull(inventory.getLocation())) {
+            inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+        }
+        if (Objects.isNull(inventory.getLocation())) {
+            return result.fail("Fail to get location information of the inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() );
+        }
+
+        if (!Boolean.TRUE.equals(inventory.getLocation().getEnabled())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a disabled location " + inventory.getLocation().getName());
+        }
+        if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getPickable())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a NON pickable location group " + inventory.getLocation().getLocationGroup().getName());
+        }
+        if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a location group " +
+                    inventory.getLocation().getLocationGroup().getName() + " that is not inside warehouse");
+        }
+
+        return result.succeed();
+
+    }
 }

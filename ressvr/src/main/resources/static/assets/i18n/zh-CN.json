@@ -2229,5 +2229,7 @@
   "estimatedFinishRate": "目标达成率",
   "autoRecordItemProductivity": "自动记录成品生产效率",
   "printer.job-count": "打印任务数量",
-  "printer.queued-jobs": "打印任务"
+  "printer.queued-jobs": "打印任务",
+  "dryrun-inventory-allocation": "测试库存分配",
+  "allocationDryRunResult": "库存分配测试结果"
 }
