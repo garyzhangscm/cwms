@@ -4312,7 +4312,58 @@ public class InventoryService {
                         lpn, null, null, null,
                         null, null, false, clientRestriction,
                          false, null );
-        return availableInventories.stream().map(inventory -> dryrunAllocation(inventory)).collect(Collectors.toList());
+
+        if (availableInventories.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Map to save the quantity of the item in each location
+        // key: location id
+        // value: quantity of the inventory in the location
+        Map<Long, Long> locationInventoryQuantityMap = new HashMap<>();
+        // if location id or LPN is passed in , we will only verify the typical location
+        Long validationSpecificLocation = locationId;
+        if (Strings.isNotBlank(lpn)) {
+            validationSpecificLocation = availableInventories.get(0).getLocationId();
+        }
+
+        List<Inventory> availableInventoryForQuantityValidation =
+                findAll(warehouseId, itemId,
+                        null, null, null,
+                        clientId, null, null,
+                        inventoryStatusId, null,
+                        validationSpecificLocation, null, null,
+                        null, null, null, null,
+                        null, null, null,
+                        null, null, null, null,
+                        null, null, false, clientRestriction,
+                        false, null );
+
+        availableInventoryForQuantityValidation.forEach(
+                inventory -> {
+                    Long quantity = locationInventoryQuantityMap.getOrDefault(inventory.getLocationId(), 0l);
+                    locationInventoryQuantityMap.put(inventory.getLocationId(), quantity + inventory.getQuantity());
+                }
+        );
+        // let's get the outstanding picks as well so we know if we can allocate more from the location
+
+        // Map to save the quantity of the open pick in each location
+        // key: location id
+        // value: quantity of open pick for the specific item in the location
+        Map<Long, Long> openPickQuantityMap = new HashMap<>();
+        List<Pick> openPicks = outbuondServiceRestemplateClient.getOpenPicks(warehouseId, clientId,
+                 itemId, inventoryStatusId, validationSpecificLocation);
+        openPicks.forEach(
+                pick -> {
+                    Long quantity = openPickQuantityMap.getOrDefault(pick.getSourceLocationId(), 0l);
+                    openPickQuantityMap.put(pick.getSourceLocationId(),
+                            quantity + Math.max(pick.getQuantity() - pick.getPickedQuantity(), 0));
+                }
+        );
+
+
+        return availableInventories.stream().map(
+                inventory -> dryrunAllocation(inventory, locationInventoryQuantityMap, openPickQuantityMap)).collect(Collectors.toList());
     }
 
     /**
@@ -4322,8 +4373,18 @@ public class InventoryService {
      * @param inventory
      * @return
      */
-    private AllocationDryRunResult dryrunAllocation(Inventory inventory) {
-        AllocationDryRunResult result = new AllocationDryRunResult(inventory);
+    private AllocationDryRunResult dryrunAllocation(Inventory inventory,
+                                                    Map<Long, Long> locationInventoryQuantityMap,
+                                                    Map<Long, Long> openPickQuantityMap ) {
+
+        Long locationInventoryQuantity = locationInventoryQuantityMap.containsKey(inventory.getLocationId()) ?
+                locationInventoryQuantityMap.get(inventory.getLocationId()) : 0l;
+
+        Long locationOpenPickQuantity  = openPickQuantityMap.containsKey(inventory.getLocationId()) ?
+                openPickQuantityMap.get(inventory.getLocationId()) : 0l;
+
+        AllocationDryRunResult result = new AllocationDryRunResult(inventory,
+                locationInventoryQuantity, locationOpenPickQuantity);
 
         // check if we can allocate from the inventory
         if (Objects.nonNull(inventory.getPickId())) {
@@ -4363,6 +4424,7 @@ public class InventoryService {
             return result.fail("Fail to get location information of the inventory with id " + inventory.getId() +
                     " of LPN " + inventory.getLpn() );
         }
+        result.setLocationName(inventory.getLocation().getName());
 
         if (!Boolean.TRUE.equals(inventory.getLocation().getEnabled())) {
 
@@ -4381,6 +4443,19 @@ public class InventoryService {
                     inventory.getLocation().getLocationGroup().getName() + " that is not inside warehouse");
         }
 
+        // let's check if we have enough quantity for the item in the locations
+
+        if (result.getLocationInventoryQuantity() <= result.getLocationOpenPickQuantity()) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a location " + inventory.getLocation().getName() +
+                    " that has more open pick quantity than inventory quantity.  Nothing left to be allocated");
+        }
+        else if (result.getLocationInventoryQuantity() - inventory.getQuantity() <= result.getLocationOpenPickQuantity()) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " may be partially allocatable from the location " + inventory.getLocation().getName());
+        }
         return result.succeed();
 
     }

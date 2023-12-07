@@ -252,4 +252,32 @@ public class OutbuondServiceRestemplateClient {
         );
     }
 
+
+    public List<Pick> getOpenPicks(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
+                                   Long locationId)  {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/picks")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("loadDetails", false)
+                        .queryParam("openPickOnly", true);
+
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+        return restTemplateProxy.exchangeList(
+                Pick.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
+
 }

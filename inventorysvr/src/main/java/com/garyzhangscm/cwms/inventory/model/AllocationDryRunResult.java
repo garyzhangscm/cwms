@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.inventory.model;
 
+import java.util.Objects;
+
 public class AllocationDryRunResult {
 
 
@@ -30,6 +32,11 @@ public class AllocationDryRunResult {
     // result of the dry run on certain inventory
     private Inventory inventory;
 
+    private String locationName;
+
+    private Long locationInventoryQuantity;
+    private Long locationOpenPickQuantity;
+
     private boolean allocatible;
 
     // only if the inventory is not allocatible based on the
@@ -38,14 +45,46 @@ public class AllocationDryRunResult {
 
     public AllocationDryRunResult() {}
 
-    public AllocationDryRunResult(Inventory inventory) {
+    public AllocationDryRunResult(String locationName, Inventory inventory,
+                                  Long locationInventoryQuantity, Long locationOpenPickQuantity) {
+        this.locationName = locationName;
         this.warehouseId = inventory.getWarehouseId();
         this.item = inventory.getItem();
         this.inventoryStatus = inventory.getInventoryStatus();
         this.inventory = inventory;
         this.allocatible = false;
         this.allocationFailReason = "";
+        this.locationInventoryQuantity = locationInventoryQuantity;
+        this.locationOpenPickQuantity = locationOpenPickQuantity;
     }
+
+    public AllocationDryRunResult(Inventory inventory) {
+        this("", inventory, 0l, 0l);
+        if (Objects.nonNull(inventory.getLocation())) {
+            setLocationName(inventory.getLocation().getName());
+        }
+    }
+
+    public AllocationDryRunResult(Inventory inventory,
+                                  Long locationInventoryQuantity, Long locationOpenPickQuantity) {
+        this("", inventory, locationInventoryQuantity, locationOpenPickQuantity);
+        if (Objects.nonNull(inventory.getLocation())) {
+            setLocationName(inventory.getLocation().getName());
+        }
+    }
+
+    public AllocationDryRunResult fail(String allocationFailReason) {
+        setAllocationFailReason(allocationFailReason);
+        setAllocatible(false);
+        return this;
+    }
+
+    public AllocationDryRunResult succeed() {
+        setAllocationFailReason("");
+        setAllocatible(true);
+        return this;
+    }
+
 
     public Long getWarehouseId() {
         return warehouseId;
@@ -53,6 +92,22 @@ public class AllocationDryRunResult {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Long getLocationInventoryQuantity() {
+        return locationInventoryQuantity;
+    }
+
+    public void setLocationInventoryQuantity(Long locationInventoryQuantity) {
+        this.locationInventoryQuantity = locationInventoryQuantity;
+    }
+
+    public Long getLocationOpenPickQuantity() {
+        return locationOpenPickQuantity;
+    }
+
+    public void setLocationOpenPickQuantity(Long locationOpenPickQuantity) {
+        this.locationOpenPickQuantity = locationOpenPickQuantity;
     }
 
     public Item getItem() {
@@ -95,15 +150,11 @@ public class AllocationDryRunResult {
         this.allocationFailReason = allocationFailReason;
     }
 
-    public AllocationDryRunResult fail(String allocationFailReason) {
-        setAllocationFailReason(allocationFailReason);
-        setAllocatible(false);
-        return this;
+    public String getLocationName() {
+        return locationName;
     }
 
-    public AllocationDryRunResult succeed() {
-        setAllocationFailReason("");
-        setAllocatible(true);
-        return this;
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 }

@@ -2236,6 +2236,8 @@
   "printer.job-count": "Job Count",
   "printer.queued-jobs": "Queued Jobs",
   "dryrun-inventory-allocation": "Dryrun Inventory Allocation",
-  "allocationDryRunResult": "Allocation Dryrun Result"
+  "allocationDryRunResult": "Allocation Dryrun Result",
+  "allocatible": "Allocatable",
+  "allocationFailReason": "Allocation Fail Reason"
 
 }
