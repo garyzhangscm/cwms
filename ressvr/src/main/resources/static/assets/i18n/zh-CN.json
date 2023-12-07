@@ -2231,5 +2231,7 @@
   "printer.job-count": "打印任务数量",
   "printer.queued-jobs": "打印任务",
   "dryrun-inventory-allocation": "测试库存分配",
-  "allocationDryRunResult": "库存分配测试结果"
+  "allocationDryRunResult": "库存分配测试结果",
+  "allocatible": "是否可分配",
+  "allocationFailReason": "分配失败原因"
 }
