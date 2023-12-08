@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.exception.SystemControlledNumberException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.SystemControlledNumberRepository;
+import com.garyzhangscm.cwms.common.repository.SystemControlledNumberTransactionRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     private static final Logger logger = LoggerFactory.getLogger(SystemControlledNumberService.class);
 
     private SystemControlledNumberRepository systemControlledNumberRepository;
+    private SystemControlledNumberTransactionRepository systemControlledNumberTransactionRepository;
     private FileService fileService;
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
@@ -60,9 +62,11 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
     @Autowired
     public SystemControlledNumberService(SystemControlledNumberRepository systemControlledNumberRepository,
                                          FileService fileService,
-                                         WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient
+                                         WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient,
+                                         SystemControlledNumberTransactionRepository systemControlledNumberTransactionRepository
     ) {
         this.systemControlledNumberRepository = systemControlledNumberRepository;
+        this.systemControlledNumberTransactionRepository = systemControlledNumberTransactionRepository;
         this.fileService = fileService;
 
         this.warehouseLayoutServiceRestemplateClient = warehouseLayoutServiceRestemplateClient;
@@ -146,12 +150,13 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         systemControlledNumberRepository.deleteById(id);
     }
 
-    public List<String> getNextNumbers(Long warehouseId, String variable, Integer batch) {
+    public List<String> getNextNumbers(Long warehouseId, String variable, Integer batch,
+                                       String rfCode) {
         List<String> systemControlledNumbers = new ArrayList<>();
         for(int i = 0; i < batch; i++) {
             SystemControlledNumber systemControlledNumber =
                     getNextNumber(
-                            warehouseId, variable
+                            warehouseId, variable, rfCode
                     );
             logger.debug("{} / {}, get next number for {}",
                     i, batch, variable);
@@ -165,7 +170,7 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
         return systemControlledNumbers;
 
     }
-    public SystemControlledNumber getNextNumber(Long warehouseId, String variable) {
+    public SystemControlledNumber getNextNumber(Long warehouseId, String variable, String rfCode) {
 
         logger.debug("Will lock by ");
         String key = warehouseId + "-" + variable;
@@ -209,6 +214,14 @@ public class SystemControlledNumberService implements  TestDataInitiableService{
                     systemControlledNumber.getPrefix()
                             + String.format("%0" + systemControlledNumber.getLength() +"d", nextNumber)
                             + systemControlledNumber.getPostfix());
+
+            logger.debug("Start to system controlled number transaction");
+            systemControlledNumberTransactionRepository.save(
+                    new SystemControlledNumberTransaction(
+                            systemControlledNumber,
+                            rfCode
+                    )
+            );
             return systemControlledNumber;
         }
 
