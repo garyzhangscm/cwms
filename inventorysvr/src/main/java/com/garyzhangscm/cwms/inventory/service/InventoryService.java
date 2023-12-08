@@ -680,12 +680,15 @@ public class InventoryService {
                                                    boolean includeDetails) {
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
-                        inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
+                        inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
                                 PageRequest.of(0, lpnLimit))
                         :
-                        inventoryRepository.findByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId,
+                        inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId,
                                 PageRequest.of(0, lpnLimit));
 
+
+        logger.debug("We have found {} available inventory, Let's get all the pickable inventory from it",
+                availableInventories.size());
 
         List<Inventory>  pickableInventories
                 =  availableInventories

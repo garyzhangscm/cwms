@@ -45,12 +45,16 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
-            " and inv.inventoryStatus.id = :inventoryStatusId ")
-    List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId);
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.pickId is null " +
+            " and inv.allocatedByPickId is null and inv.virtual = false " +
+            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false ")
+    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
-            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId" )
-    List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId);
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId  and inv.pickId is null " +
+            " and inv.allocatedByPickId is null and inv.virtual = false " +
+            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false ")
+    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where inv.warehouseId = :warehouseId" +
             "    and inv.inventoryStatus.id = :inventoryStatusId " +
