@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderProduceTransactionRepository;
+import com.garyzhangscm.cwms.workorder.repository.WorkOrderProducedInventoryResultRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class WorkOrderProduceTransactionService  {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private BillOfMaterialService billOfMaterialService;
+    @Autowired
+    private WorkOrderProducedInventoryResultRepository workOrderProducedInventoryResultRepository;
     @Autowired
     private BillOfMaterialLineService billOfMaterialLineService;
     @Autowired
@@ -289,7 +292,25 @@ public class WorkOrderProduceTransactionService  {
             // asynchronously receive the inventory to increase the productivity
             new Thread(() -> {
                 logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
-                receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
+                try {
+                    receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
+                    workOrderProducedInventoryResultRepository.save(
+                            new WorkOrderProducedInventoryResult(
+                                    newWorkOrderProduceTransaction.getWarehouseId(),
+                                    workOrderProducedInventory,
+                                    true, ""
+                            )
+                    );
+                }
+                catch (Exception exception) {
+                    workOrderProducedInventoryResultRepository.save(
+                            new WorkOrderProducedInventoryResult(
+                                    newWorkOrderProduceTransaction.getWarehouseId(),
+                                    workOrderProducedInventory,
+                                    false, exception.getMessage()
+                            )
+                    );
+                }
 
             }).start();
             logger.debug("6.{}.4 startNewTransaction / inventory {} of {} received @{}",

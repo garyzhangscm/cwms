@@ -39,16 +39,18 @@ public class SystemControlledNumberController {
 
     @RequestMapping(value="/system-controlled-number/{variable}/next", method = RequestMethod.GET)
     public SystemControlledNumber getNextNumber(@RequestParam Long warehouseId,
-                                                @PathVariable String variable) {
-        return systemControlledNumberService.getNextNumber(warehouseId, variable);
+                                                @PathVariable String variable,
+                                                @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return systemControlledNumberService.getNextNumber(warehouseId, variable, rfCode);
 
     }
 
     @RequestMapping(value="/system-controlled-number/{variable}/batch/next", method = RequestMethod.GET)
     public List<String> getNextNumbers(@RequestParam Long warehouseId,
                                                        @RequestParam Integer batch,
-                                                       @PathVariable String variable) {
-        return systemControlledNumberService.getNextNumbers(warehouseId, variable, batch);
+                                                       @PathVariable String variable,
+                                       @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
+        return systemControlledNumberService.getNextNumbers(warehouseId, variable, batch, rfCode);
 
     }
 

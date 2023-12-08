@@ -82,6 +82,9 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @Column(name = "reason_code_id")
     private Long reasonCodeId;
 
+    @Column(name = "rf_code")
+    private String rfCode;
+
     @Transient
     private ReasonCode reasonCode;
 
@@ -225,5 +228,13 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void setReasonCode(ReasonCode reasonCode) {
         this.reasonCode = reasonCode;
+    }
+
+    public String getRfCode() {
+        return rfCode;
+    }
+
+    public void setRfCode(String rfCode) {
+        this.rfCode = rfCode;
     }
 }
