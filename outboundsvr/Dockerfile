@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/outboundserver-v1.27.jar /usr/local/service/
+ADD target/outboundserver-v1.28.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/outboundserver-v1.27.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/outboundserver-v1.28.jar"]
