@@ -59,9 +59,15 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     @Column(name = "item_id")
     private Long itemId;
-
     @Transient
     private Item item;
+
+    @Column(name = "item_package_type_id")
+    private Long itemPackageTypeId;
+    @Transient
+    private ItemPackageType itemPackageType;
+
+
 
     // will be setup when the pick allocates
     // the whole LPN
@@ -198,13 +204,43 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         if (item == null) {
             return 0.0;
         }
-        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
+        ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                item.getDefaultItemPackageType() : getItemPackageType();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()
                 * stockItemUnitOfMeasure.getWidth()
                 * stockItemUnitOfMeasure.getHeight();
     }
+
+    @JsonIgnore
+    public Double getHeight() {
+
+        if (item == null) {
+            return 0.0;
+        }
+        /**
+        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
+
+        return (quantity / stockItemUnitOfMeasure.getQuantity())
+                * stockItemUnitOfMeasure.getLength()
+                * stockItemUnitOfMeasure.getWidth()
+                * stockItemUnitOfMeasure.getHeight();
+         * **/
+        ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                item.getDefaultItemPackageType() : getItemPackageType();
+
+        if (Objects.nonNull(itemPackageType.getCaseItemUnitOfMeasure()) &&
+                Objects.nonNull(itemPackageType.getCasePerTier()) &&
+                itemPackageType.getCasePerTier() > 0) {
+            return (Math.ceil(getQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity())  // how many cases in the pick
+                        / itemPackageType.getCasePerTier())    // how many cases per tier
+                   * itemPackageType.getCaseItemUnitOfMeasure().getHeight();       // height per case(per tier)
+        }
+        return 0.0;
+    }
+
 
     @Override
     public String toString() {
@@ -214,6 +250,22 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 
     public String getPickListNumber() {

@@ -91,6 +91,9 @@ public class OrderService {
     private PickReleaseService pickReleaseService;
     @Autowired
     private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
+    @Autowired
+    private PalletPickLabelContentService palletPickLabelContentService;
+
 
 
 
@@ -3163,6 +3166,13 @@ public class OrderService {
         return orders.size();
     }
 
+    /**
+     * Generate walmart shipping carton labels
+     * @param warehouseId
+     * @param id
+     * @param itemName
+     * @return
+     */
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
                                                              int copies,
                                                              String locale)  {
@@ -3170,6 +3180,12 @@ public class OrderService {
                 findById(id), itemName, copies, locale);
     }
 
+    /**
+     * Generate walmart shipping carton labels
+     * @param warehouseId
+     * @param itemName
+     * @return
+     */
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,Order order, String itemName,
                                                              int copies, String locale)   {
 
@@ -3193,6 +3209,106 @@ public class OrderService {
 
         logger.debug("####   Report   printed: {}", reportHistory.getFileName());
         return reportHistory;
+    }
+
+    /**
+     * Generate walmart shipping label along with pallet label. It will return a list of report history with
+     * one pallet label follow by shipping labels for cartons on this pallet
+     * a second pallet follow by shipping labels for cartons on this pallet
+     * a third pallet  follow by shipping labels for cartons on this pallet
+     * until it complete all the pallets for the order
+     * @param warehouseId
+     * @param id  order id
+     * @param copies
+     * @param locale
+     * @return
+     */
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id , int copies, String locale) {
+
+        return generateWalmartShippingCartonLabelsWithPalletLabels(warehouseId,
+                findById(id),   copies, locale);
+    }
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order, int copies, String locale) {
+
+        // make sure we can start printing the shipping label with pallet labels for the order
+        validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(order);
+
+        // we will need to get the pallet information
+        // it can be an estimation or an input from the user
+        List<PalletPickLabelContent> palletPickLabelContents =
+                palletPickLabelContentService.findAll(
+                        warehouseId, order.getId(), order.getNumber()
+                );
+        if (palletPickLabelContents.isEmpty()) {
+            // there's no estimation yet, let's create one
+            logger.debug("There's no pallet pick label estimation for this order {} yet, " +
+                    "let's create one",
+                    order.getNumber());
+            palletPickLabelContents = palletPickLabelContentService.generateAndSavePalletPickLabelEstimation(order);
+        }
+        if (palletPickLabelContents.isEmpty()) {
+            throw OrderOperationException.raiseException("fail to generate pallet pick label for order " + order.getNumber());
+        }
+        int index = 0;
+        logger.debug("===       start to print label for pallet pick label   =====");
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+            index ++;
+            logger.debug("pallet {}: height = {}, size = {}", index, palletPickLabelContent.getHeight(),
+                    palletPickLabelContent.getVolume());
+            for (PalletPickLabelPickDetail palletPickLabelPickDetail : palletPickLabelContent.getPalletPickLabelPickDetails()) {
+                logger.debug(">> pick: {}, item = {}, quantity = {}, size = {} ",
+                        palletPickLabelPickDetail.getPick().getNumber(),
+                        Objects.nonNull(palletPickLabelPickDetail.getPick().getItem()) ?
+                            palletPickLabelPickDetail.getPick().getItem().getName() :
+                            palletPickLabelPickDetail.getPick().getItemId(),
+                        palletPickLabelPickDetail.getPick().getQuantity(),
+                        palletPickLabelPickDetail.getVolume());
+            }
+        }
+
+        // see if we already have walmart shipping carton labels that attached to this pallet
+
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+            List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                    walmartShippingCartonLabelService.findByPalletPickLabel(
+                            palletPickLabelContent
+                    );
+            if (walmartShippingCartonLabels.isEmpty()) {
+                // ok, we haven't assign any walmart shipping carton label to this
+                // pallet pick label yet, let's assign now
+                walmartShippingCartonLabels =
+                        walmartShippingCartonLabelService.assignShippingCartonLabel(
+                                palletPickLabelContent
+                        );
+            }
+        }
+
+
+    }
+
+    private void validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(Order order) {
+        if (Objects.nonNull(order.getShipToCustomer())) {
+            Customer customer = order.getShipToCustomer();
+            if(!Boolean.TRUE.equals(customer.getWalmart())) {
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is not walmart, " +
+                        " can't print walmart shipping carton for it");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintWalmartShippingCartonLabelWithPalletLabel())) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print walmart shipping label with pallet label");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort()) &&
+                  !isOrderFullyAllocated(order)) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print walmart shipping label with pallet label while the order is short allocated " +
+                        ", but the order is not fully allocated");
+            }
+        }
     }
 
     private void setupWalmartShippingCartonLabelData(Long warehouseId,
@@ -3258,4 +3374,68 @@ public class OrderService {
             );
         }
     }
+
+    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(
+            Long warehouseId, Long id, String itemName, int copies, String locale) {
+    }
+
+    /**
+     * Generate target shipping carton label
+     * @param warehouseId
+     * @param id
+     * @param itemName
+     * @param copies
+     * @param locale
+     * @return
+     */
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId, Long id, String itemName, int copies, String locale) {
+    }
+
+    /**
+     * Check if the order is fully allocated
+     * @param order
+     * @return
+     */
+    private boolean isOrderFullyAllocated(Order order) {
+        // get all the picks and sum up the pick quantity to match with the order line's required quantity
+        // and see if the order is fully allocated
+        List<Pick> picks = pickService.findByOrder(order);
+        // Map to save the required quantity and allocated quantity
+        // key: item id
+        // value: quantity
+        Map<Long, Long> requiredQuantitiesMap = new HashMap<>();
+        Map<Long, Long> allocatedQuantitiesMap = new HashMap<>();
+        order.getOrderLines().forEach(
+                orderLine -> {
+                    Long quantity = requiredQuantitiesMap.getOrDefault(orderLine.getItemId(), 0l);
+                    requiredQuantitiesMap.put(orderLine.getItemId(), quantity + orderLine.getExpectedQuantity());
+                }
+        );
+
+        picks.forEach(
+                pick -> {
+                    Long quantity = allocatedQuantitiesMap.getOrDefault(pick.getItemId(), 0l);
+                    allocatedQuantitiesMap.put(pick.getItemId(), quantity + pick.getQuantity());
+                }
+        );
+
+        // loop through each order line to make sure there's enough allocated quantity for each item
+        return requiredQuantitiesMap.entrySet().stream().noneMatch(
+                entry -> {
+                    Long itemId = entry.getKey();
+                    Long requiredQuantity = entry.getValue();
+                    Long allocatedQuantity = allocatedQuantitiesMap.getOrDefault(itemId, 0l);
+                    if (allocatedQuantity < requiredQuantity) {
+                        logger.debug("order {} with item id {} is short allocated, required quantity: {}, allocated quantity: {}",
+                                order.getNumber(),
+                                itemId,
+                                requiredQuantity, allocatedQuantity);
+                        return true;
+                    }
+                    // return false if the item is fully allocated
+                    return false;
+                }
+        );
+    }
+
 }

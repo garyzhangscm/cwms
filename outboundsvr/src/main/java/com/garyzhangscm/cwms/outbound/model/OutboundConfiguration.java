@@ -53,6 +53,12 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
     private Integer asynchronousAllocationPalletThreshold;
 
 
+    @Column(name = "max_pallet_size")
+    private Double maxPalletSize;
+
+    @Column(name = "max_pallet_height")
+    private Double maxPalletHeight;
+
     public Long getId() {
         return id;
     }
@@ -99,5 +105,21 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
 
     public void setAsynchronousAllocationPalletThreshold(Integer asynchronousAllocationPalletThreshold) {
         this.asynchronousAllocationPalletThreshold = asynchronousAllocationPalletThreshold;
+    }
+
+    public Double getMaxPalletSize() {
+        return maxPalletSize;
+    }
+
+    public void setMaxPalletSize(Double maxPalletSize) {
+        this.maxPalletSize = maxPalletSize;
+    }
+
+    public Double getMaxPalletHeight() {
+        return maxPalletHeight;
+    }
+
+    public void setMaxPalletHeight(Double maxPalletHeight) {
+        this.maxPalletHeight = maxPalletHeight;
     }
 }

@@ -18,21 +18,15 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
-import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
-import com.garyzhangscm.cwms.inventory.model.BillableEndpoint;
-import com.garyzhangscm.cwms.inventory.model.Item;
 import com.garyzhangscm.cwms.inventory.model.ItemPackageType;
-import com.garyzhangscm.cwms.inventory.model.ItemUnitOfMeasure;
-import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemPackageTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,6 +66,12 @@ public class ItemPackageTypeController {
     public Boolean isItemPackageTypeRemovable(@PathVariable Long id) {
 
         return itemPackageTypeService.isItemPackageTypeRemovable(id);
+    }
+
+    @RequestMapping(value="/itemPackageTypes/{id}", method = RequestMethod.GET)
+    public ItemPackageType getItemPackageType(@PathVariable Long id) {
+
+        return itemPackageTypeService.findById(id);
     }
 
 

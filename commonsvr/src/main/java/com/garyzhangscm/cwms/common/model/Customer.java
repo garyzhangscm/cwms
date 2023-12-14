@@ -96,6 +96,39 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     @Column(name = "quickbook_listid")
     private String quickbookListId;
 
+    // if the customer is target
+    // if so, we will allow the user to print
+    // target specific labels
+    @Column(name = "is_target")
+    private Boolean isTarget;
+
+    @Column(name = "allow_print_target_shipping_carton_label")
+    private Boolean allowPrintTargetShippingCartonLabel;
+    @Column(name = "allow_print_target_shipping_carton_label_with_pallet_label")
+    private Boolean allowPrintTargetShippingCartonLabelWithPalletLabel;
+    @Column(name = "allow_print_target_shipping_carton_label_with_pallet_label_when_short")
+    private Boolean allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
+
+
+    // if the customer is walmart
+    // if so, we will allow the user to print
+    // walmart specific labels
+    @Column(name = "is_walmart")
+    private Boolean isWalmart;
+    @Column(name = "allow_print_walmart_shipping_carton_label")
+    private Boolean allowPrintWalmartShippingCartonLabel;
+    @Column(name = "allow_print_walmart_shipping_carton_label_with_pallet_label")
+    private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabel;
+    @Column(name = "allow_print_walmart_shipping_carton_label_with_pallet_label_when_short")
+    private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
+
+
+    @Column(name = "max_pallet_size")
+    private Double maxPalletSize;
+
+    @Column(name = "max_pallet_height")
+    private Double maxPalletHeight;
+
     @Override
     public String toString() {
         try {
@@ -297,5 +330,85 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
 
     public void setQuickbookListId(String quickbookListId) {
         this.quickbookListId = quickbookListId;
+    }
+
+    public Boolean getTarget() {
+        return isTarget;
+    }
+
+    public void setTarget(Boolean target) {
+        isTarget = target;
+    }
+
+    public Boolean getAllowPrintTargetShippingCartonLabel() {
+        return allowPrintTargetShippingCartonLabel;
+    }
+
+    public void setAllowPrintTargetShippingCartonLabel(Boolean allowPrintTargetShippingCartonLabel) {
+        this.allowPrintTargetShippingCartonLabel = allowPrintTargetShippingCartonLabel;
+    }
+
+    public Boolean getAllowPrintTargetShippingCartonLabelWithPalletLabel() {
+        return allowPrintTargetShippingCartonLabelWithPalletLabel;
+    }
+
+    public void setAllowPrintTargetShippingCartonLabelWithPalletLabel(Boolean allowPrintTargetShippingCartonLabelWithPalletLabel) {
+        this.allowPrintTargetShippingCartonLabelWithPalletLabel = allowPrintTargetShippingCartonLabelWithPalletLabel;
+    }
+
+    public Boolean getWalmart() {
+        return isWalmart;
+    }
+
+    public void setWalmart(Boolean walmart) {
+        isWalmart = walmart;
+    }
+
+    public Boolean getAllowPrintWalmartShippingCartonLabel() {
+        return allowPrintWalmartShippingCartonLabel;
+    }
+
+    public void setAllowPrintWalmartShippingCartonLabel(Boolean allowPrintWalmartShippingCartonLabel) {
+        this.allowPrintWalmartShippingCartonLabel = allowPrintWalmartShippingCartonLabel;
+    }
+
+    public Boolean getAllowPrintWalmartShippingCartonLabelWithPalletLabel() {
+        return allowPrintWalmartShippingCartonLabelWithPalletLabel;
+    }
+
+    public void setAllowPrintWalmartShippingCartonLabelWithPalletLabel(Boolean allowPrintWalmartShippingCartonLabelWithPalletLabel) {
+        this.allowPrintWalmartShippingCartonLabelWithPalletLabel = allowPrintWalmartShippingCartonLabelWithPalletLabel;
+    }
+
+    public Boolean getAllowPrintTargetShippingCartonLabelWithPalletLabelWhenShort() {
+        return allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public void setAllowPrintTargetShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort) {
+        this.allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort = allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public Boolean getAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort() {
+        return allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public void setAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort) {
+        this.allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort = allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public Double getMaxPalletSize() {
+        return maxPalletSize;
+    }
+
+    public void setMaxPalletSize(Double maxPalletSize) {
+        this.maxPalletSize = maxPalletSize;
+    }
+
+    public Double getMaxPalletHeight() {
+        return maxPalletHeight;
+    }
+
+    public void setMaxPalletHeight(Double maxPalletHeight) {
+        this.maxPalletHeight = maxPalletHeight;
     }
 }

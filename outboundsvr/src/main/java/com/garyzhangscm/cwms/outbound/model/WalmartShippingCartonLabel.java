@@ -168,6 +168,15 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
     @Column(name = "LOMA_COLTON_FAYETEVILLE")
     private String lomaColtonFayeteville;
 
+
+    // only if the carton label is attached to
+    // certain pallet pick label so that the
+    // pallet pick label will be printed along with
+    // all the shipping labels that attached to it
+    @ManyToOne
+    @JoinColumn(name="pallet_pick_label_content_id")
+    private PalletPickLabelContent palletPickLabelContent;
+
     public Long getId() {
         return id;
     }
@@ -510,5 +519,13 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
 
     public void setLomaColtonFayeteville(String lomaColtonFayeteville) {
         this.lomaColtonFayeteville = lomaColtonFayeteville;
+    }
+
+    public PalletPickLabelContent getPalletPickLabelContent() {
+        return palletPickLabelContent;
+    }
+
+    public void setPalletPickLabelContent(PalletPickLabelContent palletPickLabelContent) {
+        this.palletPickLabelContent = palletPickLabelContent;
     }
 }

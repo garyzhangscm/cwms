@@ -46,6 +46,7 @@ public class ItemPackageType implements Serializable {
 
 
     private Boolean defaultFlag;
+    private Integer casePerTier;
 
     @Transient
     private ItemUnitOfMeasure trackingLpnUOM;
@@ -140,6 +141,14 @@ public class ItemPackageType implements Serializable {
 
     public void setItemUnitOfMeasures(List<ItemUnitOfMeasure> itemUnitOfMeasures) {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
+    }
+
+    public Integer getCasePerTier() {
+        return casePerTier;
+    }
+
+    public void setCasePerTier(Integer casePerTier) {
+        this.casePerTier = casePerTier;
     }
 
     public ItemUnitOfMeasure getStockItemUnitOfMeasures() {

@@ -446,6 +446,10 @@ public class PickService {
             pick.setItem(inventoryServiceRestemplateClient.getItemById(pick.getItemId()));
         }
 
+        // Load the item and inventory status information for each lines
+        if (pick.getItemPackageTypeId() != null && pick.getItemPackageType() == null) {
+            pick.setItemPackageType(inventoryServiceRestemplateClient.getItemPackageTypeById(pick.getItemPackageTypeId()));
+        }
         // load pick's inventory status for
         if (pick.getInventoryStatusId() != null &&
                 pick.getInventoryStatus() == null) {
@@ -2487,5 +2491,31 @@ public class PickService {
         return result;
 
 
+    }
+
+    /**
+     * See if the pick is a full pallet pick
+     * @param pick
+     * @return
+     */
+    public boolean isFullPalletPick(Pick pick) {
+        if (Objects.isNull(pick.getItem())) {
+            pick.setItem(
+                    inventoryServiceRestemplateClient.getItemById(
+                            pick.getItemId()
+                    )
+            );
+        }
+        ItemPackageType itemPackageType = pick.getItemPackageType();
+        if (Objects.isNull(itemPackageType) && Objects.nonNull(pick.getItemPackageTypeId())) {
+            itemPackageType = inventoryServiceRestemplateClient.getItemPackageTypeById(
+                    pick.getItemPackageTypeId()
+            );
+        }
+        if (Objects.isNull(itemPackageType)) {
+            itemPackageType = pick.getItem().getDefaultItemPackageType();
+        }
+        // see if the pick's quantity is more than the LPN quantity
+        return pick.getQuantity() >= itemPackageType.getTrackingLpnUOM().getQuantity();
     }
 }
