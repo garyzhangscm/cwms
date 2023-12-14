@@ -67,7 +67,8 @@ public class WalmartShippingCartonLabelService {
                                                     String SSCC18s,
                                                     String poNumber, String type,
                                                     String dept,
-                                                    String itemNumber) {
+                                                    String itemNumber,
+                                                    Long palletPickLabelContentId) {
 
         return  walmartShippingCartonLabelRepository.findAll(
                 (Root<WalmartShippingCartonLabel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -107,6 +108,13 @@ public class WalmartShippingCartonLabelService {
                     if (Strings.isNotBlank(itemNumber)) {
 
                         predicates.add(criteriaBuilder.equal(root.get("itemNumber"), itemNumber));
+                    }
+                    if (Objects.nonNull(palletPickLabelContentId)) {
+
+                        Join<WalmartShippingCartonLabel, PalletPickLabelContent> joinPalletPickLabelContent =
+                                root.join("palletPickLabelContent", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinPalletPickLabelContent.get("id"), palletPickLabelContentId));
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -291,6 +299,18 @@ public class WalmartShippingCartonLabelService {
         return reportHistory;
     }
 
+    public List<WalmartShippingCartonLabel> findByPalletPickLabel(PalletPickLabelContent palletPickLabelContent) {
+        return findAll(
+                palletPickLabelContent.getWarehouseId(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                palletPickLabelContent.getId()
+        );
+    }
     private void setupWalmartShippingCartonLabelData(Long warehouseId,
                                                      Report reportData,
                                                      String SSCC18s,
@@ -299,7 +319,7 @@ public class WalmartShippingCartonLabelService {
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         if (Strings.isNotBlank(SSCC18s)) {
             List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
-                    findAll(warehouseId, null, SSCC18s, null, null, null, null);
+                    findAll(warehouseId, null, SSCC18s, null, null, null, null, null);
 
             walmartShippingCartonLabels.forEach(
                     walmartShippingCartonLabel -> {
@@ -334,5 +354,8 @@ public class WalmartShippingCartonLabelService {
         lpnLabelContent.put("WMIT", walmartShippingCartonLabel.getWMIT());
 
         return lpnLabelContent;
+    }
+
+    public List<WalmartShippingCartonLabel> assignShippingCartonLabel(PalletPickLabelContent palletPickLabelContent) {
     }
 }
