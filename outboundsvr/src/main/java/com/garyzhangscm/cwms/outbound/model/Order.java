@@ -247,6 +247,8 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "cancel_requested_username")
     private String cancelRequestedUsername;
 
+    @Column(name = "po_number")
+    private String poNumber;
 
 
     // Some statistics numbers that we can show
@@ -838,5 +840,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setCancelRequestedUsername(String cancelRequestedUsername) {
         this.cancelRequestedUsername = cancelRequestedUsername;
+    }
+
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 }

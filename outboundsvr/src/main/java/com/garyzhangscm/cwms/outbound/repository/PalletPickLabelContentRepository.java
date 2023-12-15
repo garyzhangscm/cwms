@@ -29,4 +29,5 @@ import org.springframework.stereotype.Repository;
 public interface PalletPickLabelContentRepository extends JpaRepository<PalletPickLabelContent, Long>, JpaSpecificationExecutor<PalletPickLabelContent> {
 
 
+    PalletPickLabelContent findByWarehouseIdAndNumber(Long warehouseId, String number);
 }

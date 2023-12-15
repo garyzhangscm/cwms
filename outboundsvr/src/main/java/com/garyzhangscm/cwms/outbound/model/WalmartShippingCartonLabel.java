@@ -18,9 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "walmart_shipping_carton_label")
@@ -176,6 +181,12 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
     @ManyToOne
     @JoinColumn(name="pallet_pick_label_content_id")
     private PalletPickLabelContent palletPickLabelContent;
+
+    @Column(name = "last_print_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime lastPrintTime;
 
     public Long getId() {
         return id;
@@ -527,5 +538,13 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
 
     public void setPalletPickLabelContent(PalletPickLabelContent palletPickLabelContent) {
         this.palletPickLabelContent = palletPickLabelContent;
+    }
+
+    public ZonedDateTime getLastPrintTime() {
+        return lastPrintTime;
+    }
+
+    public void setLastPrintTime(ZonedDateTime lastPrintTime) {
+        this.lastPrintTime = lastPrintTime;
     }
 }

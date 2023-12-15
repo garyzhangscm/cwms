@@ -37,6 +37,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -135,6 +136,7 @@ public class OrderService {
                                Long customerId,
                                Long clientId,
                                Long trailerAppointmentId,
+                               String poNumber,
                                Boolean loadDetails,
                                ClientRestriction clientRestriction) {
 
@@ -174,6 +176,10 @@ public class OrderService {
                         OrderCategory orderCategory = OrderCategory.valueOf(category);
                         predicates.add(criteriaBuilder.equal(root.get("category"), orderCategory));
 
+                    }
+                    if (Strings.isNotBlank(poNumber)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("poNumber"), poNumber));
                     }
                     if (Objects.nonNull(startCompleteTime)) {
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
@@ -322,13 +328,13 @@ public class OrderService {
                                LocalDate specificCreatedDate,
                                String category, String customerName, Long customerId,
                                Long clientId,
-                              Long trailerAppointmentId,
+                              Long trailerAppointmentId, String poNumber,
                               ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, numbers, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category, customerName, customerId,
-                clientId, trailerAppointmentId, true, clientRestriction);
+                clientId, trailerAppointmentId,  poNumber, true, clientRestriction);
     }
 
     /**
@@ -407,6 +413,7 @@ public class OrderService {
                 customerName,
                 customerId,
                 clientId,
+                null,
                 null,
                 false, clientRestriction);
 
@@ -2849,7 +2856,7 @@ public class OrderService {
                 status, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                true, clientRestriction);
+                null, true, clientRestriction);
 
         return orders.stream().map(order -> convertForQuery(order)).collect(Collectors.toList());
     }
@@ -3122,6 +3129,7 @@ public class OrderService {
                 null,
                 null,
                 null,
+                null,
                 false, clientRestriction);
 
         return orders.size();
@@ -3137,6 +3145,7 @@ public class OrderService {
                 null,
                 null,
                 LocalDate.now(),
+                null,
                 null,
                 null,
                 null,
@@ -3161,6 +3170,7 @@ public class OrderService {
                 null,
                 null,
                 null,
+                null,
                 false, clientRestriction);
 
         return orders.size();
@@ -3175,9 +3185,19 @@ public class OrderService {
      */
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
                                                              int copies,
+                                                             String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)  {
+        return generateWalmartShippingCartonLabels(warehouseId,
+                findById(id), itemName, copies, locale, nonAssignedOnly, nonPrintedOnly, labelCount);
+    }
+
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                             int copies,
                                                              String locale)  {
         return generateWalmartShippingCartonLabels(warehouseId,
-                findById(id), itemName, copies, locale);
+                findById(id), itemName, copies, locale, true, true, Integer.MAX_VALUE);
     }
 
     /**
@@ -3187,13 +3207,31 @@ public class OrderService {
      * @return
      */
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,Order order, String itemName,
-                                                             int copies, String locale)   {
+                                                             int copies, String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)   {
+
+        List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                walmartShippingCartonLabelService.findByPoNumberAndItem(
+                        warehouseId, order.getNumber(), itemName,
+                        nonAssignedOnly, nonPrintedOnly, labelCount);
+
+        return generateWalmartShippingCartonLabels(warehouseId,
+                copies, locale, walmartShippingCartonLabels);
+
+
+    }
+
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,
+                                                             int copies, String locale,
+                                                             List<WalmartShippingCartonLabel> walmartShippingCartonLabels)   {
 
         Report reportData = new Report();
+
+
         setupWalmartShippingCartonLabelData(
-                        warehouseId,
-                reportData, order, itemName,  copies
-                );
+                reportData, copies, walmartShippingCartonLabels );
 
 
         logger.debug("will call resource service to print the report with locale: {}",
@@ -3210,6 +3248,8 @@ public class OrderService {
         logger.debug("####   Report   printed: {}", reportHistory.getFileName());
         return reportHistory;
     }
+
+
 
     /**
      * Generate walmart shipping label along with pallet label. It will return a list of report history with
@@ -3230,6 +3270,8 @@ public class OrderService {
     }
     public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order, int copies, String locale) {
 
+        logger.debug("Start to generate walmart shipping carton labels with pallet pick labels, for order {}",
+                order.getNumber());
         // make sure we can start printing the shipping label with pallet labels for the order
         validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(order);
 
@@ -3266,27 +3308,98 @@ public class OrderService {
             }
         }
 
+        List<ReportHistory> result = new ArrayList<>();
         // see if we already have walmart shipping carton labels that attached to this pallet
 
+        // show 1 / 2, 2 / 2 on the pallet pick label so the user knows how many
+        // pallet labels being printed for this order
+        int labelIndex = 0;
+
         for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+
+            labelIndex++;
             List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
                     walmartShippingCartonLabelService.findByPalletPickLabel(
                             palletPickLabelContent
                     );
+            logger.debug("We got {} shipping carton labels that already assigned to current pallet pick label",
+                    walmartShippingCartonLabels.size());
             if (walmartShippingCartonLabels.isEmpty()) {
                 // ok, we haven't assign any walmart shipping carton label to this
                 // pallet pick label yet, let's assign now
+                logger.debug("Since there's no shipping carton label assigned, yet, let's start to assign process" +
+                        " and find some available shipping carton labels for this pallet");
                 walmartShippingCartonLabels =
                         walmartShippingCartonLabelService.assignShippingCartonLabel(
-                                palletPickLabelContent
+                                order, palletPickLabelContent
                         );
+                logger.debug("We got {} AVAILABLE shipping carton labels and assigned to the current pallet pick label {}",
+                        walmartShippingCartonLabels.size(),
+                        palletPickLabelContent.getNumber());
             }
+            result.addAll(
+                    generateWalmartShippingCartonLabelsWithPalletLabel(
+                            warehouseId, palletPickLabelContent, walmartShippingCartonLabels,
+                            copies, locale, labelIndex, palletPickLabelContents.size())
+            );
+
         }
+        logger.debug("we get {} labels to be printed",
+                result.size());
+        int i = 1;
+        for (ReportHistory reportHistory : result) {
+            logger.debug("==========  Label  " + i + ", type: " + reportHistory.getType() + "      ========");
+
+        }
+        return result;
+
+
+    }
+
+    /**
+     * Generate one pallet labels and all the walmart shipping carton labels for the cartons on this pallet
+     * @param palletPickLabelContent
+     * @param walmartShippingCartonLabels
+     * @return
+     */
+    private List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabel(
+            Long warehouseId,
+            PalletPickLabelContent palletPickLabelContent,
+            List<WalmartShippingCartonLabel> walmartShippingCartonLabels,
+            int copies, String locale,
+            int index,
+            int totalLabelCount) {
+        List<ReportHistory> result = new ArrayList<>();
+        // we will generate the pallet pick label first
+
+        // note, if we will need multiple copies, then we will print one copy
+        // of pallet pick label following by one copy of shipping carton label
+        // then start a new copy of pallet pick label and so on
+        for (int i = 0; i < copies; i++) {
+
+            // generate the pallet pick label
+            // note: if the pallet contains multiple picks(as of now, more than 6)
+            // we may need to print multiple labels for the same pallet, each one with
+            // same header and footer but different contents of picks
+            result.addAll(
+                    palletPickLabelContentService.generatePalletPickLabel(warehouseId,
+                            1, locale,
+                            palletPickLabelContent,  index, totalLabelCount));
+
+            // let's generate the shipping labels
+            result.add(
+                    generateWalmartShippingCartonLabels(warehouseId,
+                            1, locale, walmartShippingCartonLabels));
+
+        }
+        return result;
 
 
     }
 
     private void validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(Order order) {
+        logger.debug("validate order {} to see if it is a valid order for walmart shipping carton label" +
+                " and pallet pick label", order.getNumber());
         if (Objects.nonNull(order.getShipToCustomer())) {
             Customer customer = order.getShipToCustomer();
             if(!Boolean.TRUE.equals(customer.getWalmart())) {
@@ -3309,37 +3422,29 @@ public class OrderService {
                         ", but the order is not fully allocated");
             }
         }
+
+        logger.debug(" order {} passed the validation. We can print walmart shipping carton label" +
+                " and pallet pick label", order.getNumber());
     }
 
-    private void setupWalmartShippingCartonLabelData(Long warehouseId,
-                                                     Report reportData, Order order,
-                                                     String itemName,
-                                                     int copies) {
+    private void setupWalmartShippingCartonLabelData(Report reportData,
+                                                     int copies,
+                                                     List<WalmartShippingCartonLabel> walmartShippingCartonLabels) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
-        List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
-                walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
 
         walmartShippingCartonLabels.forEach(
                 walmartShippingCartonLabel -> {
-                    // add the shipping label to the result only if
-                    // item name is not passed in
-                    // or item name passed in and the value match with the requirement
-                    if (Strings.isBlank(itemName) || itemName.equalsIgnoreCase(walmartShippingCartonLabel.getItemNumber())) {
-
-                        Map<String, Object> lpnLabelContent =   getWalmartShippingCartonLabelContent(
-                                walmartShippingCartonLabel
-                        );
                         for (int i = 0; i < copies; i++) {
 
-                            lpnLabelContents.add(lpnLabelContent);
+                            lpnLabelContents.add(getWalmartShippingCartonLabelContent(
+                                    walmartShippingCartonLabel
+                            ));
                         }
-                    }
 
                 }
         );
         reportData.setData(lpnLabelContents);
-
     }
 
     private Map<String, Object> getWalmartShippingCartonLabelContent(WalmartShippingCartonLabel walmartShippingCartonLabel) {
@@ -3360,35 +3465,22 @@ public class OrderService {
         return lpnLabelContent;
     }
 
-    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName) {
+    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                                           boolean nonAssignedOnly, boolean nonPrintedOnly) {
         Order order = findById(id);
         if (Strings.isBlank(itemName)) {
 
-            return walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
+            return walmartShippingCartonLabelService.findByPoNumberAndItem(warehouseId, order.getNumber(),
+                    itemName, nonAssignedOnly, nonPrintedOnly);
         }
         else {
             return walmartShippingCartonLabelService.findAll(
                     warehouseId, null, null,
                     order.getNumber(), null,null,
-                    itemName
+                    itemName, null, nonPrintedOnly, nonAssignedOnly,
+                    null
             );
         }
-    }
-
-    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(
-            Long warehouseId, Long id, String itemName, int copies, String locale) {
-    }
-
-    /**
-     * Generate target shipping carton label
-     * @param warehouseId
-     * @param id
-     * @param itemName
-     * @param copies
-     * @param locale
-     * @return
-     */
-    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId, Long id, String itemName, int copies, String locale) {
     }
 
     /**
@@ -3438,4 +3530,15 @@ public class OrderService {
         );
     }
 
+    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id, String itemName, int copies, String locale) {
+        return new ArrayList<>();
+    }
+
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId, Long id, String itemName, int copies, String locale) {
+        return null;
+    }
+
+    public ReportHistory generateTargetPalletLabels(Long warehouseId, Long id, String itemName, int copies, String locale) {
+        return null;
+    }
 }
