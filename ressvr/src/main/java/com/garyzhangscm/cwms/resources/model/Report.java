@@ -51,6 +51,8 @@ public class Report extends AuditibleEntity<String> {
     @Enumerated(EnumType.STRING)
     private ReportOrientation reportOrientation ;
 
+    // a collection of label data.
+    // one data per label
     @Transient
     Collection<?> data;
 

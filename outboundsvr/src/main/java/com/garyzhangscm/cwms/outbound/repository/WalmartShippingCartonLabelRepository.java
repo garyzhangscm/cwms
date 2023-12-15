@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.WalmartShippingCartonLabel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -33,5 +34,5 @@ public interface WalmartShippingCartonLabelRepository extends JpaRepository<Walm
 
     WalmartShippingCartonLabel findBySSCC18(String SSCC18);
 
-    List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber);
+    List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber, Pageable pageable);
 }

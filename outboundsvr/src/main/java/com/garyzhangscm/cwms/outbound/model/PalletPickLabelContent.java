@@ -40,10 +40,17 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "number")
+    private String number;
+
     // order id if the pallet is picked for one order
     @ManyToOne
     @JoinColumn(name="order_id")
     private Order order;
+
+    @Column(name = "reference_number")
+    private String referenceNumber;
+
 
     @OneToMany(
             mappedBy = "order",
@@ -68,11 +75,13 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
      * Generate a pallet pick label that only have one pallet pick
      * @param pick
      */
-    public PalletPickLabelContent(Pick pick) {
+    public PalletPickLabelContent(String number, Pick pick) {
+        this.number = number;
         setWarehouseId(pick.getWarehouseId());
         if (Objects.nonNull(pick.getShipmentLine())) {
 
             setOrder(pick.getShipmentLine().getOrderLine().getOrder());
+            setReferenceNumber(getOrder().getNumber());
         }
         palletPickLabelPickDetails.add(
                 new PalletPickLabelPickDetail(this, pick, pick.getQuantity())
@@ -85,7 +94,8 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
      * Generate a pallet pick label that has a list picks
      * @param picks
      */
-    public PalletPickLabelContent(List<Pick> picks) {
+    public PalletPickLabelContent(String number, List<Pick> picks) {
+        this.number = number;
 
         // we will assume the picks belong to the same warehouse since there's
         // no mean to group picks from different warehouse into
@@ -100,6 +110,7 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
                     picks.stream().map(pick -> pick.getOrderNumber()).distinct().count() == 1) {
                 // all picks belong to the same order,
                 setOrder(picks.get(0).getShipmentLine().getOrderLine().getOrder());
+                setReferenceNumber(getOrder().getNumber());
 
             }
             double totalSize = 0.0;
@@ -115,6 +126,15 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
             setHeight(totalHeight);
         }
     }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
     public Long getId() {
         return id;
     }
@@ -161,5 +181,13 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
 
     public void setPalletPickLabelPickDetails(List<PalletPickLabelPickDetail> palletPickLabelPickDetails) {
         this.palletPickLabelPickDetails = palletPickLabelPickDetails;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 }

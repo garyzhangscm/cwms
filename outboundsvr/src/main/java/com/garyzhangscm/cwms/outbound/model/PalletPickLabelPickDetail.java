@@ -23,6 +23,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pallet_pick_label_pick_detail")
@@ -48,6 +49,11 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     @Column(name = "pick_quantity")
     private Long pickQuantity;
 
+    @Column(name = "case_quantity")
+    private Long caseQuantity;
+    @Column(name = "case_unit_of_measure_name")
+    private String caseUnitOfMeasureName;
+
     // estimated volume
     @Column(name = "volume")
     private Double volume;
@@ -61,16 +67,34 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
 
         if (pick.getItem() == null) {
             setVolume(0.0);
+            setCaseQuantity(pickQuantity);
         }
         else {
+            ItemPackageType itemPackageType = pick.getItemPackageType();
+            if (Objects.isNull(itemPackageType)) {
+                itemPackageType = pick.getItem().getDefaultItemPackageType();
+            }
+            if (Objects.nonNull(itemPackageType)) {
+                ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                ItemUnitOfMeasure caseItemUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
+                setVolume(
+                        (pickQuantity / stockItemUnitOfMeasure.getQuantity())
+                                * stockItemUnitOfMeasure.getLength()
+                                * stockItemUnitOfMeasure.getWidth()
+                                * stockItemUnitOfMeasure.getHeight()
+                );
+                if (Objects.nonNull(caseItemUnitOfMeasure)) {
+                    setCaseQuantity(
+                            (long)Math.ceil(pickQuantity / caseItemUnitOfMeasure.getQuantity())
+                    );
+                }
+                else {
+                    setCaseQuantity(pickQuantity);
+                }
+            }
 
-            ItemUnitOfMeasure stockItemUnitOfMeasure = pick.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures();
-            setVolume(
-                    (pickQuantity / stockItemUnitOfMeasure.getQuantity())
-                    * stockItemUnitOfMeasure.getLength()
-                    * stockItemUnitOfMeasure.getWidth()
-                    * stockItemUnitOfMeasure.getHeight()
-            );
+
+
         }
 
 
@@ -117,4 +141,19 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
         this.volume = volume;
     }
 
+    public Long getCaseQuantity() {
+        return caseQuantity;
+    }
+
+    public void setCaseQuantity(Long caseQuantity) {
+        this.caseQuantity = caseQuantity;
+    }
+
+    public String getCaseUnitOfMeasureName() {
+        return caseUnitOfMeasureName;
+    }
+
+    public void setCaseUnitOfMeasureName(String caseUnitOfMeasureName) {
+        this.caseUnitOfMeasureName = caseUnitOfMeasureName;
+    }
 }

@@ -19,6 +19,9 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -49,6 +52,12 @@ public class PalletPickLabelContentService {
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
     public PalletPickLabelContent findById(Long id) {
@@ -86,6 +95,22 @@ public class PalletPickLabelContentService {
 
     public PalletPickLabelContent save(PalletPickLabelContent palletPickLabelContent) {
         return palletPickLabelContentRepository.save(palletPickLabelContent);
+    }
+
+    public PalletPickLabelContent saveOrUpdate(PalletPickLabelContent palletPickLabelContent) {
+        if (Objects.isNull(palletPickLabelContent.getId()) &&
+                Objects.nonNull(findByNumber(
+                        palletPickLabelContent.getWarehouseId(), palletPickLabelContent.getNumber()
+                ))) {
+            palletPickLabelContent.setId(
+                    findByNumber(palletPickLabelContent.getWarehouseId(), palletPickLabelContent.getNumber()).getId()
+            );
+        }
+        return palletPickLabelContentRepository.save(palletPickLabelContent);
+    }
+
+    public PalletPickLabelContent findByNumber(Long warehouseId, String number) {
+        return palletPickLabelContentRepository.findByWarehouseIdAndNumber(warehouseId, number);
     }
 
     public void delete(PalletPickLabelContent palletPickLabelContent) {
@@ -129,7 +154,7 @@ public class PalletPickLabelContentService {
                 picks.stream().filter(
                         pick -> pickService.isFullPalletPick(pick)
                 ).map(
-                        pick -> new PalletPickLabelContent(pick)
+                        pick -> new PalletPickLabelContent(getNextPalletPickLabelNumber(pick.getWarehouseId()), pick)
                 ).collect(Collectors.toList())
         );
 
@@ -141,7 +166,7 @@ public class PalletPickLabelContentService {
                 getOutboundPalletRestriction(order);
 
         result.addAll(
-                generatePalletPickLabelEstimation(outboundPalletRestriction, partialPalletPick)
+                generatePalletPickLabelEstimation(order.getWarehouseId(), outboundPalletRestriction, partialPalletPick)
         );
         return result;
     }
@@ -152,7 +177,8 @@ public class PalletPickLabelContentService {
      * @param picks
      * @return
      */
-    public List<PalletPickLabelContent> generatePalletPickLabelEstimation(Pair<Double, Double> outboundPalletRestriction,
+    public List<PalletPickLabelContent> generatePalletPickLabelEstimation(Long warehouseId,
+                                                                          Pair<Double, Double> outboundPalletRestriction,
                                                                           List<Pick> picks) {
 
         double sizeRestriction = outboundPalletRestriction.getFirst() > 0 ? outboundPalletRestriction.getFirst() :
@@ -162,7 +188,7 @@ public class PalletPickLabelContentService {
         if (sizeRestriction == Double.MAX_VALUE && heightRestriction == Double.MAX_VALUE) {
             // if there's no restriction on the height and size, then let's group the picks into one pallet
             return List.of(
-                    new PalletPickLabelContent(picks)
+                    new PalletPickLabelContent(getNextPalletPickLabelNumber(warehouseId), picks)
             );
         }
 
@@ -214,6 +240,7 @@ public class PalletPickLabelContentService {
                 // ok there's no room for new pick in the list, let's complete the current pallet
                 results.add(
                         new PalletPickLabelContent(
+                                getNextPalletPickLabelNumber(warehouseId),
                                 picksOnCurrentPallet
                         )
                 );
@@ -275,5 +302,146 @@ public class PalletPickLabelContentService {
         double sizeRestriction = Math.max(0, Math.min(customerSizeRestriction, warehouseSizeRestriction));
         double heightRestriction =  Math.max(0, Math.min(customerHeightRestriction, warehouseHeightRestriction));
         return Pair.of(sizeRestriction, heightRestriction);
+    }
+
+
+    public List<ReportHistory> generatePalletPickLabel(Long warehouseId,
+                                                 int copies, String locale,
+                                                 PalletPickLabelContent palletPickLabelContent)   {
+        return generatePalletPickLabel(warehouseId,
+                copies, locale, palletPickLabelContent, 1, 1);
+    }
+
+    public List<ReportHistory> generatePalletPickLabel(Long warehouseId,
+                                                 int copies, String locale,
+                                                 PalletPickLabelContent palletPickLabelContent,
+                                                 int index,
+                                                 int totalLableCount) {
+        // since we will only print at max 6 picks on the label, if
+        // there're more than 6 picks on the pallet, then we will print
+        // multiple labels for this pallet label, the only difference between
+        // those labels are the pick information. The head and footer of those labels
+        // should be the same
+
+        int palletLabelCount = ((palletPickLabelContent.getPalletPickLabelPickDetails().size() - 1) / 6) + 1;
+        List<List<PalletPickLabelPickDetail>> palletPickLabelPickDetailsList = new ArrayList<>();
+        for (int i = 0; i < palletLabelCount; i++) {
+            int startIndex = i * 6;
+            int endIndex = Math.min((i + 1) * 6, palletPickLabelContent.getPalletPickLabelPickDetails().size());
+
+            palletPickLabelPickDetailsList.add(
+                    palletPickLabelContent.getPalletPickLabelPickDetails().subList(
+                            startIndex, endIndex
+                    )
+            );
+        }
+
+        return palletPickLabelPickDetailsList.stream().map(
+                palletPickLabelPickDetails ->
+                        generatePalletPickLabel(
+                                warehouseId, copies, locale,
+                                palletPickLabelContent,
+                                palletPickLabelPickDetails,
+                                index, totalLableCount
+                        )
+        ).collect(Collectors.toList());
+    }
+    public ReportHistory generatePalletPickLabel(Long warehouseId,
+                                                 int copies, String locale,
+                                                 PalletPickLabelContent palletPickLabelContent,
+                                                 List<PalletPickLabelPickDetail> palletPickLabelPickDetails,
+                                                 int index, int totalLableCount) {
+        Report reportData = new Report();
+
+
+        setupPalletPickLabelData(
+                reportData, copies, palletPickLabelContent,
+                palletPickLabelPickDetails,
+                index, totalLableCount );
+
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("Will print {} labels", reportData.getData().size());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WALMART_SHIPPING_CARTON_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    /**
+     * Setup the label content for the pallet pick label
+     * @param reportData
+     * @param copies
+     * @param palletPickLabelContent
+     * @param index
+     * @param totalLableCount
+     */
+    private void setupPalletPickLabelData(Report reportData, int copies,
+                                          PalletPickLabelContent palletPickLabelContent,
+                                          List<PalletPickLabelPickDetail> palletPickLabelPickDetails,
+                                          int index,
+                                          int totalLableCount) {
+        Map<String, Object> labelContent = new HashMap<>();
+
+        labelContent.put("number", palletPickLabelContent.getNumber());
+        labelContent.put("reference_number", palletPickLabelContent.getReferenceNumber());
+        labelContent.put("pallet_size", palletPickLabelContent.getVolume());
+        labelContent.put("pallet_height", palletPickLabelContent.getHeight());
+
+        // get the total case quantity
+        labelContent.put("case_quantity",
+                palletPickLabelContent.getPalletPickLabelPickDetails().stream().map(
+                        PalletPickLabelPickDetail::getCaseQuantity
+                ).mapToLong(Long::longValue).sum());
+
+        labelContent.put("index", index);
+        labelContent.put("total_label_count", totalLableCount);
+
+        for(int i = 0; i < 6 && i < palletPickLabelPickDetails.size(); i++) {
+
+            Pick pick = palletPickLabelPickDetails.get(i).getPick();
+            if (Objects.isNull(pick.getSourceLocation())) {
+                pick.setSourceLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                pick.getSourceLocationId()
+                        )
+                );
+            }
+            if (Objects.isNull(pick.getItem())) {
+                pick.setItem(
+                        inventoryServiceRestemplateClient.getItemById(
+                                pick.getItemId()
+                        )
+                );
+            }
+            labelContent.put("source_location_" + (i+1), pick.getSourceLocation().getName());
+            labelContent.put("item_" + (i+1), pick.getItem().getName());
+            labelContent.put("item_description" + (i+1), pick.getItem().getDescription());
+            labelContent.put("quantity_" + (i+1),
+                    palletPickLabelPickDetails.get(i).getPickQuantity() +
+                            "(" + palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getCaseUnitOfMeasureName() + ")" );
+
+        }
+
+
+        List<Map<String, Object>> labelContents = new ArrayList<>();
+
+        for (int i = 0; i < copies; i++) {
+            labelContents.add(labelContent);
+        }
+
+
+        reportData.setData(labelContents);
+    }
+
+    public String getNextPalletPickLabelNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "pallet-pick-label-number");
     }
 }
