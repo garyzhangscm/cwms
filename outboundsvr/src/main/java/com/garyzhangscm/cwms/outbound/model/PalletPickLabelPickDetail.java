@@ -42,7 +42,7 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "pallet_pick_label_content_id")
-    private PalletPickLabelContent PalletPickLabelContent;
+    private PalletPickLabelContent palletPickLabelContent;
 
     // if the pick needs to be picks with multiple pallet
     // then the pickQuantity is only for this pallet
@@ -61,7 +61,7 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     public PalletPickLabelPickDetail() {}
     public PalletPickLabelPickDetail(PalletPickLabelContent PalletPickLabelContent, Pick pick, Long pickQuantity) {
         this.pick = pick;
-        this.PalletPickLabelContent = PalletPickLabelContent;
+        this.palletPickLabelContent = palletPickLabelContent;
         this.pickQuantity = pickQuantity;
 
 
@@ -125,12 +125,12 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
         this.pickQuantity = pickQuantity;
     }
 
-    public com.garyzhangscm.cwms.outbound.model.PalletPickLabelContent getPalletPickLabelContent() {
-        return PalletPickLabelContent;
+    public PalletPickLabelContent getPalletPickLabelContent() {
+        return palletPickLabelContent;
     }
 
-    public void setPalletPickLabelContent(com.garyzhangscm.cwms.outbound.model.PalletPickLabelContent palletPickLabelContent) {
-        PalletPickLabelContent = palletPickLabelContent;
+    public void setPalletPickLabelContent(PalletPickLabelContent palletPickLabelContent) {
+        this.palletPickLabelContent = palletPickLabelContent;
     }
 
     public Double getVolume() {

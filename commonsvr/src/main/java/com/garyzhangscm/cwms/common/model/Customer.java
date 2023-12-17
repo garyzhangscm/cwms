@@ -106,7 +106,7 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     private Boolean allowPrintTargetShippingCartonLabel;
     @Column(name = "allow_print_target_shipping_carton_label_with_pallet_label")
     private Boolean allowPrintTargetShippingCartonLabelWithPalletLabel;
-    @Column(name = "allow_print_target_shipping_carton_label_with_pallet_label_when_short")
+    @Column(name = "print_target_shipping_carton_label_with_pallet_label_when_short")
     private Boolean allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
 
 
@@ -119,7 +119,7 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     private Boolean allowPrintWalmartShippingCartonLabel;
     @Column(name = "allow_print_walmart_shipping_carton_label_with_pallet_label")
     private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabel;
-    @Column(name = "allow_print_walmart_shipping_carton_label_with_pallet_label_when_short")
+    @Column(name = "print_walmart_shipping_carton_label_with_pallet_label_when_short")
     private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
 
 
