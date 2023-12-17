@@ -44,8 +44,8 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
     private String number;
 
     // order id if the pallet is picked for one order
-    @ManyToOne
-    @JoinColumn(name="order_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="outbound_order_id")
     private Order order;
 
     @Column(name = "reference_number")
@@ -53,7 +53,7 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
 
 
     @OneToMany(
-            mappedBy = "order",
+            mappedBy = "palletPickLabelContent",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER
