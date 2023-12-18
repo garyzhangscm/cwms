@@ -2233,5 +2233,12 @@
   "dryrun-inventory-allocation": "测试库存分配",
   "allocationDryRunResult": "库存分配测试结果",
   "allocatible": "是否可分配",
-  "allocationFailReason": "分配失败原因"
+  "allocationFailReason": "分配失败原因",
+  "customer.isTarget": "Target顾客",
+  "customer.isWalmart": "Walmart顾客",
+  "allowPrintShippingCartonLabel": "允许打印发货标签",
+  "allowPrintShippingCartonLabelWithPalletLabel": "允许同时打印发货标签和托盘标签",
+  "allowPrintShippingCartonLabelWithPalletLabelWhenShort": "缺货时允许同时打印发货标签和托盘标签",
+  "maxPalletSize": "最大托盘尺寸",
+  "maxPalletHeight": "最大托盘高度"
 }
