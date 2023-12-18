@@ -2238,6 +2238,12 @@
   "dryrun-inventory-allocation": "Dryrun Inventory Allocation",
   "allocationDryRunResult": "Allocation Dryrun Result",
   "allocatible": "Allocatable",
-  "allocationFailReason": "Allocation Fail Reason"
-
+  "allocationFailReason": "Allocation Fail Reason",
+  "customer.isTarget": "Customer is Target",
+  "customer.isWalmart": "Customer is Walmart",
+  "allowPrintShippingCartonLabel": "Allow Print Shipping Carton Label",
+  "allowPrintShippingCartonLabelWithPalletLabel": "Allow Print Shipping Carton Label With Pallet Label",
+  "allowPrintShippingCartonLabelWithPalletLabelWhenShort": "Allow Print Shipping Carton Label With Pallet Label When Short",
+  "maxPalletSize": "Max Pallet Size",
+  "maxPalletHeight": "Max Pallet Height"
 }
