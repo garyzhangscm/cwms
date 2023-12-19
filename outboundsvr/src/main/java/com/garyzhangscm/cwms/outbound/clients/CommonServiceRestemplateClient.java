@@ -402,6 +402,10 @@ public class CommonServiceRestemplateClient {
                     HttpMethod.GET,
                     null
             );
+            if (Objects.isNull(systemControlledNumber)) {
+                throw ResourceNotFoundException.raiseException("can't find next number for " + variable + ", " +
+                        "please contact system admin for configuration");
+            }
             return systemControlledNumber.getNextNumber();
     }
 
