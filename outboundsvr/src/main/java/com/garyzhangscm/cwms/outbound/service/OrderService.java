@@ -3348,7 +3348,7 @@ public class OrderService {
                 result.size());
         int i = 1;
         for (ReportHistory reportHistory : result) {
-            logger.debug("==========  Label  " + i + ", type: " + reportHistory.getType() + "      ========");
+            logger.debug("==========  Label  " + i++ + ", type: " + reportHistory.getType() + "      ========");
 
         }
         return result;
