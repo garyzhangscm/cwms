@@ -73,6 +73,8 @@ public class PickService {
     private PickConfirmStrategyService pickConfirmStrategyService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
@@ -2523,8 +2525,19 @@ public class PickService {
                     itemPackageType.getTrackingLpnUOM().getUnitOfMeasure().getName());
         // see if the pick's quantity is more than the LPN quantity
         if (Objects.isNull(itemPackageType.getTrackingLpnUOM())) {
-            // there's no tracking LPN uom defined, let's always assume that current pick
-            // is a full pallet pick
+            // there's no tracking LPN uom defined, let's see if there's
+            // maximun pallet size defined for outbound
+            OutboundConfiguration outboundConfiguration = outboundConfigurationService.findByWarehouse(pick.getWarehouseId());
+            if (Objects.nonNull(outboundConfiguration) && Objects.nonNull(outboundConfiguration.getMaxPalletSize())
+                && outboundConfiguration.getMaxPalletSize() > 0) {
+                logger.debug("the max pallet size is defined for this warehouse, " +
+                                "see if the pick's size {} is greater than the pallet size {}",
+                        pick.getSize(),
+                        outboundConfiguration.getMaxPalletSize());
+                return pick.getSize() >= outboundConfiguration.getMaxPalletSize();
+            }
+            logger.debug("the item doesn't have a tracking LPN uom defined and there's no max pallet size defined for the outbound, " +
+                    "let's always assume that the pick is a full pallet pick");
             return true;
         }
         return pick.getQuantity() >= itemPackageType.getTrackingLpnUOM().getQuantity();
