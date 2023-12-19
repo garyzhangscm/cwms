@@ -434,7 +434,25 @@ public class WalmartShippingCartonLabelService {
                 itemPackageType = item.getDefaultItemPackageType();
             }
             // see how many cases of the item will be picked onto this pallet
-            int caseQuantity = (int)Math.ceil(palletPickLabelPickDetail.getPickQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity());
+            long quantityPerCase = 1l;
+            if (Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure())) {
+                logger.debug("There's no case UOM defined for the item package type {} of item {}, let's use the stock UOM {}'s quantity = {}",
+                        itemPackageType.getName(),
+                        item.getName(),
+                        itemPackageType.getStockItemUnitOfMeasures().getUnitOfMeasure().getName(),
+                        itemPackageType.getStockItemUnitOfMeasures().getQuantity());
+                quantityPerCase = itemPackageType.getStockItemUnitOfMeasures().getQuantity();
+            }
+            else {
+                logger.debug("Case UOM {} is defined for the item package type {} of item {}, let's use the its quantity = {}",
+                        itemPackageType.getCaseItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                        itemPackageType.getName(),
+                        item.getName(),
+                        itemPackageType.getCaseItemUnitOfMeasure().getQuantity());
+                quantityPerCase = itemPackageType.getCaseItemUnitOfMeasure().getQuantity();
+            }
+
+            int caseQuantity = (int)Math.ceil(palletPickLabelPickDetail.getPickQuantity() / quantityPerCase);
             List<WalmartShippingCartonLabel> availableWalmartShippingCartonLabels =
                     findByPoNumberAndItem(order.getWarehouseId(),
                             order.getPoNumber(),  item.getName(),
