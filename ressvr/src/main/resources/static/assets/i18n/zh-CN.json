@@ -2240,5 +2240,13 @@
   "allowPrintShippingCartonLabelWithPalletLabel": "允许同时打印发货标签和托盘标签",
   "allowPrintShippingCartonLabelWithPalletLabelWhenShort": "缺货时允许同时打印发货标签和托盘标签",
   "maxPalletSize": "最大托盘尺寸",
-  "maxPalletHeight": "最大托盘高度"
+  "maxPalletHeight": "最大托盘高度",
+  "dept": "Department",
+  "shipTo": "发货地址",
+  "address1": "发货地址 行1",
+  "cityStateZip": "城市, 州 邮编",
+  "orderQuantity": "订单数量",
+  "pieceCarton": "每箱内数量",
+  "cartonQuantity": "箱数",
+  "printShippingCartonLabelWithPalletLabel": "允许同时打印发货标签和托盘标签"
 }
