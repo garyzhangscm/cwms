@@ -2515,7 +2515,18 @@ public class PickService {
         if (Objects.isNull(itemPackageType)) {
             itemPackageType = pick.getItem().getDefaultItemPackageType();
         }
+        logger.debug("see if we can find the tracking LPN UOM for item {}, item package type {}",
+                pick.getItem().getName(),
+                Objects.isNull(itemPackageType) ? "N/A" : itemPackageType.getName());
+        logger.debug("Tracking LPN UOM: {}",
+                Objects.isNull(itemPackageType.getTrackingLpnUOM()) ? "N/A" :
+                    itemPackageType.getTrackingLpnUOM().getUnitOfMeasure().getName());
         // see if the pick's quantity is more than the LPN quantity
+        if (Objects.isNull(itemPackageType.getTrackingLpnUOM())) {
+            // there's no tracking LPN uom defined, let's always assume that current pick
+            // is a full pallet pick
+            return true;
+        }
         return pick.getQuantity() >= itemPackageType.getTrackingLpnUOM().getQuantity();
     }
 }
