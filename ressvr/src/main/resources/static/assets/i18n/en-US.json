@@ -2245,5 +2245,13 @@
   "allowPrintShippingCartonLabelWithPalletLabel": "Allow Print Shipping Carton Label With Pallet Label",
   "allowPrintShippingCartonLabelWithPalletLabelWhenShort": "Allow Print Shipping Carton Label With Pallet Label When Short",
   "maxPalletSize": "Max Pallet Size",
-  "maxPalletHeight": "Max Pallet Height"
+  "maxPalletHeight": "Max Pallet Height",
+  "dept": "Department",
+  "shipTo": "Ship To",
+  "address1": "Address Line 1",
+  "cityStateZip": "City, State and Zipcode",
+  "orderQuantity": "Order Quantity",
+  "pieceCarton": "Piece per Carton",
+  "cartonQuantity": "Carton Quantity",
+  "printShippingCartonLabelWithPalletLabel": "Print Shipping Carton Label With Pallet Label"
 }

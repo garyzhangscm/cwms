@@ -3402,18 +3402,18 @@ public class OrderService {
                 " and pallet pick label", order.getNumber());
         if (Objects.nonNull(order.getShipToCustomer())) {
             Customer customer = order.getShipToCustomer();
-            if(!Boolean.TRUE.equals(customer.getWalmart())) {
+            if(!Boolean.TRUE.equals(customer.getCustomerIsWalmart())) {
                 throw OrderOperationException.raiseException("order " + order.getNumber()
                         + "'s ship to customer " + customer.getName() + " is not walmart, " +
                         " can't print walmart shipping carton for it");
             }
-            if (!Boolean.TRUE.equals(customer.getAllowPrintWalmartShippingCartonLabelWithPalletLabel())) {
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabel())) {
 
                 throw OrderOperationException.raiseException("order " + order.getNumber()
                         + "'s ship to customer " + customer.getName() + " is configured not to" +
                         " print walmart shipping label with pallet label");
             }
-            if (!Boolean.TRUE.equals(customer.getAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort()) &&
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabelWhenShort()) &&
                   !isOrderFullyAllocated(order)) {
 
                 throw OrderOperationException.raiseException("order " + order.getNumber()
@@ -3468,15 +3468,25 @@ public class OrderService {
     public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
                                                                            boolean nonAssignedOnly, boolean nonPrintedOnly) {
         Order order = findById(id);
-        if (Strings.isBlank(itemName)) {
+        // for walmart shipping carton label, we can only find by PO number
+        if (Strings.isBlank(order.getPoNumber())) {
+            logger.debug("Order {} doesn't have a PO number, return nothing",
+                    order.getNumber());
+            return new ArrayList<>();
+        }
+        if (Strings.isNotBlank(itemName)) {
 
-            return walmartShippingCartonLabelService.findByPoNumberAndItem(warehouseId, order.getNumber(),
+            logger.debug("start to find walmart shipping carton labels for order {} with PO number {}, item name: {}",
+                    order.getNumber(), order.getPoNumber(), itemName);
+            return walmartShippingCartonLabelService.findByPoNumberAndItem(warehouseId, order.getPoNumber(),
                     itemName, nonAssignedOnly, nonPrintedOnly);
         }
         else {
+            logger.debug("start to find walmart shipping carton labels for order {} with PO number {}, WITHOUT item",
+                    order.getNumber(), order.getPoNumber());
             return walmartShippingCartonLabelService.findAll(
                     warehouseId, null, null,
-                    order.getNumber(), null,null,
+                    order.getPoNumber(), null,null,
                     itemName, null, nonPrintedOnly, nonAssignedOnly,
                     null
             );

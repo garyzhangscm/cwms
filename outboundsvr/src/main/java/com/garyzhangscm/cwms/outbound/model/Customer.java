@@ -50,21 +50,12 @@ public class Customer implements Serializable {
     // if the customer is target
     // if so, we will allow the user to print
     // target specific labels
-    private Boolean isTarget;
+    private Boolean customerIsTarget;
+    private Boolean customerIsWalmart;
 
-    private Boolean allowPrintTargetShippingCartonLabel;
-    private Boolean allowPrintTargetShippingCartonLabelWithPalletLabel;
-    private Boolean allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
-
-
-    // if the customer is walmart
-    // if so, we will allow the user to print
-    // walmart specific labels
-    private Boolean isWalmart;
-
-    private Boolean allowPrintWalmartShippingCartonLabel;
-    private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabel;
-    private Boolean allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
+    private Boolean allowPrintShippingCartonLabel;
+    private Boolean allowPrintShippingCartonLabelWithPalletLabel;
+    private Boolean allowPrintShippingCartonLabelWithPalletLabelWhenShort;
 
 
     private Double maxPalletSize;
@@ -182,68 +173,44 @@ public class Customer implements Serializable {
         this.listPickEnabledFlag = listPickEnabledFlag;
     }
 
-    public Boolean getTarget() {
-        return isTarget;
+    public Boolean getCustomerIsTarget() {
+        return customerIsTarget;
     }
 
-    public void setTarget(Boolean target) {
-        isTarget = target;
+    public void setCustomerIsTarget(Boolean customerIsTarget) {
+        this.customerIsTarget = customerIsTarget;
     }
 
-    public Boolean getAllowPrintTargetShippingCartonLabel() {
-        return allowPrintTargetShippingCartonLabel;
+    public Boolean getCustomerIsWalmart() {
+        return customerIsWalmart;
     }
 
-    public void setAllowPrintTargetShippingCartonLabel(Boolean allowPrintTargetShippingCartonLabel) {
-        this.allowPrintTargetShippingCartonLabel = allowPrintTargetShippingCartonLabel;
+    public void setCustomerIsWalmart(Boolean customerIsWalmart) {
+        this.customerIsWalmart = customerIsWalmart;
     }
 
-    public Boolean getAllowPrintTargetShippingCartonLabelWithPalletLabel() {
-        return allowPrintTargetShippingCartonLabelWithPalletLabel;
+    public Boolean getAllowPrintShippingCartonLabel() {
+        return allowPrintShippingCartonLabel;
     }
 
-    public void setAllowPrintTargetShippingCartonLabelWithPalletLabel(Boolean allowPrintTargetShippingCartonLabelWithPalletLabel) {
-        this.allowPrintTargetShippingCartonLabelWithPalletLabel = allowPrintTargetShippingCartonLabelWithPalletLabel;
+    public void setAllowPrintShippingCartonLabel(Boolean allowPrintShippingCartonLabel) {
+        this.allowPrintShippingCartonLabel = allowPrintShippingCartonLabel;
     }
 
-    public Boolean getAllowPrintTargetShippingCartonLabelWithPalletLabelWhenShort() {
-        return allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
+    public Boolean getAllowPrintShippingCartonLabelWithPalletLabel() {
+        return allowPrintShippingCartonLabelWithPalletLabel;
     }
 
-    public void setAllowPrintTargetShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort) {
-        this.allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort = allowPrintTargetShippingCartonLabelWithPalletLabelWhenShort;
+    public void setAllowPrintShippingCartonLabelWithPalletLabel(Boolean allowPrintShippingCartonLabelWithPalletLabel) {
+        this.allowPrintShippingCartonLabelWithPalletLabel = allowPrintShippingCartonLabelWithPalletLabel;
     }
 
-    public Boolean getWalmart() {
-        return isWalmart;
+    public Boolean getAllowPrintShippingCartonLabelWithPalletLabelWhenShort() {
+        return allowPrintShippingCartonLabelWithPalletLabelWhenShort;
     }
 
-    public void setWalmart(Boolean walmart) {
-        isWalmart = walmart;
-    }
-
-    public Boolean getAllowPrintWalmartShippingCartonLabel() {
-        return allowPrintWalmartShippingCartonLabel;
-    }
-
-    public void setAllowPrintWalmartShippingCartonLabel(Boolean allowPrintWalmartShippingCartonLabel) {
-        this.allowPrintWalmartShippingCartonLabel = allowPrintWalmartShippingCartonLabel;
-    }
-
-    public Boolean getAllowPrintWalmartShippingCartonLabelWithPalletLabel() {
-        return allowPrintWalmartShippingCartonLabelWithPalletLabel;
-    }
-
-    public void setAllowPrintWalmartShippingCartonLabelWithPalletLabel(Boolean allowPrintWalmartShippingCartonLabelWithPalletLabel) {
-        this.allowPrintWalmartShippingCartonLabelWithPalletLabel = allowPrintWalmartShippingCartonLabelWithPalletLabel;
-    }
-
-    public Boolean getAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort() {
-        return allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
-    }
-
-    public void setAllowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort) {
-        this.allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort = allowPrintWalmartShippingCartonLabelWithPalletLabelWhenShort;
+    public void setAllowPrintShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintShippingCartonLabelWithPalletLabelWhenShort) {
+        this.allowPrintShippingCartonLabelWithPalletLabelWhenShort = allowPrintShippingCartonLabelWithPalletLabelWhenShort;
     }
 
     public Double getMaxPalletSize() {
