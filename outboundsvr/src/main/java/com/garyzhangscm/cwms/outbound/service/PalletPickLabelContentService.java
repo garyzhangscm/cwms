@@ -34,6 +34,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -239,7 +240,7 @@ public class PalletPickLabelContentService {
         double heightRestriction = outboundPalletRestriction.getSecond() > 0 ? outboundPalletRestriction.getSecond() :
                 Double.MAX_VALUE;
         logger.debug("warehouse {} has pallet restriction size <= {} in3 and height <= {} in",
-                sizeRestriction, heightRestriction);
+                warehouseId, sizeRestriction, heightRestriction);
         if (sizeRestriction == Double.MAX_VALUE && heightRestriction == Double.MAX_VALUE) {
             // if there's no restriction on the height and size, then let's group the picks into one pallet
             return List.of(
@@ -269,13 +270,25 @@ public class PalletPickLabelContentService {
                 // we can always add one pick onto the pallet
                 logger.debug("There's nothing on the current pallet yet, since we are reasonably assume" +
                         " that all the picks here are partial pallet pick, we will directly add the pick " +
-                        " of index {} onto this empty pallet",
-                        biggestIndex);
+                        " of index {} onto this empty pallet. pick number: {}, size = {}, height = {}",
+                        biggestIndex,
+                        picks.get(biggestIndex).getNumber(),
+                        picks.get(biggestIndex).getSize(),
+                        picks.get(biggestIndex).getHeight());
                 picksOnCurrentPallet.add(picks.get(biggestIndex));
                 currentPalletSize += picks.get(biggestIndex).getSize();
                 currentPalletHeight += picks.get(biggestIndex).getHeight();
 
                 biggestIndex ++;
+
+                // add the pallet to the final list once we have something on it
+                // we may add more onto the pallet during the iteration
+                results.add(
+                        new PalletPickLabelContent(
+                                getNextPalletPickLabelNumber(warehouseId),
+                                picksOnCurrentPallet
+                        )
+                );
 
                 continue;
             }
@@ -294,7 +307,12 @@ public class PalletPickLabelContentService {
                 currentPalletHeight + picks.get(biggestIndex).getHeight() < heightRestriction) {
                 // ok we are good to add the next pick to the current pallet
 
-                logger.debug("We can add the biggest pick onto current pallet");
+                logger.debug("We can add the biggest pick onto current pallet. " +
+                                "pick number: {}, size = {}, height = {}",
+                        picks.get(biggestIndex).getNumber(),
+                        picks.get(biggestIndex).getSize(),
+                        picks.get(biggestIndex).getHeight());
+
                 picksOnCurrentPallet.add(picks.get(biggestIndex));
                 currentPalletSize += picks.get(biggestIndex).getSize();
                 currentPalletHeight += picks.get(biggestIndex).getHeight();
@@ -304,7 +322,12 @@ public class PalletPickLabelContentService {
                     currentPalletHeight + picks.get(smallestIndex).getHeight() < heightRestriction) {
                 // ok we are good to add the next pick to the current pallet
 
-                logger.debug("We can add the smallest pick onto current pallet");
+                logger.debug("We can add the smallest pick onto current pallet" +
+                        "pick number: {}, size = {}, height = {}",
+                        picks.get(smallestIndex).getNumber(),
+                        picks.get(smallestIndex).getSize(),
+                        picks.get(smallestIndex).getHeight());
+
                 picksOnCurrentPallet.add(picks.get(smallestIndex));
                 currentPalletSize += picks.get(smallestIndex).getSize();
                 currentPalletHeight += picks.get(smallestIndex).getHeight();
@@ -313,12 +336,6 @@ public class PalletPickLabelContentService {
             else {
                 // ok there's no room for new pick in the list, let's complete the current pallet
                 logger.debug("No more room on current pallet, let's start with a new empty pallet");
-                results.add(
-                        new PalletPickLabelContent(
-                                getNextPalletPickLabelNumber(warehouseId),
-                                picksOnCurrentPallet
-                        )
-                );
                 // clear the temporary value so we can start a new pallet
                 picksOnCurrentPallet = new ArrayList<>();
                 currentPalletSize = 0.0;
@@ -356,10 +373,10 @@ public class PalletPickLabelContentService {
             );
         }
         if (Objects.nonNull(order.getShipToCustomer())) {
-            customerSizeRestriction = Objects.isNull(order.getShipToCustomer().getMaxPalletSize()) ?
-                0.0 : order.getShipToCustomer().getMaxPalletSize();
-            customerHeightRestriction = Objects.isNull(order.getShipToCustomer().getMaxPalletHeight()) ?
-                0.0 : order.getShipToCustomer().getMaxPalletHeight();
+            customerSizeRestriction = Objects.isNull(order.getShipToCustomer().getMaxPalletSize()) || order.getShipToCustomer().getMaxPalletSize() <= 0?
+                Double.MAX_VALUE : order.getShipToCustomer().getMaxPalletSize();
+            customerHeightRestriction = Objects.isNull(order.getShipToCustomer().getMaxPalletHeight()) || order.getShipToCustomer().getMaxPalletHeight() <= 0?
+                    Double.MAX_VALUE : order.getShipToCustomer().getMaxPalletHeight();
             logger.debug("order {}'s customer {} has a size restriction {} and height restriction {} on the pallet",
                     order.getNumber(),
                     order.getShipToCustomer().getName(),
@@ -374,18 +391,18 @@ public class PalletPickLabelContentService {
 
         if (Objects.nonNull(outboundConfiguration)) {
 
-            warehouseSizeRestriction = Objects.isNull(outboundConfiguration.getMaxPalletSize()) ?
-                    0.0 : outboundConfiguration.getMaxPalletSize();
-            warehouseHeightRestriction = Objects.isNull(outboundConfiguration.getMaxPalletHeight()) ?
-                    0.0 : outboundConfiguration.getMaxPalletHeight();
+            warehouseSizeRestriction = Objects.isNull(outboundConfiguration.getMaxPalletSize()) || outboundConfiguration.getMaxPalletSize() <= 0?
+                    Double.MAX_VALUE : outboundConfiguration.getMaxPalletSize();
+            warehouseHeightRestriction = Objects.isNull(outboundConfiguration.getMaxPalletHeight()) || outboundConfiguration.getMaxPalletHeight() <= 0?
+                    Double.MAX_VALUE : outboundConfiguration.getMaxPalletHeight();
 
             logger.debug("outbound configuration has a size restriction {} and height restriction {} on the pallet",
                     warehouseSizeRestriction,
                     warehouseHeightRestriction);
         }
 
-        double sizeRestriction = Math.max(0, Math.min(customerSizeRestriction, warehouseSizeRestriction));
-        double heightRestriction =  Math.max(0, Math.min(customerHeightRestriction, warehouseHeightRestriction));
+        double sizeRestriction = Math.min(customerSizeRestriction, warehouseSizeRestriction);
+        double heightRestriction =  Math.min(customerHeightRestriction, warehouseHeightRestriction);
 
         logger.debug("Final result: size restriction {} and height restriction {} on the pallet",
                 sizeRestriction,
@@ -406,12 +423,18 @@ public class PalletPickLabelContentService {
                                                  int copies, String locale,
                                                  PalletPickLabelContent palletPickLabelContent,
                                                  int index,
-                                                 int totalLableCount) {
+                                                 int totalLabelCount) {
         // since we will only print at max 6 picks on the label, if
         // there're more than 6 picks on the pallet, then we will print
         // multiple labels for this pallet label, the only difference between
         // those labels are the pick information. The head and footer of those labels
         // should be the same
+
+        logger.debug("start to print pallet pick labels, which is {} of a total serious of {} pallet picks" +
+                ", label number: {}, reference number: {}",
+                index, totalLabelCount,
+                palletPickLabelContent.getNumber(),
+                palletPickLabelContent.getReferenceNumber());
 
         int palletLabelCount = ((palletPickLabelContent.getPalletPickLabelPickDetails().size() - 1) / 6) + 1;
         List<List<PalletPickLabelPickDetail>> palletPickLabelPickDetailsList = new ArrayList<>();
@@ -432,7 +455,7 @@ public class PalletPickLabelContentService {
                                 warehouseId, copies, locale,
                                 palletPickLabelContent,
                                 palletPickLabelPickDetails,
-                                index, totalLableCount
+                                index, totalLabelCount
                         )
         ).collect(Collectors.toList());
     }

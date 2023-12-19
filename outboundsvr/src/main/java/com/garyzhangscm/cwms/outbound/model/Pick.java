@@ -231,14 +231,38 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
         ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
                 item.getDefaultItemPackageType() : getItemPackageType();
 
-        if (Objects.nonNull(itemPackageType.getCaseItemUnitOfMeasure()) &&
-                Objects.nonNull(itemPackageType.getCasePerTier()) &&
+        if (Objects.nonNull(itemPackageType.getCaseItemUnitOfMeasure())) {
+            // if we have the case UOM defined for this package type
+            // 1. if the picked quantity is less than one case, then we will assume there's no
+            //    case needed for outbound and we will use the stock UOM's height
+            // 2. otherwise
+            // 2.1. if we also have case per tier defined, then we can know exactly
+            //    how many layer of cases we will have if we palletize the picked inventory
+            //    so we can calculate the height
+            // 2.2. if we don't know the case per tier, then we know at least we probably will
+            //    have one case and we will use the case's height as the picked inventory's overall
+            //    height
+
+
+            if (getQuantity() < itemPackageType.getCaseItemUnitOfMeasure().getQuantity()) {
+                // pick quantity is less than one case, return the stock UOM's height
+                return itemPackageType.getStockItemUnitOfMeasures().getHeight();
+            }
+
+            if (Objects.nonNull(itemPackageType.getCasePerTier()) &&
                 itemPackageType.getCasePerTier() > 0) {
-            return (Math.ceil(getQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity())  // how many cases in the pick
+                // we have both case UOM and case per tier defined, get the right height based on the
+                // number of layer of cases, and case height
+                return (Math.ceil(getQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity())  // how many cases in the pick
                         / itemPackageType.getCasePerTier())    // how many cases per tier
-                   * itemPackageType.getCaseItemUnitOfMeasure().getHeight();       // height per case(per tier)
+                        * itemPackageType.getCaseItemUnitOfMeasure().getHeight();       // height per case(per tier)
+            }
+            // case per tier is not defined, we at least have one case but we don't know how the cases
+            // are stacked, so we will just return the case's height
+            return itemPackageType.getCaseItemUnitOfMeasure().getHeight();
         }
-        return 0.0;
+        // case UOM is not defined, let's just return the stock UOM's height
+        return itemPackageType.getStockItemUnitOfMeasures().getHeight();
     }
 
 
