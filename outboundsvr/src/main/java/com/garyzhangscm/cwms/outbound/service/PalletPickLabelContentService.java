@@ -34,7 +34,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,6 +49,8 @@ public class PalletPickLabelContentService {
     private PickService pickService;
     @Autowired
     private OutboundConfigurationService outboundConfigurationService;
+    @Autowired
+    private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -116,6 +117,12 @@ public class PalletPickLabelContentService {
 
     public void delete(PalletPickLabelContent palletPickLabelContent) {
         palletPickLabelContentRepository.delete(palletPickLabelContent);
+
+        // once done, we may need to release the walmart shipping carton labels
+        // that on this pallet so that the carton label can be group onto the new
+        // pallet, if needed
+
+        walmartShippingCartonLabelService.releaseShippingCartonLabel(palletPickLabelContent);
     }
 
     public List<PalletPickLabelContent> generateAndSavePalletPickLabelEstimation(Order order) {
@@ -480,7 +487,7 @@ public class PalletPickLabelContentService {
         logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
-                        warehouseId, ReportType.WALMART_SHIPPING_CARTON_LABEL, reportData, locale
+                        warehouseId, ReportType.PALLET_PICK_LABEL, reportData, locale
                 );
 
 

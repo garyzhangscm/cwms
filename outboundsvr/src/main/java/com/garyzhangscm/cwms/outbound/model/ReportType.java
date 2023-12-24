@@ -22,6 +22,7 @@ public enum ReportType {
     PARCEL_REPORT(false),
     BULK_PICK_SHEET(false),
     PICK_SHEET(false),
+    PALLET_PICK_LABEL(true),
     WALMART_SHIPPING_CARTON_LABEL(true),
     WALMART_PALLET_PICK_LABEL(true),
     TARGET_SHIPPING_CARTON_LABEL(true),
