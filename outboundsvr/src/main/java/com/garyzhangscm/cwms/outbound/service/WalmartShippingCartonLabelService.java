@@ -478,4 +478,30 @@ public class WalmartShippingCartonLabelService {
         walmartShippingCartonLabel.setPalletPickLabelContent( palletPickLabelContent);
         saveOrUpdate(walmartShippingCartonLabel);
     }
+
+    /**
+     * Once we remove a pallet pallet, we may need to release all the shipping carton on it as well so
+     * that those shipping cartons can be group into a new pallet
+     * @param palletPickLabelContent
+     */
+    public void releaseShippingCartonLabel(PalletPickLabelContent palletPickLabelContent) {
+        logger.debug("start to remove walmart shipping carton labels " +
+                " for pallet with id and number {} / {}",
+                palletPickLabelContent.getId(), palletPickLabelContent.getNumber());
+        List<WalmartShippingCartonLabel> walmartShippingCartonLabels 
+                = findByPalletPickLabel(palletPickLabelContent);
+
+        walmartShippingCartonLabels.forEach(
+                walmartShippingCartonLabel -> {
+                    walmartShippingCartonLabel.setPalletPickLabelContent(null);
+                    saveOrUpdate(walmartShippingCartonLabel);
+                }
+        );
+
+
+
+
+        
+    }
+
 }

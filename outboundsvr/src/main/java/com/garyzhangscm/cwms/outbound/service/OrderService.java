@@ -3246,6 +3246,16 @@ public class OrderService {
 
 
         logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+
+        // we will need to update the labels' print date as well
+        walmartShippingCartonLabels.forEach(
+                walmartShippingCartonLabel -> {
+                    logger.debug("start to set the print time for walmart shipping carton label with SSCC18: {}",
+                            walmartShippingCartonLabel.getSSCC18());
+                    walmartShippingCartonLabel.setLastPrintTime(ZonedDateTime.now(ZoneOffset.UTC));
+                    walmartShippingCartonLabelService.saveOrUpdate(walmartShippingCartonLabel);
+                }
+        );
         return reportHistory;
     }
 
