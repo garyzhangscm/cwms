@@ -90,8 +90,13 @@ public class ReportHistoryController {
         File reportResultFile = reportHistoryService.getReportFile(companyId, warehouseId, type, filename);
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportResultFile));
+
+        logger.debug(" we will return file {} to the user, length is {} ",
+                reportResultFile.getName(),
+                reportResultFile.length());
+
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;fileName=" + filename)
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
                 .contentLength(reportResultFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
