@@ -543,7 +543,7 @@ public class PalletPickLabelContentService {
             }
             labelContent.put("source_location_" + (i+1), pick.getSourceLocation().getName());
             labelContent.put("item_" + (i+1), pick.getItem().getName());
-            labelContent.put("item_description" + (i+1), pick.getItem().getDescription());
+            labelContent.put("item_description_" + (i+1), pick.getItem().getDescription());
             labelContent.put("quantity_" + (i+1),
                     palletPickLabelPickDetails.get(i).getPickQuantity() +
                             "(" + palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getCaseUnitOfMeasureName() + ")" );

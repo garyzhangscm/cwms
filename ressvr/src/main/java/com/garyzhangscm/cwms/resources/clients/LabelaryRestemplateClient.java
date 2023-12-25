@@ -65,7 +65,8 @@ public class LabelaryRestemplateClient {
 
         logger.debug("We will send zpl to labelary for PDF file: \n{}", zpl);
         // adjust print density (8dpmm), label width (4 inches), label height (6 inches), and label index (0) as necessary
-        var uri = URI.create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+        // var uri = URI.create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+        var uri = URI.create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/");
         var request = HttpRequest.newBuilder(uri)
                 .header("Accept", "application/pdf") // omit this line to get PNG images back
                 .POST(java.net.http.HttpRequest.BodyPublishers.ofString(zpl))

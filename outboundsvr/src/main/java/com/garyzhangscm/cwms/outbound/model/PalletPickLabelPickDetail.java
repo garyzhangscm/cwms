@@ -59,7 +59,7 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     private Double volume;
 
     public PalletPickLabelPickDetail() {}
-    public PalletPickLabelPickDetail(PalletPickLabelContent PalletPickLabelContent, Pick pick, Long pickQuantity) {
+    public PalletPickLabelPickDetail(PalletPickLabelContent palletPickLabelContent, Pick pick, Long pickQuantity) {
         this.pick = pick;
         this.palletPickLabelContent = palletPickLabelContent;
         this.pickQuantity = pickQuantity;
@@ -87,9 +87,11 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                     setCaseQuantity(
                             (long)Math.ceil(pickQuantity / caseItemUnitOfMeasure.getQuantity())
                     );
+                    setCaseUnitOfMeasureName(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                 }
                 else {
                     setCaseQuantity(pickQuantity);
+                    setCaseUnitOfMeasureName("N/A");
                 }
             }
 

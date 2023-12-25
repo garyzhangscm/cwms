@@ -642,8 +642,23 @@ public class ReportService implements TestDataInitiableService{
             labelContent = labelContent.replaceAll("\\$" + parameterName + "\\$", value);
             logger.debug("label template after replace: {}", labelContent);
         }
+        // for any place holder in the label file that has no value
+        // passed in , let's just clear the place holder($parameter_name$)
+        labelContent = processEmptyValueForLabel(labelContent);
+
+        logger.debug("label template after clear all place holder: {}", labelContent);
         return labelContent;
 
+    }
+
+    /**
+     * Remove all place holder that has no value passed in , in the
+     * label file
+     * @param labelContent
+     * @return
+     */
+    private String processEmptyValueForLabel(String labelContent) {
+        return labelContent.replaceAll("\\$\\b\\S+?\\b\\$", "");
     }
 
 
