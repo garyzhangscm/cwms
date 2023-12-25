@@ -1,11 +1,13 @@
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.clients.LabelaryRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportHistoryRepository;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -46,6 +48,8 @@ public class ReportHistoryService {
     @Autowired
     private PrintingServiceRestemplateClient printingServiceRestemplateClient;
 
+    @Autowired
+    private LabelaryRestemplateClient labelaryRestemplateClient;
 
 
     public ReportHistory findById(Long id) {
@@ -175,6 +179,7 @@ public class ReportHistoryService {
             );
         }
 
+
         // get the meta data of the report so we know where to get the
         // report result file
         // The directory depends on whether the report is specific
@@ -193,7 +198,40 @@ public class ReportHistoryService {
 
         logger.debug("Will return {} to the client",
                 fileUrl);
-        return new File(fileUrl);
+
+        ReportType reportType = ReportType.valueOf(type);
+        File file = new File(fileUrl);
+        logger.debug("see if we will need to convert a label file to PDF");
+        logger.debug("file is label? {}", reportType.isLabel() );
+        logger.debug("file {}'s extension is prn / lbl? {}",
+                file.getAbsolutePath(),
+                fileIsLabel(file));
+
+        if (reportType.isLabel() &&
+                fileIsLabel(file)) {
+            logger.debug("OK, we will need to convert the label files to PDF and return");
+                return convertLabelFileToPDF(file);
+        }
+
+
+        return  file;
+
+
+    }
+
+    private boolean fileIsLabel(File file) {
+        return FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("prn") ||
+                FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("lbl");
+    }
+    /**
+     * Convert label file (ext with PRN) to PDF file
+     * @param zplFile
+     * @return
+     */
+    private File convertLabelFileToPDF(File zplFile) {
+        return labelaryRestemplateClient.convertZPLToPDF(zplFile);
+
+
     }
 
     private String getReportResultFolder(Long companyId, Long warehouseId) {
