@@ -3273,24 +3273,35 @@ public class OrderService {
      * @param locale
      * @return
      */
-    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id , int copies, String locale) {
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
+                                                                                   int copies, String locale,
+                                                                                   Boolean regeneratePalletLabels) {
 
         return generateWalmartShippingCartonLabelsWithPalletLabels(warehouseId,
-                findById(id),   copies, locale);
+                findById(id),   copies, locale, regeneratePalletLabels);
     }
-    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order, int copies, String locale) {
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order,
+                                                                                   int copies, String locale,
+                                                                                   Boolean regeneratePalletLabels) {
 
         logger.debug("Start to generate walmart shipping carton labels with pallet pick labels, for order {}",
                 order.getNumber());
         // make sure we can start printing the shipping label with pallet labels for the order
         validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(order);
 
-        // we will need to get the pallet information
-        // it can be an estimation or an input from the user
-        List<PalletPickLabelContent> palletPickLabelContents =
-                palletPickLabelContentService.findAll(
-                        warehouseId, order.getId(), order.getNumber()
-                );
+        // if the user would like to regenerate the pallet pick labels, let's just refresh
+        // the new pallet labels and assign the existing shipping carton label to this new
+        // pallet label
+        List<PalletPickLabelContent> palletPickLabelContents = new ArrayList<>();
+        if (!Boolean.TRUE.equals(regeneratePalletLabels)) {
+
+            // we will need to get the pallet information
+            // it can be an estimation or an input from the user
+            palletPickLabelContents =
+                    palletPickLabelContentService.findAll(
+                            warehouseId, order.getId(), order.getNumber());
+        }
+
         if (palletPickLabelContents.isEmpty()) {
             // there's no estimation yet, let's create one
             logger.debug("There's no pallet pick label estimation for this order {} yet, " +

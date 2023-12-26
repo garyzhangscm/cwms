@@ -338,6 +338,7 @@ public class WalmartShippingCartonLabelService {
     }
 
     public List<WalmartShippingCartonLabel> findByPalletPickLabel(PalletPickLabelContent palletPickLabelContent) {
+        /**
         return findAll(
                 palletPickLabelContent.getWarehouseId(),
                 null,
@@ -349,6 +350,8 @@ public class WalmartShippingCartonLabelService {
                 palletPickLabelContent.getId(),
                 null, null, null
         );
+         **/
+        return walmartShippingCartonLabelRepository.findByPalletPickLabelContentId(palletPickLabelContent.getId());
     }
     private void setupWalmartShippingCartonLabelData(Long warehouseId,
                                                      Report reportData,
@@ -490,6 +493,9 @@ public class WalmartShippingCartonLabelService {
                 palletPickLabelContent.getId(), palletPickLabelContent.getNumber());
         List<WalmartShippingCartonLabel> walmartShippingCartonLabels 
                 = findByPalletPickLabel(palletPickLabelContent);
+        logger.debug("we get {} walmart shipping carton labels from the pallet with id {}",
+                walmartShippingCartonLabels.size(),
+                palletPickLabelContent.getId());
 
         walmartShippingCartonLabels.forEach(
                 walmartShippingCartonLabel -> {
