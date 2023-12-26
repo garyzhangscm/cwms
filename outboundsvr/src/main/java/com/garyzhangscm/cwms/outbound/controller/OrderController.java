@@ -466,12 +466,14 @@ public class OrderController {
                                                              @PathVariable Long id,
                                                              @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
                                                              @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
-                                                             @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
+                                                             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+                                                                                   @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
 
 
         return orderService.generateWalmartShippingCartonLabelsWithPalletLabels(
                 warehouseId,
-                id, copies, locale);
+                id, copies, locale,
+                regeneratePalletLabels);
 
     }
 

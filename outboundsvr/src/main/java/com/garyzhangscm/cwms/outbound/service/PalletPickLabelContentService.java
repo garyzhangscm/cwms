@@ -34,6 +34,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -116,15 +117,18 @@ public class PalletPickLabelContentService {
     }
 
     public void delete(PalletPickLabelContent palletPickLabelContent) {
-        palletPickLabelContentRepository.delete(palletPickLabelContent);
 
-        // once done, we may need to release the walmart shipping carton labels
+        // we will need to release the walmart shipping carton labels
         // that on this pallet so that the carton label can be group onto the new
         // pallet, if needed
 
         walmartShippingCartonLabelService.releaseShippingCartonLabel(palletPickLabelContent);
+
+        palletPickLabelContentRepository.delete(palletPickLabelContent);
+
     }
 
+    @Transactional
     public List<PalletPickLabelContent> generateAndSavePalletPickLabelEstimation(Order order) {
         // clear the existing estimation for the order
         List<PalletPickLabelContent> existingPalletPickLabelContents = findAll(
@@ -516,7 +520,7 @@ public class PalletPickLabelContentService {
         labelContent.put("pallet_height", palletPickLabelContent.getHeight());
 
         // get the total case quantity
-        labelContent.put("case_quantity",
+        labelContent.put("total_cases",
                 palletPickLabelContent.getPalletPickLabelPickDetails().stream().map(
                         PalletPickLabelPickDetail::getCaseQuantity
                 ).mapToLong(Long::longValue).sum());
