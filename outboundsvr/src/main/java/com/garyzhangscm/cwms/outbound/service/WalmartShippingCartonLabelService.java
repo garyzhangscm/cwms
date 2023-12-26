@@ -494,6 +494,7 @@ public class WalmartShippingCartonLabelService {
         walmartShippingCartonLabels.forEach(
                 walmartShippingCartonLabel -> {
                     walmartShippingCartonLabel.setPalletPickLabelContent(null);
+                    walmartShippingCartonLabel.setLastPrintTime(null);
                     saveOrUpdate(walmartShippingCartonLabel);
                 }
         );
