@@ -19,7 +19,10 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.garyzhangscm.cwms.outbound.service.PalletPickLabelContentService;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -28,6 +31,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "pallet_pick_label_pick_detail")
 public class PalletPickLabelPickDetail extends AuditibleEntity<String> implements Serializable {
+
+    private static final Logger logger = LoggerFactory.getLogger(PalletPickLabelPickDetail.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,15 +64,22 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     private Double volume;
 
     public PalletPickLabelPickDetail() {}
+
     public PalletPickLabelPickDetail(PalletPickLabelContent palletPickLabelContent, Pick pick, Long pickQuantity) {
         this.pick = pick;
         this.palletPickLabelContent = palletPickLabelContent;
         this.pickQuantity = pickQuantity;
 
+        logger.debug("start to create pallet pick label detail with pick {}",
+                pick.getNumber());
+
 
         if (pick.getItem() == null) {
             setVolume(0.0);
             setCaseQuantity(pickQuantity);
+            setCaseUnitOfMeasureName("N/A");
+            logger.debug("Current pick's item is null, we will not setup the case uom. Instead we will use the stock UOM as case UOM");
+
         }
         else {
             ItemPackageType itemPackageType = pick.getItemPackageType();
@@ -75,7 +87,12 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                 itemPackageType = pick.getItem().getDefaultItemPackageType();
             }
             if (Objects.nonNull(itemPackageType)) {
+                logger.debug("we will use the item {} and its package type {} to get the CASE UOM information",
+                        pick.getItem().getName(),
+                        itemPackageType.getName());
+
                 ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                logger.debug("> stock UOM: {}", stockItemUnitOfMeasure.getUnitOfMeasure().getName());
                 ItemUnitOfMeasure caseItemUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
                 setVolume(
                         (pickQuantity / stockItemUnitOfMeasure.getQuantity())
@@ -84,12 +101,14 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                                 * stockItemUnitOfMeasure.getHeight()
                 );
                 if (Objects.nonNull(caseItemUnitOfMeasure)) {
+                    logger.debug("> case UOM {}", caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                     setCaseQuantity(
                             (long)Math.ceil(pickQuantity / caseItemUnitOfMeasure.getQuantity())
                     );
                     setCaseUnitOfMeasureName(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                 }
                 else {
+                    logger.debug("> FAIL to get case UOM ");
                     setCaseQuantity(pickQuantity);
                     setCaseUnitOfMeasureName("N/A");
                 }
