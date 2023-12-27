@@ -1683,7 +1683,7 @@ public class OrderService {
                         // has the same item UOM information. If the location is mixed with
                         // different package type, the warehouse may have some difficulty for picking
                         ItemUnitOfMeasure stockItemUnitOfMeasure =
-                                pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                                pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasure();
                         ItemUnitOfMeasure caseItemUnitOfMeasure =
                                 pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
 
@@ -1845,7 +1845,7 @@ public class OrderService {
                         // let's estimate the item's volume by its first item package type
                         // and its smallest UOM
                         ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
-                        ItemUnitOfMeasure itemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                        ItemUnitOfMeasure itemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
                         logger.debug("Start to estimate the volume of the item {} in order {}",
                                 item.getName(), order.getNumber());
                         logger.debug("based on uom {}, quantity {}, size: {} x {} x {}, line quantity {}",
@@ -2359,10 +2359,10 @@ public class OrderService {
             String stockUOM =
                     Objects.isNull(orderLine.getItem()) ? "N/A" :
                             Objects.isNull(orderLine.getItem().getDefaultItemPackageType()) ? "N/A" :
-                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) ? "N/A" :
+                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure()) ? "N/A" :
                                             Objects.isNull(orderLine.getItem().getDefaultItemPackageType()
-                                                    .getStockItemUnitOfMeasures().getUnitOfMeasure()) ? "N/A" :
-                                                        orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+                                                    .getStockItemUnitOfMeasure().getUnitOfMeasure()) ? "N/A" :
+                                                        orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName();
             billOfLadingDataList.add(new BillOfLadingData(
                     orderLine.getItem().getName(),
                     orderLine.getItem().getDescription(),
@@ -2435,16 +2435,16 @@ public class OrderService {
             logger.debug("item name: {}", pickedInventory.getItem().getName());
             String stockUOMName = "N/A";
             if(Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType()) &&
-                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) &&
-                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure())) {
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure()) &&
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure())) {
                 logger.debug("item default package type: {}",
                         pickedInventory.getItem().getDefaultItemPackageType().getName());
                 logger.debug("item default package type's item uom: {}",
-                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getId());
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getId());
                 logger.debug("item default package type's item stock uom: {}",
-                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName());
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
 
-                stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+                stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName();
             }
 
             String itemFamilyName = "N/A";

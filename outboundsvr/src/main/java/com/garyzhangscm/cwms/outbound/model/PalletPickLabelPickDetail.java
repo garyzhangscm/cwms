@@ -62,6 +62,9 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
     // estimated volume
     @Column(name = "volume")
     private Double volume;
+    @Column(name = "volume_unit")
+    private String volumeUnit;
+
 
     public PalletPickLabelPickDetail() {}
 
@@ -76,6 +79,7 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
 
         if (pick.getItem() == null) {
             setVolume(0.0);
+            setVolumeUnit("");
             setCaseQuantity(pickQuantity);
             setCaseUnitOfMeasureName("N/A");
             logger.debug("Current pick's item is null, we will not setup the case uom. Instead we will use the stock UOM as case UOM");
@@ -91,7 +95,7 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                         pick.getItem().getName(),
                         itemPackageType.getName());
 
-                ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
                 logger.debug("> stock UOM: {}", stockItemUnitOfMeasure.getUnitOfMeasure().getName());
                 ItemUnitOfMeasure caseItemUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
                 setVolume(
@@ -100,6 +104,11 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                                 * stockItemUnitOfMeasure.getWidth()
                                 * stockItemUnitOfMeasure.getHeight()
                 );
+
+                setVolumeUnit(stockItemUnitOfMeasure.getHeightUnit() + "*" +
+                        stockItemUnitOfMeasure.getLengthUnit() + "*" +
+                        stockItemUnitOfMeasure.getWidthUnit());
+
                 if (Objects.nonNull(caseItemUnitOfMeasure)) {
                     logger.debug("> case UOM {}", caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                     setCaseQuantity(
@@ -176,5 +185,13 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
 
     public void setCaseUnitOfMeasureName(String caseUnitOfMeasureName) {
         this.caseUnitOfMeasureName = caseUnitOfMeasureName;
+    }
+
+    public String getVolumeUnit() {
+        return volumeUnit;
+    }
+
+    public void setVolumeUnit(String volumeUnit) {
+        this.volumeUnit = volumeUnit;
     }
 }

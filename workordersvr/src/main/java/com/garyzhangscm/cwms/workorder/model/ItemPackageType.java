@@ -18,7 +18,6 @@
 
 package com.garyzhangscm.cwms.workorder.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,6 +92,15 @@ public class ItemPackageType implements Serializable {
     public void setDefaultWorkOrderReceivingUOM(ItemUnitOfMeasure defaultWorkOrderReceivingUOM) {
         this.defaultWorkOrderReceivingUOM = defaultWorkOrderReceivingUOM;
     }
+    public ItemUnitOfMeasure getCaseItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
+    }
 
     public ItemUnitOfMeasure getTrackingLpnUOM() {
         if (itemUnitOfMeasures.size() == 0) {
@@ -113,6 +121,7 @@ public class ItemPackageType implements Serializable {
 
         return trackingLPNUoms.get(0);
     }
+
 
     public void setTrackingLpnUOM(ItemUnitOfMeasure trackingLpnUOM) {
         this.trackingLpnUOM = trackingLpnUOM;

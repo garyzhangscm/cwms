@@ -42,7 +42,7 @@ public class ItemPackageType implements Serializable {
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
-    private ItemUnitOfMeasure stockItemUnitOfMeasures;
+    private ItemUnitOfMeasure stockItemUnitOfMeasure;
 
 
     private Boolean defaultFlag;
@@ -151,13 +151,13 @@ public class ItemPackageType implements Serializable {
         this.casePerTier = casePerTier;
     }
 
-    public ItemUnitOfMeasure getStockItemUnitOfMeasures() {
+    public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
         }
 
-        if (Objects.nonNull(stockItemUnitOfMeasures)) {
-            return stockItemUnitOfMeasures;
+        if (Objects.nonNull(stockItemUnitOfMeasure)) {
+            return stockItemUnitOfMeasure;
         }
 
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
@@ -178,8 +178,8 @@ public class ItemPackageType implements Serializable {
         ).findFirst().orElse(null);
     }
 
-    public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
-        this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
+    public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
+        this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
     }
 
     public Boolean getDefaultFlag() {

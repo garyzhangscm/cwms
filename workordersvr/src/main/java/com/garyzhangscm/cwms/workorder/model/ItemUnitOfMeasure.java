@@ -36,13 +36,18 @@ public class ItemUnitOfMeasure implements Serializable {
     private Double weight;
 
     private Double length;
+    private String lengthUnit;
     private Double width;
+    private String widthUnit;
     private Double height;
+    private String heightUnit;
 
     private Boolean defaultForInboundReceiving;
 
     private Boolean defaultForWorkOrderReceiving;
     private Boolean trackingLpn;
+
+    private Boolean caseFlag;
 
     public Long getId() {
         return id;
@@ -141,4 +146,35 @@ public class ItemUnitOfMeasure implements Serializable {
         this.trackingLpn = trackingLpn;
     }
 
+    public String getLengthUnit() {
+        return lengthUnit;
+    }
+
+    public void setLengthUnit(String lengthUnit) {
+        this.lengthUnit = lengthUnit;
+    }
+
+    public String getWidthUnit() {
+        return widthUnit;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
+    }
+
+    public void setWidthUnit(String widthUnit) {
+        this.widthUnit = widthUnit;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
+    }
 }

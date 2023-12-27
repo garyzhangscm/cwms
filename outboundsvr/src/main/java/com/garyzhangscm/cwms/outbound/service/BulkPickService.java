@@ -1171,7 +1171,7 @@ public class BulkPickService {
             // has the same item UOM information. If the location is mixed with
             // different package type, the warehouse may have some difficulty for picking
             ItemUnitOfMeasure stockItemUnitOfMeasure =
-                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasure();
             ItemUnitOfMeasure caseItemUnitOfMeasure =
                     pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
 

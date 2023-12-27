@@ -52,6 +52,8 @@ public class CartonService implements TestDataInitiableService {
 
     @Autowired
     private CartonRepository cartonRepository;
+    @Autowired
+    private UnitService unitService;
 
 
     @Autowired
@@ -214,7 +216,7 @@ public class CartonService implements TestDataInitiableService {
             return null;
         }
         return cartons.stream().
-                filter(carton -> carton.getTotalSpace() > pick.getSize()).
+                filter(carton -> carton.getTotalSpace() > pick.getSize(unitService).getFirst()).
                 sorted(Comparator.comparingDouble(Carton::getTotalSpace)).findFirst().orElse(null);
     }
 

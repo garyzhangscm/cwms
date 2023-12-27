@@ -19,10 +19,7 @@
 package com.garyzhangscm.cwms.workorder.clients;
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.Client;
-import com.garyzhangscm.cwms.workorder.model.Inventory;
-import com.garyzhangscm.cwms.workorder.model.SystemControlledNumber;
-import com.garyzhangscm.cwms.workorder.model.UnitOfMeasure;
+import com.garyzhangscm.cwms.workorder.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,5 +194,24 @@ public class CommonServiceRestemplateClient {
                 null
         );
     }
+
+    @Cacheable(cacheNames = "OutboundService_Unit", unless="#result == null")
+    public List<Unit> getUnitsByWarehouse(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/units")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchangeList(
+                Unit.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
 
 }

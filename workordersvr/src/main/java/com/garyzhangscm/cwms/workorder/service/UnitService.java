@@ -16,22 +16,20 @@
  * limitations under the License.
  */
 
-package com.garyzhangscm.cwms.outbound.service;
+package com.garyzhangscm.cwms.workorder.service;
 
-import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.outbound.model.ItemUnitOfMeasure;
-import com.garyzhangscm.cwms.outbound.model.Unit;
-import com.garyzhangscm.cwms.outbound.model.UnitType;
+import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.model.ItemUnitOfMeasure;
+import com.garyzhangscm.cwms.workorder.model.Unit;
+import com.garyzhangscm.cwms.workorder.model.UnitType;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 
@@ -58,7 +56,7 @@ public class UnitService {
         return units;
     }
 
-    public Unit getUnitByName(Long warehouseId, String name) {
+    private Unit getUnitByName(Long warehouseId, String name) {
         // logger.debug("start to get unit by name {}", name);
         return getAllUnits(warehouseId).stream().filter(
                 unit -> {
@@ -135,7 +133,7 @@ public class UnitService {
      * @param quantityOfUOM
      * @return
      */
-    public Pair<Double, Unit> getVolumeByUOM(Long warehouseId, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
+    public double getVolumeByUOM(Long warehouseId, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
 
         // convert the inventory UOM size to  foot
         // by default we will display at cube inch
@@ -143,13 +141,11 @@ public class UnitService {
 
         Unit unit = baseUnit;
         if (Objects.isNull(unit)) {
-            unit = getCubeInch(warehouseId);
+            unit = getInch(warehouseId);
         }
         if (Objects.isNull(unit)) {
             throw ResourceNotFoundException.raiseException("can't convert the length as we are not able to load the unit information");
         }
-        logger.debug("we will use the  unit  {} to calculate the length, base unit if {}",
-                unit.getName(), baseUnit.getName());
         // make sure we can get the unit for length / width / height
         if (( Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ||
                 Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ||
@@ -161,18 +157,7 @@ public class UnitService {
                     " and there's no base unit setup");
         }
 
-        logger.debug("start to get size from [{} {}, {} {}, {} {}]",
-                itemUnitOfMeasure.getLength(),
-                Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ?
-                        baseUnit.getName() : itemUnitOfMeasure.getLengthUnit(),
-                itemUnitOfMeasure.getWidth(),
-                Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ?
-                        baseUnit.getName() : itemUnitOfMeasure.getWidthUnit(),
-                itemUnitOfMeasure.getHeight(),
-                Strings.isBlank(itemUnitOfMeasure.getHeightUnit()) ?
-                        baseUnit.getName() : itemUnitOfMeasure.getHeightUnit());
-
-        double size =  convert(warehouseId,
+        return convert(warehouseId,
                 itemUnitOfMeasure.getLength(),
                 Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ?
                         baseUnit.getName() : itemUnitOfMeasure.getLengthUnit(),
@@ -191,20 +176,6 @@ public class UnitService {
                         unit.getName()
                 ) *
                 quantityOfUOM;
-
-        logger.debug("the size is {} {}3",
-                size, unit.getName());
-        // note: the unit is length unit, we may need to find the corrependant
-        // volume unit
-        Unit volumeUnit = getVolumeUnitFromLengthUnit(warehouseId, unit);
-        if (Objects.isNull(volumeUnit)) {
-            logger.debug("we can't find the volume unit for length unit {}, let's return the length unit for now",
-                    unit.getName());
-            return Pair.of(size, unit);
-        }
-        logger.debug("successfully convert the length's unit {}3 to volume unit {}",
-                unit.getName(), Objects.isNull(volumeUnit));
-        return Pair.of(size, volumeUnit);
     }
     public double convertLength(Long warehouseId,
                                 double length,
@@ -253,21 +224,5 @@ public class UnitService {
     }
     public Unit getVolumeBaseUnit(Long warehouseId) {
         return getBaseUnit(warehouseId, UnitType.VOLUME);
-    }
-
-
-    /**
-     * Get the correspondent volume unit from the length unit, suppose the volume
-     * is calculated by the 3-D length with same unit
-     * @param warehouseId
-     * @return
-     */
-    public Unit getVolumeUnitFromLengthUnit(Long warehouseId, Unit lengthUnit) {
-        return getAllUnits(warehouseId).stream().filter(
-                unit ->  unit.getType().equals(UnitType.VOLUME) &&
-                            unit.getName().toUpperCase(Locale.ROOT).contains(
-                                    lengthUnit.getName().toUpperCase(Locale.ROOT)
-                            )
-        ).findFirst().orElse(null);
     }
 }

@@ -18,8 +18,10 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.garyzhangscm.cwms.outbound.service.UnitService;
 import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.data.util.Pair;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -65,9 +67,15 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
     @Column(name = "volume")
     private Double volume;
 
+    @Column(name = "volume_unit")
+    private String volumeUnit;
+
     // estimated height
     @Column(name = "height")
     private Double height;
+
+    @Column(name = "height_unit")
+    private String heightUnit;
 
     public PalletPickLabelContent() {}
 
@@ -75,7 +83,7 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
      * Generate a pallet pick label that only have one pallet pick
      * @param pick
      */
-    public PalletPickLabelContent(String number, Pick pick) {
+    public PalletPickLabelContent(String number, Pick pick, UnitService unitService) {
         this.number = number;
         setWarehouseId(pick.getWarehouseId());
         if (Objects.nonNull(pick.getShipmentLine())) {
@@ -86,15 +94,18 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
         palletPickLabelPickDetails.add(
                 new PalletPickLabelPickDetail(this, pick, pick.getQuantity())
         );
-        setVolume(pick.getSize());
-        setHeight(pick.getHeight());
+        setVolume(pick.getSize(unitService).getFirst());
+        setVolumeUnit(Objects.isNull(pick.getSize(unitService).getSecond()) ?
+                "" : pick.getSize(unitService).getSecond());
+        setHeight(pick.getHeight(unitService).getFirst());
+        setHeightUnit(pick.getHeight(unitService).getSecond());
 
     }
     /**
      * Generate a pallet pick label that has a list picks
      * @param picks
      */
-    public PalletPickLabelContent(String number, List<Pick> picks) {
+    public PalletPickLabelContent(String number, List<Pick> picks, UnitService unitService) {
         this.number = number;
 
         // we will assume the picks belong to the same warehouse since there's
@@ -119,11 +130,18 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
                 palletPickLabelPickDetails.add(
                         new PalletPickLabelPickDetail(this, pick, pick.getQuantity())
                 );
-                totalHeight += pick.getHeight();
-                totalSize += pick.getSize();
+                totalHeight += pick.getHeight(unitService).getFirst();
+                totalSize += pick.getSize(unitService).getFirst();
             }
             setVolume(totalSize);
+            // Note: for hte volume and height unit, we will assume all the picks has the
+            // same unit setup since unit that used by inventory and its related picks
+            // are configured at the warehouse level and we will assume that the configuration
+            // won't be changed so much from time to time
+            setVolumeUnit(Objects.isNull(picks.get(0).getSize(unitService).getSecond()) ?
+                    "" : picks.get(0).getSize(unitService).getSecond());
             setHeight(totalHeight);
+            setHeightUnit(picks.get(0).getHeight(unitService).getSecond());
         }
     }
 
@@ -189,5 +207,21 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
 
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
+    }
+
+    public String getVolumeUnit() {
+        return volumeUnit;
+    }
+
+    public void setVolumeUnit(String volumeUnit) {
+        this.volumeUnit = volumeUnit;
+    }
+
+    public String getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setHeightUnit(String heightUnit) {
+        this.heightUnit = heightUnit;
     }
 }

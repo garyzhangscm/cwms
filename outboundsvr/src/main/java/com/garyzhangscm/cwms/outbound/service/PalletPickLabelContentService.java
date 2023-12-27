@@ -52,6 +52,8 @@ public class PalletPickLabelContentService {
     private OutboundConfigurationService outboundConfigurationService;
     @Autowired
     private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
+    @Autowired
+    private UnitService unitService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -185,7 +187,7 @@ public class PalletPickLabelContentService {
                 picks.stream().filter(
                         pick -> pickService.isFullPalletPick(pick)
                 ).map(
-                        pick -> new PalletPickLabelContent(getNextPalletPickLabelNumber(pick.getWarehouseId()), pick)
+                        pick -> new PalletPickLabelContent(getNextPalletPickLabelNumber(pick.getWarehouseId()), pick, unitService)
                 ).collect(Collectors.toList())
         );
         logger.debug("we added {} full pallet picks  for the order {}", result.size(),
@@ -255,7 +257,7 @@ public class PalletPickLabelContentService {
         if (sizeRestriction == Double.MAX_VALUE && heightRestriction == Double.MAX_VALUE) {
             // if there's no restriction on the height and size, then let's group the picks into one pallet
             return List.of(
-                    new PalletPickLabelContent(getNextPalletPickLabelNumber(warehouseId), picks)
+                    new PalletPickLabelContent(getNextPalletPickLabelNumber(warehouseId), picks, unitService)
             );
         }
 
@@ -263,12 +265,13 @@ public class PalletPickLabelContentService {
 
         // let's sort the pick from volume biggest to smallest
         Collections.sort(picks,
-                Collections.reverseOrder(Comparator.comparing(Pick::getSize)));
+                Collections.reverseOrder(Comparator.comparing(pick -> pick.getSize(unitService).getFirst())));
 
         // loop through biggest and until we max out the size or volume
         int biggestIndex = 0;
         int smallestIndex = picks.size() - 1;
         List<Pick> picksOnCurrentPallet = new ArrayList<>();
+
         double currentPalletSize = 0.0;
         double currentPalletHeight = 0.0;
 
@@ -281,25 +284,17 @@ public class PalletPickLabelContentService {
                 // we can always add one pick onto the pallet
                 logger.debug("There's nothing on the current pallet yet, since we are reasonably assume" +
                         " that all the picks here are partial pallet pick, we will directly add the pick " +
-                        " of index {} onto this empty pallet. pick number: {}, size = {}, height = {}",
+                        " of index {} onto this empty pallet. pick number: {}, size = {} , height = {}  ",
                         biggestIndex,
                         picks.get(biggestIndex).getNumber(),
-                        picks.get(biggestIndex).getSize(),
-                        picks.get(biggestIndex).getHeight());
+                        picks.get(biggestIndex).getSize(unitService),
+                        picks.get(biggestIndex).getHeight(unitService) );
                 picksOnCurrentPallet.add(picks.get(biggestIndex));
-                currentPalletSize += picks.get(biggestIndex).getSize();
-                currentPalletHeight += picks.get(biggestIndex).getHeight();
+                currentPalletSize += picks.get(biggestIndex).getSize(unitService).getFirst();
+                currentPalletHeight += picks.get(biggestIndex).getHeight(unitService).getFirst();
 
                 biggestIndex ++;
 
-                // add the pallet to the final list once we have something on it
-                // we may add more onto the pallet during the iteration
-                results.add(
-                        new PalletPickLabelContent(
-                                getNextPalletPickLabelNumber(warehouseId),
-                                picksOnCurrentPallet
-                        )
-                );
 
                 continue;
             }
@@ -307,45 +302,54 @@ public class PalletPickLabelContentService {
                     " or the smallest pick onto the pallet. we will start with the biggest pick first");
             // see if we can add the biggest pick onto this pallet
             logger.debug("current pallet size = {}, biggest pick size = {}, smallest pick size = {}, size restriction = {}",
-                    currentPalletSize, picks.get(biggestIndex).getSize(),
-                    picks.get(smallestIndex).getSize(), sizeRestriction);
+                    currentPalletSize, picks.get(biggestIndex).getSize(unitService),
+                    picks.get(smallestIndex).getSize(unitService), sizeRestriction);
 
             logger.debug("current pallet height = {}, biggest pick height = {}, smallest pick height = {}, height restriction = {}",
-                    currentPalletHeight, picks.get(biggestIndex).getHeight(),
-                    picks.get(smallestIndex).getHeight(),  heightRestriction);
+                    currentPalletHeight, picks.get(biggestIndex).getHeight(unitService),
+                    picks.get(smallestIndex).getHeight(unitService),  heightRestriction);
 
-            if (currentPalletSize + picks.get(biggestIndex).getSize() < sizeRestriction &&
-                currentPalletHeight + picks.get(biggestIndex).getHeight() < heightRestriction) {
+            if (currentPalletSize + picks.get(biggestIndex).getSize(unitService).getFirst() < sizeRestriction &&
+                currentPalletHeight + picks.get(biggestIndex).getHeight(unitService).getFirst() < heightRestriction) {
                 // ok we are good to add the next pick to the current pallet
 
                 logger.debug("We can add the biggest pick onto current pallet. " +
                                 "pick number: {}, size = {}, height = {}",
                         picks.get(biggestIndex).getNumber(),
-                        picks.get(biggestIndex).getSize(),
-                        picks.get(biggestIndex).getHeight());
+                        picks.get(biggestIndex).getSize(unitService),
+                        picks.get(biggestIndex).getHeight(unitService));
 
                 picksOnCurrentPallet.add(picks.get(biggestIndex));
-                currentPalletSize += picks.get(biggestIndex).getSize();
-                currentPalletHeight += picks.get(biggestIndex).getHeight();
+                currentPalletSize += picks.get(biggestIndex).getSize(unitService).getFirst();
+                currentPalletHeight += picks.get(biggestIndex).getHeight(unitService).getFirst();
                 biggestIndex ++;
             }
-            else if (currentPalletSize + picks.get(smallestIndex).getSize() < sizeRestriction &&
-                    currentPalletHeight + picks.get(smallestIndex).getHeight() < heightRestriction) {
+            else if (currentPalletSize + picks.get(smallestIndex).getSize(unitService).getFirst() < sizeRestriction &&
+                    currentPalletHeight + picks.get(smallestIndex).getHeight(unitService).getFirst() < heightRestriction) {
                 // ok we are good to add the next pick to the current pallet
 
                 logger.debug("We can add the smallest pick onto current pallet" +
                         "pick number: {}, size = {}, height = {}",
                         picks.get(smallestIndex).getNumber(),
-                        picks.get(smallestIndex).getSize(),
-                        picks.get(smallestIndex).getHeight());
+                        picks.get(smallestIndex).getSize(unitService),
+                        picks.get(smallestIndex).getHeight(unitService));
 
                 picksOnCurrentPallet.add(picks.get(smallestIndex));
-                currentPalletSize += picks.get(smallestIndex).getSize();
-                currentPalletHeight += picks.get(smallestIndex).getHeight();
+                currentPalletSize += picks.get(smallestIndex).getSize(unitService).getFirst();
+                currentPalletHeight += picks.get(smallestIndex).getHeight(unitService).getFirst();
                 smallestIndex --;
             }
             else {
                 // ok there's no room for new pick in the list, let's complete the current pallet
+
+                // add the pallet to the final list once we have something on it
+                // we may add more onto the pallet during the iteration
+                results.add(
+                        new PalletPickLabelContent(
+                                getNextPalletPickLabelNumber(warehouseId),
+                                picksOnCurrentPallet, unitService
+                        )
+                );
                 logger.debug("No more room on current pallet, let's start with a new empty pallet");
                 // clear the temporary value so we can start a new pallet
                 picksOnCurrentPallet = new ArrayList<>();
@@ -355,7 +359,35 @@ public class PalletPickLabelContentService {
 
 
         }
+
+        // handle the last pallet
+        if (!picksOnCurrentPallet.isEmpty()) {
+
+            // add the pallet to the final list once we have something on it
+            // we may add more onto the pallet during the iteration
+            results.add(
+                    new PalletPickLabelContent(
+                            getNextPalletPickLabelNumber(warehouseId),
+                            picksOnCurrentPallet, unitService
+                    )
+            );
+        }
         logger.debug("we got {} pallets for the picks", results.size());
+        results.forEach(
+                palletPickLabelContent -> {
+                    logger.debug("====   Picks on Pallet # {} ==========",
+                            palletPickLabelContent.getNumber());
+                    palletPickLabelContent.getPalletPickLabelPickDetails().forEach(
+                            palletPickLabelPickDetail -> {
+                                logger.debug("# pick: {}, item: {}, quantity {}",
+                                        palletPickLabelPickDetail.getPick().getNumber(),
+                                        Objects.isNull(palletPickLabelPickDetail.getPick().getItem()) ? "N/A" :
+                                            palletPickLabelPickDetail.getPick().getItem().getName(),
+                                        palletPickLabelPickDetail.getPick().getQuantity());
+                            }
+                    );
+                }
+        );
         return results;
 
     }
@@ -516,8 +548,8 @@ public class PalletPickLabelContentService {
 
         labelContent.put("number", palletPickLabelContent.getNumber());
         labelContent.put("reference_number", palletPickLabelContent.getReferenceNumber());
-        labelContent.put("pallet_size", palletPickLabelContent.getVolume());
-        labelContent.put("pallet_height", palletPickLabelContent.getHeight());
+        labelContent.put("pallet_size", palletPickLabelContent.getVolume() + " " + palletPickLabelContent.getVolumeUnit());
+        labelContent.put("pallet_height", palletPickLabelContent.getHeight() + " " + palletPickLabelContent.getHeightUnit());
 
         // get the total case quantity
         labelContent.put("total_cases",
