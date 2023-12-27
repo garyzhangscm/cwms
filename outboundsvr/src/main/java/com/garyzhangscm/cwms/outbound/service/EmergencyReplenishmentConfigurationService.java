@@ -63,6 +63,8 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
     private PickService pickService;
     @Autowired
     private PickableUnitOfMeasureService pickableUnitOfMeasureService;
+    @Autowired
+    private UnitService unitService;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -495,7 +497,7 @@ public class EmergencyReplenishmentConfigurationService implements TestDataIniti
                 try {
                     Location location = warehouseLayoutServiceRestemplateClient.findEmptyDestinationLocationForEmergencyReplenishment(
                             pick.getWarehouseId(),
-                            emergencyReplenishmentConfiguration.getDestinationLocationGroup(), pick.getSize());
+                            emergencyReplenishmentConfiguration.getDestinationLocationGroup(), pick.getSize(unitService).getFirst());
                     if (location != null) {
                         return location;
                     }

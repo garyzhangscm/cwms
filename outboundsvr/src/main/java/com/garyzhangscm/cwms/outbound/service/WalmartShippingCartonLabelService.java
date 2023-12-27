@@ -442,9 +442,9 @@ public class WalmartShippingCartonLabelService {
                 logger.debug("There's no case UOM defined for the item package type {} of item {}, let's use the stock UOM {}'s quantity = {}",
                         itemPackageType.getName(),
                         item.getName(),
-                        itemPackageType.getStockItemUnitOfMeasures().getUnitOfMeasure().getName(),
-                        itemPackageType.getStockItemUnitOfMeasures().getQuantity());
-                quantityPerCase = itemPackageType.getStockItemUnitOfMeasures().getQuantity();
+                        itemPackageType.getStockItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                        itemPackageType.getStockItemUnitOfMeasure().getQuantity());
+                quantityPerCase = itemPackageType.getStockItemUnitOfMeasure().getQuantity();
             }
             else {
                 logger.debug("Case UOM {} is defined for the item package type {} of item {}, let's use the its quantity = {}",

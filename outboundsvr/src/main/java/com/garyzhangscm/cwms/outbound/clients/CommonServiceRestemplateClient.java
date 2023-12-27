@@ -410,6 +410,24 @@ public class CommonServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "OutboundService_Unit", unless="#result == null")
+    public List<Unit> getUnitsByWarehouse(Long warehouseId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/units")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchangeList(
+                Unit.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
     @Cacheable(cacheNames = "OutboundService_TrailerAppointment", unless="#result == null")
     public TrailerAppointment getTrailerAppointmentById(Long trailerAppointmentId) {
         UriComponentsBuilder builder =

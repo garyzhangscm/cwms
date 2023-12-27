@@ -100,6 +100,8 @@ public class PickService {
     private BulkPickService bulkPickService;
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private UnitService unitService;
 
     public Pick findById(Long id, boolean loadDetails) {
         Pick pick = pickRepository.findById(id)
@@ -1158,11 +1160,11 @@ public class PickService {
         // with empty reserve code so
         // it will update the pending volume only
         logger.debug("=> Will update the pending volume of location {}, SIZE {}, quantity {}",
-                pick.getDestinationLocationId(), pick.getSize(), pick.getQuantity());
+                pick.getDestinationLocationId(), pick.getSize(unitService), pick.getQuantity());
         warehouseLayoutServiceRestemplateClient.reserveLocation(
                 pick.getDestinationLocationId(),
                 "",
-                pick.getSize(),
+                pick.getSize(unitService).getFirst(),
                 pick.getQuantity(),
                 1
         );
@@ -1298,7 +1300,7 @@ public class PickService {
                     movementPathDetail.getHopLocationId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocation(movementPathDetail.getHopLocationId(),
-                    getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+                    getReserveCode(pick, movementPathDetail), pick.getSize(unitService).getFirst(), pick.getQuantity(), 1);
             logger.debug("## we get location {}",
                     hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
@@ -1310,7 +1312,7 @@ public class PickService {
                     movementPathDetail.getHopLocationGroupId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocationFromGroup(movementPathDetail.getHopLocationGroupId(),
-                    getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+                    getReserveCode(pick, movementPathDetail), pick.getSize(unitService).getFirst(), pick.getQuantity(), 1);
             logger.debug("## we get location {}",
                     hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
@@ -2292,7 +2294,7 @@ public class PickService {
             // has the same item UOM information. If the location is mixed with
             // different package type, the warehouse may have some difficulty for picking
             ItemUnitOfMeasure stockItemUnitOfMeasure =
-                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasure();
             ItemUnitOfMeasure caseItemUnitOfMeasure =
                     pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
 
@@ -2532,9 +2534,9 @@ public class PickService {
                 && outboundConfiguration.getMaxPalletSize() > 0) {
                 logger.debug("the max pallet size is defined for this warehouse, " +
                                 "see if the pick's size {} is greater than the pallet size {}",
-                        pick.getSize(),
+                        pick.getSize(unitService),
                         outboundConfiguration.getMaxPalletSize());
-                return pick.getSize() >= outboundConfiguration.getMaxPalletSize();
+                return pick.getSize(unitService).getFirst() >= outboundConfiguration.getMaxPalletSize();
             }
             logger.debug("the item doesn't have a tracking LPN uom defined and there's no max pallet size defined for the outbound, " +
                     "let's always assume that the pick is a full pallet pick");

@@ -64,6 +64,8 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private UnitService unitService;
 
     @Value("${fileupload.test-data.shipping-stage-area-configuration:shipping-stage-area-configuration}")
     String testDataFile;
@@ -265,7 +267,8 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
         }
 
         return warehouseLayoutServiceRestemplateClient.reserveLocationFromGroup(
-                shippingStageAreaConfiguration.getLocationGroupId(), reserveCode, pick.getSize(), pick.getQuantity(), 1);
+                shippingStageAreaConfiguration.getLocationGroupId(), reserveCode,
+                pick.getSize(unitService).getFirst(), pick.getQuantity(), 1);
 
 
     }

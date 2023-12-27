@@ -22,9 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.service.UnitService;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import org.springframework.data.util.Pair;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -198,30 +201,95 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Transient
     private String quantityByUOM = "";
 
+    /**
+     * Note: the size will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
     @JsonIgnore
-    public Double getSize() {
+    public Pair<Double, String> getSize(UnitService unitService) {
+        return getSize(unitService, true, false);
+    }
+    /**
+     * Note: the size will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
+    @JsonIgnore
+    public Pair<Double, String> getSize(UnitService unitService, boolean caseUOMFirst, boolean caseUOMOnly) {
+
+        Unit defaultUnit = unitService.getBaseUnit(getWarehouseId(), UnitType.VOLUME);
+        if (Objects.isNull(defaultUnit)) {
+            defaultUnit = unitService.getCubeInch(getWarehouseId());
+        }
+        // by default, we will use inch as the length's unit
+        String defaultUnitName = Objects.isNull(defaultUnit) ?
+                "cubic inch" : defaultUnit.getName();
+
 
         if (item == null) {
-            return 0.0;
+            return Pair.of(0.0, defaultUnitName);
         }
+        if (caseUOMOnly || caseUOMFirst) {
+            // we will calculate the size by case UOM
+            // first of all, see if we have a case UOM defined
+            ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                    item.getDefaultItemPackageType() : getItemPackageType();
+            ItemUnitOfMeasure caseUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
+            if (Objects.nonNull(caseUnitOfMeasure)) {
+                return getSize(unitService, caseUnitOfMeasure, getQuantity() / caseUnitOfMeasure.getQuantity());
+            }
+            // case unit of measure if not defined, raise error if the client only
+            // want to try with case unit of measure
+            if (caseUOMOnly) {
+                throw ResourceNotFoundException.raiseException("can't find case UOM for item " + item.getName() +
+                        " on pick   " + getNumber() + ", fail to calculate the size");
+            }
+        }
+        // ok, the user is good with calculate the size by stock UOM and there's no case UOM defined
+
         ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
                 item.getDefaultItemPackageType() : getItemPackageType();
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        return getSize(unitService, stockItemUnitOfMeasure, getQuantity() );
+    }
+    /**
+     * Note: the size will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
+    @JsonIgnore
+    public Pair<Double, String> getSize(UnitService unitService, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
 
-        return (quantity / stockItemUnitOfMeasure.getQuantity())
-                * stockItemUnitOfMeasure.getLength()
-                * stockItemUnitOfMeasure.getWidth()
-                * stockItemUnitOfMeasure.getHeight();
+        // Note: the result returned from getVolumeByUOM is the unit of length
+        // we will show cubit unit to the user
+
+        Pair<Double, Unit> result =
+                unitService.getVolumeByUOM(getWarehouseId(),
+                itemUnitOfMeasure, quantityOfUOM);
+
+        return Pair.of(
+                Objects.isNull(result.getFirst()) ? 0.0 : result.getFirst(),
+                Objects.isNull(result.getSecond()) ? "" : result.getSecond().getName());
     }
 
+
     @JsonIgnore
-    public Double getHeight() {
+    public Pair<Double, String> getHeight(UnitService unitService) {
+
+        Unit defaultUnit = unitService.getBaseUnit(getWarehouseId(), UnitType.LENGTH);
+        if (Objects.isNull(defaultUnit)) {
+            defaultUnit = unitService.getInch(getWarehouseId());
+        }
+        // by default, we will use inch as the length's unit
+        String defaultUnitName = Objects.isNull(defaultUnit) ?
+                "inch" : defaultUnit.getName();
 
         if (item == null) {
-            return 0.0;
+            return Pair.of(0.0, defaultUnitName);
         }
         /**
-        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasure();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()
@@ -246,23 +314,31 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
             if (getQuantity() < itemPackageType.getCaseItemUnitOfMeasure().getQuantity()) {
                 // pick quantity is less than one case, return the stock UOM's height
-                return itemPackageType.getStockItemUnitOfMeasures().getHeight();
+                return Pair.of(itemPackageType.getStockItemUnitOfMeasure().getHeight(),
+                        Strings.isBlank(itemPackageType.getStockItemUnitOfMeasure().getHeightUnit()) ?
+                                defaultUnitName : itemPackageType.getStockItemUnitOfMeasure().getHeightUnit());
             }
 
             if (Objects.nonNull(itemPackageType.getCasePerTier()) &&
                 itemPackageType.getCasePerTier() > 0) {
                 // we have both case UOM and case per tier defined, get the right height based on the
                 // number of layer of cases, and case height
-                return (Math.ceil(getQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity())  // how many cases in the pick
+                return Pair.of((Math.ceil(getQuantity() / itemPackageType.getCaseItemUnitOfMeasure().getQuantity())  // how many cases in the pick
                         / itemPackageType.getCasePerTier())    // how many cases per tier
-                        * itemPackageType.getCaseItemUnitOfMeasure().getHeight();       // height per case(per tier)
+                        * itemPackageType.getCaseItemUnitOfMeasure().getHeight(),
+                        Strings.isBlank(itemPackageType.getCaseItemUnitOfMeasure().getHeightUnit()) ?
+                            defaultUnitName : itemPackageType.getCaseItemUnitOfMeasure().getHeightUnit());       // height per case(per tier)
             }
             // case per tier is not defined, we at least have one case but we don't know how the cases
             // are stacked, so we will just return the case's height
-            return itemPackageType.getCaseItemUnitOfMeasure().getHeight();
+            return Pair.of(itemPackageType.getCaseItemUnitOfMeasure().getHeight(),
+                    Strings.isBlank(itemPackageType.getCaseItemUnitOfMeasure().getHeightUnit()) ?
+                        defaultUnitName : itemPackageType.getCaseItemUnitOfMeasure().getHeightUnit());
         }
         // case UOM is not defined, let's just return the stock UOM's height
-        return itemPackageType.getStockItemUnitOfMeasures().getHeight();
+        return Pair.of(itemPackageType.getStockItemUnitOfMeasure().getHeight(),
+                Strings.isBlank(itemPackageType.getStockItemUnitOfMeasure().getHeightUnit()) ?
+                    defaultUnitName : itemPackageType.getStockItemUnitOfMeasure().getHeightUnit());
     }
 
 
@@ -627,12 +703,12 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     public String getDefaultPickableStockUomName() {
         if (Objects.isNull(item) ||
                 Objects.isNull(item.getDefaultItemPackageType()) ||
-                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasures()) ||
-                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure())) {
+                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasure()) ||
+                Objects.isNull(item.getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure())) {
             return "";
         }
         else {
-            return item.getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+            return item.getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName();
         }
     }
 

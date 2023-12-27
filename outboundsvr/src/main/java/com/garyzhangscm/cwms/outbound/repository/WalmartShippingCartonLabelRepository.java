@@ -36,8 +36,11 @@ public interface WalmartShippingCartonLabelRepository extends JpaRepository<Walm
     WalmartShippingCartonLabel findBySSCC18(String SSCC18);
 
     List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber, Pageable pageable);
-
+/**
     @Query("select carton from WalmartShippingCartonLabel carton inner join carton.palletPickLabelContent pallet " +
             " where pallet.id = :palletPickLabelContentId ")
+**/
+    @Query(value = "SELECT * FROM  walmart_shipping_carton_label WHERE pallet_pick_label_content_id = :palletPickLabelContentId" ,
+            nativeQuery = true )
     List<WalmartShippingCartonLabel> findByPalletPickLabelContentId(Long palletPickLabelContentId);
 }
