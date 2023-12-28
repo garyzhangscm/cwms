@@ -78,6 +78,30 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
+    @RequestMapping(value="/report-histories/preview/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
+    public ResponseEntity<Resource>  previewReport(@PathVariable String filename,
+                                                    @PathVariable String type,
+                                                    @PathVariable Long companyId,
+                                                    @PathVariable Long warehouseId)
+            throws FileNotFoundException {
+
+
+        logger.debug("start to preview report file. To preview a label file, we will convert from lbl into PDF " +
+                " so that the client can preview in the web client");
+        File reportResultFile = reportHistoryService.getReportFile(companyId, warehouseId, type, filename, "", true);
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(reportResultFile));
+
+        logger.debug(" we will return file {} to the user, length is {} ",
+                reportResultFile.getName(),
+                reportResultFile.length());
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
+                .contentLength(reportResultFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 
     @RequestMapping(value="/report-histories/download/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
     public ResponseEntity<Resource>  downloadReport(@PathVariable String filename,

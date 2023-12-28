@@ -173,6 +173,25 @@ public class ReportHistoryService {
     }
     public File getReportFile(Long companyId, Long warehouseId, String type,
                               String filename, String printerName) {
+        return getReportFile(companyId, warehouseId, type, filename, printerName,
+                false);
+    }
+
+    /**
+     * return the report file, which is already filled with data.
+     * if it is to preview and the report is actually a label, we will try to convert it to
+     * PDF so the client can review it but for print purpose, we will still return .lbl file
+     * so that zebra printer can accept the print job
+     * @param companyId
+     * @param warehouseId
+     * @param type
+     * @param filename
+     * @param printerName
+     * @param preview
+     * @return
+     */
+    public File getReportFile(Long companyId, Long warehouseId, String type,
+                              String filename, String printerName, Boolean preview) {
         if (!verifyReportResultFileAccess(filename)) {
             throw ReportAccessPermissionException.raiseException(
                     "Current user doesn't have access to the report file"
@@ -202,12 +221,14 @@ public class ReportHistoryService {
         ReportType reportType = ReportType.valueOf(type);
         File file = new File(fileUrl);
         logger.debug("see if we will need to convert a label file to PDF");
+        logger.debug("preview mode? {}", preview );
         logger.debug("file is label? {}", reportType.isLabel() );
         logger.debug("file {}'s extension is prn / lbl? {}",
                 file.getAbsolutePath(),
                 fileIsLabel(file));
 
-        if (reportType.isLabel() &&
+        if (Boolean.TRUE.equals(preview) &&
+                reportType.isLabel() &&
                 fileIsLabel(file)) {
             logger.debug("OK, we will need to convert the label files to PDF and return");
                 return convertLabelFileToPDF(file);
