@@ -47,8 +47,12 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
             " and inv.inventoryStatus.id = :inventoryStatusId and inv.pickId is null " +
             " and inv.allocatedByPickId is null and inv.virtual = false " +
-            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false ")
-    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId, Pageable pageable);
+            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false " +
+            " and (:locationId is null or  inv.locationId = :locationId) " +
+            " and  (:lpn is null or  inv.lpn = :lpn) ")
+    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId,
+                                                                      Long locationId, String lpn,
+                                                                      Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
             " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId  and inv.pickId is null " +

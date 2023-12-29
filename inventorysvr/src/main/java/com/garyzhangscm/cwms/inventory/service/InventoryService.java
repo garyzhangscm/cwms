@@ -678,6 +678,7 @@ public class InventoryService {
                                                    String receiptNumber,
                                                    int lpnLimit,
                                                    boolean includeDetails) {
+        /**
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
                         inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
@@ -685,7 +686,12 @@ public class InventoryService {
                         :
                         inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId,
                                 PageRequest.of(0, lpnLimit));
+**/
 
+        List<Inventory> availableInventories =
+                inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
+                                locationId, lpn,
+                                PageRequest.of(0, lpnLimit));
 
         logger.debug("We have found {} available inventory, Let's get all the pickable inventory from it",
                 availableInventories.size());
