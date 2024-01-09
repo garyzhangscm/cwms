@@ -3844,7 +3844,7 @@ public class OrderService {
     private Map<String, Object> getTargetShippingCartonLabelContent(TargetShippingCartonLabel targetShippingCartonLabel) {
         Map<String, Object> lpnLabelContent = new HashMap<>();
 
-        lpnLabelContent.put("shipToName", targetShippingCartonLabel.getShipToName());
+        lpnLabelContent.put("shipTo", targetShippingCartonLabel.getShipToName());
         lpnLabelContent.put("address1", targetShippingCartonLabel.getAddress1());
         lpnLabelContent.put("cityStateZip", targetShippingCartonLabel.getCityStateZip());
 

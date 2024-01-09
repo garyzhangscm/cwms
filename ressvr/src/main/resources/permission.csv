@@ -23,6 +23,7 @@ Outbound-Order,remove-order-billable-activity-type,Remove Order Billable Activit
 Outbound-Order,cancel-order,Cancel Order
 Outbound-Order,clear-cancellation-request,Clear Order Cancellation Request
 Outbound-Order,walmart-shipping-carton-label,Walmart Shipping Carton Label
+Outbound-Order,target-shipping-carton-label,Target Shipping Carton Label
 Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory

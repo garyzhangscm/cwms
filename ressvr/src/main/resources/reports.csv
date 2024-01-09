@@ -19,3 +19,4 @@ company,warehouse,type,description,fileName,orientation
 , ,PICK_LIST_SHEET,List Pick Sheet,list_pick_sheet,PORTRAIT
 , ,WALMART_SHIPPING_CARTON_LABEL,Walmart Shipping Carton Label,walmart_shipping_carton_label.prn,PORTRAIT
 , ,PALLET_PICK_LABEL,Pallet Pick Label,pallet_pick_label.prn,PORTRAIT
+, ,TARGET_SHIPPING_CARTON_LABEL,Target Shipping Carton Label,target_shipping_carton_label.prn,PORTRAIT

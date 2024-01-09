@@ -523,4 +523,18 @@ public class OrderController {
 
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/orders/{id}/target-shipping-carton-labels")
+    public List<TargetShippingCartonLabel> getTargetShippingCartonLabels(Long warehouseId,
+                                                                           @PathVariable Long id,
+                                                                           @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                           @RequestParam(name = "nonAssignedOnly", defaultValue = "true", required = false) Boolean nonAssignedOnly,
+                                                                           @RequestParam(name = "nonPrintedOnly", defaultValue = "true", required = false) Boolean nonPrintedOnly)   {
+
+
+        return orderService.getTargetShippingCartonLabels(
+                warehouseId,
+                id, itemName,
+                nonAssignedOnly, nonPrintedOnly);
+
+    }
 }
