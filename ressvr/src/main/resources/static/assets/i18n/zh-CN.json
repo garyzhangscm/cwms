@@ -2250,5 +2250,6 @@
   "cartonQuantity": "箱数",
   "printShippingCartonLabelWithPalletLabel": "允许同时打印发货标签和托盘标签",
   "lastPrintTime": "上次打印时间",
-  "palletPickLabel": "托盘拣货标签"
+  "palletPickLabel": "托盘拣货标签",
+  "target-shipping-carton-label": "Target 发货箱标"
 }
