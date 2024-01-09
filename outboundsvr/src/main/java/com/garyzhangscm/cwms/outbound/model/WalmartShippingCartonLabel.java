@@ -167,11 +167,8 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
     @Column(name = "seal_number")
     private String sealNumber;
 
-    @Column(name = "FOB_Mira")
-    private String fobMira;
-
-    @Column(name = "LOMA_COLTON_FAYETEVILLE")
-    private String lomaColtonFayeteville;
+    @Column(name = "fob_miraloma_colton_fayeteville")
+    private String fobMiralomaColtonFayeteville;
 
 
     // only if the carton label is attached to
@@ -516,22 +513,6 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
         this.sealNumber = sealNumber;
     }
 
-    public String getFobMira() {
-        return fobMira;
-    }
-
-    public void setFobMira(String fobMira) {
-        this.fobMira = fobMira;
-    }
-
-    public String getLomaColtonFayeteville() {
-        return lomaColtonFayeteville;
-    }
-
-    public void setLomaColtonFayeteville(String lomaColtonFayeteville) {
-        this.lomaColtonFayeteville = lomaColtonFayeteville;
-    }
-
     public PalletPickLabelContent getPalletPickLabelContent() {
         return palletPickLabelContent;
     }
@@ -546,5 +527,13 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
 
     public void setLastPrintTime(ZonedDateTime lastPrintTime) {
         this.lastPrintTime = lastPrintTime;
+    }
+
+    public String getFobMiralomaColtonFayeteville() {
+        return fobMiralomaColtonFayeteville;
+    }
+
+    public void setFobMiralomaColtonFayeteville(String fobMiralomaColtonFayeteville) {
+        this.fobMiralomaColtonFayeteville = fobMiralomaColtonFayeteville;
     }
 }

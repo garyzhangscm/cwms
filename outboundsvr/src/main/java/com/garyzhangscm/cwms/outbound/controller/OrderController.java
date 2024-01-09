@@ -477,6 +477,7 @@ public class OrderController {
 
     }
 
+
     @RequestMapping(method=RequestMethod.GET, value="/orders/{id}/walmart-shipping-carton-labels")
     public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId,
                                                              @PathVariable Long id,
@@ -494,15 +495,17 @@ public class OrderController {
 
     @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/target-shipping-carton-labels/generate-with-pallet-label")
     public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId,
-                                                            @PathVariable Long id,
-                                                            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
-                                                            @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
-                                                            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
+                                                                                  @PathVariable Long id,
+                                                                                  @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                                  @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                                                  @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+                                                                                  @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
 
 
-        return orderService.generateTargetShippingCartonLabelsWithPalletLabels(
+        return orderService.generateWalmartShippingCartonLabelsWithPalletLabels(
                 warehouseId,
-                id, itemName, copies, locale);
+                id, copies, locale,
+                regeneratePalletLabels);
 
     }
 
@@ -519,17 +522,5 @@ public class OrderController {
                 id, itemName, copies, locale);
 
     }
-    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/target-pallet-labels/generate")
-    public ReportHistory generateTargetPalletLabels(Long warehouseId,
-                                                    @PathVariable Long id,
-                                                            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
-                                                            @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
-                                                            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
 
-
-        return orderService.generateTargetPalletLabels(
-                warehouseId,
-                id, itemName, copies, locale);
-
-    }
 }

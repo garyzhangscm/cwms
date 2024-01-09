@@ -45,10 +45,9 @@ public class FileUploadType {
         fileUploadTypes.add(new ReceivingInventoryFileUpload());
         fileUploadTypes.add(new LocationFileUpload());
         fileUploadTypes.add(new WalmartShippingCartonLabelFileUpload());
+        fileUploadTypes.add(new TargetShippingCartonLabelFileUpload());
         // fileUploadTypes.add(new ShippingTrailerAppointmentFileUpload());
         fileUploadTypes.add(new LoadFileUpload());
-
-
 
         return fileUploadTypes;
     }
@@ -84,12 +83,12 @@ public class FileUploadType {
                         // current column is defined as required, see if the CSV file
                         // has the column passed in
                         if (Arrays.stream(csvFileHeaderNames).noneMatch(
-                                csvFileHeaderName -> csvFileHeaderName.equals(column.getName()))) {
+                                csvFileHeaderName -> csvFileHeaderName.equalsIgnoreCase(column.getName()))) {
                             missingRequiredColumn.add(column.getName());
                         }
                     }
                     columnMap.put(
-                            column.getName(),
+                            column.getName().toLowerCase(Locale.ROOT),
                             column.getNullable()
                     );
                 }
@@ -100,7 +99,7 @@ public class FileUploadType {
 
         List<String> invalidColumns = new ArrayList<>();
         for (String csvFileHeaderName : csvFileHeaderNames) {
-            if (!columnMap.containsKey(csvFileHeaderName)) {
+            if (!columnMap.containsKey(csvFileHeaderName.toLowerCase(Locale.ROOT))) {
                 invalidColumns.add(csvFileHeaderName);
             }
         }
