@@ -49,7 +49,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
             " and inv.allocatedByPickId is null and inv.virtual = false " +
             " and inv.inboundQCRequired = false and inv.lockedForAdjust = false " +
             " and (:locationId is null or  inv.locationId = :locationId) " +
-            " and  (:lpn is null or  inv.lpn = :lpn) ")
+            " and  (:lpn is null or :lpn = '' or  inv.lpn = :lpn) ")
     List<Inventory> findPickableInventoryByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId,
                                                                       Long locationId, String lpn,
                                                                       Pageable pageable);
