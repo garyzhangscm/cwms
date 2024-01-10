@@ -606,4 +606,31 @@ public class LocationController {
 
         return locationService.findReceivingStageLocations(warehouseId);
     }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line")
+    public Location getOrCreateProductionLineLocation(@RequestParam Long warehouseId,
+                                                      @RequestParam String locationName,
+                                                      @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineLocation(warehouseId, locationName, location);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line-inbound")
+    public Location getOrCreateProductionLineInboundLocation(@RequestParam Long warehouseId,
+                                                      @RequestParam String locationName,
+                                                      @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineInboundLocation(warehouseId, locationName, location);
+    }
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line-outbound")
+    public Location getOrCreateProductionLineOutboundLocation(@RequestParam Long warehouseId,
+                                                             @RequestParam String locationName,
+                                                             @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineOutboundLocation(warehouseId, locationName, location);
+    }
+
 }

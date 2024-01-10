@@ -300,4 +300,58 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    public Location getOrCreateProductionLineLocation(Long warehouseId, Location location)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/production-line")
+                .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationName", location.getName());
+
+        return restTemplateProxy.exchange(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                location
+        );
+    }
+
+    public Location getOrCreateProductionLineInboundLocation(Long warehouseId, Location location)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/production-line-inbound")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationName", location.getName());
+
+        return restTemplateProxy.exchange(
+                Location.class,
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.POST,
+                location
+        );
+    }
+
+    public Location getOrCreateProductionLineOutboundLocation(Long warehouseId, Location location)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations/production-line-outbound")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationName", location.getName());
+
+        return restTemplateProxy.exchange(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                location
+        );
+    }
+
 }
