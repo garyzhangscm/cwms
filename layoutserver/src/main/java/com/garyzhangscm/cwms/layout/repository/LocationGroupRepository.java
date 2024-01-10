@@ -74,4 +74,14 @@ public interface LocationGroupRepository extends JpaRepository<LocationGroup, Lo
 
     @Query( "select lg from LocationGroup lg where lg.trackingLocationUtilization = true and lg.warehouse.id = :warehouseId" )
     List<LocationGroup> getUtilizationTrackingLocationGroups(Long warehouseId);
+
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.productionLine = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getProductionLineLocationGroup(Long warehouseId);
+
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.productionLineInbound = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getProductionLineInboundLocationGroup(Long warehouseId);
+
+    @Query( "select lg from LocationGroup lg inner join lg.locationGroupType type where type.productionLineOutbound = true and lg.warehouse.id = :warehouseId" )
+    List<LocationGroup> getProductionLineOutboundLocationGroup(Long warehouseId);
+
 }

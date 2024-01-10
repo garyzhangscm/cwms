@@ -1108,4 +1108,67 @@ public class LocationService {
         return fileUploadProgressKey;
     }
 
+    public Location getOrCreateProductionLineLocation(Long warehouseId, String locationName, Location location) {
+        Location existingLocation = findByName(locationName, warehouseId);
+        if (Objects.nonNull(existingLocation)) {
+            return existingLocation;
+        }
+        // if the location doesn't exist yet, let's create it on the fly
+        LocationGroup locationGroup = locationGroupService.getProductionLineLocationGroup(warehouseId);
+        if (Objects.isNull(locationGroup)) {
+            throw LocationOperationException.raiseException("can't create location for the production line " +
+                    "as there's no location group defined for the production line locations");
+        }
+        if (Objects.isNull(location.getWarehouse())) {
+            location.setWarehouse(
+                    warehouseService.findById(warehouseId)
+            );
+        }
+        location.setId(null);
+        location.setLocationGroup(locationGroup);
+        return saveOrUpdate(location);
+    }
+
+    public Location getOrCreateProductionLineInboundLocation(Long warehouseId, String locationName, Location location) {
+        Location existingLocation = findByName(locationName, warehouseId);
+        if (Objects.nonNull(existingLocation)) {
+            return existingLocation;
+        }
+        // if the location doesn't exist yet, let's create it on the fly
+        LocationGroup locationGroup = locationGroupService.getProductionLineInboundLocationGroup(warehouseId);
+        if (Objects.isNull(locationGroup)) {
+            throw LocationOperationException.raiseException("can't create inbound location for the production line " +
+                    "as there's no location group defined for the production line inbound locations");
+        }
+        if (Objects.isNull(location.getWarehouse())) {
+            location.setWarehouse(
+                    warehouseService.findById(warehouseId)
+            );
+        }
+        location.setId(null);
+        location.setLocationGroup(locationGroup);
+        return saveOrUpdate(location);
+    }
+
+    public Location getOrCreateProductionLineOutboundLocation(Long warehouseId, String locationName, Location location) {
+        Location existingLocation = findByName(locationName, warehouseId);
+        if (Objects.nonNull(existingLocation)) {
+            return existingLocation;
+        }
+        // if the location doesn't exist yet, let's create it on the fly
+        LocationGroup locationGroup = locationGroupService.getProductionLineOutboundLocationGroup(warehouseId);
+        if (Objects.isNull(locationGroup)) {
+            throw LocationOperationException.raiseException("can't create outbound location for the production line " +
+                    "as there's no location group defined for the production line outbound locations");
+        }
+        if (Objects.isNull(location.getWarehouse())) {
+            location.setWarehouse(
+                    warehouseService.findById(warehouseId)
+            );
+        }
+        location.setId(null);
+        location.setLocationGroup(locationGroup);
+        return saveOrUpdate(location);
+    }
+
 }

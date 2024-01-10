@@ -566,8 +566,97 @@ public class ProductionLineService implements TestDataInitiableService {
                                 productionLine
                         )
         );
+        // setup the locations
+        setupProductionLineLocations(productionLine);
+
         return saveOrUpdate(productionLine);
     }
+
+    /**
+     * Setup the production line location, in and out staging location automatically
+     * @param productionLine
+     */
+    private void setupProductionLineLocations(ProductionLine productionLine) {
+        if (Objects.isNull(productionLine.getProductionLineLocationId())) {
+
+            if (Objects.isNull(productionLine.getProductionLineLocation().getId()) ||
+                    productionLine.getProductionLineLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getProductionLineLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setProductionLineLocation(location);
+                    productionLine.setProductionLineLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setProductionLineLocationId(
+                        productionLine.getProductionLineLocation().getId()
+                );
+            }
+        }
+
+        if (Objects.isNull(productionLine.getInboundStageLocationId())) {
+
+            if (Objects.isNull(productionLine.getInboundStageLocation().getId()) ||
+                    productionLine.getInboundStageLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineInboundLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getInboundStageLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setInboundStageLocation(location);
+                    productionLine.setInboundStageLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the inbound location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setInboundStageLocationId(
+                        productionLine.getInboundStageLocation().getId()
+                );
+            }
+        }
+
+        if (Objects.isNull(productionLine.getOutboundStageLocationId())) {
+
+            if (Objects.isNull(productionLine.getOutboundStageLocation().getId()) ||
+                    productionLine.getOutboundStageLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineOutboundLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getOutboundStageLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setOutboundStageLocation(location);
+                    productionLine.setOutboundStageLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the outbound location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setOutboundStageLocationId(
+                        productionLine.getOutboundStageLocation().getId()
+                );
+            }
+        }
+
+    }
+
 
     public ProductionLine changeProductionLine(ProductionLine productionLine) {
         productionLine.getProductionLineCapacities().forEach(
