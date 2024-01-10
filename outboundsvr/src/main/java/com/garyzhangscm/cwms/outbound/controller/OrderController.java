@@ -502,7 +502,7 @@ public class OrderController {
                                                                                   @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
 
 
-        return orderService.generateWalmartShippingCartonLabelsWithPalletLabels(
+        return orderService.generateTargetShippingCartonLabelsWithPalletLabels(
                 warehouseId,
                 id, copies, locale,
                 regeneratePalletLabels);

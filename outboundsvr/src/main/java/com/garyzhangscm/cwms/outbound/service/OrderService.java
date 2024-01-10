@@ -3856,7 +3856,7 @@ public class OrderService {
 
         lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
 
-        lpnLabelContent.put("sscc18", targetShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("SSCC18", targetShippingCartonLabel.getSSCC18());
 
         return lpnLabelContent;
     }

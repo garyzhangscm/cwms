@@ -20,8 +20,10 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.PalletPickLabelContent;
+import com.garyzhangscm.cwms.outbound.model.PalletPickLabelPickDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -30,4 +32,5 @@ public interface PalletPickLabelContentRepository extends JpaRepository<PalletPi
 
 
     PalletPickLabelContent findByWarehouseIdAndNumber(Long warehouseId, String number);
+
 }

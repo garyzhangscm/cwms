@@ -81,6 +81,9 @@ public class PickService {
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
+    private PalletPickLabelContentService palletPickLabelContentService;
+
+    @Autowired
     private AllocationService allocationService;
 
     @Autowired
@@ -553,6 +556,7 @@ public class PickService {
 
     @Transactional
     public void delete(Pick pick) {
+
         pickRepository.delete(pick);
     }
 
@@ -560,6 +564,11 @@ public class PickService {
         pickRepository.deleteById(id);
     }
 
+    @Transactional
+    public void removePick(Pick pick) {
+        palletPickLabelContentService.onPickRemove(pick);
+        delete(pick);
+    }
 
 
     public List<Pick> getOpenPicksByItemIdAndSourceLocation(Long itemId, Location sourceLocation){
@@ -727,7 +736,7 @@ public class PickService {
             // There's nothing left on the picks, let's remove it.
             // We can find the history in the cancelled pick table
             logger.debug("Remove the pick as there's nothing left for this pick {}", pick.getNumber());
-            delete(pick);
+            removePick(pick);
 
             // when we remove the pick, we may need to remove the work task, if there's any
             if (Objects.nonNull(pick.getWorkTaskId())) {
@@ -1820,7 +1829,7 @@ public class PickService {
                     shortAllocation -> shortAllocationService.delete(shortAllocation)
             );
             allocationResult.getPicks().forEach(
-                    pick -> delete(pick)
+                    pick -> removePick(pick)
             );
             throw PickingException.raiseException("Error! can't allocate from this LPN " + lpn);
         }
