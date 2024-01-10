@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.PalletPickLabelContentRepository;
+import com.garyzhangscm.cwms.outbound.repository.PalletPickLabelPickDetailRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +48,15 @@ public class PalletPickLabelContentService {
     @Autowired
     private PalletPickLabelContentRepository palletPickLabelContentRepository;
     @Autowired
+    private PalletPickLabelPickDetailRepository palletPickLabelPickDetailRepository;
+    @Autowired
     private PickService pickService;
     @Autowired
     private OutboundConfigurationService outboundConfigurationService;
     @Autowired
     private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
+    @Autowired
+    private TargetShippingCartonLabelService targetShippingCartonLabelService;
     @Autowired
     private UnitService unitService;
 
@@ -125,6 +130,7 @@ public class PalletPickLabelContentService {
         // pallet, if needed
 
         walmartShippingCartonLabelService.releaseShippingCartonLabel(palletPickLabelContent);
+        targetShippingCartonLabelService.releaseShippingCartonLabel(palletPickLabelContent);
 
         palletPickLabelContentRepository.delete(palletPickLabelContent);
 
@@ -599,5 +605,30 @@ public class PalletPickLabelContentService {
 
     public String getNextPalletPickLabelNumber(Long warehouseId) {
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "pallet-pick-label-number");
+    }
+
+    private PalletPickLabelPickDetail findPalletPickLabelPickDetailByPick(Pick pick) {
+        return palletPickLabelPickDetailRepository.findByPickId(pick.getId());
+    }
+
+    /**
+     * When a pick is removed, let's remove the correspondent pallet pick
+     * @param pick
+     */
+    public void onPickRemove(Pick pick) {
+        PalletPickLabelPickDetail palletPickLabelPickDetail =
+                findPalletPickLabelPickDetailByPick(pick);
+        if (Objects.nonNull(palletPickLabelPickDetail)) {
+
+            // this is the only pick in the pallet, let's remove the whole pallet
+            if (palletPickLabelPickDetail.getPalletPickLabelContent().getPalletPickLabelPickDetails().size() <= 1){
+                delete(palletPickLabelPickDetail.getPalletPickLabelContent());
+            }
+            else {
+                // there's more in the pallet, let's just remove the pick
+                palletPickLabelPickDetailRepository.delete(palletPickLabelPickDetail);
+            }
+        }
+
     }
 }

@@ -28,9 +28,9 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface PalletPickLabelContentRepository extends JpaRepository<PalletPickLabelContent, Long>, JpaSpecificationExecutor<PalletPickLabelContent> {
+public interface PalletPickLabelPickDetailRepository extends JpaRepository<PalletPickLabelPickDetail, Long>, JpaSpecificationExecutor<PalletPickLabelPickDetail> {
 
 
-    PalletPickLabelContent findByWarehouseIdAndNumber(Long warehouseId, String number);
-
+    @Query("select ppld from PalletPickLabelPickDetail ppld inner join ppld.pick p where p.id = :pickId")
+    PalletPickLabelPickDetail findByPickId(Long pickId);
 }
