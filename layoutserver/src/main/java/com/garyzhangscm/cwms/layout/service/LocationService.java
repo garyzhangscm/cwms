@@ -1126,7 +1126,50 @@ public class LocationService {
         }
         location.setId(null);
         location.setLocationGroup(locationGroup);
+        setupLocationDefaultValue(location);
         return saveOrUpdate(location);
+    }
+
+    private void setupLocationDefaultValue(Location location) {
+        if (Objects.isNull(location.getLength())) {
+            location.setLength(99.0);
+        }
+        if (Objects.isNull(location.getWidth())) {
+            location.setWidth(99.0);
+        }
+        if (Objects.isNull(location.getHeight())) {
+            location.setHeight(99.0);
+        }
+
+        if (Objects.isNull(location.getPickSequence())) {
+            location.setPickSequence(0l);
+        }
+        if (Objects.isNull(location.getPutawaySequence())) {
+            location.setPutawaySequence(0l);
+        }
+        if (Objects.isNull(location.getCountSequence())) {
+            location.setCountSequence(0l);
+        }
+
+        if (Objects.isNull(location.getCapacity())) {
+            location.setCapacity(
+                    location.getLength() * location.getWidth() * location.getHeight()
+            );
+        }
+
+
+        if (Objects.isNull(location.getFillPercentage())) {
+            location.setFillPercentage(100.0);
+        }
+
+        if (Objects.isNull(location.getCurrentVolume())) {
+            location.setCurrentVolume(0.0);
+        }
+        if (Objects.isNull(location.getPendingVolume())) {
+            location.setPendingVolume(0.0);
+        }
+
+
     }
 
     public Location getOrCreateProductionLineInboundLocation(Long warehouseId, String locationName, Location location) {
@@ -1147,6 +1190,7 @@ public class LocationService {
         }
         location.setId(null);
         location.setLocationGroup(locationGroup);
+        setupLocationDefaultValue(location);
         return saveOrUpdate(location);
     }
 
@@ -1168,6 +1212,7 @@ public class LocationService {
         }
         location.setId(null);
         location.setLocationGroup(locationGroup);
+        setupLocationDefaultValue(location);
         return saveOrUpdate(location);
     }
 
