@@ -148,6 +148,18 @@ public class TargetShippingCartonLabelService {
         return findByPoNumberAndItem(warehouseId, poNumber, itemName,
                 nonAssignedOnly, nonPrintedOnly, Integer.MAX_VALUE);
     }
+
+    private Long getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemName) {
+        String pieceCarton = targetShippingCartonLabelRepository.getPieceCartonFromShippingCartonLabel(
+                warehouseId, poNumber, itemName
+        );
+        if (Strings.isNotBlank(pieceCarton)) {
+            return Long.parseLong(pieceCarton);
+        }
+        else {
+            return null;
+        }
+    }
     public List<TargetShippingCartonLabel> findByPoNumberAndItem(Long warehouseId, String poNumber, String itemName,
                                                                   boolean nonAssignedOnly, boolean nonPrintedOnly, int labelCount) {
 
@@ -420,35 +432,25 @@ public class TargetShippingCartonLabelService {
                 throw OrderOperationException.raiseException("fail to assign walmart shipping carton label to the pallet picking label," +
                         " can't load the item information");
             }
-            ItemPackageType itemPackageType = palletPickLabelPickDetail.getPick().getItemPackageType();
-            if (Objects.isNull(itemPackageType) && Objects.nonNull(palletPickLabelPickDetail.getPick().getItemPackageTypeId())) {
-                itemPackageType = inventoryServiceRestemplateClient.getItemPackageTypeById(
-                        palletPickLabelPickDetail.getPick().getItemPackageTypeId()
-                );
-            }
-            if (Objects.isNull(itemPackageType)) {
-                itemPackageType = item.getDefaultItemPackageType();
-            }
+
             // see how many cases of the item will be picked onto this pallet
-            long quantityPerCase = 1l;
-            if (Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure())) {
-                logger.debug("There's no case UOM defined for the item package type {} of item {}, let's use the stock UOM {}'s quantity = {}",
-                        itemPackageType.getName(),
-                        item.getName(),
-                        itemPackageType.getStockItemUnitOfMeasure().getUnitOfMeasure().getName(),
-                        itemPackageType.getStockItemUnitOfMeasure().getQuantity());
-                quantityPerCase = itemPackageType.getStockItemUnitOfMeasure().getQuantity();
+            // let's get the piece / carton from the shipping label first
+            Long quantityPerCase = getPieceCartonFromShippingCartonLabel(
+                    item.getWarehouseId(), order.getPoNumber(), item.getName()
+            );
+            logger.debug("Get piece per carton from the shipping label: {}",
+                    Objects.isNull(quantityPerCase) ? "N/A" : quantityPerCase);
+
+            if (Objects.isNull(quantityPerCase)) {
+                logger.debug("Piece per carton is not defined by the shipping label, let's get from the item");
+                quantityPerCase = getPieceCartonFromItem(item, palletPickLabelPickDetail.getPick());
             }
-            else {
-                logger.debug("Case UOM {} is defined for the item package type {} of item {}, let's use the its quantity = {}",
-                        itemPackageType.getCaseItemUnitOfMeasure().getUnitOfMeasure().getName(),
-                        itemPackageType.getName(),
-                        item.getName(),
-                        itemPackageType.getCaseItemUnitOfMeasure().getQuantity());
-                quantityPerCase = itemPackageType.getCaseItemUnitOfMeasure().getQuantity();
-            }
+            logger.debug("final quantityPerCase: {}", quantityPerCase);
 
             int caseQuantity = (int)Math.ceil(palletPickLabelPickDetail.getPickQuantity() / quantityPerCase);
+            logger.debug("case quantity from this pick {}: {}",
+                    palletPickLabelPickDetail.getPick().getNumber(),
+                    caseQuantity);
             List<TargetShippingCartonLabel> availableTargetShippingCartonLabels =
                     findByPoNumberAndItem(order.getWarehouseId(),
                             order.getPoNumber(),  item.getName(),
@@ -467,6 +469,36 @@ public class TargetShippingCartonLabelService {
 
         }
         return result;
+    }
+
+    private Long getPieceCartonFromItem(Item item, Pick pick) {
+        Long quantityPerCase = 1l;
+        ItemPackageType itemPackageType = pick.getItemPackageType();
+        if (Objects.isNull(itemPackageType) && Objects.nonNull(pick.getItemPackageTypeId())) {
+            itemPackageType = inventoryServiceRestemplateClient.getItemPackageTypeById(
+                    pick.getItemPackageTypeId()
+            );
+        }
+        if (Objects.isNull(itemPackageType)) {
+            itemPackageType = item.getDefaultItemPackageType();
+        }
+        if (Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure())) {
+            logger.debug("There's no case UOM defined for the item package type {} of item {}, let's use the stock UOM {}'s quantity = {}",
+                    itemPackageType.getName(),
+                    item.getName(),
+                    itemPackageType.getStockItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                    itemPackageType.getStockItemUnitOfMeasure().getQuantity());
+            quantityPerCase = itemPackageType.getStockItemUnitOfMeasure().getQuantity();
+        }
+        else {
+            logger.debug("Case UOM {} is defined for the item package type {} of item {}, let's use the its quantity = {}",
+                    itemPackageType.getCaseItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                    itemPackageType.getName(),
+                    item.getName(),
+                    itemPackageType.getCaseItemUnitOfMeasure().getQuantity());
+            quantityPerCase = itemPackageType.getCaseItemUnitOfMeasure().getQuantity();
+        }
+        return quantityPerCase;
     }
 
     private void assignTargetShippingCartonLabel(TargetShippingCartonLabel targetShippingCartonLabel,
