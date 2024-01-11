@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>inboundserver</artifactId>
-	<version>v1.29</version>
+	<version>v1.30</version>
 	<name>Inbound Server</name>
 	<description>Inbound Server</description>
 
