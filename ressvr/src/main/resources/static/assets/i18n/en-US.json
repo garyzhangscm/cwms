@@ -2257,5 +2257,6 @@
   "lastPrintTime": "Last Print Time",
   "palletPickLabel": "Pallet Pick Label",
   "target-shipping-carton-label": "Target Shipping Carton Label",
-  "shippedQuantity": "Shipped Quantity"
+  "shippedQuantity": "Shipped Quantity",
+  "REPORT-TYPE-TARGET_SHIPPING_CARTON_LABEL": "Target Shipping Carton Label"
 }
