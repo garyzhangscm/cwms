@@ -41,10 +41,10 @@ public interface TargetShippingCartonLabelRepository extends JpaRepository<Targe
             nativeQuery = true )
     List<TargetShippingCartonLabel> findByPalletPickLabelContentId(Long palletPickLabelContentId);
 
-    @Query(value = "SELECT t.pieceCarton FROM  TargetShippingCartonLabel t" +
+    @Query(value = "SELECT max(t.pieceCarton) FROM  TargetShippingCartonLabel t" +
             " WHERE t.warehouseId = :warehouseId " +
             "  and t.poNumber = :poNumber " +
             "  and t.itemNumber = :itemNumber " +
             "  and t.pieceCarton is not null and t.pieceCarton > 0 ")
-    String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemName);
+    String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemNumber);
 }
