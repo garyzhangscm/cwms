@@ -44,10 +44,10 @@ public interface WalmartShippingCartonLabelRepository extends JpaRepository<Walm
             nativeQuery = true )
     List<WalmartShippingCartonLabel> findByPalletPickLabelContentId(Long palletPickLabelContentId);
 
-    @Query(value = "SELECT t.pieceCarton FROM  WalmartShippingCartonLabel t" +
+    @Query(value = "SELECT max(t.pieceCarton) FROM  WalmartShippingCartonLabel t" +
             " WHERE t.warehouseId = :warehouseId " +
             "  and t.poNumber = :poNumber " +
             "  and t.itemNumber = :itemNumber " +
             "  and t.pieceCarton is not null and t.pieceCarton > 0 ")
-    String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemName);
+    String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemNumber);
 }
