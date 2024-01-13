@@ -78,6 +78,8 @@ public class OrderIntegrationDataController {
                                                        @RequestParam(name = "immediateProcess", defaultValue = "false", required = false) Boolean immediateProcess,
                                                         @RequestParam(name = "validateAddress", defaultValue = "false", required = false) Boolean validateAddress) {
 
+        logger.debug("start to save order into integration table \n{}", order);
+
         return integrationDataService.addOrderData(order, immediateProcess, validateAddress);
     }
 

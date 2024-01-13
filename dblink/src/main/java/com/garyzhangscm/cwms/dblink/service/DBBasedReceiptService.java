@@ -103,7 +103,7 @@ public class DBBasedReceiptService {
                     String result = "";
                     String errorMessage = "";
                      try {
-                         result = integrationServiceRestemplateClient.sendIntegrationData("receipt", dbBasedReceipt);
+                         result = integrationServiceRestemplateClient.sendIntegrationData("receipts", dbBasedReceipt);
                          logger.debug("# get result " + result);
                          dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
                          dbBasedReceipt.setErrorMessage("");

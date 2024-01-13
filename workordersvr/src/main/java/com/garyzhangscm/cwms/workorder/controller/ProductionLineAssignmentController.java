@@ -49,8 +49,9 @@ public class ProductionLineAssignmentController {
 
 
     @RequestMapping(value="/production-line-assignment/{id}", method = RequestMethod.GET)
-    public ProductionLineAssignment getProductionLineAssignment(@PathVariable Long id) {
-        return productionLineAssignmentService.findById(id);
+    public ProductionLineAssignment getProductionLineAssignment(@PathVariable Long id,
+                                                                @RequestParam(name = "includeDetails", required = false, defaultValue = "true") Boolean includeDetails) {
+        return productionLineAssignmentService.findById(id, includeDetails);
     }
 
     @BillableEndpoint

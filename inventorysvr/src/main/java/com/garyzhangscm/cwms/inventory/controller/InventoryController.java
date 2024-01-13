@@ -156,8 +156,22 @@ public class InventoryController {
                                                    @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+        List<Inventory> pickableInventory = inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
                 color, productSize, style, receiptNumber, lpnLimit);
+        logger.debug("return {} pickable inventory with criteria ",
+                pickableInventory.size());
+        logger.debug("itemId = {}", itemId);
+        logger.debug("inventoryStatusId = {}", inventoryStatusId);
+        logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
+        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
+        logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("receiptNumber = {}", Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
+        logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        logger.debug("=========   Pickable   Inventory   ===============");
+        pickableInventory.forEach(
+                inventory -> logger.debug(">> id: {}, LPN : {}", inventory.getId(), inventory.getLpn())
+        );
+        return pickableInventory;
     }
 
 

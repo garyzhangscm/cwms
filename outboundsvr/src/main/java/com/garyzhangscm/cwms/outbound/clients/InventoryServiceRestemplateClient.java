@@ -307,12 +307,26 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
  **/
 
-        return restTemplateProxy.exchangeList(
+        List<Inventory> pickableInventory = restTemplateProxy.exchangeList(
                 Inventory.class,
                 builder.toUriString(),
                 HttpMethod.GET,
                 null
         );
+
+        logger.debug("return {} pickable inventory with criteria ",
+                pickableInventory.size());
+        logger.debug("itemId = {}", itemId);
+        logger.debug("inventoryStatusId = {}", inventoryStatusId);
+        logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
+        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
+        logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        logger.debug("=========   Pickable   Inventory   ===============");
+        pickableInventory.forEach(
+                inventory -> logger.debug(">> id: {}, LPN : {}", inventory.getId(), inventory.getLpn())
+        );
+        return pickableInventory;
 
     }
 

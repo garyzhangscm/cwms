@@ -58,7 +58,7 @@ public class DBBasedWorkOrder implements Serializable {
     private Long warehouseId;
 
     @Column(name = "LOCATION_CODE")
-    private String locationCode;
+    private String locationName;
 
 
     @Column(name = "item_id")
@@ -243,11 +243,11 @@ public class DBBasedWorkOrder implements Serializable {
         this.errorMessage = errorMessage;
     }
 
-    public String getLocationCode() {
-        return locationCode;
+    public String getLocationName() {
+        return locationName;
     }
 
-    public void setLocationCode(String locationCode) {
-        this.locationCode = locationCode;
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 }
