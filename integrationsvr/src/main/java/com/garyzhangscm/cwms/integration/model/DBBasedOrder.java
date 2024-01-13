@@ -163,6 +163,10 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     )
     private List<DBBasedOrderLine> orderLines = new ArrayList<>();
 
+
+    @Column(name = "po_number")
+    private String poNumber;
+
     // staging location group
     @Column(name="stage_location_group_id")
     private Long stageLocationGroupId;
@@ -200,7 +204,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
                 "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId",
                 "shipToAddressLine3", "billToAddressLine3",
-                "shipToContactorPhoneNumber"
+                "shipToContactorPhoneNumber", "poNumber"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -236,7 +240,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
                 "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId",
-                "shipToAddressLine3", "billToAddressLine3", "shipToContactorPhoneNumber"
+                "shipToAddressLine3", "billToAddressLine3", "shipToContactorPhoneNumber", "poNumber"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -379,6 +383,15 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
 
     public void setShipToAddressCountry(String shipToAddressCountry) {
         this.shipToAddressCountry = shipToAddressCountry;
+    }
+
+    @Override
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 
     @Override

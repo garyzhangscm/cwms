@@ -1,11 +1,9 @@
 package com.garyzhangscm.cwms.dblink.service;
 
 import com.garyzhangscm.cwms.dblink.client.IntegrationServiceRestemplateClient;
-import com.garyzhangscm.cwms.dblink.model.DBBasedReceipt;
-import com.garyzhangscm.cwms.dblink.model.DBBasedWorkOrder;
+import com.garyzhangscm.cwms.dblink.model.DBBasedOrder;
 import com.garyzhangscm.cwms.dblink.model.IntegrationStatus;
-import com.garyzhangscm.cwms.dblink.repository.DBBasedReceiptRepository;
-import com.garyzhangscm.cwms.dblink.repository.DBBasedWorkOrderRepository;
+import com.garyzhangscm.cwms.dblink.repository.DBBasedOrderRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +26,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-public class DBBasedReceiptService {
+public class DBBasedOrderService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DBBasedReceiptService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBBasedOrderService.class);
 
     @Autowired
-    DBBasedReceiptRepository dbBasedReceiptRepository;
+    DBBasedOrderRepository dbBasedOrderRepository;
     @Autowired
     IntegrationServiceRestemplateClient integrationServiceRestemplateClient;
 
@@ -42,23 +40,23 @@ public class DBBasedReceiptService {
 
     // filter will be in the format of
     // foo1=bar1&foo2=bar2, the same format like URL parameters
-    @Value("${integration.filter.receipt:\"\"}")
+    @Value("${integration.filter.order:\"\"}")
     String filter;
 
-    public List<DBBasedReceipt> findAll() {
-        return dbBasedReceiptRepository.findAll();
+    public List<DBBasedOrder> findAll() {
+        return dbBasedOrderRepository.findAll();
     }
 
 
 
-    private List<DBBasedReceipt> findPendingIntegration(String filter) {
+    private List<DBBasedOrder> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
 
         logger.debug("start to find pending receipt integration by filter: {}",
                 filter);
 
-        Page<DBBasedReceipt> dbBasedWorkOrders =  dbBasedReceiptRepository.findAll(
-                (Root<DBBasedReceipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+        Page<DBBasedOrder> dbBasedOrders =  dbBasedOrderRepository.findAll(
+                (Root<DBBasedOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
@@ -70,7 +68,7 @@ public class DBBasedReceiptService {
                             if (nameValue.length != 2) {
                                 continue;
                             }
-                            logger.debug("apply filter {} = {} to find pending item integration",
+                            logger.debug("apply filter {} = {} to find pending order integration",
                                     nameValue[0], nameValue[1]);
 
                             predicates.add(criteriaBuilder.equal(root.get(nameValue[0]), nameValue[1]));
@@ -83,46 +81,48 @@ public class DBBasedReceiptService {
                 limit
         );
 
-        return dbBasedWorkOrders.getContent();
+        return dbBasedOrders.getContent();
     }
 
-    private void save(DBBasedReceipt dbBasedReceipt) {
-        dbBasedReceiptRepository.save(dbBasedReceipt);
+    private void save(DBBasedOrder dbBasedOrder) {
+        dbBasedOrderRepository.save(dbBasedOrder);
     }
 
     public void sendIntegrationData() {
-        List<DBBasedReceipt> pendingDBBasedReceipts = findPendingIntegration(filter);
-        logger.debug("# find " +  pendingDBBasedReceipts.size() + " pendingDBBasedReceipts");
+        List<DBBasedOrder> pendingDBBasedOrders = findPendingIntegration(filter);
+        logger.debug("# find " +  pendingDBBasedOrders.size() + " pendingDBBasedOrders");
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicReference<LocalDateTime> lastProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicInteger i = new AtomicInteger();
-        pendingDBBasedReceipts.forEach(
-                dbBasedReceipt -> {
+        pendingDBBasedOrders.forEach(
+                dbBasedOrder -> {
                     lastProcessingDateTime.set(LocalDateTime.now());
-                    logger.debug("# {} start to process receipt {}", i, dbBasedReceipt.getNumber());
+                    logger.debug("# {} start to process order {}", i, dbBasedOrder.getNumber());
+                    logger.debug("======   order information ======");
+                    logger.debug(dbBasedOrder.toString());
                     String result = "";
                     String errorMessage = "";
                      try {
-                         result = integrationServiceRestemplateClient.sendIntegrationData("receipts", dbBasedReceipt);
+                         result = integrationServiceRestemplateClient.sendIntegrationData("orders", dbBasedOrder);
                          logger.debug("# get result " + result);
-                         dbBasedReceipt.setStatus(IntegrationStatus.COMPLETED);
-                         dbBasedReceipt.setErrorMessage("");
+                         dbBasedOrder.setStatus(IntegrationStatus.COMPLETED);
+                         dbBasedOrder.setErrorMessage("");
                      }
                      catch (Exception ex) {
                          ex.printStackTrace();
-                         dbBasedReceipt.setStatus(IntegrationStatus.ERROR);
-                         dbBasedReceipt.setErrorMessage(ex.getMessage());
+                         dbBasedOrder.setStatus(IntegrationStatus.ERROR);
+                         dbBasedOrder.setErrorMessage(ex.getMessage());
                      }
 
-                     save(dbBasedReceipt);
+                     save(dbBasedOrder);
                      logger.debug("====> record {}, total processing time: {} millisecond(1/1000 second)",
                              i, ChronoUnit.MILLIS.between(lastProcessingDateTime.get(), LocalDateTime.now()));
                      i.getAndIncrement();
                 }
         );
 
-        logger.debug("====> total processing time for {} pendingDBBasedReceipts: {} millisecond(1/1000 second)",
-               pendingDBBasedReceipts.size(),
+        logger.debug("====> total processing time for {} pendingDBBasedOrders: {} millisecond(1/1000 second)",
+               pendingDBBasedOrders.size(),
                 ChronoUnit.MILLIS.between(startProcessingDateTime.get(), LocalDateTime.now()));
     }
 

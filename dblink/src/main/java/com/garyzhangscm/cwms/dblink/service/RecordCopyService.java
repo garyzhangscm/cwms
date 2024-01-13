@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.dblink.service;
 
 import com.garyzhangscm.cwms.dblink.client.IntegrationServiceRestemplateClient;
 import com.garyzhangscm.cwms.dblink.model.DBBasedInventoryAdjustmentConfirmation;
+import com.garyzhangscm.cwms.dblink.model.DBBasedOrder;
 import com.garyzhangscm.cwms.dblink.model.DBBasedOrderConfirmation;
 import com.garyzhangscm.cwms.dblink.model.DBBasedReceiptConfirmation;
 import org.slf4j.Logger;
@@ -33,6 +34,8 @@ public class RecordCopyService {
     private DBBasedCustomerService dbBasedCustomerService;
     @Autowired
     private DBBasedItemPackageTypeService dbBasedItemPackageTypeService;
+    @Autowired
+    private DBBasedOrderService dbBasedOrderService;
 
     @Autowired
     private DBBasedInventoryAdjustmentConfirmationIntegration dbBasedInventoryAdjustmentConfirmationIntegration;
@@ -79,6 +82,9 @@ public class RecordCopyService {
 
         logger.debug("@{}, Start to process item package type data", LocalDateTime.now());
         dbBasedItemPackageTypeService.sendIntegrationData();
+
+        logger.debug("@{}, Start to process outbound order data", LocalDateTime.now());
+        dbBasedOrderService.sendIntegrationData();
     }
 
     // send data from WMS to intermidiate DB

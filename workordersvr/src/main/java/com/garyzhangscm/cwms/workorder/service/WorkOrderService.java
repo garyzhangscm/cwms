@@ -919,7 +919,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public List<Inventory> getProducedInventory(Long workOrderId) {
 
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(workOrderId, false);
         return inventoryServiceRestemplateClient.findProducedInventory(
                 workOrder.getWarehouseId(),
                 workOrderId
@@ -932,7 +932,7 @@ public class WorkOrderService implements TestDataInitiableService {
     }
     public List<Inventory> getProducedByProduct(Long workOrderId, String lpn) {
 
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(workOrderId, false);
         // if we don't have by product setup, then return empty
         if (Objects.isNull(workOrder.getWorkOrderByProducts()) ||
                 workOrder.getWorkOrderByProducts().size() == 0) {
@@ -962,7 +962,7 @@ public class WorkOrderService implements TestDataInitiableService {
         ProductionLine productionLine = null;
         if (Objects.nonNull(productionLineId)) {
             logger.debug("will get production line by id: {}", productionLineId);
-            productionLine = productionLineService.findById(productionLineId);
+            productionLine = productionLineService.findById(productionLineId, false);
         }
         return getDeliveredInventory(workOrderId, productionLine);
     }
@@ -970,7 +970,7 @@ public class WorkOrderService implements TestDataInitiableService {
         logger.debug("Will get delivered inventory for work order by id {}, production line {}",
                 workOrderId,
                 Objects.isNull(productionLine)? "N/A" : productionLine.getName());
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(workOrderId, false);
         logger.debug("Will get delivered inventory for work order {}, production line {}",
                 workOrder.getNumber(),
                 Objects.isNull(productionLine)? "N/A" : productionLine.getName());
@@ -1032,7 +1032,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public List<Inventory> getReturnedInventory(Long workOrderId) {
 
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(workOrderId, false);
         String workOrderLineIds =
                 workOrder.getWorkOrderLines().stream()
                         .map(WorkOrderLine::getId).map(String::valueOf).collect(Collectors.joining(","));

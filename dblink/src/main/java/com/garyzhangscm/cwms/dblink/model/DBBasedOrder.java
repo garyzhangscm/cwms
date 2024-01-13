@@ -19,31 +19,33 @@
 package com.garyzhangscm.cwms.dblink.model;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "FTI_MES_I_work_order")
-public class DBBasedWorkOrder implements Serializable {
+@Table(name = "FTI_MES_I_ORDER_H")
+public class DBBasedOrder implements Serializable{
 
 
     @Id
-    @Column(name = "integration_work_order_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "header_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "i_number")
+    @Column(name = "order_number")
     private String number;
+
+    @Column(name = "category")
+    private String category;
 
     @Column(name = "company_id")
     private Long companyId;
@@ -57,70 +59,56 @@ public class DBBasedWorkOrder implements Serializable {
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(name = "LOCATION_CODE")
+
+    @Column(name = "ship_to_customername")
+    private String shipToCustomerName;
+
+
+    @Column(name = "bill_to_customername")
+    private String billToCustomerName;
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<DBBasedOrderLine> orderLines = new ArrayList<>();
+
+    // whether the order will be used by
+    // FAY or Colton.
+    // Note: FAY and Colton are using 2 different MES server but
+    //    share the same integration table in Oracle side
+    @Column(name = "location_name")
     private String locationName;
-
-
-    @Column(name = "item_id")
-    private Long itemId;
-    @Column(name = "item_name")
-    private String itemName;
-
-
-    @Column(name = "po_number")
-    private String poNumber;
-
-
-    @Column(name = "expected_quantity")
-    private Long expectedQuantity;
-
-    @OneToMany(
-            mappedBy = "workOrder",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.EAGER
-    )
-    private Set<DBBasedWorkOrderLine> workOrderLines = new HashSet<>();
-
-    /***
-    @OneToMany(
-            mappedBy = "workOrder",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.EAGER
-    )
-    private Set<DBBasedWorkOrderInstruction> workOrderInstructions = new HashSet<>();
-***/
-    /***
-    @OneToMany(
-            mappedBy = "workOrder",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.EAGER
-    )
-    private Set<DBBasedWorkOrderByProduct> workOrderByProduct = new HashSet<>();
-**/
 
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private IntegrationStatus status;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @Column(name = "insert_time")
+    @JsonIgnore
     private LocalDateTime insertTime;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @Column(name = "last_update_time")
+    @JsonIgnore
     private LocalDateTime lastUpdateTime;
 
     @Column(name = "error_message")
+    @JsonIgnore
     private String errorMessage;
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Long getId() {
         return id;
@@ -136,6 +124,14 @@ public class DBBasedWorkOrder implements Serializable {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public Long getCompanyId() {
@@ -170,49 +166,40 @@ public class DBBasedWorkOrder implements Serializable {
         this.warehouseId = warehouseId;
     }
 
-    public Long getItemId() {
-        return itemId;
+    public String getShipToCustomerName() {
+        return shipToCustomerName;
     }
 
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
+    public void setShipToCustomerName(String shipToCustomerName) {
+        this.shipToCustomerName = shipToCustomerName;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getBillToCustomerName() {
+        return billToCustomerName;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public void setBillToCustomerName(String billToCustomerName) {
+        this.billToCustomerName = billToCustomerName;
     }
 
-    public String getPoNumber() {
-        return poNumber;
+    public List<DBBasedOrderLine> getOrderLines() {
+        return orderLines;
     }
 
-    public void setPoNumber(String poNumber) {
-        this.poNumber = poNumber;
+    public void setOrderLines(List<DBBasedOrderLine> orderLines) {
+        this.orderLines = orderLines;
     }
-
-    public Long getExpectedQuantity() {
-        return expectedQuantity;
-    }
-
-    public void setExpectedQuantity(Long expectedQuantity) {
-        this.expectedQuantity = expectedQuantity;
-    }
-
-    public Set<DBBasedWorkOrderLine> getWorkOrderLines() {
-        return workOrderLines;
-    }
-
-    public void setWorkOrderLines(Set<DBBasedWorkOrderLine> workOrderLines) {
-        this.workOrderLines = workOrderLines;
-    }
-
 
     public IntegrationStatus getStatus() {
         return status;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 
     public void setStatus(IntegrationStatus status) {
@@ -241,13 +228,5 @@ public class DBBasedWorkOrder implements Serializable {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
-    }
-
-    public String getLocationName() {
-        return locationName;
-    }
-
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
     }
 }

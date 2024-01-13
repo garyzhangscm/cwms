@@ -51,7 +51,7 @@ public class USPSAPIRestemplateClient {
     @Qualifier("noAuthRestTemplate")
     RestTemplate noAuthRestTemplate;
 
-    @Value("${usps.api.username}")
+    @Value("${usps.api.username:\"\"}")
     private String username;
 
 

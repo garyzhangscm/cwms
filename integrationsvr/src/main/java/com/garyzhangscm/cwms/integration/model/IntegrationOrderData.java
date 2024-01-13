@@ -56,6 +56,9 @@ public interface IntegrationOrderData {
     Long getCarrierId() ;
 
     String getCarrierName();
+
+    String getPoNumber();
+
     Long getCarrierServiceLevelId();
 
     String getCarrierServiceLevelName();

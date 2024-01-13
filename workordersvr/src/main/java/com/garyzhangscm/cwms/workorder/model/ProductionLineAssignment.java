@@ -155,6 +155,10 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
         this.id = id;
     }
 
+    public String getProductionLineName() {
+        return Objects.nonNull(productionLine) ?  productionLine.getName() : "";
+    }
+
     public ProductionLine getProductionLine() {
         return productionLine;
     }
