@@ -16,7 +16,8 @@ public enum ReportType {
     LPN_LABEL(true),
     PRODUCTION_LINE_ASSIGNMENT_LABEL(true),
     RECEIVING_LPN_LABEL(true),
-    QC_INSPECTION_REQUEST_REPORT(false);
+    QC_INSPECTION_REQUEST_REPORT(false),
+    COMBINED_LABELS(true);
 
     private boolean isLabelFlag;
 

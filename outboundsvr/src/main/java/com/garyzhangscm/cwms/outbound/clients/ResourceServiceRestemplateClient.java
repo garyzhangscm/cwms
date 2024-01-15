@@ -39,6 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -334,5 +335,24 @@ public class ResourceServiceRestemplateClient {
         return new HttpEntity<String>(requestBody, headers);
     }
      **/
+
+    public ReportHistory combineLabels(Long companyId,
+                                       Long warehouseId,
+                                       List<ReportHistory> reportHistories) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/report-histories/labels/combine")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                reportHistories
+        );
+
+    }
 
 }
