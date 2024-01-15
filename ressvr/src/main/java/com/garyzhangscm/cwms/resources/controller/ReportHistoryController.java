@@ -173,4 +173,23 @@ public class ReportHistoryController {
 
     }
 
+
+    /**
+     * Combine labels into one label file and return
+     * @param companyId
+     * @param warehouseId
+     * @return
+     * @throws FileNotFoundException
+     */
+    @RequestMapping(value="/report-histories/labels/combine", method = RequestMethod.POST)
+    public ReportHistory combineLabels(@RequestParam Long companyId,
+                                       @RequestParam Long warehouseId,
+                                       @RequestBody List<ReportHistory> reportHistories)
+            throws IOException {
+
+
+        return reportHistoryService.combineLabels(companyId, warehouseId, reportHistories);
+
+    }
+
 }

@@ -854,6 +854,15 @@ public class ReportService implements TestDataInitiableService{
                 getReportResultFolder(companyId, warehouseId)
                         + reportFileName;
 
+        return writeResultFile( reportFileName,
+                reportResultAbsoluteFileName, labelContent);
+
+    }
+
+    public String writeResultFile(String reportFileName,
+                                   String reportResultAbsoluteFileName, String labelContent) throws IOException {
+
+
         File reportResultFile = new File(reportResultAbsoluteFileName);
 
         // remove the file if it already exists

@@ -3563,6 +3563,31 @@ public class OrderService {
         );
     }
 
+    public ReportHistory generateCombinedTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
+                                                                                  int copies, String locale,
+                                                                                  Boolean regeneratePalletLabels) {
+
+        List<ReportHistory> reportHistories =
+                generateTargetShippingCartonLabelsWithPalletLabels(
+                        warehouseId,
+                        id, copies, locale,
+                        regeneratePalletLabels);
+        // let's combine the labels into one label
+        // to make sure the labels will be printed all together in the right sequence
+        // otherwise, even we can make sure the client will send the print request to the printer
+        // in the right sequence, there's no grantee that the printer will process the request
+        // in the same sequence
+        logger.debug("get {} report history and we will try to combine into one file",
+                reportHistories.size());
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        return resourceServiceRestemplateClient.combineLabels(
+                warehouse.getCompanyId(),
+                warehouseId,
+                reportHistories
+        );
+
+    }
+
     public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
                                                                                   int copies, String locale,
                                                                                   Boolean regeneratePalletLabels) {

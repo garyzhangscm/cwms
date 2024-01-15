@@ -5,6 +5,7 @@ import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.resources.exception.SystemFatalException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportHistoryRepository;
 import org.apache.commons.io.FilenameUtils;
@@ -22,7 +23,11 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -375,4 +380,61 @@ public class ReportHistoryService {
         return reportResultFile;
     }
 
+    /**
+     * Combine multiple labels into one label file so that we can print in one printer queue and make sure
+     * all the related labels can be printed together
+     * @param companyId
+     * @param warehouseId
+     * @return
+     */
+    public ReportHistory combineLabels(Long companyId, Long warehouseId, List<ReportHistory> reportHistories) throws IOException {
+
+        StringBuilder labelsContent = new StringBuilder();
+        for(ReportHistory reportHistory : reportHistories) {
+            logger.debug("Start to get label file by reportHistory {}", reportHistory);
+            if (!reportHistory.getType().isLabel()) {
+                throw SystemFatalException.raiseException("fail to combine as the type " +
+                        reportHistory.getType() + " is not a label");
+            }
+
+            File file = getReportFile(companyId, warehouseId, reportHistory.getType().name(), reportHistory.getFileName());
+
+            logger.debug("get file {}", file.getAbsolutePath());
+            String labelContent = new String(
+                    Files.readAllBytes(
+                            Paths.get(file.getAbsolutePath())));
+            logger.debug("=========    label content =========\n{}", labelContent);
+            labelsContent.append(labelContent);
+        }
+        int hashCode = reportHistories.hashCode();
+
+        // let's combine all the file together
+        String reportFileName = "LABEL_COMBINED" + "_" + System.currentTimeMillis() + "_" + hashCode
+                + ".lbl";
+        String reportResultAbsoluteFileName =
+                getReportResultFolder(companyId, warehouseId)
+                        + reportFileName;
+
+        logger.debug("start to save the new combined file {}", reportResultAbsoluteFileName);
+
+        // save the result to local file
+        String reportResultFileName = reportService.writeResultFile(
+                reportFileName, reportResultAbsoluteFileName, labelsContent.toString());
+
+
+        // save the history information
+        ReportHistory reportHistory =
+                new ReportHistory();
+        reportHistory.setCompanyId(companyId);
+        reportHistory.setWarehouseId(warehouseId);
+        reportHistory.setPrintedDate(ZonedDateTime.now());
+        reportHistory.setPrintedUsername(userService.getCurrentUserName());
+        reportHistory.setType(ReportType.COMBINED_LABELS);
+        reportHistory.setFileName(reportResultFileName);
+        reportHistory.setDescription(ReportType.COMBINED_LABELS.toString());
+        reportHistory.setReportOrientation(ReportOrientation.PORTRAIT);
+
+        return save(reportHistory);
+
+    }
 }
