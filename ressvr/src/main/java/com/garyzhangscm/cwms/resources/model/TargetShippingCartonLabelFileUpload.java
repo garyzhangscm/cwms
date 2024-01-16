@@ -3,7 +3,7 @@ package com.garyzhangscm.cwms.resources.model;
 public class TargetShippingCartonLabelFileUpload extends FileUploadType {
 
     public TargetShippingCartonLabelFileUpload(){
-        super("target-shipping-carton-labels", "Walmart Shipping Carton Labels",
+        super("target-shipping-carton-labels", "Target Shipping Carton Labels",
                 "outbound/target-shipping-carton-labels/upload",
                 "resource/assets/file-templates/target-shipping-carton-label.csv",
                 "outbound/target-shipping-carton-labels/upload/progress",
