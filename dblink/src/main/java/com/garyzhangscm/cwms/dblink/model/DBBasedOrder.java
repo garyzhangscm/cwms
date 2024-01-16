@@ -67,6 +67,9 @@ public class DBBasedOrder implements Serializable{
     @Column(name = "bill_to_customername")
     private String billToCustomerName;
 
+    @Column(name = "customer_po")
+    private String poNumber;
+
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
@@ -228,5 +231,13 @@ public class DBBasedOrder implements Serializable{
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 }

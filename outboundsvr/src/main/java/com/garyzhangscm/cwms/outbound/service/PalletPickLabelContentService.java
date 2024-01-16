@@ -587,8 +587,8 @@ public class PalletPickLabelContentService {
             labelContent.put("item_" + (i+1), pick.getItem().getName());
             labelContent.put("item_description_" + (i+1), pick.getItem().getDescription());
             labelContent.put("quantity_" + (i+1),
-                    palletPickLabelPickDetails.get(i).getPickQuantity() +
-                            "(" + palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getCaseUnitOfMeasureName() + ")" );
+                    palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getPickQuantity() +
+                            "(" + palletPickLabelPickDetails.get(i).getPickQuantity() + ")" );
 
         }
 
