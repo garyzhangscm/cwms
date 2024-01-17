@@ -243,7 +243,7 @@ public class WorkOrderProduceTransactionService  {
         logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
 
         // get the latest information
-        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
+        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId(), true, false);
         workOrderProduceTransaction.setWorkOrder(workOrder);
         logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
@@ -289,10 +289,12 @@ public class WorkOrderProduceTransactionService  {
                     index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
                     System.currentTimeMillis());
 
+            logger.debug("===  1. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
             // asynchronously receive the inventory to increase the productivity
             new Thread(() -> {
                 logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
                 try {
+                    logger.debug("===  2. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
                     receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
                     workOrderProducedInventoryResultRepository.save(
                             new WorkOrderProducedInventoryResult(
@@ -301,8 +303,11 @@ public class WorkOrderProduceTransactionService  {
                                     true, ""
                             )
                     );
+                    logger.debug("inventory {} saved from the work order", workOrderProducedInventory.getLpn());
                 }
                 catch (Exception exception) {
+                    logger.debug("Error while receive inventory \n {}", exception.getMessage());
+                    logger.debug("===  3. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
                     workOrderProducedInventoryResultRepository.save(
                             new WorkOrderProducedInventoryResult(
                                     newWorkOrderProduceTransaction.getWarehouseId(),
@@ -319,7 +324,7 @@ public class WorkOrderProduceTransactionService  {
 
         }
         // Change the produced quantity of the work order
-        workOrderService.produce(workOrder, totalProducedQuantity);
+        workOrderService.produce(workOrder, totalProducedQuantity, false);
         logger.debug("7. startNewTransaction / quantity on work order updated @{}", System.currentTimeMillis());
 
         // change each work order line's consumed quantity

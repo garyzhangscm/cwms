@@ -74,7 +74,7 @@ public class TargetShippingCartonLabelController {
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.processUploadedFile("target-shipping-carton-labels", file);
         try {
             fileService.validateCSVFile(warehouseId, "target-shipping-carton-labels", localFile);
         }

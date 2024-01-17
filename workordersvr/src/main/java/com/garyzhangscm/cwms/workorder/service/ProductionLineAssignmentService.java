@@ -354,7 +354,7 @@ public class ProductionLineAssignmentService   {
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()
         ).map(workOrder -> {
-            workOrderService.loadAttribute(workOrder, false, false);
+            workOrderService.loadAttribute(workOrder, false, false, true);
             return workOrder;
         }).collect(Collectors.toList());
     }
@@ -456,7 +456,7 @@ public class ProductionLineAssignmentService   {
 
         logger.debug("Start to deassign work order {} from production line {}",
                 workOrderId, productionLineId);
-        WorkOrder workOrder = workOrderService.findById(workOrderId, false);
+        WorkOrder workOrder = workOrderService.findById(workOrderId, false, false);
         ProductionLineAssignment productionLineAssignment =
                 workOrder.getProductionLineAssignments().stream().filter(
                         existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)

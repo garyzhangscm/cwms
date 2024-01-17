@@ -124,20 +124,20 @@ public class WorkOrderService implements TestDataInitiableService {
     @Value("${fileupload.test-data.work-order:work-order}")
     String testDataFile;
 
-    public WorkOrder findById(Long id, boolean loadDetails) {
+    public WorkOrder findById(Long id, boolean loadDetails, boolean loadWorkOrderDetails) {
         WorkOrder workOrder = workOrderRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.debug("work order not found by id: " + id);
                     return ResourceNotFoundException.raiseException("work order not found by id: " + id);
                 });
         if (loadDetails) {
-            loadAttribute(workOrder, true, true);
+            loadAttribute(workOrder, true, true, loadWorkOrderDetails);
         }
         return workOrder;
     }
 
     public WorkOrder findById(Long id) {
-        return findById(id, true);
+        return findById(id, true, true);
     }
 
 
@@ -212,7 +212,7 @@ public class WorkOrderService implements TestDataInitiableService {
     public WorkOrder findByNumber(Long warehouseId, String number, boolean loadDetails) {
         WorkOrder workOrder = workOrderRepository.findByWarehouseIdAndNumber(warehouseId, number);
         if (workOrder != null && loadDetails) {
-            loadAttribute(workOrder, true, true);
+            loadAttribute(workOrder, true, true, true);
         }
         return workOrder;
     }
@@ -227,14 +227,14 @@ public class WorkOrderService implements TestDataInitiableService {
     }
     public void loadAttribute(List<WorkOrder> workOrders, boolean loadPicks, boolean loadShortAllocations) {
         for (WorkOrder workOrder : workOrders) {
-            loadAttribute(workOrder, loadPicks, loadShortAllocations);
+            loadAttribute(workOrder, loadPicks, loadShortAllocations, true);
         }
     }
 
     public void loadAttribute(WorkOrder workOrder) {
-        loadAttribute(workOrder, true, true);
+        loadAttribute(workOrder, true, true, true);
     }
-    public void loadAttribute(WorkOrder workOrder, boolean loadPicks, boolean loadShortAllocations) {
+    public void loadAttribute(WorkOrder workOrder, boolean loadPicks, boolean loadShortAllocations , boolean loadWorkOrderLineDetails) {
 
         if (workOrder.getItemId() != null &&
                 (workOrder.getItem() == null || Objects.isNull(workOrder.getItem().getId()))) {
@@ -254,7 +254,10 @@ public class WorkOrderService implements TestDataInitiableService {
                     if (Objects.isNull(workOrderLine.getWorkOrder())) {
                         workOrderLine.setWorkOrder(workOrder);
                     }
-                    workOrderLineService.loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
+                    if (loadWorkOrderLineDetails) {
+
+                        workOrderLineService.loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
+                    }
                 });
 
         // Load the item and inventory status information for each lines
@@ -298,7 +301,7 @@ public class WorkOrderService implements TestDataInitiableService {
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
         if (loadDetails) {
 
-            loadAttribute(newWorkOrder, true, true);
+            loadAttribute(newWorkOrder, true, true, true);
         }
         sendAlertForWorkOrder(newWorkOrder, newWorkOrderFlag,
                 Strings.isBlank(username) ? newWorkOrder.getCreatedBy() : username
@@ -908,18 +911,18 @@ public class WorkOrderService implements TestDataInitiableService {
     }
  **/
 
-    public WorkOrder produce(WorkOrder workOrder, Long producedQuantity) {
+    public WorkOrder produce(WorkOrder workOrder, Long producedQuantity, boolean loadDetails) {
         logger.debug("Will change the work order's produced quantity from {}, to {}",
                 workOrder.getProducedQuantity(),
                 workOrder.getProducedQuantity() + producedQuantity);
         workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
-        return saveOrUpdate(workOrder);
+        return saveOrUpdate(workOrder, loadDetails);
     }
 
 
     public List<Inventory> getProducedInventory(Long workOrderId) {
 
-        WorkOrder workOrder = findById(workOrderId, false);
+        WorkOrder workOrder = findById(workOrderId, false, false);
         return inventoryServiceRestemplateClient.findProducedInventory(
                 workOrder.getWarehouseId(),
                 workOrderId
@@ -932,7 +935,7 @@ public class WorkOrderService implements TestDataInitiableService {
     }
     public List<Inventory> getProducedByProduct(Long workOrderId, String lpn) {
 
-        WorkOrder workOrder = findById(workOrderId, false);
+        WorkOrder workOrder = findById(workOrderId, false, false);
         // if we don't have by product setup, then return empty
         if (Objects.isNull(workOrder.getWorkOrderByProducts()) ||
                 workOrder.getWorkOrderByProducts().size() == 0) {
@@ -970,7 +973,7 @@ public class WorkOrderService implements TestDataInitiableService {
         logger.debug("Will get delivered inventory for work order by id {}, production line {}",
                 workOrderId,
                 Objects.isNull(productionLine)? "N/A" : productionLine.getName());
-        WorkOrder workOrder = findById(workOrderId, false);
+        WorkOrder workOrder = findById(workOrderId, false, false);
         logger.debug("Will get delivered inventory for work order {}, production line {}",
                 workOrder.getNumber(),
                 Objects.isNull(productionLine)? "N/A" : productionLine.getName());
@@ -1032,7 +1035,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public List<Inventory> getReturnedInventory(Long workOrderId) {
 
-        WorkOrder workOrder = findById(workOrderId, false);
+        WorkOrder workOrder = findById(workOrderId, false, false);
         String workOrderLineIds =
                 workOrder.getWorkOrderLines().stream()
                         .map(WorkOrderLine::getId).map(String::valueOf).collect(Collectors.joining(","));
@@ -1358,7 +1361,7 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     public WorkOrder reverseProduction(Long id, String lpn)   {
-        WorkOrder workOrder = findById(id, false);
+        WorkOrder workOrder = findById(id, false, false);
 
         List<Inventory> inventories = inventoryServiceRestemplateClient.findProducedInventoryByLPN(
                 workOrder.getWarehouseId(), workOrder.getId(),
@@ -1439,7 +1442,7 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     public WorkOrder reverseByProduct(Long id, String lpn) {
-        WorkOrder workOrder = findById(id, false);
+        WorkOrder workOrder = findById(id, false, false);
 
         List<Inventory> inventories = getProducedByProduct(workOrder.getId(), lpn);
 
@@ -2140,7 +2143,7 @@ public class WorkOrderService implements TestDataInitiableService {
             workOrderByProductService.save(workOrderByProduct);
         }
 
-        return findById(savedWorkOrder.getId(), false);
+        return findById(savedWorkOrder.getId(), false, false);
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {

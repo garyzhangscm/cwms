@@ -3,10 +3,7 @@ package com.garyzhangscm.cwms.resources.controller;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.BillableEndpoint;
 import com.garyzhangscm.cwms.resources.model.FileUploadType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,6 +17,13 @@ public class FileUploadController {
         return FileUploadType.getAvailableFileUploadTypes();
     }
 
+    @RequestMapping(value="/file-upload/types/{typename}", method = RequestMethod.GET)
+    public FileUploadType getFileUploadType(@PathVariable String typename) {
+        List<FileUploadType> availableFileUploadType = FileUploadType.getAvailableFileUploadTypes();
+        return availableFileUploadType.stream().filter(
+                fileUploadType -> fileUploadType.getName().equalsIgnoreCase(typename)
+        ).findFirst().orElse(null);
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/file-upload/validate-csv-file", method = RequestMethod.POST)
