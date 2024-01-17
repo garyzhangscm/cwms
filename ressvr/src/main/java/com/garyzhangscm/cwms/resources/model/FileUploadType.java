@@ -1,6 +1,5 @@
 package com.garyzhangscm.cwms.resources.model;
 
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 
@@ -11,6 +10,11 @@ public class FileUploadType {
     private String templateFileUrl;
     private String trackingProgressUrl;
     private String resultUrl;
+
+    // column map
+    // key: from column name, the column name from the CSV file uploaded
+    // value: to column name, the column name needed by the system
+    private Map<String, String> columnsMapping = new HashMap<>();
 
     private List<FileUploadTemplateColumn> columns = new ArrayList<>();
 
@@ -84,7 +88,12 @@ public class FileUploadType {
                         // has the column passed in
                         if (Arrays.stream(csvFileHeaderNames).noneMatch(
                                 csvFileHeaderName -> csvFileHeaderName.equalsIgnoreCase(column.getName()))) {
-                            missingRequiredColumn.add(column.getName());
+                            missingRequiredColumn.add(
+                                    // if we have column mapping defined for the CSV, then we will allow the
+                                    // user to upload a file with either the required column or the mapping one
+                                    getColumnsMapping().containsKey(column.getName()) ?
+                                            column.getName() + "(" + getColumnsMapping().get(column.getName()) + ")" :
+                                            column.getName());
                         }
                     }
                     columnMap.put(
@@ -94,6 +103,7 @@ public class FileUploadType {
                 }
         );
         if (!missingRequiredColumn.isEmpty()) {
+
             return "CSV file is missing follow columns: " + missingRequiredColumn.toString();
         }
 
@@ -155,6 +165,18 @@ public class FileUploadType {
 
     public void addColumn(FileUploadTemplateColumn column) {
         this.columns.add(column);
+    }
+
+    public Map<String, String> getColumnsMapping() {
+        return columnsMapping;
+    }
+
+    public void addColumnMap(String fromColumnName, String toColumnName) {
+        columnsMapping.put(fromColumnName, toColumnName);
+    }
+
+    public void setColumnsMapping(Map<String, String> columnsMapping) {
+        this.columnsMapping = columnsMapping;
     }
 
     public String getTrackingProgressUrl() {
