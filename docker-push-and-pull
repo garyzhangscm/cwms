@@ -20,8 +20,7 @@ docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inte
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inventoryserver:v1.31 --push .
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-layoutserver:v1.31 --push .
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-outboundserver:v1.31 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.31 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.31 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.31 --push .git
 
 
 ==========================               Others             ============================
