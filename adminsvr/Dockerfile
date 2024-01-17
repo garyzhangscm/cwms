@@ -7,8 +7,8 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/adminserver-v1.31.jar /usr/local/service/
+ADD target/adminserver-v1.32.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/adminserver-v1.31.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/adminserver-v1.32.jar"]
 
 
