@@ -175,7 +175,7 @@ public class LightMESService {
                 Strings.isBlank(type) ? "N/A" : type);
 
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
-                null, type, true, false, true);
+                null, type, true, false, true, true);
 
         List<Machine> resultMachines = new ArrayList<>();
 
@@ -524,7 +524,7 @@ public class LightMESService {
 
         String productionLineNames = machines.stream().map(Machine::getMachineNo).collect(Collectors.joining(","));
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
-                productionLineNames, "", true, false, true);
+                productionLineNames, "", true, false, true, true);
         logger.debug("Get {} production lines out of {} machines, by name {}",
                 productionLines.size(),
                 machines.size(),
