@@ -103,7 +103,8 @@ public class ProductionLineService implements TestDataInitiableService {
                                         Boolean enabled,
                                         boolean genericMatch,
                                         boolean loadDetailsForDeassignedWorkOrder,
-                                        boolean loadDetails) {
+                                        boolean loadDetails,
+                                        boolean loadWorkOrderDetails) {
         List<ProductionLine> productionLines
                 =  productionLineRepository.findAll(
                 (Root<ProductionLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -155,7 +156,7 @@ public class ProductionLineService implements TestDataInitiableService {
 
 
         if (productionLines.size() > 0) {
-            loadAttribute(productionLines, loadDetails, loadDetailsForDeassignedWorkOrder);
+            loadAttribute(productionLines, loadDetails, loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails);
         }
         return productionLines;
     }
@@ -163,14 +164,15 @@ public class ProductionLineService implements TestDataInitiableService {
     public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, String productionLineNames,
                                         String type, Boolean enabled, boolean genericMatch) {
         return findAll(warehouseId, name, productionLineIds, productionLineNames,type, enabled, genericMatch,
-                false);
+                false, true);
     }
 
     public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, String productionLineNames,
-                                        String type, Boolean enabled, boolean genericMatch, boolean loadDetailsForDeassignedWorkOrder) {
+                                        String type, Boolean enabled, boolean genericMatch, boolean loadDetailsForDeassignedWorkOrder,
+                                        boolean loadWorkOrderDetails) {
         return findAll(warehouseId, name, productionLineIds, productionLineNames,type, enabled, genericMatch,
                 loadDetailsForDeassignedWorkOrder,
-                true);
+                true, loadWorkOrderDetails);
     }
 
     public List<ProductionLine> findAllAvailableProductionLines(
@@ -349,20 +351,28 @@ public class ProductionLineService implements TestDataInitiableService {
     }
 
     private void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails) {
-        loadAttribute(productionLines, loadDetails, false);
+        loadAttribute(productionLines, loadDetails, false, true);
     }
-    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder) {
+    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder,
+                              boolean loadWorkOrderDetails) {
         for (ProductionLine productionLine : productionLines) {
-            loadAttribute(productionLine, loadDetails, loadDetailsForDeassignedWorkOrder);
+            loadAttribute(productionLine, loadDetails, loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails);
         }
     }
 
     private void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
-        loadAttribute(productionLine, loadDetails, false);
+        loadAttribute(productionLine, loadDetails, false, true);
     }
-    public void loadAttribute(ProductionLine productionLine, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder) {
+    public void loadAttribute(ProductionLine productionLine, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder,
+                              boolean loadWorkOrderDetails) {
 
         // we will load the details for the production line assignment any way
+
+        logger.debug("we will load details for the production line {}? loadDetails = {}, " +
+                        "loadDetailsForDeassignedWorkOrder = {}, loadWorkOrderDetails = {}",
+                productionLine.getName(),
+                loadDetails,
+                loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails);
         if (Boolean.TRUE.equals(loadDetailsForDeassignedWorkOrder)) {
 
             productionLine.getProductionLineAssignments().stream()
@@ -387,8 +397,21 @@ public class ProductionLineService implements TestDataInitiableService {
                          Objects.isNull(productionLineAssignment.getDeassignedTime())
                      )
                     .forEach(
-                            productionLineAssignment ->
-                                    productionLineAssignmentService.loadAttribute(productionLineAssignment)
+                            productionLineAssignment -> {
+                                // productionLineAssignmentService.loadAttribute(productionLineAssignment);
+                                if (Objects.nonNull(productionLineAssignment.getWorkOrder())) {
+                                    productionLineAssignment.setWorkOrderId(
+                                            productionLineAssignment.getWorkOrder().getId()
+                                    );
+                                    productionLineAssignment.setWorkOrderNumber(
+                                            productionLineAssignment.getWorkOrder().getNumber()
+                                    );
+                                    if (loadWorkOrderDetails) {
+
+                                        workOrderService.loadAttribute(productionLineAssignment.getWorkOrder());
+                                    }
+                                }
+                            }
                     );
 
         }
@@ -800,7 +823,7 @@ public class ProductionLineService implements TestDataInitiableService {
             // return the status for all production line
             // we will only return the enabled lines
             List<ProductionLine> productionLines = findAll(warehouseId,
-                    null, null, null,null, null,false, false)
+                    null, null, null,null, null,false, false, true)
                     .stream().filter(productionLine -> Boolean.TRUE.equals(productionLine.getEnabled()))
                     .collect(Collectors.toList());
             return getProductionLineStatus(warehouseId, productionLines,
@@ -940,7 +963,7 @@ public class ProductionLineService implements TestDataInitiableService {
                                                                     String name) {
 
         List<ProductionLine> productionLines =
-                findAll(warehouseId, null, productionLineIds, null,null, null,false, false);
+                findAll(warehouseId, null, productionLineIds, null,null, null,false, false, true);
 
         return getProductionLineAttribute(
                 productionLines, name
@@ -1101,7 +1124,7 @@ public class ProductionLineService implements TestDataInitiableService {
             ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
 
         List<ProductionLine> productionLines =
-                findAll(warehouseId, null, productionLineIds, null,null, null,false, false);
+                findAll(warehouseId, null, productionLineIds, null,null, null,false, false, true);
 
         return getProducedInventoryTotalQuantity(
                 warehouseId, productionLines, startTime, endTime, date
