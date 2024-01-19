@@ -47,4 +47,6 @@ public interface TargetShippingCartonLabelRepository extends JpaRepository<Targe
             "  and t.itemNumber = :itemNumber " +
             "  and t.pieceCarton is not null and t.pieceCarton > 0 ")
     String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemNumber);
+
+    void deleteByIdIn(List<Long> ids);
 }
