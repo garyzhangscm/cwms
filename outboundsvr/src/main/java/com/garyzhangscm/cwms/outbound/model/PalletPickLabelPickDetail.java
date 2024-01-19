@@ -81,7 +81,8 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
             setVolume(0.0);
             setVolumeUnit("");
             setCaseQuantity(pickQuantity);
-            setCaseUnitOfMeasureName("N/A");
+            // setCaseUnitOfMeasureName("N/A");
+            setCaseUnitOfMeasureName("CS");
             logger.debug("Current pick's item is null, we will not setup the case uom. Instead we will use the stock UOM as case UOM");
 
         }
@@ -112,14 +113,15 @@ public class PalletPickLabelPickDetail extends AuditibleEntity<String> implement
                 if (Objects.nonNull(caseItemUnitOfMeasure)) {
                     logger.debug("> case UOM {}", caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                     setCaseQuantity(
-                            (long)Math.ceil(pickQuantity / caseItemUnitOfMeasure.getQuantity())
+                            (long)Math.ceil(pickQuantity * 1.0/ caseItemUnitOfMeasure.getQuantity())
                     );
                     setCaseUnitOfMeasureName(caseItemUnitOfMeasure.getUnitOfMeasure().getName());
                 }
                 else {
                     logger.debug("> FAIL to get case UOM ");
                     setCaseQuantity(pickQuantity);
-                    setCaseUnitOfMeasureName("N/A");
+                    // setCaseUnitOfMeasureName("N/A");
+                    setCaseUnitOfMeasureName("CS");
                 }
             }
 

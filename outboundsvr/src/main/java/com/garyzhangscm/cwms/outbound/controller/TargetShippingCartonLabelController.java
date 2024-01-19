@@ -22,7 +22,6 @@ import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.FileService;
 import com.garyzhangscm.cwms.outbound.service.TargetShippingCartonLabelService;
-import com.garyzhangscm.cwms.outbound.service.WalmartShippingCartonLabelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,5 +110,21 @@ public class TargetShippingCartonLabelController {
         return targetShippingCartonLabelService.generateTargetShippingCartonLabels(
                 warehouseId, SSCC18s, copies, locale);
 
+    }
+
+    @RequestMapping(value="/target-shipping-carton-labels/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeTargetShippingCartonLabel(@RequestParam Long warehouseId,
+                                                                       @PathVariable Long id) {
+        targetShippingCartonLabelService.removeTargetShippingCartonLabel(id);
+
+        return ResponseBodyWrapper.success("target shipping carton label with id " + id + " is removed");
+    }
+
+    @RequestMapping(value="/target-shipping-carton-labels/remove-by-id-list", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeTargetShippingCartonLabels(@RequestParam Long warehouseId,
+                                                                        @RequestParam String ids) {
+        targetShippingCartonLabelService.removeTargetShippingCartonLabels(ids);
+
+        return ResponseBodyWrapper.success("target shipping carton labels with id list " + ids + " are removed");
     }
 }

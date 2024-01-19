@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -536,4 +538,14 @@ public class TargetShippingCartonLabelService {
         
     }
 
+    @Transactional
+    public void removeTargetShippingCartonLabel(Long id) {
+        targetShippingCartonLabelRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void removeTargetShippingCartonLabels(String ids) {
+        List<Long> idList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        targetShippingCartonLabelRepository.deleteByIdIn(idList);
+    }
 }
