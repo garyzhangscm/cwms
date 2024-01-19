@@ -3628,6 +3628,8 @@ public class OrderService {
         if (palletPickLabelContents.isEmpty()) {
             throw OrderOperationException.raiseException("fail to generate pallet pick label for order " + order.getNumber());
         }
+        String batchNumber = palletPickLabelContents.get(0).getBatchNumber();
+
         int index = 0;
         logger.debug("===       start to print label for pallet pick label   =====");
         for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
@@ -3648,6 +3650,15 @@ public class OrderService {
         List<ReportHistory> result = new ArrayList<>();
         // see if we already have walmart shipping carton labels that attached to this pallet
 
+        // start with a summary label(or lots of summary label since each label can only display
+        // 6 items due to the size limit),
+        //
+        result.addAll(
+                palletPickLabelContentService.generatePalletPickSummaryLabel(
+                        warehouseId, copies, locale,
+                        batchNumber, order.getPoNumber(),
+                        palletPickLabelContents)
+        );
         // show 1 / 2, 2 / 2 on the pallet pick label so the user knows how many
         // pallet labels being printed for this order
         int labelIndex = 0;

@@ -42,6 +42,9 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "batch_number")
+    private String batchNumber;
+
     @Column(name = "number")
     private String number;
 
@@ -83,8 +86,10 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
      * Generate a pallet pick label that only have one pallet pick
      * @param pick
      */
-    public PalletPickLabelContent(String number, Pick pick, UnitService unitService) {
+    public PalletPickLabelContent(String number, Pick pick, UnitService unitService,
+                                  String batchNumber) {
         this.number = number;
+        this.batchNumber = batchNumber;
         setWarehouseId(pick.getWarehouseId());
         if (Objects.nonNull(pick.getShipmentLine())) {
 
@@ -105,8 +110,9 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
      * Generate a pallet pick label that has a list picks
      * @param picks
      */
-    public PalletPickLabelContent(String number, List<Pick> picks, UnitService unitService) {
+    public PalletPickLabelContent(String number, List<Pick> picks, UnitService unitService, String batchNumber) {
         this.number = number;
+        this.batchNumber = batchNumber;
 
         // we will assume the picks belong to the same warehouse since there's
         // no mean to group picks from different warehouse into
@@ -223,5 +229,13 @@ public class PalletPickLabelContent extends AuditibleEntity<String> implements S
 
     public void setHeightUnit(String heightUnit) {
         this.heightUnit = heightUnit;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
     }
 }

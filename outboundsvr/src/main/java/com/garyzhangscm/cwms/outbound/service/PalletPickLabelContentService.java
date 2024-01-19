@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -149,9 +150,11 @@ public class PalletPickLabelContentService {
                 this::delete
         );
 
+        String batchNumber = getNextPalletPickLabelBatchNumber(order.getWarehouseId());
+
         // add new estimation and save it
         List<PalletPickLabelContent> palletPickLabelContents =
-                generatePalletPickLabelEstimation(order);
+                generatePalletPickLabelEstimation(order, batchNumber );
 
         // setup the header / detail mapping so we can serialize
         // the 2 objects together
@@ -179,10 +182,15 @@ public class PalletPickLabelContentService {
      * @param order
      * @return
      */
-    public List<PalletPickLabelContent> generatePalletPickLabelEstimation(Order order) {
+    public List<PalletPickLabelContent> generatePalletPickLabelEstimation(Order order,
+                                                                          String batchNumber) {
         List<PalletPickLabelContent> result = new ArrayList<>();
 
         List<Pick> picks = pickService.findByOrder(order);
+        if (picks == null || picks.isEmpty()) {
+            throw OrderOperationException.raiseException("there's no picks for this order " + order.getNumber() +
+                    " yet, please allocate the order before you can get the pallet pick label");
+        }
         logger.debug("start to estimate how many pallet will need for order {} " +
                 "with {} picks",
                 order.getNumber(),
@@ -193,7 +201,8 @@ public class PalletPickLabelContentService {
                 picks.stream().filter(
                         pick -> pickService.isFullPalletPick(pick)
                 ).map(
-                        pick -> new PalletPickLabelContent(getNextPalletPickLabelNumber(pick.getWarehouseId()), pick, unitService)
+                        pick -> new PalletPickLabelContent(getNextPalletPickLabelNumber(pick.getWarehouseId()),
+                                pick, unitService, batchNumber)
                 ).collect(Collectors.toList())
         );
         logger.debug("we added {} full pallet picks  for the order {}", result.size(),
@@ -237,7 +246,8 @@ public class PalletPickLabelContentService {
         logger.debug("start to estimate based on the pallet restriction of size {} and height {}",
                 outboundPalletRestriction.getFirst(), outboundPalletRestriction.getSecond());
         result.addAll(
-                generatePalletPickLabelEstimation(order.getWarehouseId(), outboundPalletRestriction, partialPalletPicks)
+                generatePalletPickLabelEstimation(order.getWarehouseId(), outboundPalletRestriction,
+                        partialPalletPicks, batchNumber)
         );
         logger.debug("we need {} pallets for the current order {} with {} picks",
                 result.size(), order.getNumber(), picks.size());
@@ -252,7 +262,7 @@ public class PalletPickLabelContentService {
      */
     public List<PalletPickLabelContent> generatePalletPickLabelEstimation(Long warehouseId,
                                                                           Pair<Double, Double> outboundPalletRestriction,
-                                                                          List<Pick> picks) {
+                                                                          List<Pick> picks, String batchNumber) {
 
         double sizeRestriction = outboundPalletRestriction.getFirst() > 0 ? outboundPalletRestriction.getFirst() :
                 Double.MAX_VALUE;
@@ -263,7 +273,8 @@ public class PalletPickLabelContentService {
         if (sizeRestriction == Double.MAX_VALUE && heightRestriction == Double.MAX_VALUE) {
             // if there's no restriction on the height and size, then let's group the picks into one pallet
             return List.of(
-                    new PalletPickLabelContent(getNextPalletPickLabelNumber(warehouseId), picks, unitService)
+                    new PalletPickLabelContent(getNextPalletPickLabelNumber(warehouseId), picks,
+                            unitService, batchNumber)
             );
         }
 
@@ -353,7 +364,7 @@ public class PalletPickLabelContentService {
                 results.add(
                         new PalletPickLabelContent(
                                 getNextPalletPickLabelNumber(warehouseId),
-                                picksOnCurrentPallet, unitService
+                                picksOnCurrentPallet, unitService, batchNumber
                         )
                 );
                 logger.debug("No more room on current pallet, let's start with a new empty pallet");
@@ -374,7 +385,7 @@ public class PalletPickLabelContentService {
             results.add(
                     new PalletPickLabelContent(
                             getNextPalletPickLabelNumber(warehouseId),
-                            picksOnCurrentPallet, unitService
+                            picksOnCurrentPallet, unitService, batchNumber
                     )
             );
         }
@@ -587,7 +598,7 @@ public class PalletPickLabelContentService {
             labelContent.put("item_" + (i+1), pick.getItem().getName());
             labelContent.put("item_description_" + (i+1), pick.getItem().getDescription());
             labelContent.put("quantity_" + (i+1),
-                    palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getPickQuantity() +
+                    palletPickLabelPickDetails.get(i).getCaseQuantity() + " " + palletPickLabelPickDetails.get(i).getCaseUnitOfMeasureName() +
                             "(" + palletPickLabelPickDetails.get(i).getPickQuantity() + ")" );
 
         }
@@ -605,6 +616,9 @@ public class PalletPickLabelContentService {
 
     public String getNextPalletPickLabelNumber(Long warehouseId) {
         return commonServiceRestemplateClient.getNextNumber(warehouseId, "pallet-pick-label-number");
+    }
+    public String getNextPalletPickLabelBatchNumber(Long warehouseId) {
+        return commonServiceRestemplateClient.getNextNumber(warehouseId, "pallet-pick-label-batch-number");
     }
 
     private PalletPickLabelPickDetail findPalletPickLabelPickDetailByPick(Pick pick) {
@@ -630,5 +644,214 @@ public class PalletPickLabelContentService {
             }
         }
 
+    }
+
+    public List<ReportHistory> generatePalletPickSummaryLabel(Long warehouseId,
+                                                              int copies, String locale,
+                                                              String batchNumber, String poNumber,
+                                                              List<PalletPickLabelContent> palletPickLabelContents) {
+        List<ReportHistory> reportHistories = new ArrayList<>();
+
+        // We will first calculate the total pick quantity for each item
+        // key: item name
+        // value:
+        //     -- key: case per pallet(palletize standard)
+        //     -- value: count of pallet with same 'case per pallet'
+        Map<String, Map<Long, Integer>> itemQuantityMap =
+                new HashMap<>();
+        // key: item name
+        // value: item description
+        Map<String, String> itemDescriptionMap = new HashMap<>();
+
+        palletPickLabelContents.forEach(
+                palletPickLabelContent -> {
+
+                    for (PalletPickLabelPickDetail palletPickLabelPickDetail : palletPickLabelContent.getPalletPickLabelPickDetails()) {
+                        if (Objects.isNull(palletPickLabelPickDetail.getPick().getItem())) {
+                            palletPickLabelPickDetail.getPick().setItem(
+                                    inventoryServiceRestemplateClient.getItemById(
+                                            palletPickLabelPickDetail.getPick().getItemId()
+                                    ));
+                        }
+
+                        if (Objects.isNull(palletPickLabelPickDetail.getPick().getItem())) {
+                            logger.debug("can't find the item for pick {}, ignore the error",
+                                    palletPickLabelPickDetail.getPick().getNumber());
+                            continue;
+                        }
+
+                        Map<Long, Integer> palletCountMap = itemQuantityMap.getOrDefault(
+                                palletPickLabelPickDetail.getPick().getItem().getName(),
+                                new HashMap<>()
+                        );
+                        int palletCount = palletCountMap.getOrDefault(
+                                palletPickLabelPickDetail.getCaseQuantity(), 0
+                        );
+                        // increase the count of pallet for this item with
+                        // the specific 'case per pallet'
+                        palletCountMap.put(palletPickLabelPickDetail.getCaseQuantity(),
+                                palletCount + 1);
+
+                        itemQuantityMap.put(palletPickLabelPickDetail.getPick().getItem().getName(), palletCountMap);
+                        itemDescriptionMap.putIfAbsent(palletPickLabelPickDetail.getPick().getItem().getName(),
+                                palletPickLabelPickDetail.getPick().getItem().getDescription());
+                    }
+                }
+        );
+
+        logger.debug("after process, we get the following result for the pallet pick batch {}",
+                batchNumber);
+        itemQuantityMap.entrySet().forEach(
+                itemQuantity -> {
+                    logger.debug("====   Item : {}  =====", itemQuantity.getKey());
+                    itemQuantity.getValue().entrySet().forEach(
+                        quantityElement -> {
+                            logger.debug(">> {} Case / PL: {} Pallet", quantityElement.getKey(), quantityElement.getValue());
+                        }
+                    );
+                }
+        );
+        // split the item quantity map since we can at max print 6 items per label.
+        // each list item will contains at max 6 item's information that we can print in the same label
+        List<Map<String, Map<Long, Integer>>> itemQuantityMapList = splitItemQuantityMap(itemQuantityMap, 6);
+        int labelIndex = 1;
+        int totalLabelCount = itemQuantityMapList.size();
+        logger.debug("after split we will get {} summary labels", totalLabelCount);
+
+        for (Map<String, Map<Long, Integer>> splitItemQuantityMap : itemQuantityMapList) {
+
+            logger.debug("######    Label {}  ########", labelIndex);
+            splitItemQuantityMap.entrySet().forEach(
+                    itemQuantity -> {
+                        logger.debug("====   Item : {}  =====", itemQuantity.getKey());
+                        itemQuantity.getValue().entrySet().forEach(
+                                quantityElement -> {
+                                    logger.debug(">> {} Case / PL: {} Pallet", quantityElement.getKey(), quantityElement.getValue());
+                                }
+                        );
+                    }
+            );
+
+            reportHistories.add(
+                    generatePalletPickSummaryLabel(
+                            warehouseId, copies, locale,
+                            batchNumber, poNumber,
+                            palletPickLabelContents.size(),
+                            splitItemQuantityMap,
+                            itemDescriptionMap,
+                            labelIndex, totalLabelCount));
+            labelIndex++;
+        }
+        logger.debug("Print {} labels for pallet summary", reportHistories.size());
+        return reportHistories;
+
+    }
+
+    /**
+     * Split the map into a list of map based on the split count
+     * @param itemQuantityMap
+     * @param itemPerLabel
+     * @return
+     */
+    private List<Map<String, Map<Long, Integer>>> splitItemQuantityMap(Map<String, Map<Long, Integer>> itemQuantityMap,
+                                                                       int itemPerLabel) {
+        List<Map<String, Map<Long, Integer>>> results = new ArrayList<>();
+        Map<String, Map<Long, Integer>> temp = new HashMap<>();
+        for(Map.Entry<String, Map<Long, Integer>> element : itemQuantityMap.entrySet()) {
+            if (temp.size() == itemPerLabel) {
+                // the element is full, let's save it to the list
+                results.add(temp);
+                temp = new HashMap<>();
+            }
+            // add current element to the temp map so that we may be able to add it to the list
+            // when the temp map is full
+            temp.put(element.getKey(), element.getValue());
+        }
+        if (!temp.isEmpty()) {
+            results.add(temp);
+        }
+        return results;
+    }
+
+    public ReportHistory generatePalletPickSummaryLabel(Long warehouseId,
+                                                        int copies, String locale,
+                                                        String batchNumber, String poNumber,
+                                                        int totalPalletCount,
+                                                        Map<String, Map<Long, Integer>> itemQuantityMap,
+                                                        Map<String, String> itemDescriptionMap,
+                                                        int index, int totalLabelCount) {
+        Report reportData = new Report();
+
+        setupPalletPickSummaryLabelData(
+                reportData, copies,
+                batchNumber, poNumber,
+                totalPalletCount,
+                itemQuantityMap, itemDescriptionMap,
+                index, totalLabelCount
+        );
+
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("Will print {} labels", reportData.getData().size());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.PALLET_PICK_SUMMARY_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    private void setupPalletPickSummaryLabelData(Report reportData, int copies,
+                                                 String batchNumber, String poNumber,
+                                                 int totalPalletCount,
+                                                 Map<String, Map<Long, Integer>> itemQuantityMap,
+                                                 Map<String, String> itemDescriptionMap,
+                                                 int index,
+                                                 int totalLabelCount) {
+        Map<String, Object> labelContent = new HashMap<>();
+
+        labelContent.put("batch_number", batchNumber);
+        labelContent.put("po_number", poNumber);
+        labelContent.put("total_pallet_count", totalPalletCount);
+
+        labelContent.put("index", index);
+        labelContent.put("total_label_count", totalLabelCount);
+
+        int itemIndex = 1;
+        for(Map.Entry<String, Map<Long, Integer>> itemQuantityEntry : itemQuantityMap.entrySet()) {
+
+            String itemName = itemQuantityEntry.getKey();
+            Map<Long, Integer> itemQuantityElement = itemQuantityEntry.getValue();
+
+            labelContent.put("item_" + itemIndex, itemName);
+            labelContent.put("item_description_" + itemIndex, itemDescriptionMap.getOrDefault(itemName, ""));
+
+            List<String> quantityDescriptionList = new ArrayList<>();
+
+            // itemQuantityElementEntry
+            // key: case per pallet
+            // value: count of the pallet that has this 'case per pallet'
+            for(Map.Entry<Long, Integer> itemQuantityElementEntry : itemQuantityElement.entrySet()) {
+                quantityDescriptionList.add(itemQuantityElementEntry.getValue() + " PL of " +
+                        itemQuantityElementEntry.getKey() + " Case/PL");
+            }
+            labelContent.put("quantity_" + itemIndex, quantityDescriptionList.stream().collect(Collectors.joining(",")));
+            itemIndex++;
+        }
+
+
+        List<Map<String, Object>> labelContents = new ArrayList<>();
+
+        for (int i = 0; i < copies; i++) {
+            labelContents.add(labelContent);
+        }
+
+
+        reportData.setData(labelContents);
     }
 }
