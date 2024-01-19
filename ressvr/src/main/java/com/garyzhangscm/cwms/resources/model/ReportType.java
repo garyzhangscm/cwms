@@ -27,7 +27,8 @@ public enum ReportType {
     WALMART_PALLET_PICK_LABEL(true),
     TARGET_SHIPPING_CARTON_LABEL(true),
     TARGET_PALLET_PICK_LABEL(true),
-    COMBINED_LABELS(true);
+    COMBINED_LABELS(true),
+    PALLET_PICK_SUMMARY_LABEL(true);
 
     private boolean isLabelFlag;
 
