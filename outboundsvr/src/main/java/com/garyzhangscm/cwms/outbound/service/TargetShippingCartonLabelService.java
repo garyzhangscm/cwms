@@ -392,7 +392,7 @@ public class TargetShippingCartonLabelService {
         lpnLabelContent.put("address1", targetShippingCartonLabel.getAddress1());
         lpnLabelContent.put("cityStateZip", targetShippingCartonLabel.getCityStateZip());
 
-        lpnLabelContent.put("zip420", targetShippingCartonLabel.getZip420());
+        lpnLabelContent.put("zip420", formatZip420(targetShippingCartonLabel.getZip420()));
 
         lpnLabelContent.put("poNumber", targetShippingCartonLabel.getPoNumber());
         lpnLabelContent.put("dpci", targetShippingCartonLabel.getDpci());
@@ -400,10 +400,49 @@ public class TargetShippingCartonLabelService {
 
         lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
 
-        lpnLabelContent.put("SSCC18", targetShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("SSCC18", formatSSCC18(targetShippingCartonLabel.getSSCC18()));
 
 
         return lpnLabelContent;
+    }
+
+    /**
+     * Format the zip420 to (xxx)xxxxx
+     * @param zip420
+     * @return
+     */
+    private String formatZip420(String zip420) {
+        if (Strings.isBlank(zip420)) {
+            return "";
+        }
+        if (zip420.length() <= 3 ) {
+            return zip420;
+        }
+        return "(" + zip420.substring(0, 3) + ")" + zip420.substring(3);
+    }
+
+    private String formatSSCC18(String SSCC18) {
+        if (Strings.isBlank(SSCC18)) {
+            return "";
+        }
+        if (SSCC18.length() <= 2) {
+            return "(" + SSCC18 + ")";
+        }
+        if (SSCC18.length() == 3) {
+            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2);
+        }
+        if (SSCC18.length() <= 10) {
+            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
+                    SSCC18.substring(3);
+        }
+        if (SSCC18.length() <= 19) {
+            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
+                    SSCC18.substring(3, 10) + "  " + SSCC18.substring(10);
+        }
+
+        return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
+                    SSCC18.substring(3, 10) + "  " + SSCC18.substring(10, 19)  + "  " +
+                SSCC18.substring(19);
     }
 
     /**
