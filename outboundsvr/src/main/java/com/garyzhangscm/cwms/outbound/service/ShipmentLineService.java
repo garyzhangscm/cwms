@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentLineRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,14 +82,16 @@ public class ShipmentLineService {
 
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                       String orderNumber, Long orderLineId,
-                                      Long orderId, Long waveId) {
+                                      Long orderId, Long waveId,
+                                      String orderLineIds) {
         return findAll(warehouseId, number,
-                orderNumber, orderLineId, orderId, waveId, true);
+                orderNumber, orderLineId, orderId, waveId, orderLineIds, true);
     }
 
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                        String orderNumber, Long orderLineId,
                                       Long orderId, Long waveId,
+                                      String orderLineIds,
                                       boolean loadDetails) {
         List<ShipmentLine> shipmentLines =  shipmentLineRepository.findAll(
                 (Root<ShipmentLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -124,6 +127,17 @@ public class ShipmentLineService {
                         predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
 
                     }
+                    if (Strings.isNotBlank(orderLineIds)) {
+
+                        Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
+
+                        CriteriaBuilder.In<Long> inOrderLineIds = criteriaBuilder.in(joinOrderLine.get("id"));
+                        for(String id : orderLineIds.split(",")) {
+                            inOrderLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderLineIds));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -146,11 +160,19 @@ public class ShipmentLineService {
         }
     }
     public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
-        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null);
+        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null, null);
+    }
+    public List<ShipmentLine> findByOrderLineId(Long warehouseId, Long orderLineId) {
+        return findAll(warehouseId, null, null, orderLineId, null, null, null);
+    }
+    public List<ShipmentLine> findByOrderLineIds(Long warehouseId, String orderLineIds) {
+        return findAll(warehouseId, null, null, null, null, null, orderLineIds);
     }
 
+
+
     public List<ShipmentLine> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null);
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null);
     }
 
     public ShipmentLine save(ShipmentLine shipmentLine) {

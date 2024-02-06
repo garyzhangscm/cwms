@@ -81,6 +81,13 @@ public class Stop  extends AuditibleEntity<String> {
     @Column(name = "address_postcode")
     private String addressPostcode;
 
+    @Transient
+    @OneToMany(
+            mappedBy = "order",
+            fetch = FetchType.EAGER
+    )
+    private List<TrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
+
     public Stop() {}
     public Stop(Long warehouseId, String number,
                 Integer sequence,
@@ -480,5 +487,13 @@ public class Stop  extends AuditibleEntity<String> {
 
     public void setShipToCustomer(Customer shipToCustomer) {
         this.shipToCustomer = shipToCustomer;
+    }
+
+    public List<TrailerOrderLineAssignment> getTrailerOrderLineAssignments() {
+        return trailerOrderLineAssignments;
+    }
+
+    public void setTrailerOrderLineAssignments(List<TrailerOrderLineAssignment> trailerOrderLineAssignments) {
+        this.trailerOrderLineAssignments = trailerOrderLineAssignments;
     }
 }

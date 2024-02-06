@@ -30,6 +30,7 @@ public class Stop   implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    private List<TrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
 
     public List<Shipment> getShipments() {
         return shipments;
@@ -136,6 +137,14 @@ public class Stop   implements Serializable {
 
     public void setAddressLine1(String addressLine1) {
         this.addressLine1 = addressLine1;
+    }
+
+    public List<TrailerOrderLineAssignment> getTrailerOrderLineAssignments() {
+        return trailerOrderLineAssignments;
+    }
+
+    public void setTrailerOrderLineAssignments(List<TrailerOrderLineAssignment> trailerOrderLineAssignments) {
+        this.trailerOrderLineAssignments = trailerOrderLineAssignments;
     }
 
     public String getAddressLine2() {

@@ -362,6 +362,7 @@ public class TargetShippingCartonLabelService {
                                                      String SSCC18s,
                                                      int copies) {
 
+        logger.debug("start to setup target shipping carton label data");
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         if (Strings.isNotBlank(SSCC18s)) {
             List<TargetShippingCartonLabel> targetShippingCartonLabels =
@@ -385,14 +386,16 @@ public class TargetShippingCartonLabelService {
 
     }
 
-    private Map<String, Object> getTargetShippingCartonLabelContent(TargetShippingCartonLabel targetShippingCartonLabel) {
+    public Map<String, Object> getTargetShippingCartonLabelContent(TargetShippingCartonLabel targetShippingCartonLabel) {
         Map<String, Object> lpnLabelContent = new HashMap<>();
 
         lpnLabelContent.put("shipTo", targetShippingCartonLabel.getShipToName());
         lpnLabelContent.put("address1", targetShippingCartonLabel.getAddress1());
         lpnLabelContent.put("cityStateZip", targetShippingCartonLabel.getCityStateZip());
 
-        lpnLabelContent.put("zip420", formatZip420(targetShippingCartonLabel.getZip420()));
+        lpnLabelContent.put("zip420", targetShippingCartonLabel.getZip420());
+        lpnLabelContent.put("formatted_zip420", formatZip420(targetShippingCartonLabel.getZip420()));
+        logger.debug("add formatted_zip420: {}", lpnLabelContent.get("formatted_zip420"));
 
         lpnLabelContent.put("poNumber", targetShippingCartonLabel.getPoNumber());
         lpnLabelContent.put("dpci", targetShippingCartonLabel.getDpci());
@@ -400,7 +403,9 @@ public class TargetShippingCartonLabelService {
 
         lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
 
-        lpnLabelContent.put("SSCC18", formatSSCC18(targetShippingCartonLabel.getSSCC18()));
+        lpnLabelContent.put("SSCC18", targetShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("formatted_SSCC18", formatSSCC18(targetShippingCartonLabel.getSSCC18()));
+        logger.debug("add formatted_SSCC18: {}", lpnLabelContent.get("formatted_SSCC18"));
 
 
         return lpnLabelContent;

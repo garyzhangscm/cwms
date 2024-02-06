@@ -840,7 +840,15 @@ public class PalletPickLabelContentService {
                 quantityDescriptionList.add(itemQuantityElementEntry.getValue() + " PL of " +
                         itemQuantityElementEntry.getKey() + " Case/PL");
             }
-            labelContent.put("quantity_" + itemIndex, quantityDescriptionList.stream().collect(Collectors.joining(",")));
+            // we will break the quantity description into multiple lines, 20 characters per line
+            String quantityDescription =
+                    quantityDescriptionList.stream().collect(Collectors.joining(","));
+            StringBuilder quantityDescriptionBuilder = new StringBuilder(quantityDescription);
+            for (int i = 20; i < quantityDescription.length() - 1; i+=20) {
+                quantityDescriptionBuilder.insert(i, "\\&");
+            }
+
+            labelContent.put("quantity_" + itemIndex, quantityDescriptionBuilder.toString());
             itemIndex++;
         }
 
