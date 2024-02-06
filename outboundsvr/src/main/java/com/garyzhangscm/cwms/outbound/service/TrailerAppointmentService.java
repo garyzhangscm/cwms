@@ -119,6 +119,71 @@ public class TrailerAppointmentService {
         );
     }
 
+    private void processTrailerOrderLineAssignment(TrailerAppointment trailerAppointment,
+                                                  List<TrailerOrderLineAssignment> trailerOrderLineAssignments) {
+
+
+        // we have to make sure the trailer order line assignment are valid
+        Set<Shipment> shipments = new HashSet<>();
+        // orders without shipment
+        Set<Order> orders = new HashSet<>();
+
+        for (TrailerOrderLineAssignment trailerOrderLineAssignment : trailerOrderLineAssignments) {
+            Set<Long> orderLineIdSet = new HashSet<>();
+            if (Objects.isNull(trailerOrderLineAssignment.getOrderLineId())) {
+                // if we are assign the whole order, then add all the lines that is not fully shipped yet
+                Order order = orderService.findById(trailerOrderLineAssignment.getOrderId(), false);
+                order.getOrderLines().stream().filter(
+                        orderLine -> orderLine.getShippedQuantity() < orderLine.getExpectedQuantity()
+                ).forEach(
+                        orderLine -> orderLineIdSet.add(orderLine.getId())
+                );
+            }
+            else {
+                orderLineIdSet.add(trailerOrderLineAssignment.getOrderLineId());
+            }
+            if (orderLineIdSet.isEmpty()) {
+                throw OrderOperationException.raiseException("can't process the trailer order line assignment: " +
+                        trailerOrderLineAssignment);
+            }
+            for (Long orderLineId : orderLineIdSet) {
+
+                Set<Shipment> validShipments = shipmentLineService.findByOrderLineId(trailerAppointment.getWarehouseId(),
+                        orderLineId).stream().filter(
+                                shipmentLine -> shipmentLine.getStatus() != ShipmentLineStatus.CANCELLED &&
+                                        shipmentLine.getStatus() != ShipmentLineStatus.DISPATCHED
+                ).map(shipmentLine -> shipmentLine.getShipment()).collect(Collectors.toSet());
+                if (validShipments.isEmpty()) {
+                    // there's no outstanding shipment line for the order line, let's try to assign the whole order to this
+                    // trailer appointment
+                    OrderLine orderLine = orderLineService.findById(orderLineId);
+                    orders.add(orderLine.getOrder());
+                }
+                else if (validShipments.size() > 1){
+
+                    throw OrderOperationException.raiseException("can't process the trailer order line assignment: " +
+                            trailerOrderLineAssignment + ", as the order line " + orderLineId + " has " +
+                            validShipments.size() + " shipment assigned to it");
+                }
+                else {
+                    shipments.addAll(validShipments);
+                }
+            }
+
+        }
+        logger.debug("we found {} orders and {} shipment to group into this trailer appointment",
+                orders.size(), shipments.size());
+        for (Order order : orders) {
+            logger.debug("start to process order {}", order.getNumber());
+
+            orderService.assignTrailerAppointment(order, trailerAppointment);
+        }
+        for (Shipment shipment : shipments) {
+            logger.debug("start to process shipment {}", shipment.getNumber());
+            shipmentService.assignTrailerAppointment(shipment, trailerAppointment);
+        }
+    }
+
     private void assignShipmentsToTrailerAppointment(TrailerAppointment trailerAppointment, String shipmentIdList) {
         logger.debug("Start to assign trailer appointment {} to shipment with id {}",
                 trailerAppointment.getNumber(), shipmentIdList);
@@ -146,9 +211,33 @@ public class TrailerAppointmentService {
      */
     public void processIntegration(TrailerAppointment trailerAppointment) {
 
-        // first let's create a wave with the trailer appointment's number
-        // we will only have one wave for the entire trailer appointment
-        initTrailerAppointment(trailerAppointment);
+        // we have 2 types of trailer appointment assignment integration
+        // 1. create the trailer along with the orders. It contains both the
+        //    trailer, stop and order information and we will create all of them
+        //    in one transaction
+        // 2. the order already exists and may already start processing, we just need
+        //    to assign the order to the trailer
+
+        List<TrailerOrderLineAssignment> trailerOrderLineAssignments = trailerAppointment.getStops().stream()
+                .map(
+                        stop -> stop.getTrailerOrderLineAssignments()
+                )
+                .flatMap(List::stream).collect(Collectors.toList());
+
+        if (trailerOrderLineAssignments.isEmpty()) {
+
+            logger.debug("We will create the new trailer appointment  {} along with the stops and orders",
+                    trailerAppointment.getNumber());
+            // first let's create a wave with the trailer appointment's number
+            // we will only have one wave for the entire trailer appointment
+
+            initTrailerAppointment(trailerAppointment);
+        }
+        else {
+            logger.debug("Current trailer appointment integration {} is to assign trailer {} to the existing orders",
+                    trailerAppointment.getNumber(), trailerAppointment.getNumber());
+            processTrailerOrderLineAssignment(trailerAppointment, trailerOrderLineAssignments);
+        }
 
     }
 

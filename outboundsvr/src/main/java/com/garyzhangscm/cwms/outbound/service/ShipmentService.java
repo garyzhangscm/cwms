@@ -1296,7 +1296,9 @@ public class ShipmentService {
     }
 
     public void assignTrailerAppointment(long shipmentId, TrailerAppointment trailerAppointment) {
-        Shipment shipment  = findById(shipmentId);
+        assignTrailerAppointment(findById(shipmentId), trailerAppointment);
+    }
+    public void assignTrailerAppointment(Shipment shipment, TrailerAppointment trailerAppointment) {
 
         if (Objects.nonNull(shipment.getStop())) {
             // the shipment has a stop, let's assign the stop to teh trailer appointment

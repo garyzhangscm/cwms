@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.clients;
 
 import com.garyzhangscm.cwms.integration.model.Order;
+import com.garyzhangscm.cwms.integration.model.OrderLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,25 @@ public class OutbuondServiceRestemplateClient {
 
 
     }
+
+    @Cacheable(cacheNames = "IntegrationService_OrderLine", unless="#result == null")
+    public OrderLine getOrderLineById(Long id) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/outbound/orders/lines/{id}");
+        return restTemplateProxy.exchange(
+                OrderLine.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+
+    }
+
     @Cacheable(cacheNames = "IntegrationService_Order", unless="#result == null")
     public Order getOrderByNumber(Long warehosueId, String number) {
 

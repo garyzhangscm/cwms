@@ -185,6 +185,8 @@ public class DBBasedTrailerAppointmentIntegration {
                     warehouseLayoutServiceRestemplateClient, outbuondServiceRestemplateClient);
             // setup the warehouse
             // Item item = getItemFromDatabase(dbBasedItem);
+            setupMissingInformation(trailerAppointment);
+
             logger.debug(">> will process trailerAppointment:\n{}", trailerAppointment);
 
             kafkaSender.send(IntegrationType.INTEGRATION_TRAILER_APPOINTMENT,
@@ -211,6 +213,66 @@ public class DBBasedTrailerAppointmentIntegration {
         dbBasedTrailerAppointment = save(dbBasedTrailerAppointment);
 
         logger.debug(">> Trailer Appointment data process, {}", dbBasedTrailerAppointment);
+    }
+
+    private void setupMissingInformation(TrailerAppointment trailerAppointment) {
+
+        for (Stop stop : trailerAppointment.getStops()) {
+            for (TrailerOrderLineAssignment trailerOrderLineAssignment : stop.getTrailerOrderLineAssignments()) {
+                Order order = null;
+                if (Objects.nonNull(trailerOrderLineAssignment.getOrderId())) {
+                    order = outbuondServiceRestemplateClient.getOrderById(trailerOrderLineAssignment.getOrderId());
+                }
+                else if (Strings.isNotBlank(trailerOrderLineAssignment.getOrderNumber())) {
+                    order = outbuondServiceRestemplateClient.getOrderByNumber(
+                            trailerAppointment.getWarehouseId(), trailerOrderLineAssignment.getOrderNumber()
+                    );
+                    if (Objects.isNull(order)) {
+                        throw ResourceNotFoundException.raiseException("can't find order by number " + order.getNumber() +
+                                " for trailer appointment " + trailerAppointment.getNumber());
+                    }
+                    trailerOrderLineAssignment.setOrderId(order.getId());
+                }
+                else if (Objects.nonNull(trailerOrderLineAssignment.getOrderLineId())){
+
+                    OrderLine orderLine = outbuondServiceRestemplateClient.getOrderLineById(trailerOrderLineAssignment.getOrderLineId());
+                    if (Objects.isNull(orderLine)) {
+
+                        throw ResourceNotFoundException.raiseException("can't find order line by id " + trailerOrderLineAssignment.getOrderLineId() +
+                                " for trailer appointment " + trailerAppointment.getNumber());
+                    }
+                    trailerOrderLineAssignment.setOrderLineId(orderLine.getId());
+
+                    order = outbuondServiceRestemplateClient.getOrderByNumber(
+                            trailerAppointment.getWarehouseId(),
+                            orderLine.getOrderNumber()
+                    );
+                }
+
+                if (Objects.isNull(trailerOrderLineAssignment.getOrderId())) {
+                    if (Objects.isNull(order)) {
+
+                        throw ResourceNotFoundException.raiseException("can't process trailer appointment " + trailerAppointment.getNumber() +
+                                "as the order information is not filled in");
+                    }
+                    trailerOrderLineAssignment.setOrderId(order.getId());
+                }
+                if (Objects.isNull(trailerOrderLineAssignment.getOrderLineId()) && Strings.isNotBlank(trailerOrderLineAssignment.getOrderLineNumber())) {
+                    Order finalOrder = order;
+                    OrderLine orderLine = order.getOrderLines().stream().filter(
+                            existingOrderLine -> trailerOrderLineAssignment.getOrderLineNumber().equalsIgnoreCase(existingOrderLine.getNumber())
+                    ).findFirst().orElseThrow(
+                            () -> ResourceNotFoundException.raiseException("can't find order line by number  " + finalOrder.getNumber() + " / " +
+                                    trailerOrderLineAssignment.getOrderLineNumber() +
+                            " for trailer appointment " + trailerAppointment.getNumber())
+                    );
+                    trailerOrderLineAssignment.setOrderLineId(
+                            orderLine.getId()
+                    );
+                }
+
+            }
+        }
     }
 
 

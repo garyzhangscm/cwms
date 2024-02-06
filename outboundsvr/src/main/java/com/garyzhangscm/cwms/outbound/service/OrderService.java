@@ -2582,8 +2582,11 @@ public class OrderService {
     }
 
     public void assignTrailerAppointment(long orderId, TrailerAppointment trailerAppointment) {
+        assignTrailerAppointment(findById(orderId), trailerAppointment);
+    }
+    public void assignTrailerAppointment(Order order, TrailerAppointment trailerAppointment) {
         logger.debug("Start to assign order to trailer appointment");
-        Order order = findById(orderId);
+
         logger.debug("order: {}, trailer appointment: {}", order.getNumber(),
                 trailerAppointment.getNumber());
         // if we already have the shipment created, then raise error, right now we don't
@@ -3878,23 +3881,7 @@ public class OrderService {
     }
 
     private Map<String, Object> getTargetShippingCartonLabelContent(TargetShippingCartonLabel targetShippingCartonLabel) {
-        Map<String, Object> lpnLabelContent = new HashMap<>();
-
-        lpnLabelContent.put("shipTo", targetShippingCartonLabel.getShipToName());
-        lpnLabelContent.put("address1", targetShippingCartonLabel.getAddress1());
-        lpnLabelContent.put("cityStateZip", targetShippingCartonLabel.getCityStateZip());
-
-        lpnLabelContent.put("zip420", targetShippingCartonLabel.getZip420());
-
-        lpnLabelContent.put("poNumber", targetShippingCartonLabel.getPoNumber());
-        lpnLabelContent.put("dpci", targetShippingCartonLabel.getDpci());
-        lpnLabelContent.put("casepack", targetShippingCartonLabel.getPieceCarton());
-
-        lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
-
-        lpnLabelContent.put("SSCC18", targetShippingCartonLabel.getSSCC18());
-
-        return lpnLabelContent;
+        return targetShippingCartonLabelService.getTargetShippingCartonLabelContent(targetShippingCartonLabel);
     }
 
     public List<TargetShippingCartonLabel> getTargetShippingCartonLabels(Long warehouseId, Long id, String itemName,
