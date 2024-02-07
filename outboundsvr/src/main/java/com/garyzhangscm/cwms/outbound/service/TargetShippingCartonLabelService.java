@@ -18,14 +18,12 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.repository.TargetShippingCartonLabelRepository;
 import com.garyzhangscm.cwms.outbound.repository.TargetShippingCartonLabelRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -403,9 +401,11 @@ public class TargetShippingCartonLabelService {
 
         lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
 
-        lpnLabelContent.put("SSCC18", targetShippingCartonLabel.getSSCC18());
-        lpnLabelContent.put("formatted_SSCC18", formatSSCC18(targetShippingCartonLabel.getSSCC18()));
-        logger.debug("add formatted_SSCC18: {}", lpnLabelContent.get("formatted_SSCC18"));
+        String SSCC18 = getSSCC18Code(targetShippingCartonLabel.getSSCC18());
+        lpnLabelContent.put("SSCC18", SSCC18);
+        lpnLabelContent.put("formatted_SSCC18", formatSSCC18(SSCC18));
+        logger.debug("add SSCC18: {} and formatted_SSCC18: {}",
+                lpnLabelContent.get("SSCC18"), lpnLabelContent.get("formatted_SSCC18"));
 
 
         return lpnLabelContent;
@@ -426,28 +426,74 @@ public class TargetShippingCartonLabelService {
         return "(" + zip420.substring(0, 3) + ")" + zip420.substring(3);
     }
 
-    private String formatSSCC18(String SSCC18) {
-        if (Strings.isBlank(SSCC18)) {
-            return "";
+    /**
+     * Process the SSCC code and return a 20 digits with
+     * (leading two 0s), 17 digit code and 1 check digit
+     * @param SSCC
+     * @return
+     */
+    private String getSSCC18Code(String SSCC) {
+
+        // WE WILL ONLY ACCEPT 20 digits, 19 digits, 18 digits and 17 digits SSCC code and format it
+        // 1. 20 digits: leading two 0s, 17 digit code and 1 check digit
+        // 2. 19 digits: leading two 0s, 17 digit code
+        // 2. 18 digits: 17 digit code and 1 check digit
+        // 3. 17 digits
+        String code = SSCC;
+        if (Strings.isBlank(code)) {
+            throw OrderOperationException.raiseException("can't process empty SSCC  code");
         }
-        if (SSCC18.length() <= 2) {
-            return "(" + SSCC18 + ")";
+        else if (code.length() == 19) {
+            return "(" + code.substring(0, 2) + ")" + code.substring(2) + getSSCC18CheckDigt(SSCC.substring(2));
         }
-        if (SSCC18.length() == 3) {
-            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2);
+        else if (code.length() == 20) {
+            return "(" + code.substring(0, 2) + ")" + code.substring(2);
         }
-        if (SSCC18.length() <= 10) {
-            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
-                    SSCC18.substring(3);
+        else if (code.length() == 18) {
+            return "(00)" + code;
         }
-        if (SSCC18.length() <= 19) {
-            return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
-                    SSCC18.substring(3, 10) + "  " + SSCC18.substring(10);
+        else if (code.length() == 17) {
+            return "(00)" + code + getSSCC18CheckDigt(SSCC);
         }
 
-        return "(" + SSCC18.substring(0, 2) + ")  " + SSCC18.substring(2, 3) + "  " +
-                    SSCC18.substring(3, 10) + "  " + SSCC18.substring(10, 19)  + "  " +
-                SSCC18.substring(19);
+        throw OrderOperationException.raiseException("can't parse SSCC code" + SSCC);
+    }
+
+    /**
+     * Get check digit from 17 SSCC code
+     * @param sscc17
+     * @return
+     */
+    private int getSSCC18CheckDigt(String sscc17) {
+        if (Strings.isBlank(sscc17) || sscc17.length() != 17) {
+            throw OrderOperationException.raiseException("can't calculate the SSCC code " + sscc17 +
+                    " as it is not in the right format");
+        }
+        int sum = 0;
+        for(int i = 0; i < sscc17.length(); i++) {
+            if (i % 2 == 1) {
+                sum += (Integer.parseInt(String.valueOf(sscc17.charAt(i))) * 3);
+            }
+            else {
+                sum += Integer.parseInt(String.valueOf(sscc17.charAt(i)));
+            }
+        }
+        int x = (sum / 10) + 1;
+        return (x * 10 - sum) % 10;
+    }
+
+    private String formatSSCC18(String SSCC18) {
+
+        // the SSCC should be in the format
+        // (00) + SSCC17 + CHECK DIGIT
+        if (Strings.isBlank(SSCC18) || SSCC18.length() != 22) {
+            throw OrderOperationException.raiseException("can't format  " + SSCC18 +
+                    " as it is not in the right format");
+        }
+        return SSCC18.substring(0, 4) + " " + SSCC18.substring(4, 5) + " " +
+                SSCC18.substring(5, 12) + " " + SSCC18.substring(12, 21) + " " +
+                SSCC18.substring(21);
+
     }
 
     /**

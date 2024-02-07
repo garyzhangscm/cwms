@@ -83,7 +83,7 @@ public class Stop  extends AuditibleEntity<String> {
 
     @Transient
     @OneToMany(
-            mappedBy = "order",
+            mappedBy = "stop",
             fetch = FetchType.EAGER
     )
     private List<TrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
@@ -198,6 +198,9 @@ public class Stop  extends AuditibleEntity<String> {
     public boolean validateNewShipmentsForStop(Shipment shipment) {
         if (shipments.size() == 0) {
             // there's no shipment in the stop yet,
+            logger.debug("There's no shipment in this stop {} yet, we can accept the new shipment {}",
+                    getNumber(),
+                    shipment.getNumber());
             return true;
         }
         // we know for sure that all the existing shipments in the same
@@ -315,6 +318,9 @@ public class Stop  extends AuditibleEntity<String> {
         // escape the null value
         value1 = Strings.isBlank(value1) ? "" : value1;
         value2 = Strings.isBlank(value2) ? "" : value2;
+        logger.debug("Compare field {} between shipment {} and {}, {} vs {}",
+                fieldName, shipmentNumber1, shipmentNumber2,
+                value1, value2);
         if (!value1.equals(value2)) {
 
             logger.debug("shipment {}'s {}: {} is different from " +
@@ -327,6 +333,8 @@ public class Stop  extends AuditibleEntity<String> {
                     value2);
             return false;
         }
+        logger.debug("The 2 shipments has the same value in this field {}",
+                fieldName);
         return true;
     }
 

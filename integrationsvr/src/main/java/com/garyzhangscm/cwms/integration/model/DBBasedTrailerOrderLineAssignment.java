@@ -36,7 +36,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "integration_trailer_order_line_assignment")
-public class DBBasedTrailerOrderLineAssignment implements Serializable  {
+public class DBBasedTrailerOrderLineAssignment extends AuditibleEntity<String>  implements Serializable  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,10 +74,7 @@ public class DBBasedTrailerOrderLineAssignment implements Serializable  {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
-    @Column(name = "insert_time")
-    private LocalDateTime insertTime;
-    @Column(name = "last_update_time")
-    private LocalDateTime lastUpdateTime;
+
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -211,21 +208,6 @@ public class DBBasedTrailerOrderLineAssignment implements Serializable  {
         this.status = status;
     }
 
-    public LocalDateTime getInsertTime() {
-        return insertTime;
-    }
-
-    public void setInsertTime(LocalDateTime insertTime) {
-        this.insertTime = insertTime;
-    }
-
-    public LocalDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(LocalDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
 
     public String getErrorMessage() {
         return errorMessage;

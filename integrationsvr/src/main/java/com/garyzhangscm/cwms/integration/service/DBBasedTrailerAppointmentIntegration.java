@@ -180,6 +180,7 @@ public class DBBasedTrailerAppointmentIntegration {
 
         try {
 
+            logger.debug(">> will convert from  dbBasedTrailerAppointment:\n{}", dbBasedTrailerAppointment);
             TrailerAppointment trailerAppointment = dbBasedTrailerAppointment.convertToTrailerAppointment(
                     commonServiceRestemplateClient,
                     warehouseLayoutServiceRestemplateClient, outbuondServiceRestemplateClient);
