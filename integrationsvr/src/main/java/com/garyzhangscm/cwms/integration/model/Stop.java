@@ -1,8 +1,5 @@
 package com.garyzhangscm.cwms.integration.model;
 
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

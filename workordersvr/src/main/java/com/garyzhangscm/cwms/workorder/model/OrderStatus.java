@@ -2,5 +2,8 @@ package com.garyzhangscm.cwms.workorder.model;
 
 public enum OrderStatus {
     OPEN,
-    COMPLETE
+    ALLOCATING,
+    INPROCESS,
+    COMPLETE,
+    CANCELLED
 }

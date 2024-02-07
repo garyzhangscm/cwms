@@ -21,19 +21,18 @@ package com.garyzhangscm.cwms.dblink.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.slf4j.Logger;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "integration_order_line")
+@Table(name = "integration_trailer_order_line_assignment")
 public class DBBasedTrailerOrderLineAssignment implements Serializable  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "integration_order_line_id")
+    @Column(name = "integration_trailer_order_line_assignment_id")
     @JsonProperty(value="id")
     private Long id;
 

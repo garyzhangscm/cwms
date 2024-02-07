@@ -1302,6 +1302,11 @@ public class ShipmentService {
 
         if (Objects.nonNull(shipment.getStop())) {
             // the shipment has a stop, let's assign the stop to teh trailer appointment
+            logger.debug("Shipment {} already has a stop {}, let's assign the stop {} to the trailer appointment {}",
+                    shipment.getNumber(),
+                    shipment.getStop().getNumber(),
+                    shipment.getStop().getNumber(),
+                    trailerAppointment.getNumber());
             stopService.assignTrailerAppointment(shipment.getStop().getId(), trailerAppointment);
             return;
         }
@@ -1311,6 +1316,11 @@ public class ShipmentService {
         if (Objects.isNull(stop)) {
             // we didn't find any existing stop matches for this shipment
             // let's create one
+            logger.debug("We can't find a matching stop for this shipment {} in the trailer appointment {}, " +
+                    "let's create one",
+                    shipment.getNumber(),
+                    trailerAppointment.getNumber());
+
             stop = stopService.createStop(shipment);
 
         }
