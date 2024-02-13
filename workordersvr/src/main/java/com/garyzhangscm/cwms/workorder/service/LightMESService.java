@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.LightMESRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
@@ -67,6 +68,8 @@ public class LightMESService {
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -526,8 +529,9 @@ public class LightMESService {
 
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
                 productionLineNames,"", true, false,
-                true,
+                false,
                 false, false);
+
         /**
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
                 productionLineNames, "", true, false, true, false);
@@ -541,6 +545,28 @@ public class LightMESService {
             logger.debug("start to process production line {}", productionLine.getName());
             for (ProductionLineAssignment productionLineAssignment : productionLine.getProductionLineAssignments()) {
 
+                // we will just need to load the item name for each production line assignment
+                if (Strings.isBlank(productionLineAssignment.getItemName())) {
+                    logger.debug("current production line assignment (work order {} at production line {}) " +
+                            " doesn't have the item name setup yet, let's set it up",
+                            productionLineAssignment.getWorkOrder().getNumber(),
+                            productionLine.getName());
+                    logger.debug("let's get item name from work order {}, by item id = {}",
+                            productionLineAssignment.getWorkOrder().getNumber(),
+                            productionLineAssignment.getWorkOrder().getItemId());
+                    Item item =inventoryServiceRestemplateClient.getItemById(
+                            productionLineAssignment.getWorkOrder().getItemId()
+                    );
+                    if (Objects.isNull(item)) {
+                        logger.debug("!!! fail to get item from id {}, skip production line assignment (work order {} at production line {}) ",
+
+                                productionLineAssignment.getWorkOrder().getItemId(),
+                                productionLineAssignment.getWorkOrder().getNumber(),
+                                productionLine.getName());
+                        continue;
+                    }
+                    productionLineAssignment.setItemName(item.getName());
+                }
                 // there're 4 times:
                 // 1. production line assigned time
                 // 2. production line deassigned time(if deassigned)
