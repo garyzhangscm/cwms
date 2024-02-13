@@ -523,8 +523,15 @@ public class LightMESService {
         );
 
         String productionLineNames = machines.stream().map(Machine::getMachineNo).collect(Collectors.joining(","));
+
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
-                productionLineNames, "", true, false, true, true);
+                productionLineNames,"", true, false,
+                true,
+                false, false);
+        /**
+        List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
+                productionLineNames, "", true, false, true, false);
+         **/
         logger.debug("Get {} production lines out of {} machines, by name {}",
                 productionLines.size(),
                 machines.size(),
