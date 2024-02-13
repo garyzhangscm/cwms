@@ -289,12 +289,14 @@ public class WorkOrderProduceTransactionService  {
                     index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
                     System.currentTimeMillis());
 
-            logger.debug("===  1. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+            // logger.debug("===  1. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+            logger.debug("===  1. newWorkOrderProduceTransaction  ===");
             // asynchronously receive the inventory to increase the productivity
             new Thread(() -> {
                 logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
                 try {
-                    logger.debug("===  2. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+                    // logger.debug("===  2. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+                    logger.debug("start to receive inventory from the work order {}", workOrder.getNumber());
                     receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
                     workOrderProducedInventoryResultRepository.save(
                             new WorkOrderProducedInventoryResult(
@@ -307,7 +309,7 @@ public class WorkOrderProduceTransactionService  {
                 }
                 catch (Exception exception) {
                     logger.debug("Error while receive inventory \n {}", exception.getMessage());
-                    logger.debug("===  3. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+                    // logger.debug("===  3. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
                     workOrderProducedInventoryResultRepository.save(
                             new WorkOrderProducedInventoryResult(
                                     newWorkOrderProduceTransaction.getWarehouseId(),
