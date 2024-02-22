@@ -178,7 +178,7 @@ public class LightMESService {
                 Strings.isBlank(type) ? "N/A" : type);
 
         List<ProductionLine> productionLines = productionLineService.findAll(warehouseId, null, null,
-                null, type, true, false, true, true);
+                null, type, true, false, false, false, false);
 
         List<Machine> resultMachines = new ArrayList<>();
 
@@ -373,8 +373,17 @@ public class LightMESService {
                                                    ZonedDateTime startTime,
                                                    ZonedDateTime endTime,
                                                    Map<String, Pair<Integer, Long>> producedQuantityMap) {
+        String itemName = "";
+        if (Objects.isNull(productionLineAssignment.getWorkOrder().getItem())) {
+            itemName = inventoryServiceRestemplateClient.getItemById(
+                    productionLineAssignment.getWorkOrder().getItemId()
+            ).getName();
+        }
+        else {
+            itemName = productionLineAssignment.getWorkOrder().getItem().getName();
+        }
         MachineStatistics machineStatistics = new MachineStatistics(
-                productionLineAssignment.getWorkOrder().getItem().getName(),
+                itemName,
                 productionLineAssignment.getWorkOrder().getNumber()
         );
 
@@ -455,7 +464,7 @@ public class LightMESService {
      * Refresh machine status every minute and save it to the redis. The web user then can get the data
      * from cache
      */
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 30000)
     public void refreshMachineStatus(){
 
         List<Company> companies = warehouseLayoutServiceRestemplateClient.getAllCompanies();
