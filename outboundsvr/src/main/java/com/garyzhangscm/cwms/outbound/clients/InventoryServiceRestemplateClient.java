@@ -613,6 +613,7 @@ public class InventoryServiceRestemplateClient {
                             .queryParam("itemName",  URLEncoder.encode(pick.getItem().getName(), "UTF-8") )
                             .queryParam("location", URLEncoder.encode(pick.getSourceLocation().getName(), "UTF-8") )
                             .queryParam("maxLPNCount", 50)
+                            .queryParam("inventoryStatusId", pick.getInventoryStatusId())
                             .queryParam("warehouseId", pick.getWarehouseId());
             if (Strings.isNotBlank(lpn)) {
                 builder.queryParam("lpn", lpn);
