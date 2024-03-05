@@ -56,9 +56,23 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
 
     @Column(name = "max_volume")
     private Double maxVolume = 0.0;
+    @Column(name = "max_volume_unit")
+    private String maxVolumeUnit;
 
     @Column(name = "max_weight")
     private Double maxWeight = 0.0;
+    @Column(name = "max_weight_unit")
+    private String maxWeightUnit;
+
+
+    @Column(name = "max_pick_count")
+    private Integer maxPickCount = 0;
+
+    @Column(name = "max_quantity")
+    private Long maxQuantity = 0l;
+
+    @Column(name = "allow_lpn_pick")
+    private Boolean allowLPNPick;
 
     public Long getId() {
         return id;
@@ -134,6 +148,14 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
         this.groupRules = groupRules;
     }
 
+    public Boolean getAllowLPNPick() {
+        return allowLPNPick;
+    }
+
+    public void setAllowLPNPick(Boolean allowLPNPick) {
+        this.allowLPNPick = allowLPNPick;
+    }
+
     public Double getMaxVolume() {
         return maxVolume;
     }
@@ -156,5 +178,37 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
 
     public void setAllowAddToExistingList(Boolean allowAddToExistingList) {
         this.allowAddToExistingList = allowAddToExistingList;
+    }
+
+    public Integer getMaxPickCount() {
+        return maxPickCount;
+    }
+
+    public void setMaxPickCount(Integer maxPickCount) {
+        this.maxPickCount = maxPickCount;
+    }
+
+    public Long getMaxQuantity() {
+        return maxQuantity;
+    }
+
+    public void setMaxQuantity(Long maxQuantity) {
+        this.maxQuantity = maxQuantity;
+    }
+
+    public String getMaxVolumeUnit() {
+        return maxVolumeUnit;
+    }
+
+    public void setMaxVolumeUnit(String maxVolumeUnit) {
+        this.maxVolumeUnit = maxVolumeUnit;
+    }
+
+    public String getMaxWeightUnit() {
+        return maxWeightUnit;
+    }
+
+    public void setMaxWeightUnit(String maxWeightUnit) {
+        this.maxWeightUnit = maxWeightUnit;
     }
 }

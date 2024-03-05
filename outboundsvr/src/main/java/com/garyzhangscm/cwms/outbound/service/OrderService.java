@@ -3912,4 +3912,27 @@ public class OrderService {
         }
     }
 
+    /**
+     * when the shipment line is cancelled, see if all shipment line has been cancelled for the order,
+     * if so, set the order back to PENDING
+     * @param order
+     */
+    public void registerShipmentLineCancelled(Order order) {
+        if (order.getStatus().equals(OrderStatus.INPROCESS)) {
+
+            logger.debug("order {}'s status is in process, let's see if we will need to set it back to OPEN",
+                    order.getNumber());
+            boolean setOrderToOpen =
+                    order.getOrderLines().stream().noneMatch(
+                            orderLine -> orderLine.getInprocessQuantity() > 0
+                    );
+
+            if (setOrderToOpen) {
+                logger.debug("we will set order {}'s status back to OPEN", order.getNumber());
+                order.setStatus(OrderStatus.OPEN);
+                saveOrUpdate(order, false);
+            }
+        }
+
+    }
 }

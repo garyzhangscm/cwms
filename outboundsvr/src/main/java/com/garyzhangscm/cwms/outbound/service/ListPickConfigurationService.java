@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
@@ -346,5 +347,9 @@ public class ListPickConfigurationService implements TestDataInitiableService {
         );
         return saveOrUpdate(listPickConfiguration);
 
+    }
+
+    public void removeListPickConfiguration(Long id) {
+        delete(id);
     }
 }

@@ -562,9 +562,12 @@ public class WaveService {
         // 1. bulk pick
         // 2. list pick
         // 3. release picks into work task
+        logger.debug("wave is allocated and picks are generated, let's see if we need to group them into" +
+                " bulk or list and release");
         postAllocationProcess(wave.getWarehouseId(),
                 wave.getNumber(),  allocationResults);
 
+        logger.debug("wave is allocated!");
         return saveOrUpdate(wave);
     }
 
@@ -578,10 +581,12 @@ public class WaveService {
                                        String waveNumber,
                                        List<AllocationResult> allocationResults) {
         // we will always try bulk pick first
+        logger.debug("Let's see if we will need to group the picks into bulk");
         requestBulkPick(warehouseId, waveNumber, allocationResults);
 
         // for anything that not fall in the bulk pick, see if we can group them into
         // a list pick
+        logger.debug("Let's see if we will need to group the picks into list");
         processListPick(warehouseId, waveNumber, allocationResults);
 
         releaseSinglePicks(warehouseId, waveNumber, allocationResults);
@@ -613,7 +618,7 @@ public class WaveService {
                             Objects.isNull(pick.getBulkPick()) &&
                             Objects.isNull(pick.getCartonization()) &&
                             Objects.isNull(pick.getWorkTaskId()) &&
-                            !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
+                            // !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
                             pick.getPickedQuantity() == 0
                  )
                 .forEach(

@@ -65,6 +65,13 @@ public class ShipmentController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/shipments/{id}", method = RequestMethod.DELETE)
+    public Shipment cancelShipment(@RequestParam Long warehouseId,
+                                   @PathVariable Long id){
+        return shipmentService.cancelShipment(id);
+    }
+
+    @BillableEndpoint
     @RequestMapping(value="/shipments", method = RequestMethod.DELETE)
     public void removeShipments(@RequestParam(name = "shipment_ids", required = false, defaultValue = "") String shipmentIds) {
         shipmentService.delete(shipmentIds);
