@@ -2252,5 +2252,10 @@
   "lastPrintTime": "上次打印时间",
   "palletPickLabel": "托盘拣货标签",
   "target-shipping-carton-label": "Target 发货箱标",
-  "REPORT-TYPE-TARGET_SHIPPING_CARTON_LABEL": "Target 发货箱标"
+  "REPORT-TYPE-TARGET_SHIPPING_CARTON_LABEL": "Target 发货箱标",
+  "restriction": "限制",
+  "maxVolume": "最大体积",
+  "maxWeight": "最大重量",
+  "maxPickCount": "拣货任务限制",
+  "maxQuantity": "拣货数量限制"
 }

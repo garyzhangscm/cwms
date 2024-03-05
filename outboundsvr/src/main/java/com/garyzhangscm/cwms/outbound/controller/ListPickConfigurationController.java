@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
 import com.garyzhangscm.cwms.outbound.model.ListPickConfiguration;
 import com.garyzhangscm.cwms.outbound.service.ListPickConfigurationService;
@@ -57,6 +58,13 @@ public class ListPickConfigurationController {
                                 @PathVariable Long id,
                                 @RequestParam Long warehouseId) {
         return listPickConfigurationService.findById(id);
+    }
+    @RequestMapping(value="/list-pick-configuration/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeListPickConfiguration(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+        listPickConfigurationService.removeListPickConfiguration(id);
+        return ResponseBodyWrapper.success("list pick configuration with id " + id + " is removed");
     }
 
     @BillableEndpoint

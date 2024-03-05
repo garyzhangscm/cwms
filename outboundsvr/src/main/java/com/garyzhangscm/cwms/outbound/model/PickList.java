@@ -131,4 +131,11 @@ public class PickList  extends AuditibleEntity<String>{
     public void setAcknowledgedUsername(String acknowledgedUsername) {
         this.acknowledgedUsername = acknowledgedUsername;
     }
+
+    public void addPick(Pick pick) {
+        // only add if the pick is not in the list yet
+        if (getPicks().stream().noneMatch(existingPick -> existingPick.getId().equals(pick.getId()))) {
+            getPicks().add(pick);
+        }
+    }
 }

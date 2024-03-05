@@ -667,6 +667,26 @@ public class OrderLineService{
         orderLine.setInprocessQuantity(
                 Math.max(0, orderLine.getInprocessQuantity() - reducedInprocessQuantity));
         saveOrUpdate(orderLine);
+
+
+    }
+    /**
+     * Return the inprocess quantity back to open quantity. This is normally happens when we
+     * cancel the shipment line for the order line
+     * @param orderLine
+     * @param reducedInprocessQuantity
+     */
+    public void registerShipmentLineCancelled(OrderLine orderLine, Long reducedInprocessQuantity) {
+        returnInProcessQuantity(orderLine, reducedInprocessQuantity);
+        // see if we need to set the order back to 'PENDING' if all shipment line
+        // has been cancelled and there's no in process quantity
+
+        logger.debug("after we return the in process quantity back to the order line {} / {}, " +
+                "see if we can reset the order {}'s status",
+                orderLine.getOrder().getNumber(), orderLine.getNumber(),
+                orderLine.getOrder().getNumber());
+        orderService.registerShipmentLineCancelled(orderLine.getOrder());
+
     }
 
 

@@ -274,6 +274,79 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     }
 
 
+    /**
+     * Note: the weight will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
+    @JsonIgnore
+    public Pair<Double, String> getWeight(UnitService unitService) {
+        return getWeight(unitService, true, false);
+    }
+    /**
+     * Note: the weight will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
+    @JsonIgnore
+    public Pair<Double, String> getWeight(UnitService unitService, boolean caseUOMFirst, boolean caseUOMOnly) {
+
+        Unit defaultUnit = unitService.getBaseUnit(getWarehouseId(), UnitType.WEIGHT);
+        if (Objects.isNull(defaultUnit)) {
+            defaultUnit = unitService.getLB(getWarehouseId());
+        }
+        // by default, we will use lb as the weight's unit
+        String defaultUnitName = Objects.isNull(defaultUnit) ?
+                "lb" : defaultUnit.getName();
+
+
+        if (item == null) {
+            return Pair.of(0.0, defaultUnitName);
+        }
+        if (caseUOMOnly || caseUOMFirst) {
+            // we will calculate the size by case UOM
+            // first of all, see if we have a case UOM defined
+            ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                    item.getDefaultItemPackageType() : getItemPackageType();
+            ItemUnitOfMeasure caseUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
+            if (Objects.nonNull(caseUnitOfMeasure)) {
+                return getWeight(unitService, caseUnitOfMeasure, getQuantity() / caseUnitOfMeasure.getQuantity());
+            }
+            // case unit of measure if not defined, raise error if the client only
+            // want to try with case unit of measure
+            if (caseUOMOnly) {
+                throw ResourceNotFoundException.raiseException("can't find case UOM for item " + item.getName() +
+                        " on pick   " + getNumber() + ", fail to calculate the weight");
+            }
+        }
+        // ok, the user is good with calculate the size by stock UOM and there's no case UOM defined
+
+        ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                item.getDefaultItemPackageType() : getItemPackageType();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        return getWeight(unitService, stockItemUnitOfMeasure, getQuantity() );
+    }
+    /**
+     * Note: the weight will be in the format of the base unit
+     * @param unitService
+     * @return
+     */
+    @JsonIgnore
+    public Pair<Double, String> getWeight(UnitService unitService, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
+
+        // Note: the result returned from getVolumeByUOM is the unit of length
+        // we will show cubit unit to the user
+
+        Pair<Double, Unit> result =
+                unitService.getVolumeByUOM(getWarehouseId(),
+                        itemUnitOfMeasure, quantityOfUOM);
+
+        return Pair.of(
+                Objects.isNull(result.getFirst()) ? 0.0 : result.getFirst(),
+                Objects.isNull(result.getSecond()) ? "" : result.getSecond().getName());
+    }
+
+
     @JsonIgnore
     public Pair<Double, String> getHeight(UnitService unitService) {
 

@@ -36,6 +36,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 
@@ -70,6 +71,8 @@ public class PickListService {
 
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private UnitService unitService;
 
     public PickList findById(Long id) {
         return findById(id, true);
@@ -247,6 +250,11 @@ public class PickListService {
                         pick.getNumber(),
                         pickList.getNumber());
                 pickService.assignPickToList(pick, pickList);
+                // refresh the pick list with adding the pick so that when we
+                // continue with more picks in the same process, we will continue
+                // buiding the list.
+                pickList.addPick(pick);
+
             }
 
             return pickList;
@@ -367,13 +375,14 @@ public class PickListService {
         // from the same session
         for (PickList pickList : pickListsFromSameSession) {
             logger.debug("start to check if save session pick list {} with status {} " +
-                            " has the same group key {} as the pick's group key {}" +
+                            " has the same group key {} as the pick's group key {}",
                     pickList.getNumber(),
                     pickList.getStatus(),
                     pickList.getGroupKey(),
                     groupKey);
             if (pickList.getGroupKey().equalsIgnoreCase(groupKey) &&
-                    (pickList.getStatus().equals(PickListStatus.PENDING) || pickList.getStatus().equals(PickListStatus.RELEASED))) {
+                    (pickList.getStatus().equals(PickListStatus.PENDING) || pickList.getStatus().equals(PickListStatus.RELEASED)) &&
+                     validatePickListRestrictionForNewPick(listPickConfiguration, pickList, pick)) {
                 return pickList;
             }
         }
@@ -397,6 +406,194 @@ public class PickListService {
 
             throw PickingException.raiseException( "Configuration doesn't allow adding new pick into existing list");
         }
+    }
+
+    /**
+     * Check if we can add new picks into existing pick list, based on the pick list configuration's
+     * 1. max volume restriction
+     * 2. max weight restriction
+     * 3. max quantity restriction
+     * 4. max pick count restriction
+     * @param pickList
+     * @param pick
+     * @return
+     */
+    private boolean validatePickListRestrictionForNewPick(ListPickConfiguration listPickConfiguration,
+                                                          PickList pickList, Pick pick) {
+
+        if (pickList.getPicks().isEmpty()) {
+            // there's no pick in the list yet, by default we will allow the pick into its own
+            // list even if it exceed some restriction
+            return true;
+        }
+
+        if (Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
+            !Boolean.TRUE.equals(listPickConfiguration.getAllowLPNPick())) {
+            logger.debug("can't group the pick {} into list {} as the pick is whole LPN pick " +
+                    "but the current configuration don't allow to group a whole LPN pick into an" +
+                    " existing list",
+                    pick.getNumber(), pickList.getNumber());
+            return false;
+        }
+
+        if (listPickConfiguration.getMaxWeight() > 0 &&
+            !validatePickListWeightForNewPick(listPickConfiguration.getWarehouseId(),
+                    listPickConfiguration.getMaxWeight(),
+                    listPickConfiguration.getMaxWeightUnit(), pickList, pick)) {
+            // fail to pass the weight validation
+            return false;
+        }
+
+        if (listPickConfiguration.getMaxVolume() > 0 &&
+                !validatePickListVolumeForNewPick(listPickConfiguration.getWarehouseId(),
+                        listPickConfiguration.getMaxVolume(),
+                        listPickConfiguration.getMaxVolumeUnit(), pickList, pick)) {
+            // fail to pass the weight validation
+            return false;
+        }
+
+        if (listPickConfiguration.getMaxPickCount() > 0 &&
+                !validatePickListPickCountForNewPick(listPickConfiguration.getMaxPickCount(), pickList, pick)) {
+            // fail to pass the weight validation
+            return false;
+        }
+
+        if (listPickConfiguration.getMaxQuantity() > 0 &&
+                !validatePickListQuantityForNewPick(listPickConfiguration.getMaxQuantity(), pickList, pick)) {
+            // fail to pass the weight validation
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if we can add the new pick into the pick list based on the pick count restriction
+     * @param maxQuantity
+     * @param pickList
+     * @param pick
+     * @return
+     */
+    private boolean validatePickListQuantityForNewPick(Long maxQuantity, PickList pickList, Pick pick) {
+        Long totalQuantity = pickList.getPicks().stream().map(Pick::getQuantity).mapToLong(Long::longValue).sum();
+
+        if (totalQuantity + pick.getQuantity() > maxQuantity) {
+            logger.debug("current list {} already have {} quantity in it and we cap at max of {} picks per list, " +
+                            "can't add new pick {} with quantity {} into this list",
+                    pickList.getNumber(), totalQuantity,
+                    maxQuantity,
+                    pick.getNumber(), pick.getQuantity());
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if we can add the new pick into the pick list based on the pick count restriction
+     * @param maxPickCount
+     * @param pickList
+     * @param pick
+     * @return
+     */
+    private boolean validatePickListPickCountForNewPick(Integer maxPickCount, PickList pickList, Pick pick) {
+        logger.debug("validate pick list {}, pick size {} against max pick count {}",
+                pickList.getNumber(),
+                pickList.getPicks().size(),
+                maxPickCount );
+        if (pickList.getPicks().size() >= maxPickCount) {
+            logger.debug("current list {} already have {} picks in it and we cap at max of {} picks per list, " +
+                    "can't add new pick into this list",
+                    pickList.getNumber(), pickList.getPicks().size(),
+                    maxPickCount);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if we can add the new pick into the pick list based on the volumn restriction
+     * @param maxVolume
+     * @param pickList
+     * @param pick
+     * @return
+     */
+    private boolean validatePickListVolumeForNewPick(Long warehouseId, Double maxVolume, String maxVolumeUnit, PickList pickList, Pick pick) {
+        double totalVolume = pickList.getPicks().stream().map(
+                existingPick -> {
+                    Pair<Double, String> volumeWithUnit = existingPick.getSize(unitService);
+                    // convert the weight to the base unit
+                    return unitService.convertVolume(
+                            warehouseId,
+                            volumeWithUnit.getFirst(),
+                            volumeWithUnit.getSecond()
+                    );
+                }
+        ).mapToDouble(Double::doubleValue).sum();
+
+        Pair<Double, String> newPickVolumeWithUnit = pick.getSize(unitService);
+        // convert the pick weight to base unit
+        double newPickVolume = unitService.convertVolume(warehouseId,
+                newPickVolumeWithUnit.getFirst(), newPickVolumeWithUnit.getSecond());
+
+        double maxListPickVolume = unitService.convertVolume(
+                warehouseId, maxVolume, maxVolumeUnit
+        );
+        logger.debug("total volume for list {} is {}, pick {}'s volume is {}, volume limit for pick list is {}, " +
+                        "all in base unit of {}",
+                pickList.getNumber(), totalVolume,
+                pick.getNumber(), newPickVolume,
+                maxListPickVolume,
+                unitService.getBaseUnit(warehouseId, UnitType.VOLUME));
+
+        if (totalVolume + newPickVolume > maxListPickVolume) {
+            logger.debug("we can't add this pick {} into the list {}");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if we can add the new pick into the pick list based on the weight restriction
+     * @param maxWeight
+     * @param pickList
+     * @param pick
+     * @return
+     */
+    private boolean validatePickListWeightForNewPick(Long warehouseId,
+                                                     Double maxWeight, String maxWeightUnit,
+                                                     PickList pickList, Pick pick) {
+        double totalWeight = pickList.getPicks().stream().map(
+                existingPick -> {
+                    Pair<Double, String> weightWithUnit = existingPick.getWeight(unitService);
+                    // convert the weight to the base unit
+                    return unitService.convertWeight(
+                            warehouseId,
+                            weightWithUnit.getFirst(),
+                            weightWithUnit.getSecond()
+                    );
+                }
+        ).mapToDouble(Double::doubleValue).sum();
+
+        Pair<Double, String> newPickWeightWithUnit = pick.getWeight(unitService);
+        // convert the pick weight to base unit
+        double newPickWeight = unitService.convertWeight(warehouseId,
+                newPickWeightWithUnit.getFirst(), newPickWeightWithUnit.getSecond());
+
+        double maxListPickWeight = unitService.convertWeight(
+                warehouseId, maxWeight, maxWeightUnit
+        );
+        logger.debug("total weight for list {} is {}, pick {}'s weight is {}, weight limit for pick list is {}, " +
+                        "all in base unit of {}",
+                pickList.getNumber(), totalWeight,
+                pick.getNumber(), newPickWeight,
+                maxListPickWeight,
+                unitService.getBaseUnit(warehouseId, UnitType.WEIGHT));
+
+        if (totalWeight + newPickWeight > maxListPickWeight) {
+            logger.debug("we can't add this pick {} into the list {}");
+            return false;
+        }
+        return true;
+
     }
 
     private String getGroupKey(ListPickConfiguration listPickConfiguration, Pick pick) {

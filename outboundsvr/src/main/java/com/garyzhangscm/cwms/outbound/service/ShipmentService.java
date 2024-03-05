@@ -252,7 +252,36 @@ public class ShipmentService {
         }
     }
 
-    public void cancelShipment(Shipment shipment) {
+    /**
+     * check if we can cancel the shipment, only if there's no outstanding pick and short allocation
+     * @param shipment
+     */
+    private void validateShipmentForCancellation(Shipment shipment) {
+        // make sure there's no pick and short allocation
+        List<Pick> picks = pickService.findByShipment(shipment);
+        if (!picks.isEmpty()) {
+            throw ShippingException.raiseException("Can't cancel the shipment " + shipment.getNumber() +
+                    " as there's outstanding picks");
+        }
+        List<ShortAllocation> shortAllocations = shortAllocationService.findByShipment(shipment);
+
+        if (!shortAllocations.isEmpty()) {
+            throw ShippingException.raiseException("Can't cancel the shipment " + shipment.getNumber() +
+                    " as there's outstanding short allocation");
+        }
+
+
+
+    }
+    public Shipment cancelShipment(Shipment shipment) {
+        logger.debug("start to cancel shipment {}", shipment.getNumber());
+        validateShipmentForCancellation(shipment);
+        logger.debug("shipment {} is ready for cancellation, let's cancel the shipment line first",
+                shipment.getNumber());
+        shipment.getShipmentLines().forEach(
+                shipmentLine -> shipmentLineService.cancelShipmentLine(shipmentLine)
+        );
+
         shipment.setStatus(ShipmentStatus.CANCELLED);
         save(shipment);
 
@@ -261,9 +290,10 @@ public class ShipmentService {
                 shipment.getNumber());
         warehouseLayoutServiceRestemplateClient.releaseLocations(shipment.getWarehouseId(), shipment);
 
+        return shipment;
     }
-    public void cancelShipment(Long id) {
-        cancelShipment(findById(id));
+    public Shipment cancelShipment(Long id) {
+        return cancelShipment(findById(id));
 
     }
 

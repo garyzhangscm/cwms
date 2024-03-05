@@ -2258,5 +2258,10 @@
   "palletPickLabel": "Pallet Pick Label",
   "target-shipping-carton-label": "Target Shipping Carton Label",
   "shippedQuantity": "Shipped Quantity",
-  "REPORT-TYPE-TARGET_SHIPPING_CARTON_LABEL": "Target Shipping Carton Label"
+  "REPORT-TYPE-TARGET_SHIPPING_CARTON_LABEL": "Target Shipping Carton Label",
+  "restriction": "Restriction",
+  "maxVolume": "Max Volume",
+  "maxWeight": "Max Weight",
+  "maxPickCount": "Max Pick Count",
+  "maxQuantity": "Max Quantity"
 }
