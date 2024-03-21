@@ -80,10 +80,16 @@ public class DBBasedOrderLine implements Serializable {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
+
+    @JsonIgnore
     @Column(name = "insert_time")
     private LocalDateTime insertTime;
+
+    @JsonIgnore
     @Column(name = "last_update_time")
     private LocalDateTime lastUpdateTime;
+
+    @JsonIgnore
     @Column(name = "error_message")
     private String errorMessage;
 

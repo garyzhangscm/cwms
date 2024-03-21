@@ -1467,13 +1467,16 @@ public class ItemService {
         logger.debug("find {} existing inventory in the location {}",
                 inventories.size(), locationName);
         // ok , there's inventory in the silo location, let's get the latest one based on the inventory activity
-        InventoryActivity latestInventoryActivity =
+        List<InventoryActivity> latestInventoryActivityList =
                 inventories.stream().map(Inventory::getItem).distinct()
                 .map(item -> inventoryActivityService.findLatestActivity(location.getId(), item))
-                .sorted((o1, o2) -> o2.getActivityDateTime().compareTo(o1.getActivityDateTime()))
-                .findFirst().orElse(null);
+                        .filter(inventoryActivity -> Objects.nonNull(inventoryActivity))
+                        .collect(Collectors.toList());
 
-        if (Objects.isNull(latestInventoryActivity)) {
+        Collections.sort(latestInventoryActivityList,
+                (o1, o2) -> o2.getActivityDateTime().compareTo(o1.getActivityDateTime())) ;
+
+        if (latestInventoryActivityList.isEmpty()) {
             logger.debug("Fail to get the latest activity from location {}",
                     locationName);
             return null;
@@ -1481,9 +1484,9 @@ public class ItemService {
         else {
             logger.debug("Get the latest activity from location {}, for item {}, at {}",
                     locationName,
-                    latestInventoryActivity.getItem().getName(),
-                    latestInventoryActivity.getActivityDateTime());
-            return latestInventoryActivity.getItem();
+                    latestInventoryActivityList.get(0).getItem().getName(),
+                    latestInventoryActivityList.get(0).getActivityDateTime());
+            return latestInventoryActivityList.get(0).getItem();
 
         }
     }
