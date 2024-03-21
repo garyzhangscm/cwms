@@ -193,7 +193,7 @@ public class SiloRestemplateClient {
         // headers.add("Accept", "application/json, text/plain, */*");
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         headers.add("accept-encoding", "gzip, deflate, br");
-        headers.add("authorization", "{\"value\":\"" + token + "\"}");
+        headers.add("Authorization", "{\"value\":\"" + token + "\"}");
         return new HttpEntity<>(body, headers);
     }
 

@@ -401,6 +401,8 @@ public class TargetShippingCartonLabelService {
 
         lpnLabelContent.put("style", targetShippingCartonLabel.getItemNumber());
 
+        logger.debug("start to process target SSCC18 from the original value {}",
+                targetShippingCartonLabel.getSSCC18());
         String SSCC18 = getSSCC18Code(targetShippingCartonLabel.getSSCC18());
         lpnLabelContent.put("SSCC18", SSCC18);
         lpnLabelContent.put("formatted_SSCC18", formatSSCC18(SSCC18));
@@ -444,6 +446,8 @@ public class TargetShippingCartonLabelService {
             throw OrderOperationException.raiseException("can't process empty SSCC  code");
         }
         else if (code.length() == 19) {
+            logger.debug("target SSCC code {} is of length 19, the check digit from {} is {}",
+                    code, SSCC.substring(2), getSSCC18CheckDigt(SSCC.substring(2)));
             return "(" + code.substring(0, 2) + ")" + code.substring(2) + getSSCC18CheckDigt(SSCC.substring(2));
         }
         else if (code.length() == 20) {
@@ -453,6 +457,8 @@ public class TargetShippingCartonLabelService {
             return "(00)" + code;
         }
         else if (code.length() == 17) {
+            logger.debug("target SSCC code {} is of length 17, the check digit from {} is {}",
+                    code, SSCC, getSSCC18CheckDigt(SSCC));
             return "(00)" + code + getSSCC18CheckDigt(SSCC);
         }
 
@@ -469,13 +475,15 @@ public class TargetShippingCartonLabelService {
             throw OrderOperationException.raiseException("can't calculate the SSCC code " + sscc17 +
                     " as it is not in the right format");
         }
+        logger.debug("start to process SSCC code {}, which should be at length of 17",
+                sscc17);
         int sum = 0;
         for(int i = 0; i < sscc17.length(); i++) {
             if (i % 2 == 1) {
-                sum += (Integer.parseInt(String.valueOf(sscc17.charAt(i))) * 3);
+                sum += Integer.parseInt(String.valueOf(sscc17.charAt(i)));
             }
             else {
-                sum += Integer.parseInt(String.valueOf(sscc17.charAt(i)));
+                sum += (Integer.parseInt(String.valueOf(sscc17.charAt(i))) * 3);
             }
         }
         int x = (sum / 10) + 1;
