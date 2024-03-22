@@ -50,8 +50,9 @@ public class WorkOrderQCSampleController {
     public List<WorkOrderQCSample> findAllWorkOrderQCSamples(
             @RequestParam Long warehouseId,
             @RequestParam(name="number", required = false, defaultValue = "") String number,
-            @RequestParam(name="productionLineAssignmentId", required = false, defaultValue = "") Long productionLineAssignmentId) {
-        return workOrderQCSampleService.findAll(warehouseId, number, productionLineAssignmentId);
+            @RequestParam(name="productionLineAssignmentId", required = false, defaultValue = "") Long productionLineAssignmentId,
+            @RequestParam(name="includeRemovedSamples", required = false, defaultValue = "false") Boolean includeRemovedSamples) {
+        return workOrderQCSampleService.findAll(warehouseId, number, productionLineAssignmentId, includeRemovedSamples);
     }
 
 
