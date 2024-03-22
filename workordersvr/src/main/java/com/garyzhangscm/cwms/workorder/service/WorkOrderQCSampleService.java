@@ -96,13 +96,16 @@ public class WorkOrderQCSampleService   {
 
 
     public List<WorkOrderQCSample> findAll(Long warehouseId, String number,
-                                           Long productionLineAssignmentId) {
+                                           Long productionLineAssignmentId,
+                                           Boolean includeRemovedSamples) {
 
-        return findAll(warehouseId, number, productionLineAssignmentId, true);
+        return findAll(warehouseId, number, productionLineAssignmentId, includeRemovedSamples,
+                true);
     }
 
     public List<WorkOrderQCSample> findAll(Long warehouseId, String number,
                                            Long productionLineAssignmentId,
+                                           Boolean includeRemovedSamples,
                                            boolean loadDetail) {
         List<WorkOrderQCSample> workOrderQCSamples =
                 workOrderQCSampleRepository.findAll(
@@ -120,6 +123,10 @@ public class WorkOrderQCSampleService   {
                         Join<WorkOrderQCSample, ProductionLineAssignment> joinProductionLineAssignment
                                 = root.join("productionLineAssignment", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinProductionLineAssignment.get("id"), productionLineAssignmentId));
+                    }
+                    if (!Boolean.TRUE.equals(includeRemovedSamples)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("removed"), false));
                     }
 
 
@@ -255,6 +262,7 @@ public class WorkOrderQCSampleService   {
     private void removeQCSample(WorkOrderQCSample workOrderQCSample) {
         // remove all files
 
+        /**
         String filePath = getWorkOrderQCSampleImageFolder(workOrderQCSample.getProductionLineAssignment().getId());
         logger.debug("start to remove qc samples from folder {}",
                 filePath);
@@ -262,7 +270,9 @@ public class WorkOrderQCSampleService   {
 
         // remove the qc sample record
         delete(workOrderQCSample);
-
+**/
+        workOrderQCSample.setRemoved(true);
+        saveOrUpdate(workOrderQCSample);
     }
 
     public void removeQCSample(Long id) {

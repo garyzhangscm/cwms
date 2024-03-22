@@ -43,6 +43,9 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
     @Column(name = "image_urls")
     private String imageUrls;
 
+    @Column(name = "removed")
+    private Boolean removed = false;
+
     @Override
     public String toString() {
         try {
@@ -106,5 +109,13 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
 
     public void setProductionLine(ProductionLine productionLine) {
         this.productionLine = productionLine;
+    }
+
+    public Boolean getRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(Boolean removed) {
+        this.removed = removed;
     }
 }
