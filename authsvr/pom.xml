@@ -14,7 +14,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>authenticationserver</artifactId>
-	<version>v1.34</version>
+	<version>v1.35</version>
 	<name>Authentication Server</name>
 	<description>Authentication Server - OAuth2</description>
 
