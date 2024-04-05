@@ -7,8 +7,8 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/zuulsvr-v1.34.jar /usr/local/service/
+ADD target/zuulsvr-v1.35.jar /usr/local/service/
 
 
-ENTRYPOINT ["java","-jar","/usr/local/service/zuulsvr-v1.34.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/zuulsvr-v1.35.jar"]
 
