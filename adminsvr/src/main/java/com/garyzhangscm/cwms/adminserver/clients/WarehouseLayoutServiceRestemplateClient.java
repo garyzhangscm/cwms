@@ -179,7 +179,8 @@ public class WarehouseLayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/locations");
+                        .path("/api/layout/locations")
+                .queryParam("warehouseId", location.getWarehouse().getId());
 /**
         ResponseBodyWrapper<Location> responseBodyWrapper
                 = restTemplate.exchange(
