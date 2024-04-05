@@ -165,6 +165,10 @@ public class UrlAccessControllerFilter implements Filter {
         Long companyId = getLongValueFromRequest("companyId", httpServletRequest);
         Long warehouseId = getLongValueFromRequest("warehouseId", httpServletRequest);
 
+        logger.debug("Get company ID {} and warehouse id {} from the http request",
+                Objects.isNull(companyId) ? "N/A" : companyId,
+                Objects.isNull(warehouseId) ? "N/A" : warehouseId);
+
         if (Objects.isNull(companyId)) {
             // if company ID is not passed in, then see if the company code is passed in
             String companyCode = getStringValueFromRequest("companyCode", httpServletRequest);

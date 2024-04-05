@@ -70,7 +70,10 @@ public class AdminserverApplication {
                                                    ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails,
                                                    @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
         OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
-        restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+        // restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
+        restTemplate.setInterceptors(
+                Arrays.asList(new ClientHttpRequestInterceptor[]{
+                        new JsonMimeInterceptor(),  new UserContextInterceptor()}));
         customizer.customize(restTemplate);
         return restTemplate;
     }
