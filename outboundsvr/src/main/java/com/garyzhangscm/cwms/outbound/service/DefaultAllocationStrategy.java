@@ -76,11 +76,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // will make the criteria the same so that we can calculate the available quantity based on
         // the existing pick and existing inventory
         existingPicks = existingPicks.stream().filter(
-                pick -> (Strings.isBlank(allocationRequest.getColor()) || allocationRequest.getColor().equalsIgnoreCase(pick.getColor())) &&
-                        (Strings.isBlank(allocationRequest.getStyle()) || allocationRequest.getStyle().equalsIgnoreCase(pick.getStyle())) &&
-                        (Strings.isBlank(allocationRequest.getProductSize()) || allocationRequest.getProductSize().equalsIgnoreCase(pick.getProductSize())) &&
-                        (Strings.isBlank(allocationRequest.getAllocateByReceiptNumber()) || allocationRequest.getAllocateByReceiptNumber().equalsIgnoreCase(pick.getAllocateByReceiptNumber()))
-
+                pick -> isPickMatchWithAllocationRequest(pick, allocationRequest)
         ).collect(Collectors.toList());
 
         // Let's get all the pickable inventory and existing picks to the trace file
@@ -108,6 +104,11 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getColor(),
                 allocationRequest.getProductSize(),
                 allocationRequest.getStyle(),
+                allocationRequest.getInventoryAttribute1(),
+                allocationRequest.getInventoryAttribute2(),
+                allocationRequest.getInventoryAttribute3(),
+                allocationRequest.getInventoryAttribute4(),
+                allocationRequest.getInventoryAttribute5(),
                 allocationRequest.getAllocateByReceiptNumber());
 
         // for manual pick, we will filter out the inventory to specific LPN
@@ -136,6 +137,32 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         return allocate(allocationRequest, item, openQuantity,
                 inventorySummaries, existingPicks);
+    }
+
+    /**
+     * Check if the pick matches with the allocation request when either the allocation request's field
+     * is empty, or both pick and allocation request has the same value
+     * # color
+     * # style
+     * # product size
+     * # receipt number
+     * # inventory attribute 1 ~ 5
+     * @param pick
+     * @param allocationRequest
+     * @return
+     */
+    private boolean isPickMatchWithAllocationRequest(Pick pick, AllocationRequest allocationRequest) {
+        return (Strings.isBlank(allocationRequest.getColor()) || allocationRequest.getColor().equalsIgnoreCase(pick.getColor())) &&
+               (Strings.isBlank(allocationRequest.getStyle()) || allocationRequest.getStyle().equalsIgnoreCase(pick.getStyle())) &&
+               (Strings.isBlank(allocationRequest.getProductSize()) || allocationRequest.getProductSize().equalsIgnoreCase(pick.getProductSize())) &&
+               (Strings.isBlank(allocationRequest.getAllocateByReceiptNumber()) || allocationRequest.getAllocateByReceiptNumber().equalsIgnoreCase(pick.getAllocateByReceiptNumber())) &&
+               (Strings.isBlank(allocationRequest.getInventoryAttribute1()) || allocationRequest.getInventoryAttribute1().equalsIgnoreCase(pick.getInventoryAttribute1())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute2()) || allocationRequest.getInventoryAttribute2().equalsIgnoreCase(pick.getInventoryAttribute2())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute3()) || allocationRequest.getInventoryAttribute3().equalsIgnoreCase(pick.getInventoryAttribute3())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute4()) || allocationRequest.getInventoryAttribute4().equalsIgnoreCase(pick.getInventoryAttribute4())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute5()) || allocationRequest.getInventoryAttribute5().equalsIgnoreCase(pick.getInventoryAttribute5()));
+
+
     }
 
     @Override

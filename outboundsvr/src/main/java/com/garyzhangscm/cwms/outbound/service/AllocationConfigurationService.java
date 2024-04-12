@@ -423,7 +423,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         // Get all pickable inventory
         List<Inventory> pickableInventory
                 = inventoryServiceRestemplateClient.getPickableInventory(
-                itemId, inventoryStatusId, null, null, null, null, null, null);
+                itemId, inventoryStatusId, null, null, null, null, null, null,null,null,null,null,null);
         logger.debug("We have {} pickable inventory against the item with id {}",
                 pickableInventory.size(), itemId);
         return pickableInventory;

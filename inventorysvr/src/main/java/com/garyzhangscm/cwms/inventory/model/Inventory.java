@@ -155,6 +155,16 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name="style")
     private String style;
 
+    @Column(name="attribute_1")
+    private String attribute1;
+    @Column(name="attribute_2")
+    private String attribute2;
+    @Column(name="attribute_3")
+    private String attribute3;
+    @Column(name="attribute_4")
+    private String attribute4;
+    @Column(name="attribute_5")
+    private String attribute5;
 
     @Column(name = "reason_code_id")
     private Long reasonCodeId;
@@ -227,6 +237,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setColor(getColor());
         inventory.setProductSize(getProductSize());
         inventory.setColor(getColor());
+
+        inventory.setAttribute1(getAttribute1());
+        inventory.setAttribute2(getAttribute2());
+        inventory.setAttribute3(getAttribute3());
+        inventory.setAttribute4(getAttribute4());
+        inventory.setAttribute5(getAttribute5());
+
         inventory.setFifoDate(getFifoDate());
 
         setQuantity(getQuantity() - newQuantity);
@@ -595,5 +612,45 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setReasonCode(ReasonCode reasonCode) {
         this.reasonCode = reasonCode;
+    }
+
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
     }
 }

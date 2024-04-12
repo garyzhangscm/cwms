@@ -124,6 +124,16 @@ public class ItemUnitOfMeasureService {
                 addColumn("defaultProductSize").
                 addColumn("trackingStyleFlag").
                 addColumn("defaultStyle").
+                addColumn("trackingInventoryAttribute1Flag").
+                addColumn("defaultInventoryAttribute1").
+                addColumn("trackingInventoryAttribute2Flag").
+                addColumn("defaultInventoryAttribute2").
+                addColumn("trackingInventoryAttribute3Flag").
+                addColumn("defaultInventoryAttribute3").
+                addColumn("trackingInventoryAttribute4Flag").
+                addColumn("defaultInventoryAttribute4").
+                addColumn("trackingInventoryAttribute5Flag").
+                addColumn("defaultInventoryAttribute5").
                 addColumn("itemPackageType").
                 // only needed if the item package type doesn't exists and we need to
                 // create one

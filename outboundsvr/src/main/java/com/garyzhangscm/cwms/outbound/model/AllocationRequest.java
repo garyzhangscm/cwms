@@ -48,6 +48,12 @@ public class AllocationRequest {
     private String productSize;
     private String style;
 
+    private String inventoryAttribute1;
+    private String inventoryAttribute2;
+    private String inventoryAttribute3;
+    private String inventoryAttribute4;
+    private String inventoryAttribute5;
+
     private String allocateByReceiptNumber;
 
 
@@ -87,6 +93,12 @@ public class AllocationRequest {
         this.color = shipmentLine.getOrderLine().getColor();
         this.productSize = shipmentLine.getOrderLine().getProductSize();
         this.style = shipmentLine.getOrderLine().getStyle();
+
+        this.inventoryAttribute1 = shipmentLine.getOrderLine().getInventoryAttribute1();
+        this.inventoryAttribute2 = shipmentLine.getOrderLine().getInventoryAttribute2();
+        this.inventoryAttribute3 = shipmentLine.getOrderLine().getInventoryAttribute3();
+        this.inventoryAttribute4 = shipmentLine.getOrderLine().getInventoryAttribute4();
+        this.inventoryAttribute5 = shipmentLine.getOrderLine().getInventoryAttribute5();
 
         this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
     }
@@ -302,5 +314,45 @@ public class AllocationRequest {
 
     public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
         this.allocateByReceiptNumber = allocateByReceiptNumber;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 }

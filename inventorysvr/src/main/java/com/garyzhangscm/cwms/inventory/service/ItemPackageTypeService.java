@@ -319,6 +319,42 @@ public class ItemPackageTypeService {
         itemPackageTypeCSVWrapper.setDefaultStyle(
                 itemUnitOfMeasureCSVWrapper.getDefaultStyle()
         );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute1Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute1Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute1(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute1()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute2Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute2Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute2(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute2()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute3Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute3Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute3(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute3()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute4Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute4Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute4(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute4()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute5Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute5Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute5(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute5()
+        );
+
         itemPackageTypeCSVWrapper.setReceivingRateByUnit(
                 itemUnitOfMeasureCSVWrapper.getReceivingRateByUnit()
         );
@@ -351,6 +387,7 @@ public class ItemPackageTypeService {
                 null,null,null,null,null, null,
                 null,null,null,null, null,
                 null,null,null,null,null,null, null,null,null,
+                        null, null,null,null,null,
                         null, false, null, false,
                         null)
                   .size() > 0) {

@@ -1932,7 +1932,13 @@ public class PickService {
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
                 null,
                 allocationRequest.getColor(), allocationRequest.getProductSize(),
-                allocationRequest.getStyle(), allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getStyle(),
+                allocationRequest.getInventoryAttribute1(),
+                allocationRequest.getInventoryAttribute2(),
+                allocationRequest.getInventoryAttribute3(),
+                allocationRequest.getInventoryAttribute4(),
+                allocationRequest.getInventoryAttribute5(),
+                allocationRequest.getAllocateByReceiptNumber());
 
         long pickableInventoryQuantity = pickableInventory.stream().map(inventory -> inventory.getQuantity())
                 .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();
@@ -2013,7 +2019,10 @@ public class PickService {
     }
 
     public Long getQuantityInOrderPick(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
-                                   String color, String productSize, String style, boolean exactMatch,
+                                   String color, String productSize, String style,
+                                       String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3,
+                                       String inventoryAttribute4, String inventoryAttribute5,
+                                       boolean exactMatch,
                                    ClientRestriction clientRestriction) {
         List<Pick> picks = findAll(
                 warehouseId, clientId, null, null, null,
@@ -2030,7 +2039,12 @@ public class PickService {
         picks = picks.stream().filter(
                 pick -> matchPickAttributeWithInventoryAttribute(pick.getColor(), color, exactMatch) &&
                         matchPickAttributeWithInventoryAttribute(pick.getProductSize(), productSize, exactMatch) &&
-                        matchPickAttributeWithInventoryAttribute(pick.getStyle(), style, exactMatch)
+                        matchPickAttributeWithInventoryAttribute(pick.getStyle(), style, exactMatch)&&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute1(), inventoryAttribute1, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute2(), inventoryAttribute2, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute3(), inventoryAttribute3, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute4(), inventoryAttribute4, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute5(), inventoryAttribute5, exactMatch)
         ).collect(Collectors.toList());
 
         return picks.stream().map(pick -> pick.getQuantity() > pick.getPickedQuantity() ?
@@ -2357,7 +2371,13 @@ public class PickService {
                     List<Inventory> pickableInventory =  pickableInventoryMap.getOrDefault(key,
                                 inventoryServiceRestemplateClient.getPickableInventory(
                                         pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
-                                        pick.getColor(), pick.getProductSize(), pick.getStyle(), null)
+                                        pick.getColor(), pick.getProductSize(), pick.getStyle(),
+                                        pick.getInventoryAttribute1(),
+                                        pick.getInventoryAttribute2(),
+                                        pick.getInventoryAttribute3(),
+                                        pick.getInventoryAttribute4(),
+                                        pick.getInventoryAttribute5(),
+                                        null)
                             );
                     pickableInventoryMap.putIfAbsent(key, pickableInventory);
 

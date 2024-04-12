@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +33,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -154,6 +151,17 @@ public class InventoryArchive extends AuditibleEntity<String> implements Seriali
     @Column(name="style")
     private String style;
 
+    // required inventory attribute
+    @Column(name="attribute_1")
+    private String attribute1;
+    @Column(name="attribute_2")
+    private String attribute2;
+    @Column(name="attribute_3")
+    private String attribute3;
+    @Column(name="attribute_4")
+    private String attribute4;
+    @Column(name="attribute_5")
+    private String attribute5;
 
     @Column(name = "reason_code_id")
     private Long reasonCodeId;
@@ -222,6 +230,12 @@ public class InventoryArchive extends AuditibleEntity<String> implements Seriali
         this.productSize = inventory.getProductSize();
         this.style = inventory.getStyle();
 
+        this.attribute1 = inventory.getAttribute1();
+        this.attribute2 = inventory.getAttribute2();
+        this.attribute3 = inventory.getAttribute3();
+        this.attribute4 = inventory.getAttribute4();
+        this.attribute5 = inventory.getAttribute5();
+
         this.reasonCodeId = inventory.getReasonCodeId();
 
         this.fifoDate = inventory.getFifoDate();
@@ -283,6 +297,46 @@ public class InventoryArchive extends AuditibleEntity<String> implements Seriali
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
     }
 
     public Long getId() {

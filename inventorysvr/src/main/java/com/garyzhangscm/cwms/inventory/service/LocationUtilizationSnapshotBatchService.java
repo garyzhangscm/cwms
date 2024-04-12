@@ -708,6 +708,11 @@ public class LocationUtilizationSnapshotBatchService {
                             null,
                             null,
                             null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
                             null, null,
                             false ,
                             null);

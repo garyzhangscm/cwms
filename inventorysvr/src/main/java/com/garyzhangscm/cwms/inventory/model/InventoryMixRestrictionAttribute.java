@@ -9,7 +9,12 @@ public enum InventoryMixRestrictionAttribute {
     inventoryStatus(InventoryStatus.class),
     color(String.class),
     productSize(String.class),
-    style(String.class);
+    style(String.class),
+    attribute1(String.class),
+    attribute2(String.class),
+    attribute3(String.class),
+    attribute4(String.class),
+    attribute5(String.class);
 
 
     private Class clazz;
