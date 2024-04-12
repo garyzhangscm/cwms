@@ -64,6 +64,7 @@ public class InventoryAllocationSummaryService {
                 itemId, itemName,null, null,null,null,null, null,locationName,
                 locationId,null,null,null,null,null, null,
                 null,null,null,null,null, null,null,null,null,
+                null,null,null,null,null,
                 false, null,
                 null);
         // key: location id + item id  + inventory status id

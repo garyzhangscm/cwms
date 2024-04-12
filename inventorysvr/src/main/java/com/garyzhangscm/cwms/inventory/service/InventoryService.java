@@ -181,6 +181,11 @@ public class InventoryService {
                                    String color,
                                    String productSize,
                                    String style,
+                                   String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
@@ -193,6 +198,7 @@ public class InventoryService {
                 customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
                 true, maxLPNCount);
@@ -223,6 +229,11 @@ public class InventoryService {
                                    String color,
                                    String productSize,
                                    String style,
+                                   String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
@@ -437,6 +448,47 @@ public class InventoryService {
                         }
                     }
 
+                    if (StringUtils.isNotBlank(attribute1)) {
+                        if (attribute1.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute1"), attribute1.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute1"), attribute1));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute2)) {
+                        if (attribute2.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute2"), attribute2.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute2"), attribute2));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute3)) {
+                        if (attribute3.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute3"), attribute3.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute3"), attribute3));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute4)) {
+                        if (attribute4.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute4"), attribute4.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute4"), attribute4));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute5)) {
+                        if (attribute5.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute5"), attribute5.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute5"), attribute5));
+                        }
+                    }
+
                     if (StringUtils.isNotBlank(inventoryIds)) {
 
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
@@ -644,6 +696,11 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null);
     }
 
@@ -654,7 +711,8 @@ public class InventoryService {
                                                    Long inventoryStatusId, int lpnLimit,
                                                    boolean includeDetails) {
         return findPickableInventories(itemId, inventoryStatusId, null, null,
-                null, null, null, null, lpnLimit, includeDetails);
+                null, null, null, null,null,null,null,null,
+                null, lpnLimit, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -663,10 +721,17 @@ public class InventoryService {
                                                    String color,
                                                    String productSize,
                                                    String style,
+                                                   String attribute1,
+                                                   String attribute2,
+                                                   String attribute3,
+                                                   String attribute4,
+                                                   String attribute5,
                                                    String receiptNumber,
                                                    int lpnLimit) {
         return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, receiptNumber, lpnLimit, true);
+                color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
+                receiptNumber, lpnLimit, true);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -675,6 +740,11 @@ public class InventoryService {
                                                    String color,
                                                    String productSize,
                                                    String style,
+                                                   String attribute1,
+                                                   String attribute2,
+                                                   String attribute3,
+                                                   String attribute4,
+                                                   String attribute5,
                                                    String receiptNumber,
                                                    int lpnLimit,
                                                    boolean includeDetails) {
@@ -708,7 +778,8 @@ public class InventoryService {
                     }
                     return inventory;
                 }).filter(this::isLocationPickable)
-                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style, receiptNumber))
+                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style,
+                        attribute1, attribute2, attribute3, attribute4, attribute5, receiptNumber))
                 .filter(inventory -> {
                     // if LPN is passed in, only return the inventory that match with the LPN
                     if(Strings.isNotBlank(lpn)) {
@@ -731,7 +802,9 @@ public class InventoryService {
     }
 
     private boolean inventoryAttributeMatch(Inventory inventory, String color, String productSize,
-                                            String style, String receiptNumber) {
+                                            String style,
+                                            String attribute1, String attribute2, String attribute3,
+                                            String attribute4, String attribute5 , String receiptNumber) {
         if (Strings.isNotBlank(color) && !color.equalsIgnoreCase(inventory.getColor())) {
             return false;
         }
@@ -739,6 +812,21 @@ public class InventoryService {
             return false;
         }
         if (Strings.isNotBlank(style) && !style.equalsIgnoreCase(inventory.getStyle())) {
+            return false;
+        }
+        if (Strings.isNotBlank(attribute1) && !attribute1.equalsIgnoreCase(inventory.getAttribute1())) {
+            return false;
+        }
+        if (Strings.isNotBlank(attribute2) && !attribute2.equalsIgnoreCase(inventory.getAttribute2())) {
+            return false;
+        }
+        if (Strings.isNotBlank(attribute3) && !attribute3.equalsIgnoreCase(inventory.getAttribute3())) {
+            return false;
+        }
+        if (Strings.isNotBlank(attribute4) && !attribute4.equalsIgnoreCase(inventory.getAttribute4())) {
+            return false;
+        }
+        if (Strings.isNotBlank(attribute5) && !attribute5.equalsIgnoreCase(inventory.getAttribute5())) {
             return false;
         }
         if (Strings.isNotBlank(receiptNumber)) {
@@ -829,6 +917,11 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null, null, includeDetails,
                 null);
     }
@@ -864,6 +957,11 @@ public class InventoryService {
                 null,
                 null,
                 locationGroupId,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -1157,6 +1255,12 @@ public class InventoryService {
         inventory.setColor(inventoryCSVWrapper.getColor());
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
+
+        inventory.setAttribute1(inventoryCSVWrapper.getAttribute1());
+        inventory.setAttribute2(inventoryCSVWrapper.getAttribute2());
+        inventory.setAttribute3(inventoryCSVWrapper.getAttribute3());
+        inventory.setAttribute4(inventoryCSVWrapper.getAttribute4());
+        inventory.setAttribute5(inventoryCSVWrapper.getAttribute5());
 
         inventory.setWarehouseId(warehouseId);
 
@@ -2643,6 +2747,11 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null, null, null,
                         null
                 );
@@ -2696,6 +2805,11 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     null, null, null,
                     null
             );
@@ -2731,6 +2845,11 @@ public class InventoryService {
                         null,
                         null,
                         pickIds,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null,
@@ -3239,6 +3358,11 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null, null,
                 null,
                 null,
@@ -3329,37 +3453,40 @@ public class InventoryService {
 
 
     public void removeAllInventories(Long warehouseId,
-                                                            Long itemId,
-                                                            String itemName,
+                                    Long itemId,
+                                    String itemName,
                                      String itemNames,
-                                                            String itemPackageTypeName,
-                                                            Long clientId,
-                                                            String clientIds,
-                                                            String itemFamilyIds,
-                                                            Long inventoryStatusId,
-                                                            String locationName,
-                                                            Long locationId,
-                                                            String locationIds,
-                                                            Long locationGroupId,
-                                                            String receiptId,
+                                    String itemPackageTypeName,
+                                    Long clientId,
+                                    String clientIds,
+                                    String itemFamilyIds,
+                                    Long inventoryStatusId,
+                                    String locationName,
+                                    Long locationId,
+                                    String locationIds,
+                                    Long locationGroupId,
+                                    String receiptId,
                                      String receiptNumber,
-                                                            String customerReturnOrderId,
-                                                            Long workOrderId,
-                                                            String workOrderLineIds,
-                                                            String workOrderByProductIds,
-                                                            String pickIds,
-                                                            String lpn,
-                                     String color, String productSize, String style,
-                                                            String inventoryIds,
-                                                            Boolean notPutawayInventoryOnly,
-                                                            Boolean includeVirturalInventory,
-                                                            ClientRestriction clientRestriction) {
+                                    String customerReturnOrderId,
+                                    Long workOrderId,
+                                    String workOrderLineIds,
+                                    String workOrderByProductIds,
+                                    String pickIds,
+                                    String lpn,
+                                    String color, String productSize, String style,
+                                     String attribute1, String attribute2, String attribute3,
+                                     String attribute4, String attribute5,
+                                    String inventoryIds,
+                                    Boolean notPutawayInventoryOnly,
+                                    Boolean includeVirturalInventory,
+                                    ClientRestriction clientRestriction) {
         List<Inventory> inventories = findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId,
                 receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
                 false,
@@ -3972,6 +4099,11 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null, includeDetails,
                 null);
     }
@@ -4319,6 +4451,11 @@ public class InventoryService {
                         null, null, null, null,
                         null, null, null,
                         lpn, null, null, null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null, null, false, clientRestriction,
                          false, null );
 
@@ -4345,6 +4482,11 @@ public class InventoryService {
                         null, null, null, null,
                         null, null, null,
                         null, null, null, null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null, null, false, clientRestriction,
                         false, null );
 

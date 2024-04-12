@@ -38,6 +38,16 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
     private String trackingStyleFlag;
     private String defaultStyle;
 
+    private String trackingInventoryAttribute1Flag;
+    private String defaultInventoryAttribute1;
+    private String trackingInventoryAttribute2Flag;
+    private String defaultInventoryAttribute2;
+    private String trackingInventoryAttribute3Flag;
+    private String defaultInventoryAttribute3;
+    private String trackingInventoryAttribute4Flag;
+    private String defaultInventoryAttribute4;
+    private String trackingInventoryAttribute5Flag;
+    private String defaultInventoryAttribute5;
 
     private String client;
     private String supplier;
@@ -141,6 +151,86 @@ public class ItemPackageTypeCSVWrapper implements Serializable {
 
     public String getSupplier() {
         return supplier;
+    }
+
+    public String getTrackingInventoryAttribute1Flag() {
+        return trackingInventoryAttribute1Flag;
+    }
+
+    public void setTrackingInventoryAttribute1Flag(String trackingInventoryAttribute1Flag) {
+        this.trackingInventoryAttribute1Flag = trackingInventoryAttribute1Flag;
+    }
+
+    public String getDefaultInventoryAttribute1() {
+        return defaultInventoryAttribute1;
+    }
+
+    public void setDefaultInventoryAttribute1(String defaultInventoryAttribute1) {
+        this.defaultInventoryAttribute1 = defaultInventoryAttribute1;
+    }
+
+    public String getTrackingInventoryAttribute2Flag() {
+        return trackingInventoryAttribute2Flag;
+    }
+
+    public void setTrackingInventoryAttribute2Flag(String trackingInventoryAttribute2Flag) {
+        this.trackingInventoryAttribute2Flag = trackingInventoryAttribute2Flag;
+    }
+
+    public String getDefaultInventoryAttribute2() {
+        return defaultInventoryAttribute2;
+    }
+
+    public void setDefaultInventoryAttribute2(String defaultInventoryAttribute2) {
+        this.defaultInventoryAttribute2 = defaultInventoryAttribute2;
+    }
+
+    public String getTrackingInventoryAttribute3Flag() {
+        return trackingInventoryAttribute3Flag;
+    }
+
+    public void setTrackingInventoryAttribute3Flag(String trackingInventoryAttribute3Flag) {
+        this.trackingInventoryAttribute3Flag = trackingInventoryAttribute3Flag;
+    }
+
+    public String getDefaultInventoryAttribute3() {
+        return defaultInventoryAttribute3;
+    }
+
+    public void setDefaultInventoryAttribute3(String defaultInventoryAttribute3) {
+        this.defaultInventoryAttribute3 = defaultInventoryAttribute3;
+    }
+
+    public String getTrackingInventoryAttribute4Flag() {
+        return trackingInventoryAttribute4Flag;
+    }
+
+    public void setTrackingInventoryAttribute4Flag(String trackingInventoryAttribute4Flag) {
+        this.trackingInventoryAttribute4Flag = trackingInventoryAttribute4Flag;
+    }
+
+    public String getDefaultInventoryAttribute4() {
+        return defaultInventoryAttribute4;
+    }
+
+    public void setDefaultInventoryAttribute4(String defaultInventoryAttribute4) {
+        this.defaultInventoryAttribute4 = defaultInventoryAttribute4;
+    }
+
+    public String getTrackingInventoryAttribute5Flag() {
+        return trackingInventoryAttribute5Flag;
+    }
+
+    public void setTrackingInventoryAttribute5Flag(String trackingInventoryAttribute5Flag) {
+        this.trackingInventoryAttribute5Flag = trackingInventoryAttribute5Flag;
+    }
+
+    public String getDefaultInventoryAttribute5() {
+        return defaultInventoryAttribute5;
+    }
+
+    public void setDefaultInventoryAttribute5(String defaultInventoryAttribute5) {
+        this.defaultInventoryAttribute5 = defaultInventoryAttribute5;
     }
 
     public void setSupplier(String supplier) {

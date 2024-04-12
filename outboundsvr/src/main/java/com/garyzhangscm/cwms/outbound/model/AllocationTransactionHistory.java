@@ -125,6 +125,18 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
     @Column(name="style")
     private String style;
 
+    // required inventory attribute
+    @Column(name="inventory_attribute_1")
+    private String inventoryAttribute1;
+    @Column(name="inventory_attribute_2")
+    private String inventoryAttribute2;
+    @Column(name="inventory_attribute_3")
+    private String inventoryAttribute3;
+    @Column(name="inventory_attribute_4")
+    private String inventoryAttribute4;
+    @Column(name="inventory_attribute_5")
+    private String inventoryAttribute5;
+
     // only allocate inventory that received by certain receipt
     @Column(name = "allocate_by_receipt_number")
     private String allocateByReceiptNumber;
@@ -171,6 +183,13 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         private String color;
         private String productSize;
         private String style;
+
+        private String inventoryAttribute1;
+        private String inventoryAttribute2;
+        private String inventoryAttribute3;
+        private String inventoryAttribute4;
+        private String inventoryAttribute5;
+
         private String allocateByReceiptNumber;
 
         @Override
@@ -215,6 +234,11 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
                 this.color = shipmentLine.getOrderLine().getColor();
                 this.style = shipmentLine.getOrderLine().getStyle();
                 this.productSize = shipmentLine.getOrderLine().getProductSize();
+                this.inventoryAttribute1 = shipmentLine.getOrderLine().getInventoryAttribute1();
+                this.inventoryAttribute2 = shipmentLine.getOrderLine().getInventoryAttribute2();
+                this.inventoryAttribute3 = shipmentLine.getOrderLine().getInventoryAttribute3();
+                this.inventoryAttribute4 = shipmentLine.getOrderLine().getInventoryAttribute4();
+                this.inventoryAttribute5 = shipmentLine.getOrderLine().getInventoryAttribute5();
                 this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
             }
             return this;
@@ -363,6 +387,13 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         color = builder.color;
         style = builder.style;
         productSize = builder.productSize;
+
+        inventoryAttribute1 = builder.inventoryAttribute1;
+        inventoryAttribute2 = builder.inventoryAttribute2;
+        inventoryAttribute3 = builder.inventoryAttribute3;
+        inventoryAttribute4 = builder.inventoryAttribute4;
+        inventoryAttribute5 = builder.inventoryAttribute5;
+
         allocateByReceiptNumber = builder.allocateByReceiptNumber;
 
 
@@ -438,6 +469,46 @@ public class AllocationTransactionHistory extends AuditibleEntity<String> implem
         return Strings.isNotBlank(itemName) ?
                 itemName :
                 Objects.nonNull(item) ? item.getName() : "";
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 
     public String getColor() {

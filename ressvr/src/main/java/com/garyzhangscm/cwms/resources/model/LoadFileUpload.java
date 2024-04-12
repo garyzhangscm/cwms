@@ -163,6 +163,28 @@ public class LoadFileUpload extends FileUploadType {
                 "style", "Style",
                 String.class, 100, true
         ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute1", "Inventory Attribute 1",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute2", "Inventory Attribute 2",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute3", "Inventory Attribute 3",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute4", "Inventory Attribute 4",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute5", "Inventory Attribute 5",
+                String.class, 200, true
+        ));
+
         addColumn(new FileUploadTemplateColumn(
                 "hualeiProductId", "Hualei Product Id",
                 String.class, 100, true

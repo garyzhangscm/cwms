@@ -45,6 +45,12 @@ public class InventoryPutawayCSVWrapper implements Serializable {
     private String productSize;
     private String style;
 
+    private String inventoryAttribute1;
+    private String inventoryAttribute2;
+    private String inventoryAttribute3;
+    private String inventoryAttribute4;
+    private String inventoryAttribute5;
+
     private String destinationLocation;
 
     public InventoryPutawayCSVWrapper trim() {
@@ -66,6 +72,12 @@ public class InventoryPutawayCSVWrapper implements Serializable {
         color = Strings.isBlank(color) ? "" :  color.trim();
         productSize = Strings.isBlank(productSize) ? "" :  productSize.trim();
         style = Strings.isBlank(style) ? "" :  style.trim();
+
+        inventoryAttribute1 = Strings.isBlank(inventoryAttribute1) ? "" :  inventoryAttribute1.trim();
+        inventoryAttribute2 = Strings.isBlank(inventoryAttribute2) ? "" :  inventoryAttribute2.trim();
+        inventoryAttribute3 = Strings.isBlank(inventoryAttribute3) ? "" :  inventoryAttribute3.trim();
+        inventoryAttribute4 = Strings.isBlank(inventoryAttribute4) ? "" :  inventoryAttribute4.trim();
+        inventoryAttribute5 = Strings.isBlank(inventoryAttribute5) ? "" :  inventoryAttribute5.trim();
 
         destinationLocation = Strings.isBlank(destinationLocation) ? "" :  destinationLocation.trim();
 
@@ -145,6 +157,45 @@ public class InventoryPutawayCSVWrapper implements Serializable {
         this.inventoryStatus = inventoryStatus;
     }
 
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
+    }
 
     public String getDestinationLocation() {
         return destinationLocation;

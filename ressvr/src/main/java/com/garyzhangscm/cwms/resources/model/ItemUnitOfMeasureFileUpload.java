@@ -80,6 +80,57 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "trackingInventoryAttribute1Flag", "Tracking Inventory Attribute 1?(only needed for new item)",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultInventoryAttribute1", "Default Inventory Attribute 1(only needed for new item)",
+                String.class, 200, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingInventoryAttribute2Flag", "Tracking Inventory Attribute 2?(only needed for new item)",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultInventoryAttribute2", "Default Inventory Attribute 2(only needed for new item)",
+                String.class, 200, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingInventoryAttribute3Flag", "Tracking Inventory Attribute 3?(only needed for new item)",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultInventoryAttribute3", "Default Inventory Attribute 3(only needed for new item)",
+                String.class, 200, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingInventoryAttribute4Flag", "Tracking Inventory Attribute 4?(only needed for new item)",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultInventoryAttribute4", "Default Inventory Attribute 4(only needed for new item)",
+                String.class, 200, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "trackingInventoryAttribute5Flag", "Tracking Inventory Attribute 5?(only needed for new item)",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "defaultInventoryAttribute5", "Default Inventory Attribute 5(only needed for new item)",
+                String.class, 200, true
+        ));
+
+
 
         addColumn(new FileUploadTemplateColumn(
                  "itemPackageType", "Item Package Type Name",

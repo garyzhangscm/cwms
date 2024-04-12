@@ -260,15 +260,27 @@ public class InventoryServiceRestemplateClient {
 
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId,
                                                 String color, String productSize,
-                                                String style, String allocateByReceiptNumber) {
+                                                String style, String allocateByReceiptNumber,
+                                                String inventoryAttribute1,
+                                                String inventoryAttribute2,
+                                                String inventoryAttribute3,
+                                                String inventoryAttribute4,
+                                                String inventoryAttribute5) {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
-                color, productSize, style, allocateByReceiptNumber);
+                color, productSize, style, allocateByReceiptNumber, inventoryAttribute1,
+                inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
+                inventoryAttribute5);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
                                                 Long locationId, String lpn,
                                                 String color, String productSize,
                                                 String style,
-                                                String allocateByReceiptNumber) {
+                                                String allocateByReceiptNumber,
+                                                String inventoryAttribute1,
+                                                String inventoryAttribute2,
+                                                String inventoryAttribute3,
+                                                String inventoryAttribute4,
+                                                String inventoryAttribute5) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -292,6 +304,21 @@ public class InventoryServiceRestemplateClient {
         }
         if (Strings.isNotBlank(style)) {
             builder = builder.queryParam("style", style);
+        }
+        if (Strings.isNotBlank(inventoryAttribute1)) {
+            builder = builder.queryParam("attribute1", inventoryAttribute1);
+        }
+        if (Strings.isNotBlank(inventoryAttribute2)) {
+            builder = builder.queryParam("attribute2", inventoryAttribute2);
+        }
+        if (Strings.isNotBlank(inventoryAttribute3)) {
+            builder = builder.queryParam("attribute3", inventoryAttribute3);
+        }
+        if (Strings.isNotBlank(inventoryAttribute4)) {
+            builder = builder.queryParam("attribute4", inventoryAttribute4);
+        }
+        if (Strings.isNotBlank(inventoryAttribute5)) {
+            builder = builder.queryParam("attribute5", inventoryAttribute5);
         }
         if (Strings.isNotBlank(allocateByReceiptNumber)) {
             builder = builder.queryParam("receiptNumber", allocateByReceiptNumber);
@@ -321,6 +348,12 @@ public class InventoryServiceRestemplateClient {
         logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
         logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
         logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
+        logger.debug("inventoryAttribute1 = {}", Strings.isBlank(inventoryAttribute1) ? "N/A" : inventoryAttribute1);
+        logger.debug("inventoryAttribute2 = {}", Strings.isBlank(inventoryAttribute2) ? "N/A" : inventoryAttribute2);
+        logger.debug("inventoryAttribute3 = {}", Strings.isBlank(inventoryAttribute3) ? "N/A" : inventoryAttribute3);
+        logger.debug("inventoryAttribute4 = {}", Strings.isBlank(inventoryAttribute4) ? "N/A" : inventoryAttribute4);
+        logger.debug("inventoryAttribute5 = {}", Strings.isBlank(inventoryAttribute5) ? "N/A" : inventoryAttribute5);
         logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
         logger.debug("=========   Pickable   Inventory   ===============");
         pickableInventory.forEach(
@@ -633,8 +666,23 @@ public class InventoryServiceRestemplateClient {
             if (StringUtils.isNotBlank(pick.getStyle())) {
                 builder = builder.queryParam("style", pick.getStyle());
             }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute1())) {
+                builder = builder.queryParam("attribute1", pick.getInventoryAttribute1());
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute2())) {
+                builder = builder.queryParam("attribute2", pick.getInventoryAttribute2());
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute3())) {
+                builder = builder.queryParam("attribute3", pick.getInventoryAttribute3());
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute4())) {
+                builder = builder.queryParam("attribute4", pick.getInventoryAttribute4());
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute5())) {
+                builder = builder.queryParam("attribute5", pick.getInventoryAttribute5());
+            }
             if (StringUtils.isNotBlank(pick.getAllocateByReceiptNumber())) {
-                builder = builder.queryParam("style", pick.getStyle());
+                builder = builder.queryParam("receiptNumber", pick.getAllocateByReceiptNumber());
             }
 /**
             ResponseBodyWrapper<List<Inventory>> responseBodyWrapper

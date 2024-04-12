@@ -958,7 +958,13 @@ public class PickListService {
                     List<Inventory> pickableInventory =  pickableInventoryMap.getOrDefault(key,
                             inventoryServiceRestemplateClient.getPickableInventory(
                                     pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
-                                    pick.getColor(), pick.getProductSize(), pick.getStyle(), null)
+                                    pick.getColor(), pick.getProductSize(), pick.getStyle(),
+                                    pick.getInventoryAttribute1(),
+                                    pick.getInventoryAttribute2(),
+                                    pick.getInventoryAttribute3(),
+                                    pick.getInventoryAttribute4(),
+                                    pick.getInventoryAttribute5(),
+                                    null)
                     );
                     pickableInventoryMap.putIfAbsent(key, pickableInventory);
 

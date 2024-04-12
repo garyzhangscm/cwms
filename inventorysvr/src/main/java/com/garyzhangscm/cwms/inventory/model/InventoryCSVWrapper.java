@@ -48,6 +48,12 @@ public class InventoryCSVWrapper implements Serializable {
     private String productSize;
     private String style;
 
+    private String attribute1;
+    private String attribute2;
+    private String attribute3;
+    private String attribute4;
+    private String attribute5;
+
     public InventoryCSVWrapper trim() {
 
         lpn = Strings.isBlank(lpn) ? "" : lpn.trim();
@@ -69,6 +75,12 @@ public class InventoryCSVWrapper implements Serializable {
         color = Strings.isBlank(color) ? "" : color.trim();
         productSize = Strings.isBlank(productSize) ? "" : productSize.trim();
         style = Strings.isBlank(style) ? "" : style.trim();
+
+        attribute1 = Strings.isBlank(attribute1) ? "" : attribute1.trim();
+        attribute2 = Strings.isBlank(attribute2) ? "" : attribute2.trim();
+        attribute3 = Strings.isBlank(attribute3) ? "" : attribute3.trim();
+        attribute4 = Strings.isBlank(attribute4) ? "" : attribute4.trim();
+        attribute5 = Strings.isBlank(attribute5) ? "" : attribute5.trim();
 
         return this;
     }
@@ -177,5 +189,45 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
     }
 }

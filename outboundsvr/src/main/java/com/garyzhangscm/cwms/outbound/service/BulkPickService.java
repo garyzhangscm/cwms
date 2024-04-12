@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -102,7 +103,12 @@ public class BulkPickService {
                                   Boolean openPickOnly,
                                   String color,
                                   String style,
-                                  String productSize) {
+                                  String productSize,
+                                  String inventoryAttribute1,
+                                  String inventoryAttribute2,
+                                  String inventoryAttribute3,
+                                  String inventoryAttribute4,
+                                  String inventoryAttribute5) {
         return findAll(
                 warehouseId, pickType,
                 number, numberList,
@@ -112,6 +118,8 @@ public class BulkPickService {
                 sourceLocationId, sourceLocationName,
                 inventoryStatusId, openPickOnly,
                 color, style, productSize,
+                inventoryAttribute1, inventoryAttribute2,
+                inventoryAttribute3, inventoryAttribute4, inventoryAttribute5,
                 true
         );
     }
@@ -131,6 +139,11 @@ public class BulkPickService {
                                   String color,
                                   String style,
                                   String productSize,
+                                  String inventoryAttribute1,
+                                  String inventoryAttribute2,
+                                  String inventoryAttribute3,
+                                  String inventoryAttribute4,
+                                  String inventoryAttribute5,
                                   boolean loadDetails) {
         List<BulkPick> bulkPicks =
                 bulkPickRepository.findAll(
@@ -195,6 +208,21 @@ public class BulkPickService {
                     }
                     if (Strings.isNotBlank(style)) {
                         predicates.add(criteriaBuilder.equal(root.get("style"), style));
+                    }
+                    if (Strings.isNotBlank(inventoryAttribute1)) {
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryAttribute1"), inventoryAttribute1));
+                    }
+                    if (Strings.isNotBlank(inventoryAttribute2)) {
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryAttribute2"), inventoryAttribute2));
+                    }
+                    if (Strings.isNotBlank(inventoryAttribute3)) {
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryAttribute3"), inventoryAttribute3));
+                    }
+                    if (Strings.isNotBlank(inventoryAttribute4)) {
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryAttribute4"), inventoryAttribute4));
+                    }
+                    if (Strings.isNotBlank(inventoryAttribute5)) {
+                        predicates.add(criteriaBuilder.equal(root.get("inventoryAttribute5"), inventoryAttribute5));
                     }
 
                     Predicate[] p = new Predicate[predicates.size()];
@@ -278,7 +306,12 @@ public class BulkPickService {
                                                 Long inventoryStatusId,
                                                 String color,
                                                 String style,
-                                                String productSize) {
+                                                String productSize,
+                                                String inventoryAttribute1,
+                                                String inventoryAttribute2,
+                                                String inventoryAttribute3,
+                                                String inventoryAttribute4,
+                                                String inventoryAttribute5) {
         return findAll(warehouseId,
                 null,
                 null,
@@ -292,7 +325,10 @@ public class BulkPickService {
                 null,
                 inventoryStatusId,
                 true,
-                color, style, productSize);
+                color, style, productSize,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3,
+                inventoryAttribute4, inventoryAttribute5
+                );
     }
 
     /**
@@ -736,7 +772,12 @@ public class BulkPickService {
                 pick.getInventoryStatusId(),
                 pick.getColor(),
                 pick.getStyle(),
-                pick.getProductSize()).stream().filter(
+                pick.getProductSize(),
+                pick.getInventoryAttribute1(),
+                pick.getInventoryAttribute2(),
+                pick.getInventoryAttribute3(),
+                pick.getInventoryAttribute4(),
+                pick.getInventoryAttribute5()).stream().filter(
                         // only return the bulk pick that not started yet
                         bulkPick -> bulkPick.getPickedQuantity() == 0
         ).collect(Collectors.toList());
@@ -797,6 +838,9 @@ public class BulkPickService {
                         pick.getColor(),
                         pick.getProductSize(),
                         pick.getStyle(),
+                pick.getInventoryAttribute1(), pick.getInventoryAttribute2(),
+                pick.getInventoryAttribute3(), pick.getInventoryAttribute4(),
+                pick.getInventoryAttribute5(),
                 pick.getAllocateByReceiptNumber());
     }
 
@@ -1133,7 +1177,10 @@ public class BulkPickService {
         // setup the quantity by UOM from the pickable inventory in the source location
         List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
                 bulkPick.getItemId(), bulkPick.getInventoryStatusId(), bulkPick.getSourceLocationId(),
-                bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle(), null);
+                bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle(),
+                bulkPick.getInventoryAttribute1(), bulkPick.getInventoryAttribute2(),
+                bulkPick.getInventoryAttribute3(), bulkPick.getInventoryAttribute4(),
+                bulkPick.getInventoryAttribute5(), null);
 
         Report reportData = new Report();
         setupBulkPickReportParameters(

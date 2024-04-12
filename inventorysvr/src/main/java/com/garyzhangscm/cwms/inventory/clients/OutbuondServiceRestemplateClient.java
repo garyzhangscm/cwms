@@ -185,7 +185,12 @@ public class OutbuondServiceRestemplateClient {
                                     String color,
                                     String productSize,
                                     String style,
-                                    boolean exactMatch) {
+                                    String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
+                                   boolean exactMatch) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -205,6 +210,21 @@ public class OutbuondServiceRestemplateClient {
         }
         if (Strings.isNotBlank(style)) {
             builder = builder.queryParam("style", style);
+        }
+        if (Strings.isNotBlank(attribute1)) {
+            builder = builder.queryParam("inventoryAttribute1", attribute1);
+        }
+        if (Strings.isNotBlank(attribute2)) {
+            builder = builder.queryParam("inventoryAttribute2", attribute2);
+        }
+        if (Strings.isNotBlank(attribute3)) {
+            builder = builder.queryParam("inventoryAttribute3", attribute3);
+        }
+        if (Strings.isNotBlank(attribute4)) {
+            builder = builder.queryParam("inventoryAttribute4", attribute4);
+        }
+        if (Strings.isNotBlank(attribute5)) {
+            builder = builder.queryParam("inventoryAttribute5", attribute5);
         }
         return restTemplateProxy.exchange(
                 Long.class,

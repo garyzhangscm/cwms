@@ -1673,7 +1673,10 @@ public class OrderService {
                     // setup the quantity by UOM from the pickable inventory in the source location
                     List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
                             pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(), null,
-                            pick.getColor(), pick.getProductSize(), pick.getStyle(), pick.getAllocateByReceiptNumber());
+                            pick.getColor(), pick.getProductSize(), pick.getStyle(),
+                            pick.getInventoryAttribute1(), pick.getInventoryAttribute2(),pick.getInventoryAttribute3(),
+                            pick.getInventoryAttribute4(), pick.getInventoryAttribute5(),
+                            pick.getAllocateByReceiptNumber());
 
                     StringBuilder pickQuantityByUOM = new StringBuilder();
                     pickQuantityByUOM.append(pick.getQuantity());
@@ -3078,7 +3081,10 @@ public class OrderService {
      * @return
      */
     public Long getQuantityInOrder(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
-                                   String color, String productSize, String style, boolean exactMatch,
+                                   String color, String productSize, String style,
+                                   String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3,
+                                   String inventoryAttribute4, String inventoryAttribute5,
+                                   boolean exactMatch,
                                    ClientRestriction clientRestriction) {
         List<OrderLine> orderLines = orderLineService.findAll(
                 warehouseId, clientId, null,
@@ -3091,7 +3097,12 @@ public class OrderService {
                 .filter(
                     orderLine -> matchOrderLineAttributeWithInventoryAttribute(orderLine.getColor(), color, exactMatch) &&
                             matchOrderLineAttributeWithInventoryAttribute(orderLine.getProductSize(), productSize, exactMatch) &&
-                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getStyle(), style, exactMatch)
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getStyle(), style, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute1(), inventoryAttribute1, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute2(), inventoryAttribute2, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute3(), inventoryAttribute3, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute4(), inventoryAttribute4, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute5(), inventoryAttribute5, exactMatch)
         ).collect(Collectors.toList());
 
         return orderLines.stream().map(orderLine -> orderLine.getExpectedQuantity() > orderLine.getShippedQuantity() ?

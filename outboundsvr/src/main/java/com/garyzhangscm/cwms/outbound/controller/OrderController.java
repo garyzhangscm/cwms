@@ -402,12 +402,20 @@ public class OrderController {
                                    @RequestParam(name = "color", required = false, defaultValue = "") String color,
                                    @RequestParam(name = "productSize", required = false, defaultValue = "") String productSize,
                                    @RequestParam(name = "style", required = false, defaultValue = "") String style,
+                                   @RequestParam(name = "inventoryAttribute1", required = false, defaultValue = "") String inventoryAttribute1,
+                                   @RequestParam(name = "inventoryAttribute2", required = false, defaultValue = "") String inventoryAttribute2,
+                                   @RequestParam(name = "inventoryAttribute3", required = false, defaultValue = "") String inventoryAttribute3,
+                                   @RequestParam(name = "inventoryAttribute4", required = false, defaultValue = "") String inventoryAttribute4,
+                                   @RequestParam(name = "inventoryAttribute5", required = false, defaultValue = "") String inventoryAttribute5,
                                    boolean exactMatch, ClientRestriction clientRestriction) {
 
 
         return orderService.getQuantityInOrder(
                 warehouseId, clientId, itemId,
-                inventoryStatusId, color, productSize, style, exactMatch,
+                inventoryStatusId, color, productSize, style,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3,
+                inventoryAttribute4,inventoryAttribute5,
+                exactMatch,
                 clientRestriction);
 
     }

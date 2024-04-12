@@ -1,1 +1,1 @@
-client,lpn,location,item,itemPackageType,quantity,unitOfMeasure,inventoryStatus,color,productSize,style,destinationLocation
+client,lpn,location,item,itemPackageType,quantity,unitOfMeasure,inventoryStatus,color,productSize,style,destinationLocation,inventoryAttribute1,inventoryAttribute2,inventoryAttribute3,inventoryAttribute4,inventoryAttribute5

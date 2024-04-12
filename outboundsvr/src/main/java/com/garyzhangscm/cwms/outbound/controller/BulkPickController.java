@@ -54,13 +54,20 @@ public class BulkPickController {
                                            @RequestParam(name="color", required = false, defaultValue = "") String color,
                                            @RequestParam(name="style", required = false, defaultValue = "") String style,
                                            @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
+                                           @RequestParam(name="inventoryAttribute1", required = false, defaultValue = "") String inventoryAttribute1,
+                                           @RequestParam(name="inventoryAttribute2", required = false, defaultValue = "") String inventoryAttribute2,
+                                           @RequestParam(name="inventoryAttribute3", required = false, defaultValue = "") String inventoryAttribute3,
+                                           @RequestParam(name="inventoryAttribute4", required = false, defaultValue = "") String inventoryAttribute4,
+                                           @RequestParam(name="inventoryAttribute5", required = false, defaultValue = "") String inventoryAttribute5,
                                            @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails ) {
 
 
         return bulkPickService.findAll(warehouseId,
                 pickType, number, numberList, waveId, waveNumber, itemId,
                 clientId, itemNumber, sourceLocationId, sourceLocationName, inventoryStatusId, openPickOnly,
-                color, style, productSize, loadDetails);
+                color, style, productSize,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3, inventoryAttribute4, inventoryAttribute5,
+                loadDetails);
 
     }
     @RequestMapping(value="/bulk-picks/{id}", method = RequestMethod.GET)
