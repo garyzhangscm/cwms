@@ -534,6 +534,12 @@ public class OrderLineService{
         orderLine.setProductSize(orderLineCSVWrapper.getProductSize());
         orderLine.setStyle(orderLineCSVWrapper.getStyle());
 
+        orderLine.setInventoryAttribute1(orderLineCSVWrapper.getInventoryAttribute1());
+        orderLine.setInventoryAttribute2(orderLineCSVWrapper.getInventoryAttribute2());
+        orderLine.setInventoryAttribute3(orderLineCSVWrapper.getInventoryAttribute3());
+        orderLine.setInventoryAttribute4(orderLineCSVWrapper.getInventoryAttribute4());
+        orderLine.setInventoryAttribute5(orderLineCSVWrapper.getInventoryAttribute5());
+
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
 

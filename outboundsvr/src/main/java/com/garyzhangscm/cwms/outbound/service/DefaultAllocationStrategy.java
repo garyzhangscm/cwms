@@ -67,6 +67,17 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getQuantity(),
                 inventoryStatus.getName(),
                 Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
+        logger.debug(">> with inventory attribute: \n" +
+                "color: {} \nproduction size: {}\nstyle: {} \n inventory attribute 1 ~ 5 {}, {}, {}, {}, {}",
+                Strings.isBlank(allocationRequest.getColor()) ? "N/A" : allocationRequest.getColor(),
+                Strings.isBlank(allocationRequest.getProductSize()) ? "N/A" : allocationRequest.getProductSize(),
+                Strings.isBlank(allocationRequest.getStyle()) ? "N/A" : allocationRequest.getStyle(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute1()) ? "N/A" : allocationRequest.getInventoryAttribute1(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute2()) ? "N/A" : allocationRequest.getInventoryAttribute2(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute3()) ? "N/A" : allocationRequest.getInventoryAttribute3(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute4()) ? "N/A" : allocationRequest.getInventoryAttribute4(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute5()) ? "N/A" : allocationRequest.getInventoryAttribute5()
+                );
 
 
         List<Pick> existingPicks =
@@ -85,7 +96,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         existingPicks.stream().forEach(pick -> {
             logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}, " +
-                            "attribute: color = {}, style = {}, production size = {}, allocate by receipt number = {}",
+                            "attribute: color = {}, style = {}, production size = {}, allocate by receipt number = {} " +
+                            " inventory attribute 1 ~ 5: {}, {}, {}, {}, {}",
                     pick.getNumber(), pick.getSourceLocation().getName(),
                     Objects.isNull(pick.getDestinationLocation()) ?
                     "N/A" : pick.getDestinationLocation().getName(),
@@ -93,7 +105,13 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     pick.getColor(),
                     pick.getStyle(),
                     pick.getProductSize(),
-                    pick.getAllocateByReceiptNumber());
+                    pick.getAllocateByReceiptNumber(),
+                    Strings.isBlank(pick.getInventoryAttribute1()) ? "N/A" : pick.getInventoryAttribute1(),
+                    Strings.isBlank(pick.getInventoryAttribute2()) ? "N/A" : pick.getInventoryAttribute2(),
+                    Strings.isBlank(pick.getInventoryAttribute3()) ? "N/A" : pick.getInventoryAttribute3(),
+                    Strings.isBlank(pick.getInventoryAttribute4()) ? "N/A" : pick.getInventoryAttribute4(),
+                    Strings.isBlank(pick.getInventoryAttribute5()) ? "N/A" : pick.getInventoryAttribute5()
+            );
         });
 
         List<Inventory> pickableInventory

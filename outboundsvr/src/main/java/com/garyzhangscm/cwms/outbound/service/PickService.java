@@ -804,7 +804,7 @@ public class PickService {
         return generateBasicPickInformation(warehouseId,
                 item, sourceLocation, inventoryStatus,
                 quantity, pickableUnitOfMeasure, lpn,
-                "", "", "", wholeLPNPick);
+                "", "", "", "","","","","", wholeLPNPick);
 
     }
     public Pick generateBasicPickInformation(Long warehouseId,
@@ -817,6 +817,11 @@ public class PickService {
                                              String color,
                                              String productSize,
                                              String style,
+                                             String inventoryAttribute1,
+                                             String inventoryAttribute2,
+                                             String inventoryAttribute3,
+                                             String inventoryAttribute4,
+                                             String inventoryAttribute5,
                                              boolean wholeLPNPick) {
 
         Pick pick = new Pick();
@@ -835,6 +840,12 @@ public class PickService {
         pick.setColor(color);
         pick.setProductSize(productSize);
         pick.setStyle(style);
+
+        pick.setInventoryAttribute1(inventoryAttribute1);
+        pick.setInventoryAttribute2(inventoryAttribute2);
+        pick.setInventoryAttribute3(inventoryAttribute3);
+        pick.setInventoryAttribute4(inventoryAttribute4);
+        pick.setInventoryAttribute5(inventoryAttribute5);
 
 
         if (Objects.nonNull(pickableUnitOfMeasure)) {
@@ -913,6 +924,13 @@ public class PickService {
         pick.setColor(shipmentLine.getOrderLine().getColor());
         pick.setProductSize(shipmentLine.getOrderLine().getProductSize());
         pick.setStyle(shipmentLine.getOrderLine().getStyle());
+
+        pick.setInventoryAttribute1(shipmentLine.getOrderLine().getInventoryAttribute1());
+        pick.setInventoryAttribute2(shipmentLine.getOrderLine().getInventoryAttribute2());
+        pick.setInventoryAttribute3(shipmentLine.getOrderLine().getInventoryAttribute3());
+        pick.setInventoryAttribute4(shipmentLine.getOrderLine().getInventoryAttribute4());
+        pick.setInventoryAttribute5(shipmentLine.getOrderLine().getInventoryAttribute5());
+
         pick.setAllocateByReceiptNumber(shipmentLine.getOrderLine().getAllocateByReceiptNumber());
 
         // Setup the destination, get from ship staging area
@@ -2385,7 +2403,12 @@ public class PickService {
                     StringBuilder inventoryAttribute = new StringBuilder()
                             .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
                             .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
-                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "" : pick.getInventoryAttribute1()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "" : pick.getInventoryAttribute2()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "" : pick.getInventoryAttribute3()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "" : pick.getInventoryAttribute4()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "" : pick.getInventoryAttribute5()).append("    ")
                             .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
