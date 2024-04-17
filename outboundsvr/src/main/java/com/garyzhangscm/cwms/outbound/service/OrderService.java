@@ -644,9 +644,7 @@ public class OrderService {
         if (Objects.isNull(order.getId())) {
             newOrderFlag = true;
         }
-        if (!newOrderFlag) {
-            validateOrderForModification(order);
-        }
+
         // in case the order is created out of context, we will need to
         // setup the created by in the context and then pass the username
         // in the down stream so that when we send alert, the alert will
@@ -690,21 +688,18 @@ public class OrderService {
 
     /**
      * Check if we can modify an existing order
-     * @param order
+     * @param orderNumber
      */
-    private void validateOrderForModification(Order order) {
-        if (Objects.isNull(order.getId())) {
-            // if the id of the order is null, then we assume it is
-            // a new order
+    public void validateOrderForModification(Long warehouseId, Long clientId, String orderNumber) {
+        Order existingOrder = findByNumber(warehouseId, clientId, orderNumber);
+        if (Objects.isNull(existingOrder)) {
+            // the order doesn't exists yet, we will always allow it
             return;
         }
 
-        // if there's already active shipment for this order, let's
-        // disallow the user to change the
-        if (order.getStatus().equals(OrderStatus.CANCELLED) || order.getStatus().equals(OrderStatus.COMPLETE)) {
-            // OK, if we are try to cancel the order or complete the order
-            // we will always allow
-            return;
+
+        if (!existingOrder.getStatus().equals(OrderStatus.OPEN)) {
+            throw OrderOperationException.raiseException("you can only change orders in OPEN status");
         }
         // see if we are try to chance the quantity.
 
@@ -1664,9 +1659,14 @@ public class OrderService {
                 pick -> {
                     // set the inventory attribute in one string
                     StringBuilder inventoryAttribute = new StringBuilder()
-                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
-                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
-                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor() + "    ")
+                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize() + "    ")
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "" : pick.getInventoryAttribute1() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "" : pick.getInventoryAttribute2() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "" : pick.getInventoryAttribute3() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "" : pick.getInventoryAttribute4() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "" : pick.getInventoryAttribute5() + "    ")
                             .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
@@ -2683,6 +2683,12 @@ public class OrderService {
                         order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
                         order.setCreatedBy(username);
                         order = saveOrUpdate(order);
+                    }
+                    else {
+                        logger.debug("change existing order, let's make sure we can change the order {}",
+                                orderLineCSVWrapper.getOrder());
+                        // make sure we can change the order
+                        validateOrderForModification(warehouseId, clientId, orderLineCSVWrapper.getOrder() );
                     }
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
                     logger.debug("start to create order line {} for item {}, quantity {}, for order {}",

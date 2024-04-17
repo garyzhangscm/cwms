@@ -1316,11 +1316,36 @@ public class InventoryService {
 
         int unitOfMeasureQuantity = 1;
         if (Strings.isNotBlank(inventoryCSVWrapper.getUnitOfMeasure())) {
+            logger.debug("get unit of measure quantity from inventory, item = {}, package type = {}, " +
+                    "unit of measure = {}",
+                    inventory.getItem().getName(),
+                    inventory.getItemPackageType(),
+                    inventoryCSVWrapper.getUnitOfMeasure());
+            logger.debug("The item package has {} existing unit of measures: {}",
+                    inventory.getItemPackageType().getItemUnitOfMeasures().size(),
+                    inventory.getItemPackageType().getItemUnitOfMeasures().stream().map(
+                            itemUnitOfMeasure ->
+                                    Objects.nonNull(itemUnitOfMeasure.getUnitOfMeasure()) ?
+                                            itemUnitOfMeasure.getUnitOfMeasure().getName() :
+                                            itemUnitOfMeasure.getUnitOfMeasureId()
+                    ).collect(Collectors.toList()));
+
             unitOfMeasureQuantity = inventory.getItemPackageType().getItemUnitOfMeasures()
                     .stream().filter(itemUnitOfMeasure ->
-                            itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
-                                    inventoryCSVWrapper.getUnitOfMeasure()
-                            ))
+                            {
+                                if (Objects.nonNull(itemUnitOfMeasure.getUnitOfMeasure())) {
+                                    return itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
+                                                    inventoryCSVWrapper.getUnitOfMeasure()
+                                            );
+                                }
+                                else {
+                                    return commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()
+                                    ).getName().equalsIgnoreCase(
+                                            inventoryCSVWrapper.getUnitOfMeasure()
+                                    );
+                                }
+                            })
                     .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity())
                     .findFirst().orElse(1);
         }

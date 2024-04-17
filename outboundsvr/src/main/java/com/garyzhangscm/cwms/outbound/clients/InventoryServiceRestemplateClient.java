@@ -260,27 +260,28 @@ public class InventoryServiceRestemplateClient {
 
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId,
                                                 String color, String productSize,
-                                                String style, String allocateByReceiptNumber,
+                                                String style,
                                                 String inventoryAttribute1,
                                                 String inventoryAttribute2,
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
-                                                String inventoryAttribute5) {
+                                                String inventoryAttribute5,
+                                                String allocateByReceiptNumber) {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
-                color, productSize, style, allocateByReceiptNumber, inventoryAttribute1,
+                color, productSize, style, inventoryAttribute1,
                 inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
-                inventoryAttribute5);
+                inventoryAttribute5, allocateByReceiptNumber);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
                                                 Long locationId, String lpn,
                                                 String color, String productSize,
                                                 String style,
-                                                String allocateByReceiptNumber,
                                                 String inventoryAttribute1,
                                                 String inventoryAttribute2,
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
-                                                String inventoryAttribute5) {
+                                                String inventoryAttribute5,
+                                                String allocateByReceiptNumber) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
