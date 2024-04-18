@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.*;
+import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRateByInventoryAgeRepository;
 import com.garyzhangscm.cwms.adminserver.repository.BillingRateRepository;
 import org.apache.commons.lang.StringUtils;
@@ -95,10 +96,11 @@ public class BillingRateByInventoryAgeService {
 
     public BillingRateByInventoryAge findByInventoryAgeRange(Long companyId, Long warehouseId, Long clientId,
                                                              int startInventoryAge, int endInventoryAge,
+
                                                              boolean exactMatch) {
         List<BillingRateByInventoryAge> inventorySnapshots = findAll(companyId,
                 warehouseId, clientId,
-                startInventoryAge, endInventoryAge, exactMatch);
+                startInventoryAge, endInventoryAge, exactMatch, null);
         if (inventorySnapshots.size() > 0) {
             return inventorySnapshots.get(0);
         }
@@ -117,8 +119,9 @@ public class BillingRateByInventoryAgeService {
                                                      Long warehouseId,
                                                      Long clientId,
                                                    Integer startInventoryAge,
-                                                   Integer endInventoryAge, boolean exactMatch) {
-        return findAll(companyId, warehouseId, clientId, startInventoryAge, endInventoryAge, exactMatch, true);
+                                                   Integer endInventoryAge, boolean exactMatch,
+                                                   Boolean enabled) {
+        return findAll(companyId, warehouseId, clientId, startInventoryAge, endInventoryAge, exactMatch, enabled, true);
     }
 
 
@@ -128,6 +131,7 @@ public class BillingRateByInventoryAgeService {
                                                    Integer startInventoryAge,
                                                    Integer endInventoryAge,
                                                    boolean exactMatch,
+                                                   Boolean enabled,
                                      Boolean includeDetails) {
 
         List<BillingRateByInventoryAge> billingRateByInventoryAges =  billingRateByInventoryAgeRepository.findAll(
@@ -149,6 +153,10 @@ public class BillingRateByInventoryAgeService {
                     }
                     if (Objects.nonNull(endInventoryAge)) {
                         predicates.add(criteriaBuilder.equal(root.get("endInventoryAge"), endInventoryAge));
+                    }
+
+                    if (Objects.nonNull(enabled)) {
+                        predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
                     }
                     Predicate[] p = new Predicate[predicates.size()];
 
@@ -222,5 +230,45 @@ public class BillingRateByInventoryAgeService {
 
     public void removeBillingRateByInventoryAge(Long id) {
         billingRateByInventoryAgeRepository.deleteById(id);
+    }
+
+    public List<BillingRateByInventoryAge> getMatchingBillingRateByInventoryAge(
+            Long companyId, Long warehouseId, Long clientId, long days, String billableCategory) {
+        return getMatchingBillingRateByInventoryAge(companyId, warehouseId, clientId,
+                days, BillableCategory.valueOf(billableCategory));
+    }
+
+    public List<BillingRateByInventoryAge> getMatchingBillingRateByInventoryAge(
+            Long companyId, Long warehouseId, Long clientId, long days, BillableCategory billableCategory) {
+
+        List<BillingRateByInventoryAge> billingRateByInventoryAges =
+                findAll(companyId,
+                        warehouseId,
+                        clientId,
+                        null, null,
+                        false, true);
+
+        logger.debug("found {} billingRateByInventoryAges with parameters ");
+        logger.debug("> companyId: {}", companyId);
+        logger.debug("> warehouseId: {}", warehouseId);
+        logger.debug("> clientId: {}", clientId);
+        logger.debug("> enabled: {}", true);
+
+        return billingRateByInventoryAges.stream().filter(
+                billingRateByInventoryAge -> {
+                    // make sure the days is within the time windows
+                    if (billingRateByInventoryAge.getStartInventoryAge() > days ||
+                        billingRateByInventoryAge.getEndInventoryAge() < days) {
+                        return false;
+                    }
+                    // make sure the group includes the billable category and it is enabled
+                    boolean matchedBillableRate = billingRateByInventoryAge.getBillingRates().stream().anyMatch(
+                            billingRate -> Boolean.TRUE.equals(billingRate.getEnabled()) &&
+                                    billingRate.getBillableCategory().equals(billableCategory)
+                    );
+
+                    return matchedBillableRate;
+                }
+        ).collect(Collectors.toList());
     }
 }

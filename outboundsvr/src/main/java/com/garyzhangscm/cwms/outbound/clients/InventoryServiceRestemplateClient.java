@@ -710,7 +710,19 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
+    public Inventory shipInventory(Inventory inventory, Location nextLocation) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory/{id}/ship");
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                nextLocation
+        );
+    }
+    public Inventory moveInventory(Inventory inventory, Location nextLocation){
         return moveInventory(inventory, nextLocation, "");
     }
     public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn)  {

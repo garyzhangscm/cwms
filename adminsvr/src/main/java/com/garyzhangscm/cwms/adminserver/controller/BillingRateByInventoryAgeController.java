@@ -24,10 +24,12 @@ public class BillingRateByInventoryAgeController {
             @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
             @RequestParam(name = "startInventoryAge", required = false, defaultValue = "") Integer startInventoryAge,
             @RequestParam(name = "endInventoryAge", required = false, defaultValue = "") Integer endInventoryAge,
+            @RequestParam(name = "enabled", required = false, defaultValue = "") Boolean enabled,
             @RequestParam(name = "includeDetails", required = false, defaultValue = "") Boolean includeDetails
             )  {
         return billingRateByInventoryAgeService.findAll(
-                companyId, warehouseId, clientId, startInventoryAge, endInventoryAge, false, includeDetails
+                companyId, warehouseId, clientId, startInventoryAge, endInventoryAge, false,
+                enabled, includeDetails
         );
     }
 

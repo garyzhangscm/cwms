@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,10 +50,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -4657,5 +4655,242 @@ public class InventoryService {
         }
         return result.succeed();
 
+    }
+
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(Long warehouseId, Long clientId,
+                                                                      String billableCategory,
+                                                                      ZonedDateTime startTime,
+                                                                      ZonedDateTime endTime,
+                                                                      Boolean includeDaysSinceInWarehouseForStorageFee) {
+        logger.debug("start to get inventory aging for billing with ");
+        logger.debug("> warehouse id: {}", warehouseId);
+        logger.debug("> clientId: {}", clientId);
+        logger.debug("> billableCategory: {}", billableCategory);
+        logger.debug("> startTime: {}", startTime);
+        logger.debug("> endTime: {}", endTime);
+        logger.debug("> includeDaysSinceInWarehouseForStorageFee: {}", includeDaysSinceInWarehouseForStorageFee);
+        // get inventory that is in the warehouse or already shipped
+        List<Inventory> allInventory = findAll(warehouseId,
+                null,
+                null,
+                null,
+                null,
+                clientId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null, false,
+                null);
+
+        logger.debug("start to calculate the {} inventories for billing category {} ",
+                allInventory.size(), billableCategory);
+
+        if (Objects.isNull(startTime)) {
+            Instant minInstant = Instant.ofEpochMilli(Long.MIN_VALUE);
+            startTime  = minInstant.atZone(ZoneOffset.UTC);
+        }
+        if (Objects.isNull(endTime)) {
+
+            Instant maxInstant = Instant.ofEpochMilli(Long.MAX_VALUE);
+            endTime = maxInstant.atZone(ZoneOffset.UTC);
+        }
+        return getInventoryAgingForBilling(warehouseId, allInventory, billableCategory,
+                startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+    }
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(Long warehouseId,
+                                                                      List<Inventory> allInventory,
+                                                                      String billableCategory,
+                                                                      ZonedDateTime startTime,
+                                                                      ZonedDateTime endTime,
+                                                                      Boolean includeDaysSinceInWarehouseForStorageFee) {
+        switch (BillableCategory.valueOf(billableCategory)) {
+            case STORAGE_FEE_BY_CASE_COUNT:
+                return getInventoryAgingForBillingByCaseCount(warehouseId, allInventory,
+                        startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+            default:
+                throw InventoryException.raiseException("calculate billing for category " + billableCategory + " is not supported at this moment");
+        }
+    }
+
+    private List<InventoryAgingForBilling> getInventoryAgingForBillingByCaseCount(Long warehouseId,
+                                                                                  List<Inventory> allInventory,
+                                                                                  ZonedDateTime startTime,
+                                                                                  ZonedDateTime endTime,
+                                                                                  Boolean includeDaysSinceInWarehouseForStorageFee) {
+        logger.debug("start to get inventory aging for billing by case quantity");
+        List<InventoryAgingForBilling> inventoryAgingForBillings = new ArrayList<>();
+        // we will convert the time to warehouse local time zone first and calculate the days
+        // of the inventory in the warehouse
+        WarehouseConfiguration warehouseConfiguration =
+                warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+        ZoneId warehouseTimeZone = Strings.isBlank(warehouseConfiguration.getTimeZone()) ?
+                ZoneId.systemDefault() : ZoneId.of(warehouseConfiguration.getTimeZone());
+        LocalDate startDateAtWarehouseTimeZone = startTime.withZoneSameInstant(warehouseTimeZone).toLocalDate();
+        LocalDate endDateAtWarehouseTimeZone = endTime.withZoneSameInstant(warehouseTimeZone).toLocalDate();
+
+        logger.debug("local time windows {} - {}", startDateAtWarehouseTimeZone, endDateAtWarehouseTimeZone);
+
+        // let's filter out any inventory that is
+        // 1. in warehouse after the end time
+        // 2. shipped before the start time
+        allInventory = allInventory.stream().filter(
+                inventory -> Objects.nonNull(inventory.getInWarehouseDatetime())
+        ).filter(
+                inventory -> {
+                    LocalDate inventoryInWarehouseDate = inventory.getInWarehouseDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+                    if (inventoryInWarehouseDate.isAfter(endDateAtWarehouseTimeZone)) {
+                        // inventory is received after the time window
+                        return false;
+                    }
+                    if (Objects.nonNull(inventory.getShippedDatetime())) {
+                        // the inventory is already shipped, make sure it is not shipped before
+                        // the time windows
+                        LocalDate inventoryShippedDate = inventory.getShippedDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+                        if (inventoryShippedDate.isBefore(startDateAtWarehouseTimeZone)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+        ).collect(Collectors.toList());
+
+        // for those inventory
+        // write down the quantity and in warehouse days within the start time and end time
+
+
+        logger.debug("after filter inventory with the time window, we still have {} inventory left",
+                allInventory.size());
+        // key: days in the warehouse
+        // value: total quantity of case
+        Map<Long, Long> daysInWarehouseWithCaseQuantityMap = new HashMap<>();
+
+        allInventory.stream()
+        .forEach(
+                inventory -> {
+                    // first: days In Warehouse of the inventory
+                    // second: case quantity of the inventory
+                    Pair<Long, Long> daysInWarehouseWithCaseQuantity =
+                            getDaysInWarehouseWithCaseQuantity(inventory,
+                                    startDateAtWarehouseTimeZone,
+                                    endDateAtWarehouseTimeZone,
+                                    includeDaysSinceInWarehouseForStorageFee,
+                                    warehouseTimeZone);
+                    if (Objects.nonNull(daysInWarehouseWithCaseQuantity)) {
+                        Long caseQuantity = daysInWarehouseWithCaseQuantityMap.getOrDefault(daysInWarehouseWithCaseQuantity.getFirst(), 0l);
+                        daysInWarehouseWithCaseQuantityMap.put(daysInWarehouseWithCaseQuantity.getFirst(),
+                                caseQuantity + daysInWarehouseWithCaseQuantity.getSecond());
+                    }
+                }
+        );
+
+        logger.debug("after process, here's the result");
+
+        daysInWarehouseWithCaseQuantityMap.entrySet().forEach(
+                daysInWarehouseWithCaseQuantity -> {
+                    logger.debug("days: {}, case quantities: {}",
+                            daysInWarehouseWithCaseQuantity.getKey(),
+                            daysInWarehouseWithCaseQuantity.getValue());
+
+                    inventoryAgingForBillings.add(
+                            new InventoryAgingForBilling(
+                                    daysInWarehouseWithCaseQuantity.getKey(),
+                                    daysInWarehouseWithCaseQuantity.getValue()
+                            )
+                    );
+                }
+        );
+        return inventoryAgingForBillings;
+
+    }
+
+    /**
+     * Check the days of the inventory in the warehouse along with the case quantity
+     * @param inventory
+     * @param startDate
+     * @param endDate
+     * @param includeDaysSinceInWarehouseForStorageFee
+     * @param warehouseTimeZone
+     * @return
+     */
+    private Pair<Long, Long> getDaysInWarehouseWithCaseQuantity(Inventory inventory,
+                                                                   LocalDate startDate,
+                                                                   LocalDate endDate,
+                                                                   Boolean includeDaysSinceInWarehouseForStorageFee,
+                                                                   ZoneId warehouseTimeZone) {
+
+        ItemUnitOfMeasure caseItemUnitOfMeasure = inventory.getItemPackageType().getCaseItemUnitOfMeasure();
+        // do nothing if we can't get the case unit of measure
+        if (Objects.isNull(caseItemUnitOfMeasure)) {
+            return null;
+        }
+        LocalDate inventoryInWarehouseFirstDate = inventory.getInWarehouseDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+
+        // check the last day of the inventory in the warehouse
+        // only if the inventory is already shipped
+        LocalDate inventoryInWarehouseLastDate = endDate;
+        if (Objects.nonNull(inventory.getShippedDatetime())) {
+            inventoryInWarehouseLastDate = inventory.getShippedDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+        }
+
+        long inWarehouseDays = 0;
+        if (Boolean.TRUE.equals(includeDaysSinceInWarehouseForStorageFee)) {
+            inWarehouseDays = ChronoUnit.DAYS.between(inventoryInWarehouseFirstDate, inventoryInWarehouseLastDate)  + 1;
+        }
+        else if (inventoryInWarehouseFirstDate.isBefore(startDate)){
+
+            // inventory in warehouse before the time window
+            inWarehouseDays = ChronoUnit.DAYS.between(startDate, inventoryInWarehouseLastDate) + 1;
+        }
+        else {
+
+            // inventory in warehouse after the time window
+            inWarehouseDays = ChronoUnit.DAYS.between(inventoryInWarehouseFirstDate, inventoryInWarehouseLastDate)  + 1;
+        }
+
+        // get the case quantity of the inventory
+        Long caseQuantity = (long)Math.ceil(inventory.getQuantity() * 1.0 / caseItemUnitOfMeasure.getQuantity());
+
+        return Pair.of(inWarehouseDays, caseQuantity);
+
+    }
+
+    /**
+     * Mark the inventory as shipped(usually for outbound orders) and move it to the
+     * designate location
+     * @param id
+     * @param location
+     * @return
+     */
+    public Inventory shipInventory(long id, Location location) {
+        // move the inventory to the designate location
+
+        Inventory inventory = moveInventory(id, location , null, true, null);
+        // update the inventory's shipped date
+        inventory.setShippedDatetime(ZonedDateTime.now());
+
+        return saveOrUpdate(inventory);
     }
 }

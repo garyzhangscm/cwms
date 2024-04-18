@@ -264,11 +264,7 @@ public class ShippingCartonizationService {
                 logger.debug("Will move inventory \n{} to location: {}",
                         inventory, location);
 
-                try {
                     inventoryServiceRestemplateClient.moveInventory(inventory, location);
-                } catch (IOException e) {
-                    PackingException.raiseException("Can't ship the packed inventory " + inventory);
-                }
             }
 
         });

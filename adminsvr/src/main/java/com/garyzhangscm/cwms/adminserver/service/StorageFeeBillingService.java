@@ -50,7 +50,8 @@ public abstract class StorageFeeBillingService implements BillingService {
     @Override
     public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
                                                  Long companyId, Long warehouseId, Long clientId,
-                                                 String number, Boolean serialize) {
+                                                 String number, Boolean serialize,
+                                                 Boolean includeDaysSinceInWarehouseForStorageFee) {
 
         // Get the rate first
         BillingRate billingRate = billingRateService.findByCategory(companyId, warehouseId, clientId, getBillableCategory(), false);
