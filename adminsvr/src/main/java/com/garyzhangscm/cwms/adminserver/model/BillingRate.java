@@ -50,6 +50,12 @@ public class BillingRate extends AuditibleEntity<String>{
     @Column(name = "rate")
     private Double rate;
 
+    @Column(name = "rate_unit")
+    private String rateUnitName;
+
+    @Column(name = "rate_by_quantity")
+    private Boolean rateByQuantity;
+
     @Column(name = "billing_cycle")
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
@@ -177,5 +183,21 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setBillingRateByInventoryAge(BillingRateByInventoryAge billingRateByInventoryAge) {
         this.billingRateByInventoryAge = billingRateByInventoryAge;
+    }
+
+    public String getRateUnitName() {
+        return rateUnitName;
+    }
+
+    public void setRateUnitName(String rateUnitName) {
+        this.rateUnitName = rateUnitName;
+    }
+
+    public Boolean getRateByQuantity() {
+        return rateByQuantity;
+    }
+
+    public void setRateByQuantity(Boolean rateByQuantity) {
+        this.rateByQuantity = rateByQuantity;
     }
 }
