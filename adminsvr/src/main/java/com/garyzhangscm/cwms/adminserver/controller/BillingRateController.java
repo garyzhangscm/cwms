@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.adminserver.controller;
 
 
 import com.garyzhangscm.cwms.adminserver.model.BillingRate;
+import com.garyzhangscm.cwms.adminserver.model.BillingRateByInventoryAge;
 import com.garyzhangscm.cwms.adminserver.service.BillingRateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -50,5 +51,6 @@ public class BillingRateController {
     )  {
         return billingRateService.saveBillingRates(billingRates);
     }
+
 
 }

@@ -2277,5 +2277,9 @@
   "trackingInventoryAttribute4Flag": "跟踪 Inventory Attribute 4",
   "defaultInventoryAttribute4": "默认 Inventory Attribute 4 值",
   "trackingInventoryAttribute5Flag": "跟踪 Inventory Attribute 5",
-  "defaultInventoryAttribute5": "默认 Inventory Attribute 5 值"
+  "defaultInventoryAttribute5": "默认 Inventory Attribute 5 值",
+  "billingRateByInventoryAge": "按库龄计算费率",
+  "startInventoryAge": "起始库龄",
+  "endInventoryAge": "终止库龄",
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_CASE_COUNT": "按箱数计费"
 }

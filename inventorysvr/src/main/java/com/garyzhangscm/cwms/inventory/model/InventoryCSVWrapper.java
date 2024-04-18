@@ -43,6 +43,7 @@ public class InventoryCSVWrapper implements Serializable {
     private String client;
 
     private String fifoDate;
+    private String inWarehouseDatetime;
 
     private String color;
     private String productSize;
@@ -71,6 +72,7 @@ public class InventoryCSVWrapper implements Serializable {
         client = Strings.isBlank(client) ? "" : client.trim();
 
         fifoDate = Strings.isBlank(fifoDate) ? "" : fifoDate.trim();
+        inWarehouseDatetime = Strings.isBlank(inWarehouseDatetime) ? "" : inWarehouseDatetime.trim();
 
         color = Strings.isBlank(color) ? "" : color.trim();
         productSize = Strings.isBlank(productSize) ? "" : productSize.trim();
@@ -229,5 +231,13 @@ public class InventoryCSVWrapper implements Serializable {
 
     public void setAttribute5(String attribute5) {
         this.attribute5 = attribute5;
+    }
+
+    public String getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(String inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
     }
 }

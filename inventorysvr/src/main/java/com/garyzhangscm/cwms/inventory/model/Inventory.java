@@ -179,6 +179,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime fifoDate;
 
+    // date used when we will use to keep inventory aging
+    @Column(name = "in_warehouse_datetime")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime inWarehouseDatetime;
+
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.ALL,
@@ -247,6 +254,8 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setFifoDate(getFifoDate());
 
         setQuantity(getQuantity() - newQuantity);
+
+        inventory.setInWarehouseDatetime(getInWarehouseDatetime());
 
         return inventory;
 
@@ -535,6 +544,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setCreateInventoryTransactionId(Long createInventoryTransactionId) {
         this.createInventoryTransactionId = createInventoryTransactionId;
+    }
+
+    public ZonedDateTime getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(ZonedDateTime inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
     }
 
     public ZonedDateTime getFifoDate() {

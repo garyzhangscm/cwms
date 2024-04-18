@@ -1,25 +1,26 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Billable web request call
  *
  */
 @Entity
-@Table(name = "billing_rate")
-public class BillingRate extends AuditibleEntity<String>{
+@Table(name = "billing_rate_by_inventory_age")
+public class BillingRateByInventoryAge extends AuditibleEntity<String>{
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "billing_rate_id")
+    @Column(name = "billing_rate_by_inventory_age_id")
     @JsonProperty(value="id")
     private Long id;
 
@@ -43,44 +44,25 @@ public class BillingRate extends AuditibleEntity<String>{
     private Client client;
 
 
-    @Column(name = "billable_category")
-    @Enumerated(EnumType.STRING)
-    private BillableCategory billableCategory;
+    // inventory age range in days
+    @Column(name = "start_inventory_age")
+    private Integer startInventoryAge;
 
-    @Column(name = "rate")
-    private Double rate;
+    @Column(name = "end_inventory_age")
+    private Integer endInventoryAge;
 
-    @Column(name = "billing_cycle")
-    @Enumerated(EnumType.STRING)
-    private BillingCycle billingCycle;
+
+    @OneToMany(
+            mappedBy = "billingRateByInventoryAge",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<BillingRate> billingRates = new ArrayList<>();
 
     @Column(name = "enabled")
     private Boolean enabled;
 
-
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "billing_rate_by_inventory_age_id")
-    private BillingRateByInventoryAge billingRateByInventoryAge;
-
-
-
-    public BillingRate(){}
-    public BillingRate(Long companyId,
-                       Long warehouseId,
-                       Long clientId,
-                       BillableCategory billableCategory,
-                       Double rate,
-                       BillingCycle billingCycle,
-                       Boolean enabled) {
-        this.companyId = companyId;
-        this.warehouseId = warehouseId;
-        this.clientId = clientId;
-        this.billableCategory = billableCategory;
-        this.rate = rate;
-        this.billingCycle = billingCycle;
-        this.enabled = enabled;
-    }
 
     public Long getId() {
         return id;
@@ -138,29 +120,28 @@ public class BillingRate extends AuditibleEntity<String>{
         this.client = client;
     }
 
-
-    public Double getRate() {
-        return rate;
+    public Integer getStartInventoryAge() {
+        return startInventoryAge;
     }
 
-    public void setRate(Double rate) {
-        this.rate = rate;
+    public void setStartInventoryAge(Integer startInventoryAge) {
+        this.startInventoryAge = startInventoryAge;
     }
 
-    public BillableCategory getBillableCategory() {
-        return billableCategory;
+    public Integer getEndInventoryAge() {
+        return endInventoryAge;
     }
 
-    public void setBillableCategory(BillableCategory billableCategory) {
-        this.billableCategory = billableCategory;
+    public void setEndInventoryAge(Integer endInventoryAge) {
+        this.endInventoryAge = endInventoryAge;
     }
 
-    public BillingCycle getBillingCycle() {
-        return billingCycle;
+    public List<BillingRate> getBillingRates() {
+        return billingRates;
     }
 
-    public void setBillingCycle(BillingCycle billingCycle) {
-        this.billingCycle = billingCycle;
+    public void setBillingRates(List<BillingRate> billingRates) {
+        this.billingRates = billingRates;
     }
 
     public Boolean getEnabled() {
@@ -169,13 +150,5 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public BillingRateByInventoryAge getBillingRateByInventoryAge() {
-        return billingRateByInventoryAge;
-    }
-
-    public void setBillingRateByInventoryAge(BillingRateByInventoryAge billingRateByInventoryAge) {
-        this.billingRateByInventoryAge = billingRateByInventoryAge;
     }
 }

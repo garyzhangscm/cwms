@@ -990,6 +990,17 @@ public class InventoryService {
         if (Objects.isNull(inventory.getInboundQCRequired())) {
             inventory.setInboundQCRequired(false);
         }
+        if (Objects.isNull(inventory.getInWarehouseDatetime())) {
+            if (Objects.nonNull(inventory.getCreatedTime())) {
+                inventory.setInWarehouseDatetime(inventory.getCreatedTime());
+            }
+            else if (Objects.nonNull(inventory.getLastModifiedTime())) {
+                inventory.setInWarehouseDatetime(inventory.getLastModifiedTime());
+            }
+            else {
+                inventory.setInWarehouseDatetime(currentLocalDateTime.atZone(ZoneOffset.UTC));
+            }
+        }
 
         Inventory savedInventory = inventoryRepository.save(inventory);
 
@@ -1270,6 +1281,18 @@ public class InventoryService {
                 inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
             }
         }
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
+            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            if (Objects.nonNull(localDate)) {
+                inventory.setInWarehouseDatetime(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+                // set the FIFO date as the in warehouse date, if the fifo date is not specified
+                if (Objects.isNull(inventory.getFifoDate())) {
+                    inventory.setFifoDate(inventory.getInWarehouseDatetime());
+                }
+            }
+        }
+
 
         // client
         if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
