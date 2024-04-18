@@ -267,4 +267,5 @@ public class BillingRateService {
         );
         return  progressiveBillingRates;
     }
+
 }

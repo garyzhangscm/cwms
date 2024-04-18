@@ -2283,5 +2283,9 @@
   "trackingInventoryAttribute4Flag": "Tracking Inventory Attribute 4",
   "defaultInventoryAttribute4": "Default Inventory Attribute 4",
   "trackingInventoryAttribute5Flag": "Tracking Inventory Attribute 5",
-  "defaultInventoryAttribute5": "Default Inventory Attribute 5"
+  "defaultInventoryAttribute5": "Default Inventory Attribute 5",
+  "billingRateByInventoryAge": "Billing Rate By Inventory Age",
+  "startInventoryAge": "Start Inventory Age",
+  "endInventoryAge": "End Inventory Age",
+  "BILLABLE-CATEGORY-STORAGE_FEE_BY_CASE_COUNT": "Storage fee by Case Count"
 }

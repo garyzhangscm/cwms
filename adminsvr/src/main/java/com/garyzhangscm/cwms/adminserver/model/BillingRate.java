@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
@@ -55,6 +56,13 @@ public class BillingRate extends AuditibleEntity<String>{
 
     @Column(name = "enabled")
     private Boolean enabled;
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "billing_rate_by_inventory_age_id")
+    private BillingRateByInventoryAge billingRateByInventoryAge;
+
 
 
     public BillingRate(){}
@@ -161,5 +169,13 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public BillingRateByInventoryAge getBillingRateByInventoryAge() {
+        return billingRateByInventoryAge;
+    }
+
+    public void setBillingRateByInventoryAge(BillingRateByInventoryAge billingRateByInventoryAge) {
+        this.billingRateByInventoryAge = billingRateByInventoryAge;
     }
 }
