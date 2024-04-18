@@ -1234,14 +1234,9 @@ public class ShipmentService {
 
             logger.debug("Start to move inventory {} onto order {} ",
                     inventory.getLpn(), inventoryDestination.getName());
-            try {
-                inventory = inventoryServiceRestemplateClient.moveInventory(inventory, inventoryDestination);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw OrderOperationException.raiseException("Error when loading inventory  for shipment: "
-                        + shipment.getNumber() + " onto destination " +
-                        inventoryDestination.getName());
-            }
+            // ship the inventory
+            inventory = inventoryServiceRestemplateClient.shipInventory(inventory, inventoryDestination);
+
             shipmentLine.setLoadedQuantity(shipmentLine.getLoadedQuantity() + inventory.getQuantity());
             shipmentLine.setShippedQuantity(shipmentLine.getShippedQuantity() + inventory.getQuantity());
             shipmentLine.setInprocessQuantity(shipmentLine.getInprocessQuantity() - inventory.getQuantity());

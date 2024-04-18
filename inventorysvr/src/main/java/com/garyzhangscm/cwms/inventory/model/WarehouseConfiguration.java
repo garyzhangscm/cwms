@@ -40,6 +40,7 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     private Boolean reuseLPNAfterRemovedFlag;
     private Boolean reuseLPNAfterShippedFlag;
 
+    private String timeZone;
 
     // private Boolean locationUtilizationSnapshotEnabled;
     // private Boolean inventoryAgingSnapshotEnabled;
@@ -125,4 +126,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
         this.inventoryAgingSnapshotEnabled = inventoryAgingSnapshotEnabled;
     }
  **/
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
 }

@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.adminserver.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.adminserver.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.adminserver.model.ClientInventoryAgingSnapshot;
 import com.garyzhangscm.cwms.adminserver.model.ClientLocationUtilizationSnapshotBatch;
+import com.garyzhangscm.cwms.adminserver.model.InventoryAgingForBilling;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -895,4 +896,37 @@ public class InventoryServiceRestemplateClient {
         );
     }
 
+
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(
+            Long warehouseId, Long clientId, String billableCategory,
+            ZonedDateTime startTime, ZonedDateTime endTime,
+            Boolean includeDaysSinceInWarehouseForStorageFee) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/inventory-aging-for-billing")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("billableCategory", billableCategory);
+
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+        if (Objects.nonNull(startTime)) {
+            builder = builder.queryParam("startTime", startTime);
+        }
+        if (Objects.nonNull(endTime)) {
+            builder = builder.queryParam("endTime", endTime);
+        }
+        if (Objects.nonNull(includeDaysSinceInWarehouseForStorageFee)) {
+            builder = builder.queryParam("includeDaysSinceInWarehouseForStorageFee", includeDaysSinceInWarehouseForStorageFee);
+        }
+
+        return restTemplateProxy.exchangeList(
+                InventoryAgingForBilling.class,
+                builder.build(true).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 }

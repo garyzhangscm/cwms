@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 
@@ -387,10 +388,14 @@ public class OutbuondServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/outbound/order-billable-activities/billable-activity")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("clientId", clientId)
                         .queryParam("startTime", startTime)
                         .queryParam("endTime", endTime)
                         .queryParam("includeLineActivity", includeLineActivity);
+
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+
 /**
         ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
                 = restTemplate.exchange(

@@ -29,11 +29,13 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @RestController
@@ -450,6 +452,16 @@ public class InventoryController {
     }
 
     @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/ship")
+    public Inventory shipInventory(@PathVariable long id,
+                                   @RequestBody Location location) {
+
+
+        return inventoryService.shipInventory(id, location);
+    }
+
+
+    @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/move")
     public List<Inventory> moveInventory(@RequestParam Long warehouseId,
                                    @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
@@ -800,4 +812,17 @@ public class InventoryController {
         );
     }
 
+    @RequestMapping(value="/inventories/inventory-aging-for-billing", method = RequestMethod.GET)
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(
+            @RequestParam Long warehouseId,
+            @RequestParam String billableCategory,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long  clientId,
+            @RequestParam(name = "includeDaysSinceInWarehouseForStorageFee", required = false, defaultValue = "false") Boolean includeDaysSinceInWarehouseForStorageFee) {
+
+
+        return inventoryService.getInventoryAgingForBilling(warehouseId, clientId, billableCategory,
+                startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+    }
 }

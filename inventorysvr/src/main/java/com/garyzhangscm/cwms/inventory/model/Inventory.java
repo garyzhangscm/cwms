@@ -186,6 +186,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime inWarehouseDatetime;
 
+    // date used when we will use to keep inventory aging
+    @Column(name = "shipped_datetime")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime shippedDatetime;
+
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.ALL,
@@ -256,6 +263,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         setQuantity(getQuantity() - newQuantity);
 
         inventory.setInWarehouseDatetime(getInWarehouseDatetime());
+        inventory.setShippedDatetime(getShippedDatetime());
 
         return inventory;
 
@@ -520,6 +528,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setAllocatedByPickId(Long allocatedByPickId) {
         this.allocatedByPickId = allocatedByPickId;
+    }
+
+    public ZonedDateTime getShippedDatetime() {
+        return shippedDatetime;
+    }
+
+    public void setShippedDatetime(ZonedDateTime shippedDatetime) {
+        this.shippedDatetime = shippedDatetime;
     }
 
     public Pick getAllocatedByPick() {
