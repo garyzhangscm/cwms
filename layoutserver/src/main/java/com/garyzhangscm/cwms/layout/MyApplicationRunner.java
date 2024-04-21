@@ -18,7 +18,10 @@
 
 package com.garyzhangscm.cwms.layout;
 
+import com.garyzhangscm.cwms.layout.model.Company;
+import com.garyzhangscm.cwms.layout.service.CompanyService;
 import com.garyzhangscm.cwms.layout.service.LocationGroupTypeService;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 
 @Component
@@ -43,16 +47,43 @@ public class MyApplicationRunner implements ApplicationRunner {
     @Autowired
     LocationGroupTypeService locationGroupTypeService;
 
+    @Autowired
+    private CompanyService companyService;
+
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
         initLocationGroupTypeData();
 
+        initCompanyAPIKeyAndSecret();
 
 
     }
 
+    /**
+     * Init company API key and secret, only if the company
+     * doesn't have the api key or secret yet
+     */
+    private void initCompanyAPIKeyAndSecret() {
+        List<Company> companies = companyService.findAll(null, null);
+
+        for (Company company : companies) {
+            if (Strings.isBlank(company.getApiKey())) {
+                company.setApiKey(
+                        companyService.generateAPIKey()
+                );
+            }
+            if (Strings.isBlank(company.getApiSecret())) {
+                company.setApiSecret(
+                        companyService.generateAPISecret()
+                );
+            }
+
+            companyService.saveOrUpdate(company);
+
+        }
+    }
 
 
     private void initLocationGroupTypeData() throws IOException {

@@ -190,7 +190,18 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
     }
-
+    public List<Company> getAllCompanies() {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies");
+        return  restTemplateProxy.exchangeList(
+                Company.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
 
 
