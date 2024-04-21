@@ -23,6 +23,7 @@ public class IntegrationServerConfiguration extends ResourceServerConfigurerAdap
                 .antMatchers("/quickbook/ws/**").permitAll()
                 // .antMatchers("/integration-data/**").permitAll()
                 .antMatchers("/probe/**").permitAll()
+                .antMatchers("/tiktok/**").permitAll()
           .anyRequest()
           .authenticated();
     }
