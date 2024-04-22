@@ -22,7 +22,13 @@ package com.garyzhangscm.cwms.integration.clients;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.integration.exception.ExceptionCode;
+import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.RequestValidationFailException;
+import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShopIntegrationConfiguration;
+import com.garyzhangscm.cwms.integration.model.tiktok.TiktokAPICallResponse;
+import com.garyzhangscm.cwms.integration.model.tiktok.TiktokRequestAccessTokenAPICallResponse;
 import com.garyzhangscm.cwms.integration.model.usps.AddressValidateResponse;
 import com.garyzhangscm.cwms.integration.model.usps.Error;
 import org.apache.logging.log4j.util.Strings;
@@ -56,22 +62,26 @@ public class TikTokAPIRestemplateClient {
 
     // domain to auth with auth code and get the access token and refresh token
     // eg: auth.tiktok-shops.com
-    @Value("${tiktok.domain.auth:NOT-SET-YET}")
-    private String authDomain;
+    @Value("${tiktok.domain.userAuth:NOT-SET-YET}")
+    private String userAuthDomain;
 
+
+    @Qualifier("getObjMapper")
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     @Qualifier("noAuthRestTemplate")
     RestTemplate noAuthRestTemplate;
 
-    public String getSellerToken(String authCode)   {
+    public TiktokRequestAccessTokenAPICallResponse requestSellerAccessToken(String authCode)   {
         // https://auth.tiktok-shops.com/api/v2/token/get?app_key=123abcd&auth_code=ROW_FeBoANmHP3yqdoUI9fZOCw&app_secret=
         //         15abf8a4972afd1f275d5b19bfa9a17e0d142aa7&grant_type=authorized_code
 
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("https").host(authDomain)
+                        .scheme("https").host(userAuthDomain)
                         .path("/api/v2/token/get")
                         .queryParam("app_key", appKey)
                         .queryParam("app_secret", appSecret)
@@ -79,16 +89,43 @@ public class TikTokAPIRestemplateClient {
                         .queryParam("grant_type", "authorized_code");
 
         String url = builder.toUriString();
-        logger.debug("start to get seller's token by url \n{}", url);
+        //logger.debug("start to get seller's token by url \n{}", url);
 
+        TiktokAPICallResponse<TiktokRequestAccessTokenAPICallResponse> response =
+                noAuthRestTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        null,
+                        TiktokAPICallResponse.class).getBody();
+        /**
         String response = noAuthRestTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 null,
                 String.class).getBody();
+         **/
 
-        logger.debug("get response: \n{}", response);
-        return  response;
+        //logger.debug("Get response for request access token:\n{}", response);
+
+
+        try {
+
+            // response.getData() is of type linkedHashMap
+            // we will need to cast the data into json format , then
+            // cast the JSON back to the POJO
+            String json = objectMapper.writeValueAsString(response.getData());
+            //logger.debug("convert to JSON:\n{}", json);
+            // logger.debug("after cast to JSON: \n {}", json);
+
+            return objectMapper.readValue(json, TiktokRequestAccessTokenAPICallResponse.class);
+            // logger.debug("resultT class is {}", resultT.getClass().getName());
+            // return resultT;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
 
     }
 

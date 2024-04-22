@@ -19,79 +19,39 @@
 package com.garyzhangscm.cwms.integration.model.tiktok;
 
 
-import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "tiktok_seller_shop_integration_configuration")
-public class TikTokSellerShopIntegrationConfiguration extends AuditibleEntity<String> implements Serializable {
+public class TiktokRequestAccessTokenAPICallResponse  implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tiktok_seller_shop_integration_configuration_id")
-    @JsonProperty(value="id")
-    private Long id;
-
-    @Column(name = "auth_code")
-    private String authCode;
-
-
-    @Column(name = "company_id")
-    private Long companyId;
-    @Column(name = "client_id")
-    private Long clientId;
-
-
-    @Column(name = "access_token")
+    @JsonProperty(value="access_token")
     private String accessToken;
-    @Column(name = "access_token_expire_in")
+    @JsonProperty(value = "access_token_expire_in")
     private Long accessTokenExpireIn;
-    @Column(name = "refresh_token")
+    @JsonProperty(value = "refresh_token")
     private String refreshToken;
-    @Column(name = "refresh_token_expire_in")
+    @JsonProperty(value = "refresh_token_expire_in")
     private Long refreshTokenExpireIn;
-    @Column(name = "open_id")
+    @JsonProperty(value = "open_id")
     private String openId;
-    @Column(name = "seller_name")
+    @JsonProperty(value = "seller_name")
     private String sellerName;
-    @Column(name = "seller_base_region")
+    @JsonProperty(value = "seller_base_region")
     private String sellerBaseRegion;
-    @Column(name = "user_type")
+    @JsonProperty(value = "user_type")
     private Integer userType;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAuthCode() {
-        return authCode;
-    }
-
-    public void setAuthCode(String authCode) {
-        this.authCode = authCode;
-    }
-
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
-
-    public Long getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getAccessToken() {

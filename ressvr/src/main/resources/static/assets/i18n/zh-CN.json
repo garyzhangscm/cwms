@@ -2282,5 +2282,6 @@
   "startInventoryAge": "起始库龄",
   "endInventoryAge": "终止库龄",
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_CASE_COUNT": "按箱数计费",
-  "includeDaysSinceInWarehouseForStorageFee": "计算仓储费时，包括库存的全部在库时间"
+  "includeDaysSinceInWarehouseForStorageFee": "计算仓储费时，包括库存的全部在库时间",
+  "menu.main.integration.tiktok-tts-config": "Tiktok 卖家接口配置"
 }

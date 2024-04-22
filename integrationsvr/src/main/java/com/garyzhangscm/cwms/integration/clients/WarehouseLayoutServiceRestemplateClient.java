@@ -69,6 +69,21 @@ public class WarehouseLayoutServiceRestemplateClient {
             return companies.get(0);
         }
     }
+    @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/companies/{id}");
+
+        return restTemplateProxy.exchange(
+                Company.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 
     @Cacheable(cacheNames = "IntegrationService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {

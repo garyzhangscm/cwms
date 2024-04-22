@@ -46,6 +46,21 @@ public class CommonServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
+    public List<Client> getAllClients(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/clients")
+                        .queryParam("companyId", companyId);
+
+
+        return restTemplateProxy.exchangeList(
+                Client.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
     @Cacheable(cacheNames = "IntegrationService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
