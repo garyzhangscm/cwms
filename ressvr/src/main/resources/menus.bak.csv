@@ -52,6 +52,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon
 "Mould",menu.main.work-order.mould,/work-order/mould,7,Main-Menu-WorkOrder,Mould,
 "Work Order Configuration",menu.main.work-order.work-order-config,/work-order/work-order-configuration,8,Main-Menu-WorkOrder,Work-Order-Config,
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,
+"Tiktok Seller Shop Integration Configuration",menu.main.integration.tiktok-tts-config,/integration/tiktok/tts/config,1,Main-Menu-Integration,Integration-TTS-CONFIG,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,
 "Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,

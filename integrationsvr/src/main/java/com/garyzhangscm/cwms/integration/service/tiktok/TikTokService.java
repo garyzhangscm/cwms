@@ -16,8 +16,6 @@ public class TikTokService {
 
     private static final Logger logger = LoggerFactory.getLogger(TikTokService.class);
 
-    @Autowired
-    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     @Autowired
     private TikTokSellerShopIntegrationConfigurationService tikTokSellerShopIntegrationConfigurationService;
@@ -33,42 +31,10 @@ public class TikTokService {
      * @param state identifier used to identify the compay information for this seller
      */
     public void processSellerAuthCallback(String authCode, String state) {
-        Company company = getCompanyFromState(state);
-        if (Objects.nonNull(company)) {
-            // we found the company based on the state, let's save the result
-            tikTokSellerShopIntegrationConfigurationService.initTikTokSellerShopIntegrationConfiguration(
-                    company, authCode
-            );
-        }
-        else {
-
-            logger.debug("can't get company from state: {}", state);
-        }
+        tikTokSellerShopIntegrationConfigurationService.initTikTokSellerShopIntegrationConfiguration(
+            authCode, state
+        );
     }
 
-    /**
-     * Get the company from the state value. For state value, see the function  getStateCode
-     * @param state
-     * @return
-     */
-    private Company getCompanyFromState(String state) {
-        List<Company> companies = warehouseLayoutServiceRestemplateClient.getAllCompanies();
 
-        return companies.stream().filter(
-                company -> getStateCode(company).equalsIgnoreCase(state)
-        ).findFirst().orElse(null);
-    }
-
-    /**
-     * Generate a Tiktok state code for the company. State code is only used by the auth URL.
-     * When we want to access the seller's information via API, the first step is to get the seller's
-     * authorization. We will send the seller a URL, which the seller can click and auth our APP
-     * We will include the 'state' value in the URL so that we can contain the company's information
-     * and when the seller auth the APP, we can tie the seller to the company
-     * @param company
-     * @return
-     */
-    private String getStateCode(Company company) {
-        return String.valueOf((company.getCode() + company.getApiSecret()).hashCode());
-    }
 }

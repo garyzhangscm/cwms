@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShopIntegrationConfiguration;
 import com.garyzhangscm.cwms.integration.service.tiktok.TikTokSellerShopIntegrationConfigurationService;
 import com.garyzhangscm.cwms.integration.service.tiktok.TikTokService;
@@ -10,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
+import org.springframework.web.bind.annotation.RestController;
 
-@Endpoint
-@RequestMapping(value="/tiktok", method = RequestMethod.GET)
+@RestController
+@RequestMapping(value="/tiktok-config")
 public class TiktokSellerShopIntegrationConfigurationController {
     private static final Logger logger = LoggerFactory.getLogger(TiktokSellerShopIntegrationConfigurationController.class);
 
@@ -28,5 +30,17 @@ public class TiktokSellerShopIntegrationConfigurationController {
     @RequestMapping(value="/seller-shop-integration/configuration", method = RequestMethod.GET)
     public TikTokSellerShopIntegrationConfiguration getTikTokSellerShopIntegrationConfigurationByCompany(@RequestParam Long companyId) {
         return tikTokSellerShopIntegrationConfigurationService.getTikTokSellerShopIntegrationConfigurationByCompany(companyId);
+    }
+
+    @RequestMapping(value="/seller-shop-integration/seller-auth/state", method = RequestMethod.GET)
+    public ResponseBodyWrapper<String> getTikTokSellerShopIntegrationSellerAuthState(@RequestParam Long companyId,
+                                                                                     @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId) {
+        return ResponseBodyWrapper.success(tikTokSellerShopIntegrationConfigurationService.getStateCode(companyId, clientId));
+    }
+
+    @RequestMapping(value="/seller-shop-integration/seller-auth/url", method = RequestMethod.GET)
+    public ResponseBodyWrapper<String> getTikTokSellerShopIntegrationSellerAuthUrl(@RequestParam Long companyId,
+                                                                                   @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId) {
+        return ResponseBodyWrapper.success(tikTokSellerShopIntegrationConfigurationService.getTikTokSellerShopIntegrationSellerAuthUrl(companyId, clientId));
     }
 }

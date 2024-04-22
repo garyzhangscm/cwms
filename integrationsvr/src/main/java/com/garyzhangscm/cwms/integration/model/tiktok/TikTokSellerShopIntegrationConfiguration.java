@@ -41,6 +41,9 @@ public class TikTokSellerShopIntegrationConfiguration extends AuditibleEntity<St
 
     @Column(name = "company_id")
     private Long companyId;
+    @Column(name = "client_id")
+    private Long clientId;
+
 
     @Column(name = "access_token")
     private String accessToken;
@@ -81,6 +84,14 @@ public class TikTokSellerShopIntegrationConfiguration extends AuditibleEntity<St
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 
     public String getAccessToken() {
