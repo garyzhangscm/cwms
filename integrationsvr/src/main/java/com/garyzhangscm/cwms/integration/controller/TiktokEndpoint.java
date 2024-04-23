@@ -1,13 +1,11 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
-import com.garyzhangscm.cwms.integration.model.tiktok.TikTokWebhookEventData;
 import com.garyzhangscm.cwms.integration.service.tiktok.TikTokService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+/**
+ * Endpoint to integrate with tiktok
+ * https://partner.tiktokshop.com/docv2/page/656559fcf4488c02dfe8ce82#Back%20To%20Top
+ *
+ */
 @Controller
 @RequestMapping(value="/tiktok")
 public class TiktokEndpoint {
