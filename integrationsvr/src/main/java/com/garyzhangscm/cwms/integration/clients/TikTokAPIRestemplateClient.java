@@ -135,8 +135,8 @@ public class TikTokAPIRestemplateClient {
                         HttpMethod.GET,
                         null,
                         accessToken);
-        logger.debug("Get response from the path {}\n{}",
-                path, shopListWrapper);
+        // logger.debug("Get response from the path {}\n{}",
+        //        path, shopListWrapper);
 
         return shopListWrapper.getShops();
     }
@@ -149,8 +149,8 @@ public class TikTokAPIRestemplateClient {
                 Pair.of("timestamp", String.valueOf(System.currentTimeMillis() / 1000))
         );
 
-        logger.debug("start to get valid shops for access token {}",
-                accessToken);
+        // logger.debug("start to get valid shops for access token {}",
+        //        accessToken);
         TikTokSellerShopListWrapper shopListWrapper =
                 tiktokRestTemplateProxy.exchange(
                         TikTokSellerShopListWrapper.class,
@@ -158,8 +158,8 @@ public class TikTokAPIRestemplateClient {
                         parameters,
                         HttpMethod.GET,
                         null, accessToken);
-        logger.debug("Get response from the path {}\n{}",
-                path, shopListWrapper);
+        // logger.debug("Get response from the path {}\n{}",
+        //        path, shopListWrapper);
 
         return shopListWrapper.getShops();
     }
