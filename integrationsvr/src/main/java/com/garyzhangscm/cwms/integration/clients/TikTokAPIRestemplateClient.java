@@ -21,31 +21,21 @@ package com.garyzhangscm.cwms.integration.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.exception.ExceptionCode;
 import com.garyzhangscm.cwms.integration.exception.GenericException;
-import com.garyzhangscm.cwms.integration.exception.RequestValidationFailException;
-import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShopIntegrationConfiguration;
-import com.garyzhangscm.cwms.integration.model.tiktok.TiktokAPICallResponse;
-import com.garyzhangscm.cwms.integration.model.tiktok.TiktokRequestAccessTokenAPICallResponse;
-import com.garyzhangscm.cwms.integration.model.usps.AddressValidateResponse;
-import com.garyzhangscm.cwms.integration.model.usps.Error;
-import org.apache.logging.log4j.util.Strings;
+import com.garyzhangscm.cwms.integration.model.tiktok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class TikTokAPIRestemplateClient {
@@ -74,6 +64,9 @@ public class TikTokAPIRestemplateClient {
     @Qualifier("noAuthRestTemplate")
     RestTemplate noAuthRestTemplate;
 
+    @Autowired
+    TiktokRestTemplateProxy tiktokRestTemplateProxy;
+
     public TiktokRequestAccessTokenAPICallResponse requestSellerAccessToken(String authCode)   {
         // https://auth.tiktok-shops.com/api/v2/token/get?app_key=123abcd&auth_code=ROW_FeBoANmHP3yqdoUI9fZOCw&app_secret=
         //         15abf8a4972afd1f275d5b19bfa9a17e0d142aa7&grant_type=authorized_code
@@ -97,14 +90,6 @@ public class TikTokAPIRestemplateClient {
                         HttpMethod.GET,
                         null,
                         TiktokAPICallResponse.class).getBody();
-        /**
-        String response = noAuthRestTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                String.class).getBody();
-         **/
-
         //logger.debug("Get response for request access token:\n{}", response);
 
 
@@ -128,5 +113,56 @@ public class TikTokAPIRestemplateClient {
         }
 
     }
+
+    public List<TikTokSellerAuthorizedShop> getAuthorizedShops(String accessToken) {
+
+        String path = "/api/shop/get_authorized_shop";
+        List<Pair<String, String>> parameters = List.of(
+                Pair.of("access_token", accessToken),
+                Pair.of("app_key", appKey),
+                Pair.of("shop_id", ""),
+                Pair.of("version", "202212"),
+                Pair.of("timestamp", String.valueOf(System.currentTimeMillis()  / 1000))
+        );
+
+        logger.debug("start to get valid shops for access token {}",
+                accessToken);
+        TikTokAuthorizedSellerShopListWrapper shopListWrapper =
+                tiktokRestTemplateProxy.exchange(
+                        TikTokAuthorizedSellerShopListWrapper.class,
+                        path,
+                        parameters,
+                        HttpMethod.GET,
+                        null,
+                        accessToken);
+        logger.debug("Get response from the path {}\n{}",
+                path, shopListWrapper);
+
+        return shopListWrapper.getShops();
+    }
+
+    public List<TikTokSellerShop> getActiveShops(String accessToken) {
+        String path = "/seller/202309/shops";
+        List<Pair<String, String>> parameters = List.of(
+                Pair.of("app_key", appKey),
+                // Pair.of("access_token", accessToken),
+                Pair.of("timestamp", String.valueOf(System.currentTimeMillis() / 1000))
+        );
+
+        logger.debug("start to get valid shops for access token {}",
+                accessToken);
+        TikTokSellerShopListWrapper shopListWrapper =
+                tiktokRestTemplateProxy.exchange(
+                        TikTokSellerShopListWrapper.class,
+                        path,
+                        parameters,
+                        HttpMethod.GET,
+                        null, accessToken);
+        logger.debug("Get response from the path {}\n{}",
+                path, shopListWrapper);
+
+        return shopListWrapper.getShops();
+    }
+
 
 }

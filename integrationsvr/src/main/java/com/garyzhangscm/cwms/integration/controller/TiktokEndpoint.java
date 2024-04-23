@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+import com.garyzhangscm.cwms.integration.model.tiktok.TikTokWebhookEventData;
 import com.garyzhangscm.cwms.integration.service.tiktok.TikTokService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -66,8 +68,11 @@ public class TiktokEndpoint {
      * Webhook URL - Optionally, enter the URL to receive push notifications (it can be the URL of your system).
      * @return
      */
-    @RequestMapping(value="/webhook", method = RequestMethod.GET)
-    public String processWebhook( ) {
+    @RequestMapping(value="/webhook")
+    public String processWebhook(@RequestBody TikTokWebhookEventData tikTokWebhookEventData) {
+
+        logger.debug("Start to process tiktok webhook with data");
+        logger.debug(tikTokWebhookEventData.toString());
         return "success";
     }
 }
