@@ -70,6 +70,9 @@ public class UrlAccessControllerFilter implements Filter {
     private Boolean singleCompanySite;
 
 
+    private static final String[] URL_WHITE_LIST = new String[]{
+            "/api/integration/tiktok/webhook"
+    };
 
     @Override
     public void doFilter(ServletRequest servletRequest,
@@ -130,6 +133,10 @@ public class UrlAccessControllerFilter implements Filter {
 
 
         logger.debug("Start to validate http access");
+        if (isUrlInWhiteList(httpServletRequest.getRequestURI())) {
+            logger.debug("URL {} is in the white list, pass the validation");
+            return;
+        }
         String innerCall = httpServletRequest.getHeader("innerCall");
         // logger.debug("innerCall? : {}", innerCall);
         if ("true".equalsIgnoreCase(innerCall)) {
@@ -219,6 +226,12 @@ public class UrlAccessControllerFilter implements Filter {
         validateCompanyAccess(httpServletRequest.getRequestURL().toString(), companyId, token);
 
         valdiateWarehouseAccess(companyId, warehouseId, token);
+    }
+
+    private boolean isUrlInWhiteList(String requestURI) {
+        return Arrays.stream(URL_WHITE_LIST).anyMatch(
+                whiteListUrl -> whiteListUrl.equalsIgnoreCase(requestURI)
+        );
     }
 
     /**

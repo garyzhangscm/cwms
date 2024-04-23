@@ -1,11 +1,16 @@
 package com.garyzhangscm.cwms.integration.service.tiktok;
 
+import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.TikTokAPIRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
+import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.Client;
 import com.garyzhangscm.cwms.integration.model.Company;
+import com.garyzhangscm.cwms.integration.model.Warehouse;
+import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShop;
 import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShopIntegrationConfiguration;
 import com.garyzhangscm.cwms.integration.model.tiktok.TiktokRequestAccessTokenAPICallResponse;
 import com.garyzhangscm.cwms.integration.repository.tiktok.TikTokSellerShopIntegrationConfigurationRepository;
@@ -16,8 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class TikTokSellerShopIntegrationConfigurationService {
@@ -29,6 +36,8 @@ public class TikTokSellerShopIntegrationConfigurationService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
+    @Autowired
+    private TikTokSellerShopService tikTokSellerShopService;
 
     @Autowired
     private TikTokSellerShopIntegrationConfigurationRepository tikTokSellerShopIntegrationConfigurationRepository;
@@ -41,15 +50,27 @@ public class TikTokSellerShopIntegrationConfigurationService {
     @Value("${tiktok.serviceId:NOT-SET-YET}")
     private String serviceId;
 
+    public TikTokSellerShopIntegrationConfiguration findById(Long id) {
+        return tikTokSellerShopIntegrationConfigurationRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("TikTok Seller Shop Integration Configuration not found by id: " + id));
+
+    }
+
     public TikTokSellerShopIntegrationConfiguration save(TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration) {
         return tikTokSellerShopIntegrationConfigurationRepository.save(tikTokSellerShopIntegrationConfiguration);
     }
 
     public TikTokSellerShopIntegrationConfiguration saveOrUpdate(TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration) {
         if (Objects.isNull(tikTokSellerShopIntegrationConfiguration.getId()) &&
-            Objects.nonNull(getTikTokSellerShopIntegrationConfigurationByCompany(tikTokSellerShopIntegrationConfiguration.getCompanyId()))) {
+            Objects.nonNull(findByCompanyIdAndClientIdAndOpenId(
+                    tikTokSellerShopIntegrationConfiguration.getCompanyId(),
+                    tikTokSellerShopIntegrationConfiguration.getClientId(),
+                    tikTokSellerShopIntegrationConfiguration.getOpenId()))) {
             tikTokSellerShopIntegrationConfiguration.setId(
-                    getTikTokSellerShopIntegrationConfigurationByCompany(tikTokSellerShopIntegrationConfiguration.getCompanyId()).getId()
+                    findByCompanyIdAndClientIdAndOpenId(
+                            tikTokSellerShopIntegrationConfiguration.getCompanyId(),
+                            tikTokSellerShopIntegrationConfiguration.getClientId(),
+                            tikTokSellerShopIntegrationConfiguration.getOpenId()).getId()
             );
         }
         return save(tikTokSellerShopIntegrationConfiguration);
@@ -71,13 +92,19 @@ public class TikTokSellerShopIntegrationConfigurationService {
         }
         else {
 
+            Long companyId = companyIdAndClientIdFromState.getFirst();
+            Long clientId = companyIdAndClientIdFromState.getSecond() >= 0 ?
+                    companyIdAndClientIdFromState.getSecond() : null;   // special handling as Pair doesn't allow null value
+            logger.debug("find company {} and client {} for this state {}",
+                    companyId,
+                    Objects.isNull(clientId) ? "N/A" : clientId, state);
             TiktokRequestAccessTokenAPICallResponse tiktokRequestAccessTokenAPICallResponse = tikTokAPIRestemplateClient.requestSellerAccessToken(authCode);
             //logger.debug("tiktokRequestAccessTokenAPICallResponse:\n {}", tiktokRequestAccessTokenAPICallResponse);
 
             TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration =
                     setupTikTokSellerShopIntegrationConfiguration(
-                            companyIdAndClientIdFromState.getFirst(),
-                            companyIdAndClientIdFromState.getSecond(),
+                            companyId,
+                            clientId,
                             authCode, tiktokRequestAccessTokenAPICallResponse);
 
             //logger.debug("get seller's toke:\n{}", tikTokSellerShopIntegrationConfiguration);
@@ -86,7 +113,14 @@ public class TikTokSellerShopIntegrationConfigurationService {
 
             saveOrUpdate(tikTokSellerShopIntegrationConfiguration);
 
+            // setup the shops
+            setupTiktokSellerShops(tikTokSellerShopIntegrationConfiguration);
+
         }
+    }
+
+    private void setupTiktokSellerShops(TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration) {
+        tikTokSellerShopService.setupTiktokSellerShops(tikTokSellerShopIntegrationConfiguration);
     }
 
     private TikTokSellerShopIntegrationConfiguration setupTikTokSellerShopIntegrationConfiguration(Long companyId,
@@ -114,9 +148,15 @@ public class TikTokSellerShopIntegrationConfigurationService {
         return tikTokSellerShopIntegrationConfiguration;
     }
 
-    public TikTokSellerShopIntegrationConfiguration getTikTokSellerShopIntegrationConfigurationByCompany(Long companyId) {
+    public List<TikTokSellerShopIntegrationConfiguration> getTikTokSellerShopIntegrationConfigurationByCompany(Long companyId, Long clientId) {
 
-        return tikTokSellerShopIntegrationConfigurationRepository.findByCompanyId(companyId);
+            return tikTokSellerShopIntegrationConfigurationRepository.findByCompanyIdAndClientId(companyId, clientId);
+    }
+
+    public TikTokSellerShopIntegrationConfiguration findByCompanyIdAndClientIdAndOpenId(
+            Long companyId, Long clientId, String openId) {
+
+        return tikTokSellerShopIntegrationConfigurationRepository.findByCompanyIdAndClientIdAndOpenId(companyId, clientId, openId);
     }
     /**
      * Get the company from the state value. For state value, see the function  getStateCode
@@ -129,15 +169,34 @@ public class TikTokSellerShopIntegrationConfigurationService {
         for (Company company : companies) {
             // if the seller is assigned to the company, not 3pl client
             if (getStateCode(company, null).equalsIgnoreCase(state)) {
-                return Pair.of(company.getId(), null);
+                return Pair.of(company.getId(), -1l);
             }
 
-            List<Client> clients = commonServiceRestemplateClient.getAllClients(company.getId());
-            for (Client client : clients) {
+            try {
 
-                if (getStateCode(company, client.getId()).equalsIgnoreCase(state)) {
-                    return Pair.of(company.getId(), null);
+                // get the client ids from all warehouses of this company
+                List<Warehouse> warehouses = warehouseLayoutServiceRestemplateClient.getWarehouseByCompany(company.getId());
+                Set<Long> clientIdSet = new HashSet<>();
+                warehouses.forEach(
+                        warehouse -> {
+                            List<Client> clients = commonServiceRestemplateClient.getAllClients(warehouse.getId());
+                            clients.forEach(
+                                    client -> clientIdSet.add(client.getId())
+                            );
+                        }
+                );
+
+                for (Long clientId : clientIdSet) {
+
+                    if (getStateCode(company, clientId).equalsIgnoreCase(state)) {
+                        return Pair.of(company.getId(), clientId);
+                    }
                 }
+            }
+            catch(GenericException ex) {
+                ex.printStackTrace();
+                logger.debug("can't load client for the company {}, we will simply ignore the error for now",
+                        company.getCode());
             }
         }
         return null;
@@ -173,5 +232,25 @@ public class TikTokSellerShopIntegrationConfigurationService {
 
         //https://services.us.tiktokshop.com/open/authorize?service_id=7172**********70150&state=xaoegsefowuf
         return "https://services.us.tiktokshop.com/open/authorize?service_id=" + serviceId +"&state=" + getStateCode(company, clientId);
+    }
+
+    public void removeTikTokSellerShopIntegrationConfigurationByCompany(Long id) {
+        tikTokSellerShopIntegrationConfigurationRepository.deleteById(id);
+    }
+
+    /**
+     * Change the configuration . Right now we are only allow to change the value autoRefreshOrderTimeWindowInMinute when changing
+     * from the web client
+     * @param id
+     * @param tikTokSellerShopIntegrationConfiguration
+     * @return
+     */
+    public TikTokSellerShopIntegrationConfiguration changeTikTokSellerShopIntegrationConfigurationByCompany(Long id,
+                                                                                                            TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration) {
+         TikTokSellerShopIntegrationConfiguration existingTikTokSellerShopIntegrationConfiguration = findById(id);
+
+         existingTikTokSellerShopIntegrationConfiguration.setAutoRefreshOrderTimeWindowInMinute(tikTokSellerShopIntegrationConfiguration.getAutoRefreshOrderTimeWindowInMinute());
+
+        return saveOrUpdate(existingTikTokSellerShopIntegrationConfiguration);
     }
 }

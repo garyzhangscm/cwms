@@ -24,10 +24,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TikTokSellerShopIntegrationConfigurationRepository extends JpaRepository<TikTokSellerShopIntegrationConfiguration, Long>, JpaSpecificationExecutor<TikTokSellerShopIntegrationConfiguration> {
 
 
     TikTokSellerShopIntegrationConfiguration findByCompanyId(Long companyId);
 
+    List<TikTokSellerShopIntegrationConfiguration> findByCompanyIdAndClientId(Long companyId, Long clientId);
+
+    TikTokSellerShopIntegrationConfiguration findByCompanyIdAndClientIdAndOpenId(Long companyId, Long clientId, String openId);
 }

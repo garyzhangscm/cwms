@@ -2289,5 +2289,6 @@
   "endInventoryAge": "End Inventory Age",
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_CASE_COUNT": "Storage fee by Case Count",
   "includeDaysSinceInWarehouseForStorageFee": "Include Days Since In Warehouse For Storage Fee",
-  "menu.main.integration.tiktok-tts-config": "Tiktok Seller Shop Integration Config"
+  "menu.main.integration.tiktok-tts-config": "Tiktok Seller Shop Integration Config",
+  "autoRefreshOrderTimeWindowInMinute": "Auto Refresh Order Interval "
 }

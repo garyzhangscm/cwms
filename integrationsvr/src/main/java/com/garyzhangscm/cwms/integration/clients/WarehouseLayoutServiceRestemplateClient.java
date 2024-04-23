@@ -217,6 +217,23 @@ public class WarehouseLayoutServiceRestemplateClient {
                 null
         );
     }
+    public List<Warehouse> getWarehouseByCompany(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId);
+
+        logger.debug("Start to get warehouse by companyId: {}, /n >> {}",
+                companyId, builder.toUriString());
+        return restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 
 
 

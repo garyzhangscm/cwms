@@ -62,6 +62,12 @@ public class TikTokSellerShopIntegrationConfiguration extends AuditibleEntity<St
     @Column(name = "user_type")
     private Integer userType;
 
+
+    // auto refresh order every certain minutes
+    // get the order in the past 2 * window minutes
+    @Column(name = "auto_refresh_order_time_window_in_minute")
+    private Integer autoRefreshOrderTimeWindowInMinute;
+
     public Long getId() {
         return id;
     }
@@ -156,5 +162,13 @@ public class TikTokSellerShopIntegrationConfiguration extends AuditibleEntity<St
 
     public void setUserType(Integer userType) {
         this.userType = userType;
+    }
+
+    public Integer getAutoRefreshOrderTimeWindowInMinute() {
+        return autoRefreshOrderTimeWindowInMinute;
+    }
+
+    public void setAutoRefreshOrderTimeWindowInMinute(Integer autoRefreshOrderTimeWindowInMinute) {
+        this.autoRefreshOrderTimeWindowInMinute = autoRefreshOrderTimeWindowInMinute;
     }
 }

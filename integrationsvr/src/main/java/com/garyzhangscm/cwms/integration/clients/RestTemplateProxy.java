@@ -141,6 +141,8 @@ public class RestTemplateProxy {
                 entity,
                 ResponseBodyWrapper.class).getBody();
 
+        logger.debug("get result from uri {}\n{}",
+                uri, response);
         if (response.getResult() != 0) {
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
                     GenericException.createDefaultData(response.getMessage()));

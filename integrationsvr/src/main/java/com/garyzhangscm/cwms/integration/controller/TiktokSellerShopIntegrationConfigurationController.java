@@ -9,10 +9,9 @@ import com.garyzhangscm.cwms.integration.service.tiktok.TikTokService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value="/tiktok-config")
@@ -28,9 +27,27 @@ public class TiktokSellerShopIntegrationConfigurationController {
      * @return
      */
     @RequestMapping(value="/seller-shop-integration/configuration", method = RequestMethod.GET)
-    public TikTokSellerShopIntegrationConfiguration getTikTokSellerShopIntegrationConfigurationByCompany(@RequestParam Long companyId) {
-        return tikTokSellerShopIntegrationConfigurationService.getTikTokSellerShopIntegrationConfigurationByCompany(companyId);
+    public List<TikTokSellerShopIntegrationConfiguration> getTikTokSellerShopIntegrationConfigurationByCompany(@RequestParam Long companyId,
+                                                                                                               @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId) {
+        return tikTokSellerShopIntegrationConfigurationService.getTikTokSellerShopIntegrationConfigurationByCompany(companyId, clientId);
     }
+
+    @RequestMapping(value="/seller-shop-integration/configuration/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeTikTokSellerShopIntegrationConfigurationByCompany(@RequestParam Long companyId,
+                                                                                               @PathVariable Long id) {
+        tikTokSellerShopIntegrationConfigurationService.removeTikTokSellerShopIntegrationConfigurationByCompany(id);
+
+        return ResponseBodyWrapper.success("tiktok seller shop integration configuration with ID " + id + " is removed!");
+    }
+
+    @RequestMapping(value="/seller-shop-integration/configuration/{id}", method = RequestMethod.PUT)
+    public TikTokSellerShopIntegrationConfiguration changeTikTokSellerShopIntegrationConfigurationByCompany(@RequestParam Long companyId,
+                                                                                               @PathVariable Long id,
+                                                                                                            @RequestBody TikTokSellerShopIntegrationConfiguration tikTokSellerShopIntegrationConfiguration) {
+        return tikTokSellerShopIntegrationConfigurationService.changeTikTokSellerShopIntegrationConfigurationByCompany(id, tikTokSellerShopIntegrationConfiguration);
+
+    }
+
 
     @RequestMapping(value="/seller-shop-integration/seller-auth/state", method = RequestMethod.GET)
     public ResponseBodyWrapper<String> getTikTokSellerShopIntegrationSellerAuthState(@RequestParam Long companyId,
