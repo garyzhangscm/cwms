@@ -134,7 +134,8 @@ public class UrlAccessControllerFilter implements Filter {
 
         logger.debug("Start to validate http access");
         if (isUrlInWhiteList(httpServletRequest.getRequestURI())) {
-            logger.debug("URL {} is in the white list, pass the validation");
+            logger.debug("URL {} is in the white list, pass the validation",
+                    httpServletRequest.getRequestURI());
             return;
         }
         String innerCall = httpServletRequest.getHeader("innerCall");

@@ -114,6 +114,7 @@ public class TikTokSellerShopIntegrationConfigurationService {
             saveOrUpdate(tikTokSellerShopIntegrationConfiguration);
 
             // setup the shops
+            logger.debug("after we get the authorization from the seller, we will setup the shops for the seller");
             setupTiktokSellerShops(tikTokSellerShopIntegrationConfiguration);
 
         }

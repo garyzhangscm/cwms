@@ -69,10 +69,10 @@ public class TiktokEndpoint {
      * @return
      */
     @RequestMapping(value="/webhook")
-    public String processWebhook(@RequestBody TikTokWebhookEventData tikTokWebhookEventData) {
+    public String processWebhook(@RequestBody String tikTokWebhookEventData) {
 
         logger.debug("Start to process tiktok webhook with data");
-        logger.debug(tikTokWebhookEventData.toString());
+        logger.debug(tikTokWebhookEventData);
         return "success";
     }
 }

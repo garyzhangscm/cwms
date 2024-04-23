@@ -92,12 +92,16 @@ public class TikTokSellerShopService {
         List<TikTokSellerAuthorizedShop> authorizedShops =
                 tikTokAPIRestemplateClient.getAuthorizedShops(tikTokSellerShopIntegrationConfiguration.getAccessToken());
 
+        logger.debug("Got {} authorized shops from seller {}",
+                authorizedShops.size(), tikTokSellerShopIntegrationConfiguration.getSellerName());
         authorizedShops.forEach(
                 shop -> {
                     shop.setAuthCode(tikTokSellerShopIntegrationConfiguration.getAuthCode());
                     shop.setCompanyId(tikTokSellerShopIntegrationConfiguration.getCompanyId());
                     shop.setClientId(tikTokSellerShopIntegrationConfiguration.getClientId());
 
+                    logger.debug(">> Shop id and name: {} / {}", shop.getShopId(),
+                            shop.getName());
                     saveOrUpdate(shop);
                 }
         );
