@@ -22,23 +22,16 @@ package com.garyzhangscm.cwms.integration.model.tiktok;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
 
 import java.io.Serializable;
 
-public class TikTokWebhookEventData<T> implements Serializable {
+public class TikTokWeight extends AuditibleEntity<String> implements Serializable {
 
-
-    @JsonProperty(value="type")
-    private Integer type;
-
-    @JsonProperty(value="shop_id")
-    private String shopId;
-
-    @JsonProperty(value="timestamp")
-    private Long timestamp;
-
-    @JsonProperty(value="data")
-    private Object data;
+    @JsonProperty(value="value")
+    private String value;
+    @JsonProperty(value="unit")
+    private String unit;
 
 
     @Override
@@ -51,37 +44,19 @@ public class TikTokWebhookEventData<T> implements Serializable {
         return null;
     }
 
-
-    public Integer getType() {
-        return type;
+    public String getUnit() {
+        return unit;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
-
-    public String getShopId() {
-        return shopId;
+    public String getValue() {
+        return value;
     }
 
-    public void setShopId(String shopId) {
-        this.shopId = shopId;
-    }
-
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

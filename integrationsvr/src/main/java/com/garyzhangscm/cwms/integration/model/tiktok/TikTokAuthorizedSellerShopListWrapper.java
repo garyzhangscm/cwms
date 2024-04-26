@@ -27,7 +27,7 @@ import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
 import java.io.Serializable;
 import java.util.List;
 
-public class TikTokAuthorizedSellerShopListWrapper extends AuditibleEntity<String> implements Serializable {
+public class TikTokAuthorizedSellerShopListWrapper   implements Serializable {
 
 
     @JsonProperty(value="shop_list")

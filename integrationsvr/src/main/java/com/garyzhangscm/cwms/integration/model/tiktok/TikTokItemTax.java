@@ -22,25 +22,19 @@ package com.garyzhangscm.cwms.integration.model.tiktok;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
 
 import java.io.Serializable;
 
-public class TikTokWebhookEventData<T> implements Serializable {
+public class TikTokItemTax extends AuditibleEntity<String> implements Serializable {
 
+    @JsonProperty(value="tax_amount")
+    private String taxAmount;
 
-    @JsonProperty(value="type")
-    private Integer type;
-
-    @JsonProperty(value="shop_id")
-    private String shopId;
-
-    @JsonProperty(value="timestamp")
-    private Long timestamp;
-
-    @JsonProperty(value="data")
-    private Object data;
-
-
+    @JsonProperty(value="tax_rate")
+    private String taxRate;
+    @JsonProperty(value="tax_type")
+    private String taxType;
     @Override
     public String toString() {
         try {
@@ -51,37 +45,27 @@ public class TikTokWebhookEventData<T> implements Serializable {
         return null;
     }
 
-
-    public Integer getType() {
-        return type;
+    public String getTaxAmount() {
+        return taxAmount;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setTaxAmount(String taxAmount) {
+        this.taxAmount = taxAmount;
     }
 
-
-    public String getShopId() {
-        return shopId;
+    public String getTaxRate() {
+        return taxRate;
     }
 
-    public void setShopId(String shopId) {
-        this.shopId = shopId;
+    public void setTaxRate(String taxRate) {
+        this.taxRate = taxRate;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public String getTaxType() {
+        return taxType;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
+    public void setTaxType(String taxType) {
+        this.taxType = taxType;
     }
 }

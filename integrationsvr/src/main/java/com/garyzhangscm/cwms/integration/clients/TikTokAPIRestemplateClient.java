@@ -165,4 +165,49 @@ public class TikTokAPIRestemplateClient {
     }
 
 
+    public List<TikTokOrder> getTikTokOrderDetails(String accessToken,
+                                                   String shopCipher,
+                                                   String orderIdList) {
+
+        String path = "/order/202309/orders";
+
+        List<Pair<String, String>> parameters = List.of(
+                Pair.of("access_token", accessToken),
+                Pair.of("app_key", appKey),
+                Pair.of("ids", orderIdList),
+                Pair.of("shop_cipher", shopCipher),
+                Pair.of("timestamp", String.valueOf(System.currentTimeMillis()  / 1000)),
+                Pair.of("version", "202309")
+        );
+        TikTokGetOrderDetailListWrapper tikTokGetOrderDetailListWrapper =
+                tiktokRestTemplateProxy.exchange(
+                        TikTokGetOrderDetailListWrapper.class,
+                        path,
+                        parameters,
+                        HttpMethod.GET,
+                        null,
+                        accessToken);
+
+
+        return tikTokGetOrderDetailListWrapper.getOrders();
+    }
+
+    public TikTokProduct queryTiktokProductById(String accessToken, String shopCipher, String productId) {
+        String path = "/product/202309/products/" +  productId;
+
+        List<Pair<String, String>> parameters = List.of(
+                Pair.of("access_token", accessToken),
+                Pair.of("app_key", appKey),
+                Pair.of("shop_cipher", shopCipher),
+                Pair.of("timestamp", String.valueOf(System.currentTimeMillis()  / 1000)),
+                Pair.of("version", "202309")
+        );
+        return tiktokRestTemplateProxy.exchange(
+                        TikTokProduct.class,
+                        path,
+                        parameters,
+                        HttpMethod.GET,
+                        null,
+                        accessToken);
+    }
 }

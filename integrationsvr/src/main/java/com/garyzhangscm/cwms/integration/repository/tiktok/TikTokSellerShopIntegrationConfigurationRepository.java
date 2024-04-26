@@ -22,6 +22,7 @@ package com.garyzhangscm.cwms.integration.repository.tiktok;
 import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerShopIntegrationConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,4 +36,11 @@ public interface TikTokSellerShopIntegrationConfigurationRepository extends JpaR
     List<TikTokSellerShopIntegrationConfiguration> findByCompanyIdAndClientId(Long companyId, Long clientId);
 
     TikTokSellerShopIntegrationConfiguration findByCompanyIdAndClientIdAndOpenId(Long companyId, Long clientId, String openId);
+
+
+    @Query(value = "select c.* from tiktok_seller_shop_integration_configuration c join tiktok_seller_authorized_shop s " +
+            "    on s.auth_code = c.auth_code " +
+            "  where s.shop_id = :shopId",
+            nativeQuery = true)
+    TikTokSellerShopIntegrationConfiguration getTikTokSellerShopIntegrationConfigurationByShop(String shopId);
 }

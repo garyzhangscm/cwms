@@ -124,6 +124,10 @@ public class TikTokSellerShopIntegrationConfigurationService {
         tikTokSellerShopService.setupTiktokSellerShops(tikTokSellerShopIntegrationConfiguration);
     }
 
+    public TikTokSellerShopIntegrationConfiguration getTikTokSellerShopIntegrationConfigurationByShop(String shopId) {
+        return tikTokSellerShopIntegrationConfigurationRepository.getTikTokSellerShopIntegrationConfigurationByShop(shopId);
+    }
+
     private TikTokSellerShopIntegrationConfiguration setupTikTokSellerShopIntegrationConfiguration(Long companyId,
                                                                                                    Long clientId,
                                                                                                    String authCode,

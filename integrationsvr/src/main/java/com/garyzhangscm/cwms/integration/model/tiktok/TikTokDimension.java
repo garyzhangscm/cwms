@@ -22,23 +22,20 @@ package com.garyzhangscm.cwms.integration.model.tiktok;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
 
 import java.io.Serializable;
 
-public class TikTokWebhookEventData<T> implements Serializable {
+public class TikTokDimension extends AuditibleEntity<String> implements Serializable {
 
-
-    @JsonProperty(value="type")
-    private Integer type;
-
-    @JsonProperty(value="shop_id")
-    private String shopId;
-
-    @JsonProperty(value="timestamp")
-    private Long timestamp;
-
-    @JsonProperty(value="data")
-    private Object data;
+    @JsonProperty(value="height")
+    private String height;
+    @JsonProperty(value="length")
+    private String length;
+    @JsonProperty(value="unit")
+    private String unit;
+    @JsonProperty(value="width")
+    private String width;
 
 
     @Override
@@ -51,37 +48,35 @@ public class TikTokWebhookEventData<T> implements Serializable {
         return null;
     }
 
-
-    public Integer getType() {
-        return type;
+    public String getHeight() {
+        return height;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setHeight(String height) {
+        this.height = height;
     }
 
-
-    public String getShopId() {
-        return shopId;
+    public String getLength() {
+        return length;
     }
 
-    public void setShopId(String shopId) {
-        this.shopId = shopId;
+    public void setLength(String length) {
+        this.length = length;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public String getUnit() {
+        return unit;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
-    public Object getData() {
-        return data;
+    public String getWidth() {
+        return width;
     }
 
-    public void setData(Object data) {
-        this.data = data;
+    public void setWidth(String width) {
+        this.width = width;
     }
 }

@@ -64,6 +64,39 @@ public class ReceiptFileUpload extends FileUploadType {
                 "overReceivingPercent", "Over Receiving Allowed By Percentage",
                 String.class, 100, true
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "color", "Color",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "productSize", "Product Size",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "style", "Style",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute1", "Inventory Attribute 1",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute2", "Inventory Attribute 2",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute3", "Inventory Attribute 3",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute4", "Inventory Attribute 4",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute5", "Inventory Attribute 5",
+                String.class, 200, true
+        ));
+
     }
 
 

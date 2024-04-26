@@ -19,27 +19,27 @@
 package com.garyzhangscm.cwms.integration.model.tiktok;
 
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 
-public class TikTokWebhookEventData<T> implements Serializable {
+public class TikTokProductPassReviewWebhookData implements Serializable {
 
 
-    @JsonProperty(value="type")
-    private Integer type;
+    @JsonProperty(value="product_id")
+    private String productId;
 
-    @JsonProperty(value="shop_id")
-    private String shopId;
+    @JsonProperty(value="status")
+    private String status;
 
-    @JsonProperty(value="timestamp")
-    private Long timestamp;
+    @JsonProperty(value="suspended_reason")
+    private String suspendedReason;
 
-    @JsonProperty(value="data")
-    private Object data;
-
+    @JsonProperty(value="update_time")
+    private Long updateTime;
 
     @Override
     public String toString() {
@@ -51,37 +51,35 @@ public class TikTokWebhookEventData<T> implements Serializable {
         return null;
     }
 
-
-    public Integer getType() {
-        return type;
+    public String getProductId() {
+        return productId;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
-
-    public String getShopId() {
-        return shopId;
+    public String getStatus() {
+        return status;
     }
 
-    public void setShopId(String shopId) {
-        this.shopId = shopId;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public String getSuspendedReason() {
+        return suspendedReason;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setSuspendedReason(String suspendedReason) {
+        this.suspendedReason = suspendedReason;
     }
 
-    public Object getData() {
-        return data;
+    public Long getUpdateTime() {
+        return updateTime;
     }
 
-    public void setData(Object data) {
-        this.data = data;
+    public void setUpdateTime(Long updateTime) {
+        this.updateTime = updateTime;
     }
 }
