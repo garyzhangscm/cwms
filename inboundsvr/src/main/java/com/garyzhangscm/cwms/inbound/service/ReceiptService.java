@@ -967,6 +967,39 @@ public class ReceiptService {
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
 
+        if (Strings.isNotBlank(receiptLine.getColor())) {
+            lpnLabelContent.put("color", receiptLine.getColor());
+            qrCode.append("color=").append(receiptLine.getColor()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getProductSize())) {
+            lpnLabelContent.put("productSize", receiptLine.getProductSize());
+            qrCode.append("productSize=").append(receiptLine.getProductSize()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getStyle())) {
+            lpnLabelContent.put("style", receiptLine.getStyle());
+            qrCode.append("style=").append(receiptLine.getStyle()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
+            lpnLabelContent.put("inventoryAttribute1", receiptLine.getInventoryAttribute1());
+            qrCode.append("inventoryAttribute1=").append(receiptLine.getInventoryAttribute1()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute2())) {
+            lpnLabelContent.put("inventoryAttribute2", receiptLine.getInventoryAttribute2());
+            qrCode.append("inventoryAttribute2=").append(receiptLine.getInventoryAttribute2()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute3())) {
+            lpnLabelContent.put("inventoryAttribute3", receiptLine.getInventoryAttribute3());
+            qrCode.append("inventoryAttribute3=").append(receiptLine.getInventoryAttribute3()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute4())) {
+            lpnLabelContent.put("inventoryAttribute4", receiptLine.getInventoryAttribute4());
+            qrCode.append("inventoryAttribute4=").append(receiptLine.getInventoryAttribute4()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute5())) {
+            lpnLabelContent.put("inventoryAttribute5", receiptLine.getInventoryAttribute5());
+            qrCode.append("inventoryAttribute5=").append(receiptLine.getInventoryAttribute5()).append(";");
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
 
         if (Objects.nonNull(receiptLine.getReceipt())) {

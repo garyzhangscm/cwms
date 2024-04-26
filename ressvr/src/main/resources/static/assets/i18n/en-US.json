@@ -2290,5 +2290,7 @@
   "BILLABLE-CATEGORY-STORAGE_FEE_BY_CASE_COUNT": "Storage fee by Case Count",
   "includeDaysSinceInWarehouseForStorageFee": "Include Days Since In Warehouse For Storage Fee",
   "menu.main.integration.tiktok-tts-config": "Tiktok Seller Shop Integration Config",
-  "autoRefreshOrderTimeWindowInMinute": "Auto Refresh Order Interval "
+  "autoRefreshOrderTimeWindowInMinute": "Auto Refresh Order Interval ",
+  "inventory-label": "Inventory Label",
+  "inventory-quantity-on-lpn": "Inventory Quantity On the LPN"
 }

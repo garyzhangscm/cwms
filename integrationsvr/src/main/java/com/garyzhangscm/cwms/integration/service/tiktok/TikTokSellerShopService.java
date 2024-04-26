@@ -71,7 +71,7 @@ public class TikTokSellerShopService {
         return save(tikTokSellerAuthorizedShop);
     }
 
-    private TikTokSellerAuthorizedShop findAuthorizedShopByAuthCodeAndShopId(String authCode, String shopId) {
+    public TikTokSellerAuthorizedShop findAuthorizedShopByAuthCodeAndShopId(String authCode, String shopId) {
         return tikTokSellerAuthorizedShopRepository.findByAuthCodeAndShopId(authCode, shopId);
     }
     private TikTokSellerShop findShopByAuthCodeAndShopId(String authCode, String shopId) {

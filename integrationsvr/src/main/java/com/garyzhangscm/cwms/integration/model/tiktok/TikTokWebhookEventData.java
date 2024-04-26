@@ -19,20 +19,26 @@
 package com.garyzhangscm.cwms.integration.model.tiktok;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 
-public class TikTokWebhookEventData implements Serializable {
+public class TikTokWebhookEventData<T> implements Serializable {
 
 
+    @JsonProperty(value="type")
     private Integer type;
 
-    private String shop_id;
+    @JsonProperty(value="shop_id")
+    private String shopId;
 
+    @JsonProperty(value="timestamp")
     private Long timestamp;
-    private String data;
+
+    @JsonProperty(value="data")
+    private Object data;
 
 
     @Override
@@ -54,12 +60,13 @@ public class TikTokWebhookEventData implements Serializable {
         this.type = type;
     }
 
-    public String getShop_id() {
-        return shop_id;
+
+    public String getShopId() {
+        return shopId;
     }
 
-    public void setShop_id(String shop_id) {
-        this.shop_id = shop_id;
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 
     public Long getTimestamp() {
@@ -70,11 +77,11 @@ public class TikTokWebhookEventData implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public String getData() {
+    public Object getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Object data) {
         this.data = data;
     }
 }

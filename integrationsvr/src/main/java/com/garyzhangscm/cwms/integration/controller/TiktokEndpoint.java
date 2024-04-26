@@ -1,10 +1,15 @@
 package com.garyzhangscm.cwms.integration.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.integration.model.tiktok.TikTokWebhookEventData;
 import com.garyzhangscm.cwms.integration.service.tiktok.TikTokService;
+import com.garyzhangscm.cwms.integration.service.tiktok.TikTokWebhookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +30,13 @@ public class TiktokEndpoint {
 
     @Autowired
     private TikTokService tikTokService;
+    @Autowired
+    private TikTokWebhookService tikTokWebhookService;
 
+
+    @Autowired
+    @Qualifier("getObjMapper")
+    private ObjectMapper objectMapper;
 
     @Value("${tiktok.redirectUrlAfterAppAuth:https://prod.claytechsuite.com}")
     private String redirectUrlAfterAppAuth;
@@ -72,10 +83,54 @@ public class TiktokEndpoint {
      * @return
      */
     @RequestMapping(value="/webhook")
-    public String processWebhook(@RequestBody String tikTokWebhookEventData) {
+    public String processWebhook(@RequestBody String tikTokWebhookEventDataString) {
 
+        /**
+         * Order created webhook example:
+         * {
+         *     "type":1,
+         *     "tts_notification_id":"7361542585208735531",
+         *     "shop_id":"7495718048120343464",
+         *     "timestamp":1713992700,
+         *     "data":
+         *         {
+         *             "is_on_hold_order":true,
+         *             "order_id":"576622844933738562",
+         *             "order_status":"ON_HOLD",
+         *             "update_time":1713992700
+         *           }
+         *}
+         * Order cancelled webhook example:
+         * {
+         *     "type":11,
+         *     "tts_notification_id":"7361547917001312046",
+         *     "shop_id":"7495718048120343464",
+         *     "timestamp":1713993942,
+         *     "data":{
+         *         "cancel_id":"4035238689362972738",
+         *         "cancel_status":"CANCELLATION_REQUEST_SUCCESS",
+         *         "cancellations_role":"BUYER",
+         *         "order_id":"576622844933738562",
+         *         "update_time":1713993942
+         *         }
+         * }
+         */
         logger.debug("Start to process tiktok webhook with data");
-        logger.debug(tikTokWebhookEventData);
+        logger.debug(tikTokWebhookEventDataString);
+
+        try {
+            TikTokWebhookEventData tikTokWebhookEventData
+                    = objectMapper.readValue(tikTokWebhookEventDataString, TikTokWebhookEventData.class);
+
+            // we will reasonably assume the shop only belong to one company and client
+
+            logger.debug("convert to tikTokWebhookEventData\n{}", tikTokWebhookEventData);
+
+            tikTokWebhookService.processTiktokWebhook(tikTokWebhookEventData);
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return "success";
     }
 }

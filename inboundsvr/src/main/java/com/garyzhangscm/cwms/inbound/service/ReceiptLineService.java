@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
@@ -238,6 +239,7 @@ public class ReceiptLineService {
                 0.0d :
                 receiptLineCSVWrapper.getOverReceivingPercent());
 
+
         // Warehouse is mandate
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
@@ -275,6 +277,37 @@ public class ReceiptLineService {
             }
             receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity() * unitOfMeasureQuantity);
         }
+
+        InventoryStatus inventoryStatus;
+        if (Strings.isBlank(receiptLineCSVWrapper.getInventoryStatus())) {
+            inventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(
+                    warehouseId
+            );
+            if (Objects.isNull(inventoryStatus)) {
+                throw MissingInformationException.raiseException("Can't find the default available inventory." +
+                        "please specify the inventory status, or configure at the warehouse");
+            }
+        }
+        else {
+            inventoryStatus = inventoryServiceRestemplateClient.getInventoryStatusByName(
+                    warehouseId, receiptLineCSVWrapper.getInventoryStatus()
+            );
+            if (Objects.isNull(inventoryStatus)) {
+                throw MissingInformationException.raiseException("Can't find inventory status by name " +
+                        receiptLineCSVWrapper.getInventoryStatus());
+            }
+        }
+        receiptLine.setInventoryStatusId(inventoryStatus.getId());
+
+        receiptLine.setColor(receiptLineCSVWrapper.getColor());
+        receiptLine.setProductSize(receiptLineCSVWrapper.getProductSize());
+        receiptLine.setStyle(receiptLineCSVWrapper.getStyle());
+
+        receiptLine.setInventoryAttribute1(receiptLineCSVWrapper.getInventoryAttribute1());
+        receiptLine.setInventoryAttribute2(receiptLineCSVWrapper.getInventoryAttribute2());
+        receiptLine.setInventoryAttribute3(receiptLineCSVWrapper.getInventoryAttribute3());
+        receiptLine.setInventoryAttribute4(receiptLineCSVWrapper.getInventoryAttribute4());
+        receiptLine.setInventoryAttribute5(receiptLineCSVWrapper.getInventoryAttribute5());
         return receiptLine;
     }
 
