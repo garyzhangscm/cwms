@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,6 +180,15 @@ public class ReceiptController {
                                @RequestBody Inventory inventory,
                              @RequestParam(name = "receiveToStage", defaultValue = "false", required = false) Boolean receiveToStage,
                              @RequestParam(name = "stageLocation", defaultValue = "", required = false) String stageLocation) {
+        logger.debug("start to receive with attribute:");
+        logger.debug("color: {}", Strings.isBlank(inventory.getColor()) ? "N/A" : inventory.getColor());
+        logger.debug("Product Size: {}", Strings.isBlank(inventory.getProductSize()) ? "N/A" : inventory.getProductSize());
+        logger.debug("Style: {}", Strings.isBlank(inventory.getStyle()) ? "N/A" : inventory.getStyle());
+        logger.debug("Attribute 1: {}", Strings.isBlank(inventory.getAttribute1()) ? "N/A" : inventory.getAttribute1());
+        logger.debug("Attribute 2: {}", Strings.isBlank(inventory.getAttribute2()) ? "N/A" : inventory.getAttribute2());
+        logger.debug("Attribute 3: {}", Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3());
+        logger.debug("Attribute 4: {}", Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4());
+        logger.debug("Attribute 5: {}", Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5());
             return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation);
     }
 
