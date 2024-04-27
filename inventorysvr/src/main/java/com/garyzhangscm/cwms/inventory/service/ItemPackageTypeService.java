@@ -63,10 +63,20 @@ public class ItemPackageTypeService {
     @Value("${fileupload.test-data.items:item_package_types}")
     String testDataFile;
 
-    public ItemPackageType findById(Long id) {
-         return itemPackageTypeRepository.findById(id)
+    public ItemPackageType findById(Long id, boolean includeDetails) {
+
+        ItemPackageType itemPackageType = itemPackageTypeRepository.findById(id)
                  .orElseThrow(() -> ResourceNotFoundException.raiseException("item package type not found by id: " + id));
+        if (includeDetails) {
+            loadAttribute(itemPackageType);
+        }
+        return itemPackageType;
     }
+    public ItemPackageType findById(Long id) {
+
+        return findById(id, true);
+    }
+
 
     public List<ItemPackageType> findAll(Long companyId,
                                          Long warehouseId,
@@ -148,6 +158,41 @@ public class ItemPackageTypeService {
             itemPackageTypeProcessed.add(key);
         }
     }
+
+
+    private void loadAttribute(List<ItemPackageType> itemPackageTypes) {
+        itemPackageTypes.stream().forEach(this::loadAttribute);
+    }
+
+    private void loadAttribute(ItemPackageType itemPackageType) {
+
+        if (itemPackageType.getClientId() != null && itemPackageType.getClient() == null) {
+            try {
+                itemPackageType.setClient(commonServiceRestemplateClient.getClientById(itemPackageType.getClientId()));
+            }
+            catch (Exception ex) {}
+        }
+        if (itemPackageType.getSupplierId() != null && itemPackageType.getSupplier() == null) {
+            try {
+                itemPackageType.setSupplier(commonServiceRestemplateClient.getSupplierById(itemPackageType.getSupplierId()));
+            }
+            catch (Exception ex) {}
+        }
+
+        itemPackageType.getItemUnitOfMeasures()
+                    .stream().filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure() == null)
+                    .forEach(itemUnitOfMeasure -> {
+                        try {
+                            itemUnitOfMeasure.setUnitOfMeasure(
+                                    commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        }
+                        catch (Exception ex) {}
+
+                    });
+
+    }
+
 
     public ItemPackageType save(ItemPackageType itemPackageType) {
         return itemPackageTypeRepository.save(itemPackageType);

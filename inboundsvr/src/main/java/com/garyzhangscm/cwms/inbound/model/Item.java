@@ -57,6 +57,21 @@ public class Item implements Serializable {
     private boolean trackingStyleFlag;
     private String defaultStyle;
 
+    private boolean trackingInventoryAttribute1Flag;
+    private String defaultInventoryAttribute1;
+
+    private boolean trackingInventoryAttribute2Flag;
+    private String defaultInventoryAttribute2;
+
+    private boolean trackingInventoryAttribute3Flag;
+    private String defaultInventoryAttribute3;
+
+    private boolean trackingInventoryAttribute4Flag;
+    private String defaultInventoryAttribute4;
+
+    private boolean trackingInventoryAttribute5Flag;
+    private String defaultInventoryAttribute5;
+
     @Override
     public boolean equals(Object anotherItem) {
         if (this == anotherItem) {
@@ -211,5 +226,89 @@ public class Item implements Serializable {
 
     public void setDefaultStyle(String defaultStyle) {
         this.defaultStyle = defaultStyle;
+    }
+
+    public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
+    }
+
+    public boolean isTrackingInventoryAttribute1Flag() {
+        return trackingInventoryAttribute1Flag;
+    }
+
+    public void setTrackingInventoryAttribute1Flag(boolean trackingInventoryAttribute1Flag) {
+        this.trackingInventoryAttribute1Flag = trackingInventoryAttribute1Flag;
+    }
+
+    public String getDefaultInventoryAttribute1() {
+        return defaultInventoryAttribute1;
+    }
+
+    public void setDefaultInventoryAttribute1(String defaultInventoryAttribute1) {
+        this.defaultInventoryAttribute1 = defaultInventoryAttribute1;
+    }
+
+    public boolean isTrackingInventoryAttribute2Flag() {
+        return trackingInventoryAttribute2Flag;
+    }
+
+    public void setTrackingInventoryAttribute2Flag(boolean trackingInventoryAttribute2Flag) {
+        this.trackingInventoryAttribute2Flag = trackingInventoryAttribute2Flag;
+    }
+
+    public String getDefaultInventoryAttribute2() {
+        return defaultInventoryAttribute2;
+    }
+
+    public void setDefaultInventoryAttribute2(String defaultInventoryAttribute2) {
+        this.defaultInventoryAttribute2 = defaultInventoryAttribute2;
+    }
+
+    public boolean isTrackingInventoryAttribute3Flag() {
+        return trackingInventoryAttribute3Flag;
+    }
+
+    public void setTrackingInventoryAttribute3Flag(boolean trackingInventoryAttribute3Flag) {
+        this.trackingInventoryAttribute3Flag = trackingInventoryAttribute3Flag;
+    }
+
+    public String getDefaultInventoryAttribute3() {
+        return defaultInventoryAttribute3;
+    }
+
+    public void setDefaultInventoryAttribute3(String defaultInventoryAttribute3) {
+        this.defaultInventoryAttribute3 = defaultInventoryAttribute3;
+    }
+
+    public boolean isTrackingInventoryAttribute4Flag() {
+        return trackingInventoryAttribute4Flag;
+    }
+
+    public void setTrackingInventoryAttribute4Flag(boolean trackingInventoryAttribute4Flag) {
+        this.trackingInventoryAttribute4Flag = trackingInventoryAttribute4Flag;
+    }
+
+    public String getDefaultInventoryAttribute4() {
+        return defaultInventoryAttribute4;
+    }
+
+    public void setDefaultInventoryAttribute4(String defaultInventoryAttribute4) {
+        this.defaultInventoryAttribute4 = defaultInventoryAttribute4;
+    }
+
+    public boolean isTrackingInventoryAttribute5Flag() {
+        return trackingInventoryAttribute5Flag;
+    }
+
+    public void setTrackingInventoryAttribute5Flag(boolean trackingInventoryAttribute5Flag) {
+        this.trackingInventoryAttribute5Flag = trackingInventoryAttribute5Flag;
+    }
+
+    public String getDefaultInventoryAttribute5() {
+        return defaultInventoryAttribute5;
+    }
+
+    public void setDefaultInventoryAttribute5(String defaultInventoryAttribute5) {
+        this.defaultInventoryAttribute5 = defaultInventoryAttribute5;
     }
 }

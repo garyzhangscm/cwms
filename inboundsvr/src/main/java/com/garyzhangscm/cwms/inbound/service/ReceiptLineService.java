@@ -542,6 +542,11 @@ public class ReceiptLineService {
     // 1. over receiving?
     // 3. unexpected item number?
     private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
+        // make sure the receipt is already checked in
+        if (receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
+            throw ReceiptOperationException.raiseException("Please check in the receipt before you can receive");
+        }
+
         // unexpected item number?
 
         if (!receipt.getAllowUnexpectedItem() &&
