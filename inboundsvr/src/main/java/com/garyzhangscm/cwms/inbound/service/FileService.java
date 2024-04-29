@@ -26,7 +26,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.controller.ReceiptController;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inbound.exception.SystemFatalException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +53,8 @@ public class FileService {
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private ExcelFileHandler excelFileHandler;
 
 
     public File saveFile(MultipartFile file) throws IOException {
@@ -65,6 +71,21 @@ public class FileService {
 
         return localFile;
 
+    }
+
+    public File convertToCSVFile(File file) throws IOException {
+        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("csv")) {
+            logger.debug("The file is a CSV file, we will return it without convert");
+            return file;
+        }
+        else if (FilenameUtils.isExtension(file.getName(),"xls") || FilenameUtils.isExtension(file.getName(),"xlsx")) {
+            logger.debug("The file is a Excel file, we will convert it to CSV file first");
+            return excelFileHandler.convertExcelToCSV(file);
+        }
+        else {
+            throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +
+                    ". The format and extension is not support");
+        }
     }
 
     public <T> List<T> loadData(File file, Class<T> tClass)throws IOException {
@@ -155,6 +176,8 @@ public class FileService {
 
     public void validateCSVFile(Long warehouseId,
                                   String type, String headers) {
+        // remove all " before we can validate the CSV file's header
+        headers = headers.replace("\"", "");
         String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
 
         if (Strings.isNotBlank(result)) {
@@ -162,5 +185,22 @@ public class FileService {
                     type, result);
             throw SystemFatalException.raiseException(result);
         }
+    }
+
+    public File saveCSVFile(String fileName, String content) throws IOException {
+        String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
+        File localFile = new File(destination);
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+
+
+        Files.write(Paths.get(destination), content.getBytes("UTF-8"));
+
+        localFile = new File(destination);
+        logger.debug("The content is saved to the file {}, \n{}",
+                destination, content);
+        return localFile;
     }
 }
