@@ -389,7 +389,8 @@ public class ReceiptController {
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
+
         try {
             fileService.validateCSVFile(warehouseId, "receipts", localFile);
         }
