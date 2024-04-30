@@ -105,21 +105,24 @@ public class ExcelFileHandler {
     private String formatNumericValue(double numericCellValue) {
         String stringValue = String.valueOf(numericCellValue);
         if (stringValue.contains(".")) {
-            String[] stringTokens = stringValue.split(".");
+            String[] stringTokens = stringValue.split("\\.");
+
             if (stringTokens.length == 2 ) {
                 try {
                     int result = Integer.parseInt(stringTokens[1]);
                     if (result == 0) {
                         // return the integer part only if the
                         // fraction part is all 0
-                        return stringTokens[1];
+                        return stringTokens[0];
                     }
                 } catch (NumberFormatException e) {
 
+                    e.printStackTrace();
                 }
 
             }
         }
+
         return stringValue;
     }
 }
