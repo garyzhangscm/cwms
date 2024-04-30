@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.inbound.clients;
 
-import com.garyzhangscm.cwms.inbound.model.Report;
-import com.garyzhangscm.cwms.inbound.model.ReportHistory;
-import com.garyzhangscm.cwms.inbound.model.ReportType;
-import com.garyzhangscm.cwms.inbound.model.User;
+import com.garyzhangscm.cwms.inbound.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -138,5 +136,4 @@ public class ResourceServiceRestemplateClient {
         );
 
     }
-
 }
