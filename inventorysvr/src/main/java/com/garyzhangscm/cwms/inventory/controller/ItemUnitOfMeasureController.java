@@ -48,13 +48,13 @@ public class ItemUnitOfMeasureController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/item-unit-of-measures/upload")
-    public ResponseBodyWrapper uploadItemUnitOfMeasures(Long warehouseId,
+    public ResponseBodyWrapper uploadItemUnitOfMeasures(Long companyId, Long warehouseId,
                                                         @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "itemUnitOfMeasure", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "itemUnitOfMeasure", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

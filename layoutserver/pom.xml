@@ -162,6 +162,19 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
             <version>2.6</version>
             <scope>compile</scope>
         </dependency>
+
+
+		<!-- Apache POI to process excel -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
+		</dependency>
     </dependencies>
 
 

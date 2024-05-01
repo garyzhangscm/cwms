@@ -286,13 +286,13 @@ public class ItemController {
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadItems(Long warehouseId,
+    public ResponseBodyWrapper uploadItems(Long companyId, Long warehouseId,
                                            @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "items", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "items", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

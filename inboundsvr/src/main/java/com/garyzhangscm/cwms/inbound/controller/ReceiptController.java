@@ -385,14 +385,15 @@ public class ReceiptController {
                     @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadReceipts(Long warehouseId,
+    public ResponseBodyWrapper uploadReceipts(Long companyId,
+                                              Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
 
         try {
-            fileService.validateCSVFile(warehouseId, "receipts", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
@@ -427,13 +428,13 @@ public class ReceiptController {
                     @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
             }
     )
-    public ResponseBodyWrapper updateReceivingInventory(Long warehouseId,
+    public ResponseBodyWrapper updateReceivingInventory(Long companyId, Long warehouseId,
                                               @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "receiving-inventories", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "receiving-inventories", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

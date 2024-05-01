@@ -76,13 +76,13 @@ public class WalmartShippingCartonLabelController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/walmart-shipping-carton-labels/upload")
-    public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long warehouseId,
+    public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long companyId, Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "walmart-shipping-carton-labels", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "walmart-shipping-carton-labels", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
