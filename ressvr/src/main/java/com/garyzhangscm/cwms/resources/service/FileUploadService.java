@@ -64,12 +64,15 @@ public class FileUploadService {
         if (Objects.isNull(fileUploadType)) {
             return;
         }
+        logger.debug("start to load column mapping for type {}", fileUploadType.getName());
         List<FileUploadColumnMapping> fileUploadColumnMappings =
                 fileUploadColumnMappingService.findAll(
                         companyId, warehouseId,
                         fileUploadType.getName(),
                         null
                 );
+        logger.debug("Found {} mapping for type {}", fileUploadColumnMappings.size(), fileUploadType.getName());
+
         Map<String, String> columnsMapping = new HashMap<>();
         fileUploadColumnMappings.forEach(
                 fileUploadColumnMapping -> columnsMapping.put(fileUploadColumnMapping.getColumnName(), fileUploadColumnMapping.getMapToColumnName())
@@ -84,6 +87,7 @@ public class FileUploadService {
         FileUploadType fileUploadType = availableFileUploadTypes.stream().filter(
                 availableFileUploadType -> availableFileUploadType.getName().equalsIgnoreCase(typename)
         ).findFirst().orElse(null);
+
         loadFileUploadColumnMapping(companyId, warehouseId, fileUploadType);
 
         return fileUploadType;
