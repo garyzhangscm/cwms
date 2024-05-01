@@ -22,7 +22,9 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.exception.MissingInformationException;
 import com.garyzhangscm.cwms.workorder.exception.SystemFatalException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +45,9 @@ public class FileService {
 
     @Value("${fileupload.temp-file.directory:/upload/tmp/}")
     String destinationFolder;
+
+    @Autowired
+    private ExcelFileHandler excelFileHandler;
 
 
     @Autowired
@@ -125,7 +132,8 @@ public class FileService {
         return directoryToBeDeleted.delete();
     }
 
-    public void validateCSVFile(Long warehouseId,
+    public void validateCSVFile(Long companyId,
+                                Long warehouseId,
                                 String type,
                                 File file) {
         // we will assume the first line of the file is the hader of the CSV file
@@ -135,7 +143,7 @@ public class FileService {
             br = new BufferedReader(new FileReader(file));
             String header = br.readLine();
             if (header != null) {
-                validateCSVFile(warehouseId, type, header);
+                validateCSVFile(companyId, warehouseId, type, header);
             }
             else {
                 logger.debug("Can't get header information from file {}", file);
@@ -157,14 +165,45 @@ public class FileService {
         }
     }
 
-    public void validateCSVFile(Long warehouseId,
+    public void validateCSVFile(Long companyId, Long warehouseId,
                                 String type, String headers) {
-        String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
+        String result = resourceServiceRestemplateClient.validateCSVFile(companyId, warehouseId, type, headers);
         if (Strings.isNotBlank(result)) {
             logger.debug("Get error while validate CSV file of type {}, \n{}",
                     type, result);
             throw SystemFatalException.raiseException(result);
         }
+    }
+
+    public File convertToCSVFile(File file) throws IOException {
+        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("csv")) {
+            logger.debug("The file is a CSV file, we will return it without convert");
+            return file;
+        }
+        else if (FilenameUtils.isExtension(file.getName(),"xls") || FilenameUtils.isExtension(file.getName(),"xlsx")) {
+            logger.debug("The file is a Excel file, we will convert it to CSV file first");
+            return excelFileHandler.convertExcelToCSV(file);
+        }
+        else {
+            throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +
+                    ". The format and extension is not support");
+        }
+    }
+    public File saveCSVFile(String fileName, String content) throws IOException {
+        String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
+        File localFile = new File(destination);
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+
+
+        Files.write(Paths.get(destination), content.getBytes("UTF-8"));
+
+        localFile = new File(destination);
+        logger.debug("The content is saved to the file {}, \n{}",
+                destination, content);
+        return localFile;
     }
 
 }

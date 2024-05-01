@@ -71,12 +71,12 @@ public class TrailerAppointmentController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/trailer-appointments/shipping/upload")
-    public ResponseBodyWrapper uploadShippingTrailerAppointments(Long warehouseId,
+    public ResponseBodyWrapper uploadShippingTrailerAppointments(Long companyId, Long warehouseId,
                                                                  @RequestParam("file") MultipartFile file) throws IOException {
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "loads", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "loads", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

@@ -643,14 +643,15 @@ public class InventoryController {
      * @throws IOException
      */
     @RequestMapping(method=RequestMethod.POST, value="/inventories/upload")
-    public ResponseBodyWrapper uploadInventories(Long warehouseId,
+    public ResponseBodyWrapper uploadInventories(Long companyId,
+                                                 Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "inventory", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "inventory", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
@@ -685,14 +686,14 @@ public class InventoryController {
      * @throws IOException
      */
     @RequestMapping(method=RequestMethod.POST, value="/inventories/putaway-inventory/upload")
-    public ResponseBodyWrapper uploadPutawayInventories(Long warehouseId,
+    public ResponseBodyWrapper uploadPutawayInventories(Long companyId, Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "putaway-inventories", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "putaway-inventories", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

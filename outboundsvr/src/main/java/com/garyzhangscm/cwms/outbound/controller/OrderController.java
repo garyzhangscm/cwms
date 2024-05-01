@@ -306,13 +306,13 @@ public class OrderController {
                     @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadOrders(Long warehouseId,
+    public ResponseBodyWrapper uploadOrders(Long companyId, Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "orders", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "orders", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

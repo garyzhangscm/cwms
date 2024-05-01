@@ -108,13 +108,14 @@ public class ParcelShippingController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/parcel/packages/upload")
-    public ResponseBodyWrapper uploadParcelPackage(Long warehouseId,
+    public ResponseBodyWrapper uploadParcelPackage(Long companyId,
+                                                   Long warehouseId,
                                                          @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "parcel-packages", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "parcel-packages", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

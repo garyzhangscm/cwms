@@ -84,13 +84,13 @@ public class LocationController {
                     @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadLocations(Long warehouseId,
+    public ResponseBodyWrapper uploadLocations(Long companyId, Long warehouseId,
                                                @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
+        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(warehouseId, "locations", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "locations", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

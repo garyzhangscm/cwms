@@ -143,7 +143,7 @@ public class FileService {
         return mappingIterator.readAll();
     }
 
-    public void validateCSVFile(Long warehouseId,
+    public void validateCSVFile(Long companyId, Long warehouseId,
                                   String type,
                                   File file) {
         // we will assume the first line of the file is the hader of the CSV file
@@ -153,7 +153,7 @@ public class FileService {
             br = new BufferedReader(new FileReader(file));
             String header = br.readLine();
             if (header != null) {
-                validateCSVFile(warehouseId, type, header);
+                validateCSVFile(companyId, warehouseId, type, header);
             }
             else {
                 logger.debug("Can't get header information from file {}", file);
@@ -174,11 +174,11 @@ public class FileService {
         }
     }
 
-    public void validateCSVFile(Long warehouseId,
+    public void validateCSVFile(Long companyId, Long warehouseId,
                                   String type, String headers) {
         // remove all " before we can validate the CSV file's header
         headers = headers.replace("\"", "");
-        String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
+        String result = resourceServiceRestemplateClient.validateCSVFile(companyId, warehouseId, type, headers);
 
         if (Strings.isNotBlank(result)) {
             logger.debug("Get error while validate CSV file of type {}, \n{}",

@@ -2292,5 +2292,6 @@
   "menu.main.integration.tiktok-tts-config": "Tiktok Seller Shop Integration Config",
   "autoRefreshOrderTimeWindowInMinute": "Auto Refresh Order Interval ",
   "inventory-label": "Inventory Label",
-  "inventory-quantity-on-lpn": "Inventory Quantity On the LPN"
+  "inventory-quantity-on-lpn": "Inventory Quantity On the LPN",
+  "file-upload.mapping_to_column_name": "Mapping To Column Name"
 }

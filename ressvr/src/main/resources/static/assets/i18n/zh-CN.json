@@ -2286,5 +2286,6 @@
   "menu.main.integration.tiktok-tts-config": "Tiktok 卖家接口配置",
   "autoRefreshOrderTimeWindowInMinute": "自动刷新订单时间间隔",
   "inventory-label": "库存标签",
-  "inventory-quantity-on-lpn": "LPN上库存数量"
+  "inventory-quantity-on-lpn": "LPN上库存数量",
+  "file-upload.mapping_to_column_name": "映射的列名"
 }

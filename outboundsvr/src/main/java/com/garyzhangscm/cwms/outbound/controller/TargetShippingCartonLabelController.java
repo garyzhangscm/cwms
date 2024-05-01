@@ -69,13 +69,14 @@ public class TargetShippingCartonLabelController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/target-shipping-carton-labels/upload")
-    public ResponseBodyWrapper updateTargetShippingCartonLabels(Long warehouseId,
+    public ResponseBodyWrapper updateTargetShippingCartonLabels(Long companyId,
+                                                                Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.processUploadedFile("target-shipping-carton-labels", file);
         try {
-            fileService.validateCSVFile(warehouseId, "target-shipping-carton-labels", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "target-shipping-carton-labels", localFile);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
