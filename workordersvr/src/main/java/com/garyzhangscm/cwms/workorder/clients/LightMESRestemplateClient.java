@@ -56,7 +56,7 @@ public class LightMESRestemplateClient {
 
     private RestTemplate restTemplate;
 
-    private RestTemplate getSiloRestTemplate() {
+    private RestTemplate getLightMESRestTemplate() {
 
         if (Objects.isNull(restTemplate)) {
             restTemplate = new RestTemplate();
@@ -112,7 +112,7 @@ public class LightMESRestemplateClient {
         String url = builder.toUriString();
 
         ResponseEntity<String> responseBodyWrapper
-                = getSiloRestTemplate().exchange(
+                = getLightMESRestTemplate().exchange(
                 url,
                 HttpMethod.POST,
                 entity,
@@ -170,7 +170,7 @@ public class LightMESRestemplateClient {
                 entity);
 
         LightMESResponseWrapper lightMESResponseWrapper
-                = getSiloRestTemplate().exchange(
+                = getLightMESRestTemplate().exchange(
                 url,
                 HttpMethod.POST,
                 entity,
@@ -237,7 +237,7 @@ public class LightMESRestemplateClient {
         String url = builder.toUriString();
 
         LightMESResponseWrapper lightMESResponseWrapper
-                = getSiloRestTemplate().exchange(
+                = getLightMESRestTemplate().exchange(
                 url,
                 HttpMethod.POST,
                 entity,
@@ -282,7 +282,7 @@ public class LightMESRestemplateClient {
                 entity);
 
         LightMESResponseWrapper lightMESResponseWrapper
-                = getSiloRestTemplate().exchange(
+                = getLightMESRestTemplate().exchange(
                 url,
                 HttpMethod.POST,
                 entity,

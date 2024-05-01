@@ -52,6 +52,8 @@ public class ReceiptController {
     ReceiptLineBillableActivityService receiptLineBillableActivityService;
 
     @Autowired
+    UploadFileService uploadFileService;
+    @Autowired
     FileService fileService;
 
 
@@ -390,16 +392,17 @@ public class ReceiptController {
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
 
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "receipts", fileService.saveFile(file));
+            // fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
+            String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/receipts/upload/progress")
@@ -432,16 +435,18 @@ public class ReceiptController {
                                               @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "receiving-inventories", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "receiving-inventories", fileService.saveFile(file));
+
+            String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
 
-        String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/receipts/receiving-inventory/upload/progress")

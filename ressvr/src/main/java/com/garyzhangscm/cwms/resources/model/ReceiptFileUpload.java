@@ -16,7 +16,7 @@ public class ReceiptFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                  "client", "Client name(3PL)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
@@ -27,22 +27,22 @@ public class ReceiptFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "receipt", "Receipt Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "line", "Receipt Line Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "item", "Item Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "expectedQuantity", "Quantity",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(

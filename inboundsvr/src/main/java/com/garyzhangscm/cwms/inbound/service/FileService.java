@@ -143,49 +143,6 @@ public class FileService {
         return mappingIterator.readAll();
     }
 
-    public void validateCSVFile(Long companyId, Long warehouseId,
-                                  String type,
-                                  File file) {
-        // we will assume the first line of the file is the hader of the CSV file
-
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-            String header = br.readLine();
-            if (header != null) {
-                validateCSVFile(companyId, warehouseId, type, header);
-            }
-            else {
-                logger.debug("Can't get header information from file {}", file);
-
-                throw SystemFatalException.raiseException(
-                        "CSV file " + file.getName() + " is missing the header");
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type
-            );
-        }
-    }
-
-    public void validateCSVFile(Long companyId, Long warehouseId,
-                                  String type, String headers) {
-        // remove all " before we can validate the CSV file's header
-        headers = headers.replace("\"", "");
-        String result = resourceServiceRestemplateClient.validateCSVFile(companyId, warehouseId, type, headers);
-
-        if (Strings.isNotBlank(result)) {
-            logger.debug("Get error while validate CSV file of type {}, \n{}",
-                    type, result);
-            throw SystemFatalException.raiseException(result);
-        }
-    }
 
     public File saveCSVFile(String fileName, String content) throws IOException {
         String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
