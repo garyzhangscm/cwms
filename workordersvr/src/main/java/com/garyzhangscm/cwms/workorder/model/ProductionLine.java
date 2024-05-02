@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -259,18 +260,18 @@ public class ProductionLine extends AuditibleEntity<String>{
     /**
      * return assigned work order's name and finish good name & description
      */
-    public List<Quintuple<String, String, String, Long, Long>> getAssignedWorkOrders() {
+    public List<Sixtuple<String, String, String, Long, Long, Long>> getAssignedWorkOrders() {
         return getProductionLineAssignments().stream()
                 .filter(productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
                         && Objects.isNull(productionLineAssignment.getDeassignedTime()))  // only return the work order that is not deassigned yet
                 .map(productionLineAssignment ->
-                        new Quintuple<String, String, String, Long, Long>(
-                                Objects.isNull(productionLineAssignment.getWorkOrderNumber()) ? "" : productionLineAssignment.getWorkOrderNumber(),
-                                Objects.isNull(productionLineAssignment.getItemName()) ? "" : productionLineAssignment.getItemName(),
-                                Objects.isNull(productionLineAssignment.getItemDescription()) ? "" : productionLineAssignment.getItemDescription(),
+                        new Sixtuple<String, String, String, Long, Long, Long>(
+                                Strings.isBlank(productionLineAssignment.getWorkOrderNumber()) ? "" : productionLineAssignment.getWorkOrderNumber(),
+                                Strings.isBlank(productionLineAssignment.getItemName()) ? "" : productionLineAssignment.getItemName(),
+                                Strings.isBlank(productionLineAssignment.getItemDescription()) ? "" : productionLineAssignment.getItemDescription(),
                                 Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getProducedQuantity(),
-                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getExpectedQuantity()
-                        )
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getExpectedQuantity(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? null : productionLineAssignment.getWorkOrder().getItemId())
         ).collect(Collectors.toList());
     }
 }
