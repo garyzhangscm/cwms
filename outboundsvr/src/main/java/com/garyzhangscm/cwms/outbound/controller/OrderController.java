@@ -590,14 +590,14 @@ public class OrderController {
 
     @BillableEndpoint
     @RequestMapping(value="/orders/{id}/get-manual-pick-quantity", method = RequestMethod.GET)
-    public Long getPickableQuantityForManualPick(@PathVariable  Long orderId,
+    public Long getPickableQuantityForManualPick(@PathVariable  Long id,
                                                  @RequestParam String lpn,
                                                  @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
         logger.debug("======        Start to getPickableQuantityForManualPick pick   ========");
-        logger.debug("=> orderId: {}", orderId);
+        logger.debug("=> orderId: {}", id);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
-        return orderService.getPickableQuantityForManualPick(orderId, lpn, pickWholeLPN);
+        return orderService.getPickableQuantityForManualPick(id, lpn, pickWholeLPN);
     }
 
 }

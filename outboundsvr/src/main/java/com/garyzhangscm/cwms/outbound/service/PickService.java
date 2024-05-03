@@ -1041,6 +1041,26 @@ public class PickService {
     }
 
 
+    @Transactional
+    public Pick generatePick(ShipmentLine shipmentLine, Inventory inventory,
+                             Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean wholeLPNPick) {
+        return generatePick(shipmentLine, inventory,
+                quantity, pickableUnitOfMeasure, true,
+                wholeLPNPick);
+    }
+    @Transactional
+    public Pick generatePick(ShipmentLine shipmentLine, Inventory inventory,
+                             Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean loadDetails,
+                             boolean wholeLPNPick) {
+        Pick pick = generateBasicPickInformation(
+                shipmentLine.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure, wholeLPNPick);
+        pick = setupShipmentInformation(pick, shipmentLine);
+        return processPick(pick, loadDetails);
+    }
 
     @Transactional
     private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
