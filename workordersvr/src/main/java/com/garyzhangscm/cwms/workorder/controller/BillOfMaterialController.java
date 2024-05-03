@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialLineService;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.FileService;
+import com.garyzhangscm.cwms.workorder.service.UploadFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +43,8 @@ public class BillOfMaterialController {
     private BillOfMaterialLineService billOfMaterialLineService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
 
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.GET)
@@ -101,16 +104,19 @@ public class BillOfMaterialController {
                                                      @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "BOMs", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "BOMs", fileService.saveFile(file));
+
+            List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
+            return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
 
-        List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
-        return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
+
     }
 
 }

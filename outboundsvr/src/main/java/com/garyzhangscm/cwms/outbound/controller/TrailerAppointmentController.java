@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.outbound.model.FileUploadResult;
 import com.garyzhangscm.cwms.outbound.model.TrailerAppointment;
 import com.garyzhangscm.cwms.outbound.service.FileService;
 import com.garyzhangscm.cwms.outbound.service.TrailerAppointmentService;
+import com.garyzhangscm.cwms.outbound.service.UploadFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,8 @@ public class TrailerAppointmentController {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @BillableEndpoint
     @RequestMapping(value="/trailer-appointments/{id}/assign-stops-shipments-orders", method = RequestMethod.POST)
@@ -74,15 +77,18 @@ public class TrailerAppointmentController {
     public ResponseBodyWrapper uploadShippingTrailerAppointments(Long companyId, Long warehouseId,
                                                                  @RequestParam("file") MultipartFile file) throws IOException {
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "loads", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "loads", fileService.saveFile(file));
+
+            String fileUploadProgressKey = trailerAppointmentService.saveShippingTrailerAppointmentData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = trailerAppointmentService.saveShippingTrailerAppointmentData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
 
     }
 

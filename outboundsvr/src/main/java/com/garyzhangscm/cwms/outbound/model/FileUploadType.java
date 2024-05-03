@@ -1,7 +1,10 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FileUploadType {
     private String name;
@@ -51,6 +54,30 @@ public class FileUploadType {
         this.templateFileUrl = templateFileUrl;
     }
 
+    public List<FileUploadTemplateColumn> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<FileUploadTemplateColumn> columns) {
+        this.columns = columns;
+    }
+
+    public void addColumn(FileUploadTemplateColumn column) {
+        this.columns.add(column);
+    }
+
+    public Map<String, String> getColumnsMapping() {
+        return columnsMapping;
+    }
+
+    public void addColumnMap(String fromColumnName, String toColumnName) {
+        columnsMapping.put(fromColumnName, toColumnName);
+    }
+
+    public void setColumnsMapping(Map<String, String> columnsMapping) {
+        this.columnsMapping = columnsMapping;
+    }
+
     public String getTrackingProgressUrl() {
         return trackingProgressUrl;
     }
@@ -65,21 +92,5 @@ public class FileUploadType {
 
     public void setResultUrl(String resultUrl) {
         this.resultUrl = resultUrl;
-    }
-
-    public Map<String, String> getColumnsMapping() {
-        return columnsMapping;
-    }
-
-    public void setColumnsMapping(Map<String, String> columnsMapping) {
-        this.columnsMapping = columnsMapping;
-    }
-
-    public List<FileUploadTemplateColumn> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<FileUploadTemplateColumn> columns) {
-        this.columns = columns;
     }
 }

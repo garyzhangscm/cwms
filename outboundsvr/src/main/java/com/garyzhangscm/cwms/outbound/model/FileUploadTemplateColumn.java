@@ -1,4 +1,5 @@
 package com.garyzhangscm.cwms.outbound.model;
+ 
 
 public class FileUploadTemplateColumn {
 
@@ -11,20 +12,6 @@ public class FileUploadTemplateColumn {
 
     private Boolean nullable;
 
-    public FileUploadTemplateColumn() {}
-
-
-    public FileUploadTemplateColumn(String name,
-                                    String description,
-                                    Class type,
-                                    Integer maxLength,
-                                    Boolean nullable) {
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.maxLength = maxLength;
-        this.nullable = nullable;
-    }
 
     public String getName() {
         return name;
