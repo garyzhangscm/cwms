@@ -68,7 +68,7 @@ public interface IntegrationOrderData {
 
     String getStageLocationGroupName();
     List<? extends IntegrationOrderLineData> getOrderLines() ;
-
+    public Boolean getAllowForManualPick();
 
     public IntegrationStatus getStatus() ;
     public String getErrorMessage();

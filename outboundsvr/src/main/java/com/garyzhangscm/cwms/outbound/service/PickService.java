@@ -1008,6 +1008,27 @@ public class PickService {
 
         return processPick(pick);
     }
+
+    @Transactional
+    public Pick generateMnaualPick(InventorySummary inventorySummary,
+                             ShipmentLine shipmentLine, long quantity,
+                             String lpn,
+                             boolean wholeLPNPick) {
+        logger.debug("create picks for:");
+        logger.debug("inventory summary: {}",
+                Objects.isNull(inventorySummary.getLocation()) ? inventorySummary.getLocationId() :
+                        inventorySummary.getLocation().getName());
+        logger.debug("shipment line: {}", shipmentLine);
+        logger.debug("quantity: {}", quantity);
+        logger.debug("lpn: {}", lpn);
+        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(), inventorySummary, quantity, lpn, wholeLPNPick);
+        logger.debug("will need to setup shipment line information for the pick: {}", pick.getNumber());
+        pick = setupShipmentInformation(pick, shipmentLine);
+        logger.debug("start to process the pick: {}", pick.getNumber());
+
+        return processPick(pick);
+    }
+
     @Transactional(dontRollbackOn = GenericException.class)
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
@@ -1466,6 +1487,10 @@ public class PickService {
         }
     }
 
+    public Pick confirmPick(Pick pick, Long quantity, String lpn)   {
+        return confirmPick(pick, quantity, lpn, "");
+    }
+
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
         return confirmPick(pick, quantity, nextLocation, "", "");
     }
@@ -1858,6 +1883,26 @@ public class PickService {
         return allocationResult.getPicks();
 
 
+
+    }
+
+    @Transactional
+    public AllocationResult generateManualPickForOutboundShipment(ShipmentLine shipmentLine,
+                                                                  Location sourceLocation,
+                                                                  String lpn, Long pickableQuantity) {
+
+        // we will need to make sure there's only one production line assigned to the work order
+        // so that we can know the destination for the pick
+
+        logger.debug("Start to allocate the shipment line {} to get a manual pick from lcoation {} and lpn {}",
+                shipmentLine.getId(),
+                sourceLocation.getName(),
+                lpn);
+        AllocationResult allocationResult
+                = allocationService.allocate(shipmentLine, sourceLocation, true, lpn, pickableQuantity);
+
+
+        return allocationResult;
 
     }
 

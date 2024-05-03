@@ -2287,5 +2287,7 @@
   "autoRefreshOrderTimeWindowInMinute": "自动刷新订单时间间隔",
   "inventory-label": "库存标签",
   "inventory-quantity-on-lpn": "LPN上库存数量",
-  "file-upload.mapping_to_column_name": "映射的列名"
+  "file-upload.mapping_to_column_name": "映射的列名",
+  "menu.mobile.outbound.manual-pick": "手动分配拣货",
+  "allowForManualPick": "允许手动分配拣货"
 }

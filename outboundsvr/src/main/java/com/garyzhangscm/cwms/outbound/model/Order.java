@@ -83,6 +83,10 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Warehouse warehouse;
 
+    // whether the order allows for manual pick
+    @Column(name = "allow_for_manual_pick")
+    private Boolean allowForManualPick;
+
     @Column(name = "bill_to_customer_id")
     private Long billToCustomerId;
 
@@ -848,5 +852,13 @@ public class Order  extends AuditibleEntity<String> implements Serializable {
 
     public void setPoNumber(String poNumber) {
         this.poNumber = poNumber;
+    }
+
+    public Boolean getAllowForManualPick() {
+        return allowForManualPick;
+    }
+
+    public void setAllowForManualPick(Boolean allowForManualPick) {
+        this.allowForManualPick = allowForManualPick;
     }
 }

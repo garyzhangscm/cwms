@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.*;
+import com.garyzhangscm.cwms.outbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -2618,30 +2619,19 @@ public class OrderService {
         );
     }
 
-    /**
-     * Generate manual pick for the order
-     * @param orderId
-     * @param lpn
-     * @param pickWholeLPN
-     * @return
-     */
-    public List<Pick> generateManualPick(Long orderId, String lpn, Boolean pickWholeLPN) {
 
-        Order order = findById(orderId);
+    private void validateOrderForManualPick(Order order) {
+        if (!Boolean.TRUE.equals(order.getAllowForManualPick())) {
 
-        validateOrderStatusForManualPick(order);
-
-        List<Pick> picks = new ArrayList<>();
-        ///// TO-DO
-        return picks;
-    }
-
-    private void validateOrderStatusForManualPick(Order order) {
+            throw OrderOperationException.raiseException("Can't generate manual pick for order " +
+                    order.getNumber() + " as it is not marked for manual pick");
+        }
         if (order.getStatus().equals(OrderStatus.COMPLETE)) {
             throw OrderOperationException.raiseException("Can't generate manual pick for order " +
                     order.getNumber() + " as its status is " +
                     order.getStatus() + " and not suitable for pick");
         }
+
     }
 
     public String saveOrderData(Long warehouseId,
@@ -3952,4 +3942,241 @@ public class OrderService {
         }
 
     }
+
+    /**
+     * Manually pick the LPN for the order, we will generate the picks, pick the LPN and then deposit to the
+     * ship stage
+     * @param warehouseId
+     * @param orderNumber
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public List<Pick> processManualPick(Long warehouseId, Long clientId, String orderNumber, String lpn, Boolean pickWholeLPN) {
+        Order order = findByNumber(warehouseId, clientId, orderNumber, false);
+        if (Objects.isNull(order)) {
+            throw OrderOperationException.raiseException("Can't find order by warehouse: " + warehouseId +
+                    ", client: " + clientId + ", number: " + orderNumber);
+        }
+        if (!Boolean.TRUE.equals(order.getAllowForManualPick())) {
+
+            throw OrderOperationException.raiseException("Can't process manual pick on the order: " + orderNumber + ", " +
+                    " as the order is not setup for manual pick");
+        }
+
+        validateOrderForManualPick(order);
+
+
+        List<Pick> picks = generateManualPick(order, lpn, pickWholeLPN);
+
+        logger.debug("# got {} manual picks for order {},  with LPN {}  ",
+                picks.size(),
+                order.getNumber());
+
+        if (picks.isEmpty()) {
+            throw OrderOperationException.raiseException("Fail to generate picks for this LPN " + lpn);
+        }
+        // we will confirm the pick automatically
+        return picks.stream().map(
+                pick -> confirmManualPick(pick, lpn)
+        ).collect(Collectors.toList());
+
+
+    }
+
+    private Pick confirmManualPick(Pick pick, String lpn) {
+        logger.debug("start to fully confirm the pick {} from the LPN {}",
+                pick.getNumber(), lpn);
+        return pickService.confirmPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
+                lpn);
+    }
+
+    public List<Pick> generateManualPick(Long orderId,
+                                         String lpn,
+                                         Boolean pickWholeLPN) {
+
+
+        return generateManualPick(findById(orderId), lpn, pickWholeLPN);
+    }
+    public List<Pick> generateManualPick(Order order,
+                                         String lpn,
+                                         Boolean pickWholeLPN) {
+
+        validateOrderForManualPick(order);
+
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
+                order.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+            throw OrderOperationException.raiseException("Can't find the inventory by LPN " + lpn);
+        }
+        // let's make sure it simple. For now we only allow one item on the LPN for manual pick
+        if (inventories.stream().map(inventory -> inventory.getItem().getId()).distinct().count() > 1) {
+
+            throw OrderOperationException.raiseException("LPN "  + lpn + " is mixed with different item, fail to generate manual pick ");
+        }
+        Location sourceLocation = inventories.get(0).getLocation();
+        if(Objects.isNull(sourceLocation)) {
+            sourceLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
+                    inventories.get(0).getLocationId()
+            );
+        }
+        Long itemId = inventories.get(0).getItem().getId();
+
+        logger.debug("Start to generate manual picks for order {}, from location {}, with LPN {} and item {}",
+                order.getNumber(), sourceLocation.getName(), lpn,
+                inventories.get(0).getItem().getName());
+
+        Long pickableQuantity = getPickableQuantityForManualPick(order, lpn, pickWholeLPN);
+
+        return generateManualPick(order, sourceLocation, lpn, itemId, pickableQuantity);
+    }
+    public List<Pick> generateManualPick(Order order,
+                                         Location sourceLocation,
+                                         String lpn, Long itemId,
+                                         Long pickableQuantity) {
+        // if not done yet, let's plan a shipment for it
+        // we will reasonable assume that for orders that allow manual pick, there's
+        // only one active shipment for it
+        List<Shipment> shipments  = shipmentService.findByOrder(order, false);
+
+        // only retain the active shipment
+        shipments = shipments.stream().filter(
+                shipment -> !shipment.getStatus().equals(ShipmentStatus.CANCELLED) &&
+                        !shipment.getStatus().equals(ShipmentStatus.DISPATCHED)
+        ).collect(Collectors.toList());
+
+        logger.debug("Found {} active shipment for this order {}",
+                shipments.size(), order.getNumber());
+
+        if (shipments.size() > 1) {
+            throw OrderOperationException.raiseException("multiple open shipments are found for the order " +
+                    order.getNumber() + ", we can't manual pick from this order");
+        }
+        Shipment shipment = shipments.size() == 0 ?
+                shipmentService.planShipments(order.getNumber(), order.getOrderLines()) :
+                shipments.get(0);
+
+        ShipmentLine shipmentLine = shipment.getShipmentLines().stream().filter(
+                sline -> sline.getOrderLine().getItemId().equals(itemId)
+        ).findFirst().orElseThrow(() -> MissingInformationException.raiseException(
+                "Can't find item for the LPN " + lpn + " with item id " + itemId + ", fail to generate the manual pick"));
+
+        logger.debug("Found the shipment line from this shipment {} for the item with id {}",
+                shipment.getNumber(), itemId);
+
+
+        AllocationResult allocationResult = pickService.generateManualPickForOutboundShipment(shipmentLine,
+                sourceLocation,lpn, pickableQuantity);
+
+        logger.debug("Generate the allocation result: \n{}", allocationResult);
+
+        return allocationResult.getPicks();
+
+    }
+
+    /**
+     * Check how mnuch we can pick from this LPN for manual pick with the order
+     * @param orderId
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public Long getPickableQuantityForManualPick(Long orderId, String lpn, Boolean pickWholeLPN) {
+
+        return getPickableQuantityForManualPick(findById(orderId), lpn, pickWholeLPN);
+    }
+
+    /**
+     * Check how mnuch we can pick from this LPN for manual pick with the order
+     * @param order
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public Long getPickableQuantityForManualPick(Order order, String lpn,
+                                                 Boolean pickWholeLPN) {
+
+        validateOrderForManualPick(order);
+        // Make sure the production line passed in is valid
+
+        // make sure the LPN is valid LPN
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
+                order.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is invalid. Fail to generate manual pick for the order " + order.getNumber());
+        }
+
+        // make sure there's only one item in the LPN
+        List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
+        if (itemIdList.size() > 1) {
+
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different items. Fail to generate manual pick for the work order " + order.getNumber());
+        }
+
+        // get the matched work order line by the item id
+        Long itemId = itemIdList.get(0);
+
+        // inventory status required, either from the work order line
+        // or from the work order line's spare part
+        Long inventoryStatusId;
+
+        // total quantity required, either from the work order line
+        // or from the work order line's spare part
+        Long quantityRequiredByWorkOrderLine = 0l;
+
+        // make sure the item matches with the work order line, or any spare part of the work order line
+        Optional<OrderLine> matchedOrderLineOptional = order.getOrderLines().stream().filter(
+                orderLine -> orderLine.getItemId().equals(itemId)
+        ).findFirst();
+
+        // if there's no matched work order line with the item id, see if this item is a
+        // spare part
+        if (!matchedOrderLineOptional.isPresent()) {
+
+            throw OrderOperationException.raiseException("Can't find any order line matched with item id ." + itemId +
+                    "Fail to generate manual pick");
+        }
+
+        OrderLine matchedOrderLine = matchedOrderLineOptional.get();
+
+        // if the open quantity is 0, which means the order line is fully allocated,
+        // we either have pick or short allocation against the work order line
+        // we will not allow the user to manual pick
+        /**
+        if (matchedOrderLine.getExpectedQuantity() > 0 &&
+                matchedOrderLine.getInprocessQuantity() <= 0) {
+            throw OrderOperationException.raiseException("Order " + order.getNumber() +
+                    ", line " + matchedOrderLine.getNumber() + " is fully processed." +
+                    "Fail to generate manual pick");
+        }
+         **/
+        inventoryStatusId = matchedOrderLine.getInventoryStatusId();
+        quantityRequiredByWorkOrderLine = matchedOrderLine.getOpenQuantity();
+
+        // get the pickable inventory
+        List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, inventoryStatusId, inventories.get(0).getLocationId(),
+                lpn
+        );
+        if (pickableInventory.isEmpty()) {
+
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is not pickable. Fail to generate manual pick for the order " + order.getNumber());
+        }
+
+        // check if how much we can pick from this LPN
+        Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        if (Boolean.TRUE.equals(pickWholeLPN)) {
+            // if the user specify to pick the whole LPN
+            // then return the pickable quantity from this LPN
+            return inventoryQuantity;
+        }
+        return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
+    }
+
 }
