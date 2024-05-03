@@ -46,6 +46,8 @@ public class WalmartShippingCartonLabelController {
     WalmartShippingCartonLabelService walmartShippingCartonLabelService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
 
     @ClientValidationEndpoint
@@ -79,16 +81,17 @@ public class WalmartShippingCartonLabelController {
     public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long companyId, Long warehouseId,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "walmart-shipping-carton-labels", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "walmart-shipping-carton-labels", fileService.saveFile(file));
+
+            String fileUploadProgressKey = walmartShippingCartonLabelService.updateWalmartShippingCartonLabels(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = walmartShippingCartonLabelService.updateWalmartShippingCartonLabels(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
     @RequestMapping(method=RequestMethod.GET, value="/walmart-shipping-carton-labels/upload/progress")
     public ResponseBodyWrapper getWalmartShippingCartonLabelsFileUploadProgress(Long warehouseId,

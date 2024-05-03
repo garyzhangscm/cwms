@@ -51,6 +51,8 @@ public class ParcelShippingController {
     @Autowired
     private FileService fileService;
     @Autowired
+    private UploadFileService uploadFileService;
+    @Autowired
     private OrderDocumentService orderDocumentService;
 
     @RequestMapping(value="/parcel/ship-engine/rate", method = RequestMethod.GET)
@@ -112,16 +114,18 @@ public class ParcelShippingController {
                                                    Long warehouseId,
                                                          @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "parcel-packages", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "parcel-packages", fileService.saveFile(file));
+
+            String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
     @RequestMapping(method=RequestMethod.GET, value="/parcel/packages/upload/progress")
     public ResponseBodyWrapper getParcelPackageFileUploadProgress(Long warehouseId,

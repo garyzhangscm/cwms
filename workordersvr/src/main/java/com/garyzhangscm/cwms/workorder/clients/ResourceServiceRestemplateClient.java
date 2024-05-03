@@ -202,13 +202,22 @@ public class ResourceServiceRestemplateClient {
         );
     }
 
-/**
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                            String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
     }
-*/
 }

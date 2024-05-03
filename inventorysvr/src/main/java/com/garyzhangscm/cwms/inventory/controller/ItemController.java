@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
+import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,8 @@ public class ItemController {
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -290,17 +293,18 @@ public class ItemController {
                                            @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "items", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "items", fileService.saveFile(file));
+
+            String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        // List<Item> items = itemService.saveItemData(warehouseId, localFile);
-        // return  ResponseBodyWrapper.success(String.valueOf(items.size()));
-        String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/items/upload/progress")

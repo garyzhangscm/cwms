@@ -372,4 +372,23 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                            String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
 }

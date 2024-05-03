@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class InventoryController {
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
@@ -649,15 +652,18 @@ public class InventoryController {
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
 
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "inventory", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "inventory", fileService.saveFile(file));
+
+            String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventories/upload/progress")
@@ -690,16 +696,18 @@ public class InventoryController {
                                                  @RequestParam("file") MultipartFile file,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
-
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "putaway-inventories", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "putaway-inventories", fileService.saveFile(file));
+
+            String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventories/putaway-inventory/upload/progress")

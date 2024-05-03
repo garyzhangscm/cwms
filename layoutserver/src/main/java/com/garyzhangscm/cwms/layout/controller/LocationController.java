@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.layout.model.FileUploadResult;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
+import com.garyzhangscm.cwms.layout.service.UploadFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,8 @@ public class LocationController {
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @RequestMapping(value="/locations/{id}", method = RequestMethod.GET)
     public Location getLocationById(@PathVariable Long id) {
@@ -87,18 +90,19 @@ public class LocationController {
     public ResponseBodyWrapper uploadLocations(Long companyId, Long warehouseId,
                                                @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.convertToCSVFile(fileService.saveFile(file));
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "locations", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "locations", fileService.saveFile(file));
+
+            String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        // List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
 
-        String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
 
     }
 

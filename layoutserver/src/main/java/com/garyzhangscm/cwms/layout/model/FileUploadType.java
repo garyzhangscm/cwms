@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.outbound.model;
+package com.garyzhangscm.cwms.layout.model;
 
 
 import java.util.ArrayList;
