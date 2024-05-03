@@ -146,8 +146,15 @@ public class ManualAllocationStrategy implements AllocationStrategy {
 
     @Transactional(dontRollbackOn = GenericException.class)
     private Pick tryCreatePickForManualAllocation(AllocationRequest allocationRequest, Inventory inventory) {
-        if (allocationRequest.getShipmentLines().size() > 0) {
-            throw PickingException.raiseException("manual pick for shipment is not supported");
+        if (allocationRequest.getShipmentLines().size() > 1) {
+
+            throw PickingException.raiseException("We can't only proceed manual pick for order, one line at a time");
+        }
+        else if (allocationRequest.getShipmentLines().size() == 1) {
+            return pickService.generatePick(allocationRequest.getShipmentLines().get(0),
+                    inventory,
+                    inventory.getQuantity(), inventory.getItemPackageType().getStockItemUnitOfMeasure(),
+                    false);
         }
         else if(allocationRequest.getWorkOrder() != null &&
                 allocationRequest.getWorkOrderLines().size() > 0) {
