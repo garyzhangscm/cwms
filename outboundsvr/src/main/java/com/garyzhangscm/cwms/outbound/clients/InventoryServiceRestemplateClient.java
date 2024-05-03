@@ -364,6 +364,33 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId, String lpn) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/pickable")
+                        .queryParam("includeDetails", false)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId);
+
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+
+        if (Strings.isNotBlank(lpn)) {
+            builder = builder.queryParam("lpn", lpn);
+
+        }
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
+
     public List<Inventory> getInventoryByLocationAndItemName(Location location, String itemName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()

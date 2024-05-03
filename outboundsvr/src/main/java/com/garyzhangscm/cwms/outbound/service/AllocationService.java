@@ -77,6 +77,32 @@ public class AllocationService {
         return allocationResult;
     }
 
+    @Transactional
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     Location sourceLocation,
+                                     boolean manualAllocation,
+                                     String lpn, Long pickableQuantity){
+
+        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine);
+        allocationRequest.setQuantity(pickableQuantity);
+        allocationRequest.setManualAllocation(manualAllocation);
+        allocationRequest.setLpn(lpn);
+
+        // If we specify the allocation strategy type, then override the one
+        // from the shipment line(order line)
+
+        AllocationResult allocationResult = tryAllocate(allocationRequest, sourceLocation);
+
+        logger.debug("We got {} picks, {} short allocations for order line {} / {}, ",
+                allocationResult.getPicks().size(),
+                allocationResult.getShortAllocations().size(),
+                shipmentLine.getOrderLine().getOrderNumber(),
+                shipmentLine.getOrderLine().getNumber());
+
+        return allocationResult;
+    }
+
+
     public AllocationResult allocate(Long workOrderId, WorkOrderLine workOrderLine, Long productionLineId, Long allocatingWorkOrderLineQuantity){
         logger.debug("Start to allocate Work Order Line {} ", workOrderLine.getId());
 

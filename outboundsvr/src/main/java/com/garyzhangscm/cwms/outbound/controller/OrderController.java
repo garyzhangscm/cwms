@@ -289,12 +289,36 @@ public class OrderController {
     public List<Pick> generateManualPick(@PathVariable  Long orderId,
                                          @RequestParam String lpn,
                                          @RequestParam Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to generateManualPick pick   ========");
         logger.debug("=> orderId: {}", orderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return orderService.generateManualPick(orderId, lpn, pickWholeLPN);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/process-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
+    public List<Pick> processManualPick(@RequestParam String lpn,
+                                        @RequestParam Long warehouseId,
+                                        @RequestParam String orderNumber,
+                                        @RequestParam(required = false, defaultValue = "", name = "clientId") Long clientId,
+                                        @RequestParam(required = false, defaultValue = "true", name = "pickWholeLPN") Boolean pickWholeLPN) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> warehouseId: {}", warehouseId);
+        logger.debug("=> clientId: {}", clientId);
+        logger.debug("=> orderNumber: {}", orderNumber);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return orderService.processManualPick(warehouseId, clientId, orderNumber, lpn, pickWholeLPN);
+    }
+
 
 
     @BillableEndpoint
@@ -562,4 +586,18 @@ public class OrderController {
                 nonAssignedOnly, nonPrintedOnly);
 
     }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/{id}/get-manual-pick-quantity", method = RequestMethod.GET)
+    public Long getPickableQuantityForManualPick(@PathVariable  Long orderId,
+                                                 @RequestParam String lpn,
+                                                 @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
+        logger.debug("======        Start to getPickableQuantityForManualPick pick   ========");
+        logger.debug("=> orderId: {}", orderId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return orderService.getPickableQuantityForManualPick(orderId, lpn, pickWholeLPN);
+    }
+
 }

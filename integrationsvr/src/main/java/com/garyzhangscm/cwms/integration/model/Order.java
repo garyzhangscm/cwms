@@ -52,7 +52,7 @@ public class Order implements Serializable {
 
     private OrderStatus status = OrderStatus.OPEN;
 
-
+    private Boolean allowForManualPick;
 
     private Long billToCustomerId;
     private String billToCustomerName;
@@ -517,5 +517,13 @@ public class Order implements Serializable {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public Boolean getAllowForManualPick() {
+        return allowForManualPick;
+    }
+
+    public void setAllowForManualPick(Boolean allowForManualPick) {
+        this.allowForManualPick = allowForManualPick;
     }
 }

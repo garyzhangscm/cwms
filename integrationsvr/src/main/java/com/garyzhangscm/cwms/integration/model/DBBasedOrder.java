@@ -75,6 +75,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "allow_for_manual_pick")
+    private Boolean allowForManualPick;
 
     @Column(name = "bill_to_customer_id")
     private Long billToCustomerId;
@@ -204,7 +206,7 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "carrierId", "carrierName", "carrierServiceLevelId","carrierServiceLevelName", "clientId", "clientName",
                 "category", "transferReceiptWarehouseId", "quickbookTxnID", "quickbookCustomerListId",
                 "shipToAddressLine3", "billToAddressLine3",
-                "shipToContactorPhoneNumber", "poNumber"
+                "shipToContactorPhoneNumber", "poNumber", "allowForManualPick"
         };
 
         ObjectCopyUtil.copyValue(order, this, fieldNames);
@@ -240,7 +242,8 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
                 "billToAddressPostcode", "carrierId", "carrierServiceLevelId", "clientId",
                 "category", "transferReceiptWarehouseId", "transferReceiptWarehouseName",
                 "warehouseId","warehouseName", "quickbookTxnID", "quickbookCustomerListId",
-                "shipToAddressLine3", "billToAddressLine3", "shipToContactorPhoneNumber", "poNumber"
+                "shipToAddressLine3", "billToAddressLine3", "shipToContactorPhoneNumber", "poNumber",
+                "allowForManualPick"
         };
 
         ObjectCopyUtil.copyValue(this, order, fieldNames);
@@ -671,6 +674,14 @@ public class DBBasedOrder extends AuditibleEntity<String> implements Serializabl
         this.status = status;
     }
 
+    @Override
+    public Boolean getAllowForManualPick() {
+        return allowForManualPick;
+    }
+
+    public void setAllowForManualPick(Boolean allowForManualPick) {
+        this.allowForManualPick = allowForManualPick;
+    }
 
     @Override
     public String getErrorMessage() {
