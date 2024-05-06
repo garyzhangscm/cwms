@@ -51,7 +51,8 @@ public class UploadFileService {
         }
         else if (FilenameUtils.isExtension(file.getName(),"xls") || FilenameUtils.isExtension(file.getName(),"xlsx")) {
             logger.debug("The file is a Excel file, we will convert it to CSV file first");
-            csvFile =  replaceCSVHeaderByMappingField(companyId, warehouseId, type, excelFileHandler.convertExcelToCSV(file));
+            FileUploadType fileUploadType = getFileUploadType(companyId, warehouseId, type);
+            csvFile =  replaceCSVHeaderByMappingField(fileUploadType, excelFileHandler.convertExcelToCSV(file, fileUploadType));
         }
         else {
             throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +

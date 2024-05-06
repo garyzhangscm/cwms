@@ -47,9 +47,7 @@ import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -73,6 +71,8 @@ public class InventoryService {
     @Autowired
     HttpServletRequest httpServletRequest;
 
+    @Autowired
+    private DateTimeService dateTimeService;
     @Autowired
     private ItemService itemService;
     @Autowired
@@ -1274,20 +1274,17 @@ public class InventoryService {
         inventory.setWarehouseId(warehouseId);
 
         if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
-            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
-            if (Objects.nonNull(localDate)) {
-                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
-            }
+
+            inventory.setFifoDate(dateTimeService.getZonedDateTime(inventoryCSVWrapper.getFifoDate()));
         }
 
         if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
-            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getInWarehouseDatetime());
-            if (Objects.nonNull(localDate)) {
-                inventory.setInWarehouseDatetime(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
-                // set the FIFO date as the in warehouse date, if the fifo date is not specified
-                if (Objects.isNull(inventory.getFifoDate())) {
-                    inventory.setFifoDate(inventory.getInWarehouseDatetime());
-                }
+
+            inventory.setInWarehouseDatetime(dateTimeService.getZonedDateTime(inventoryCSVWrapper.getInWarehouseDatetime()));
+
+            // set the FIFO date as the in warehouse date, if the fifo date is not specified
+            if (Objects.isNull(inventory.getFifoDate())) {
+                inventory.setFifoDate(inventory.getInWarehouseDatetime());
             }
         }
 
@@ -1400,6 +1397,7 @@ public class InventoryService {
         return inventory;
 
     }
+
 
     public Inventory reverseProduction(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);

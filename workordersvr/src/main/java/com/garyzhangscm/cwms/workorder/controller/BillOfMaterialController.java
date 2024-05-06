@@ -23,6 +23,7 @@ import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
+import com.garyzhangscm.cwms.workorder.model.FileUploadResult;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialLineService;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.FileService;
@@ -109,8 +110,11 @@ public class BillOfMaterialController {
             File localFile = uploadFileService.convertToCSVFile(
                     companyId, warehouseId, "BOMs", fileService.saveFile(file));
 
-            List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
-            return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
+
+            String fileUploadProgressKey = billOfMaterialLineService.saveBOMLineData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
+            // return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
@@ -118,5 +122,23 @@ public class BillOfMaterialController {
 
 
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/bill-of-materials/upload/progress")
+    public ResponseBodyWrapper getBillOfMaterialsFileUploadProgress(Long warehouseId,
+                                                            String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",billOfMaterialLineService.getBillOfMaterialsFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/bill-of-materials/upload/result")
+    public List<FileUploadResult> getBillOfMaterialsFileUploadResult(Long warehouseId,
+                                                                     String key) throws IOException {
+
+
+        return billOfMaterialLineService.getBillOfMaterialsFileUploadResult(warehouseId, key);
+    }
+
 
 }
