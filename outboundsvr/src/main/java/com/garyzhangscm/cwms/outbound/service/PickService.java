@@ -1914,10 +1914,11 @@ public class PickService {
         // we will need to make sure there's only one production line assigned to the work order
         // so that we can know the destination for the pick
 
-        logger.debug("Start to allocate the shipment line {} to get a manual pick from lcoation {} and lpn {}",
+        logger.debug("Start to allocate the shipment line {} to get a manual pick " +
+                        " from location {} and lpn {}, with quantity {}",
                 shipmentLine.getId(),
                 sourceLocation.getName(),
-                lpn);
+                lpn, pickableQuantity);
         AllocationResult allocationResult
                 = allocationService.allocate(shipmentLine, sourceLocation, true, lpn, pickableQuantity);
 

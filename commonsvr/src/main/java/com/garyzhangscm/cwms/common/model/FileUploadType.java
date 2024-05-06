@@ -1,4 +1,4 @@
-package com.garyzhangscm.cwms.workorder.model;
+package com.garyzhangscm.cwms.common.model;
 
 
 import java.time.LocalDate;

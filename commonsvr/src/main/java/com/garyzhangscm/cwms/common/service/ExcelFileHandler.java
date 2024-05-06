@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.common.service;
 
+import com.garyzhangscm.cwms.common.model.FileUploadType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -12,9 +13,11 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class ExcelFileHandler {
@@ -47,14 +50,21 @@ public class ExcelFileHandler {
      * @param excelFile
      * @return
      */
-    public File convertExcelToCSV(File excelFile) throws IOException {
+    public File convertExcelToCSV(File excelFile, FileUploadType fileUploadType) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(excelFile);
         Workbook workbook = new XSSFWorkbook(fileInputStream);
 
         Sheet sheet = workbook.getSheetAt(0);
 
+        // save the column name as a map
+        //
+        Map<Integer, String> columnNameMap = new HashMap<>();
+
         Iterator<Row> rowIterator = sheet.iterator();
         StringBuilder data = new StringBuilder();
+
+        // row index. we will use it to find the column name(1st row)
+        int rowIndex = 0;
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
@@ -67,19 +77,43 @@ public class ExcelFileHandler {
             for (int columnNumber = 0; columnNumber < lastColumn; columnNumber++) {
                 Cell cell = row.getCell(columnNumber, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
                 if (cell != null) {
-                    CellType type = cell.getCellType();
-                    if (type == CellType.BOOLEAN) {
-                        data.append(cell.getBooleanCellValue());
-                    } else if (type == CellType.NUMERIC) {
-                        data.append(formatNumericValue(cell.getNumericCellValue()));
-                    } else if (type == CellType.STRING) {
-                        String cellValue = cell.getStringCellValue();
-                        if (!cellValue.isEmpty()) {
-                            cellValue = cellValue.replaceAll("\"", "\"\"");
-                            data.append("\"").append(cellValue).append("\"");
+                    // special handling for date
+                    // excel will treat date as number, we can get the actual type from the
+                    // definition in FileUploadType
+                    String columnName =
+                            rowIndex == 0 ? cell.getStringCellValue() : columnNameMap.getOrDefault(columnNumber, "");
+                    columnNameMap.put(columnNumber, columnName);
+                    // skip date check for the first row
+                    Class columnType = rowIndex == 0 ? String.class : fileUploadType.getColumnType(columnName);
+
+
+                    if (columnType == ZonedDateTime.class || columnType == LocalDateTime.class  ) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                        data.append("\"")
+                                .append(cell.getLocalDateTimeCellValue().format(formatter))
+                                .append("\"");
+                    }
+                    else if (columnType == LocalDate.class  ) { 
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        data.append("\"")
+                                .append(cell.getLocalDateTimeCellValue().format(formatter))
+                                .append("\"");
+                    }
+                    else {
+                        CellType type = cell.getCellType();
+                        if (type == CellType.BOOLEAN) {
+                            data.append(cell.getBooleanCellValue());
+                        } else if (type == CellType.NUMERIC) {
+                            data.append(formatNumericValue(cell.getNumericCellValue()));
+                        } else if (type == CellType.STRING) {
+                            String cellValue = cell.getStringCellValue();
+                            if (!cellValue.isEmpty()) {
+                                cellValue = cellValue.replaceAll("\"", "\"\"");
+                                data.append("\"").append(cellValue).append("\"");
+                            }
+                        } else {
+                            data.append(cell + "");
                         }
-                    } else {
-                        data.append(cell + "");
                     }
                 }
 
@@ -89,12 +123,15 @@ public class ExcelFileHandler {
 
             }
             data.append('\n');
+
+            rowIndex++;
         }
 
         String csvFileName = FilenameUtils.removeExtension(excelFile.getName()) + ".csv";
         return fileService.saveCSVFile(csvFileName, data.toString());
 
     }
+
 
     /**
      * POI always treat numeric value as float, we may need to remove the ending 0 if

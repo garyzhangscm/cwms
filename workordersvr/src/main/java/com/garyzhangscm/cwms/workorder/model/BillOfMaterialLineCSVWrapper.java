@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 public class BillOfMaterialLineCSVWrapper {
 
@@ -22,6 +23,20 @@ public class BillOfMaterialLineCSVWrapper {
     private String item;
 
     private String inventoryStatus;
+
+    public BillOfMaterialLineCSVWrapper trim() {
+
+        number = Strings.isBlank(number) ? "" : number.trim();
+        billOfMaterial = Strings.isBlank(billOfMaterial) ? "" : billOfMaterial.trim();
+        bomItem = Strings.isBlank(bomItem) ? "" : bomItem.trim();
+        warehouse = Strings.isBlank(warehouse) ? "" : warehouse.trim();
+        company = Strings.isBlank(company) ? "" : company.trim();
+        item = Strings.isBlank(item) ? "" : item.trim();
+        inventoryStatus = Strings.isBlank(inventoryStatus) ? "" : inventoryStatus.trim();
+
+
+        return this;
+    }
 
     @Override
     public String toString() {

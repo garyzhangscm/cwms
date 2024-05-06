@@ -4029,12 +4029,21 @@ public class OrderService {
 
         Long pickableQuantity = getPickableQuantityForManualPick(order, lpn, pickWholeLPN);
 
+        logger.debug("we will pick quantity {} from lpn {}, as the pickWholeLPN passed in is {}",
+                pickableQuantity, lpn, pickWholeLPN);
         return generateManualPick(order, sourceLocation, lpn, itemId, pickableQuantity);
     }
     public List<Pick> generateManualPick(Order order,
                                          Location sourceLocation,
                                          String lpn, Long itemId,
                                          Long pickableQuantity) {
+        logger.debug("start to generate picks from location {}, lpn {}, item id {}, pickable quantity {}" +
+                ", for order {}",
+                sourceLocation.getName(),
+                lpn,
+                itemId,
+                pickableQuantity,
+                order.getNumber());
         // if not done yet, let's plan a shipment for it
         // we will reasonable assume that for orders that allow manual pick, there's
         // only one active shipment for it
@@ -4110,39 +4119,8 @@ public class OrderService {
                     " is invalid. Fail to generate manual pick for the order " + order.getNumber());
         }
 
-        // make sure there's only one item in the LPN
-        List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
-        if (itemIdList.size() > 1) {
-
-            throw OrderOperationException.raiseException("LPN " + lpn +
-                    " is mixed with different items. Fail to generate manual pick for the work order " + order.getNumber());
-        }
-
-        // get the matched work order line by the item id
-        Long itemId = itemIdList.get(0);
-
-        // inventory status required, either from the work order line
-        // or from the work order line's spare part
-        Long inventoryStatusId;
-
-        // total quantity required, either from the work order line
-        // or from the work order line's spare part
-        Long quantityRequiredByWorkOrderLine = 0l;
-
-        // make sure the item matches with the work order line, or any spare part of the work order line
-        Optional<OrderLine> matchedOrderLineOptional = order.getOrderLines().stream().filter(
-                orderLine -> orderLine.getItemId().equals(itemId)
-        ).findFirst();
-
-        // if there's no matched work order line with the item id, see if this item is a
-        // spare part
-        if (!matchedOrderLineOptional.isPresent()) {
-
-            throw OrderOperationException.raiseException("Can't find any order line matched with item id ." + itemId +
-                    "Fail to generate manual pick");
-        }
-
-        OrderLine matchedOrderLine = matchedOrderLineOptional.get();
+        OrderLine matchedOrderLine = getMatchedOrderLineForManualPick(order, lpn, inventories);
+        // matchedOrderLineOptional.get();
 
         // if the open quantity is 0, which means the order line is fully allocated,
         // we either have pick or short allocation against the work order line
@@ -4155,12 +4133,29 @@ public class OrderService {
                     "Fail to generate manual pick");
         }
          **/
-        inventoryStatusId = matchedOrderLine.getInventoryStatusId();
-        quantityRequiredByWorkOrderLine = matchedOrderLine.getOpenQuantity();
+        // if we have shipment lines, then we can only generate manual pick against the open
+        // quantity from the shipment line.
+        // otherwise, we can generate manual pick from the open order line and we will assume
+        // the system will generate a shipment line with the full open order line quantity
+        // later on
+        List<ShipmentLine> shipmentLines = shipmentLineService.findByOrderLineId(
+                order.getWarehouseId(), matchedOrderLine.getId()
+        );
+
+
+
+        // get all the open quantity for this order line.
+        // we can generate picks for any open quantity that still in shipment line
+
+        long quantityRequired = shipmentLines.isEmpty() ?
+                matchedOrderLine.getOpenQuantity() :
+                shipmentLines.stream().map(ShipmentLine::getOpenQuantity).mapToLong(Long::longValue).sum();
 
         // get the pickable inventory
         List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
-                itemId, inventoryStatusId, inventories.get(0).getLocationId(),
+                inventories.get(0).getItem().getId(),
+                inventories.get(0).getInventoryStatus().getId(),
+                inventories.get(0).getLocationId(),
                 lpn
         );
         if (pickableInventory.isEmpty()) {
@@ -4176,7 +4171,300 @@ public class OrderService {
             // then return the pickable quantity from this LPN
             return inventoryQuantity;
         }
-        return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
+        return Math.min(inventoryQuantity, quantityRequired);
+    }
+
+    /**
+     * Get matched order line from an order, for manual pick from the inventory
+     * for now we don't allow mix of inventory attribute in the inventory
+     * @param inventories
+     * @return
+     */
+    private OrderLine getMatchedOrderLineForManualPick(Order order, String lpn, List<Inventory> inventories) {
+
+        // make sure there's only one item in the LPN
+        Map<String, String> nonMixedInventoryAttributeForManualPick =
+                getNonMixedInventoryAttributeForManualPick(order, lpn, inventories);
+
+        // mlet's find the matched order line from this order
+        return order.getOrderLines().stream().filter(
+                orderLine -> isOrderLineMatchesInventoryAttribute(orderLine, lpn, nonMixedInventoryAttributeForManualPick)
+        ).findFirst().orElseThrow(
+                () -> OrderOperationException.raiseException("can't find any order line from order " + order.getNumber() +
+                " match with the LPN " + lpn + ", fail to generate manual pick"));
+
+
+    }
+
+    /**
+     * for any inventory attribute, the order line match with the inventory if
+     * 1. order line requires a specific value and the inventory's attribute matches
+     * 2. the order line doesn't requires any specific value
+     */
+    private boolean isOrderLineMatchesInventoryAttribute(OrderLine orderLine, String lpn, Map<String, String> inventoryAttributeMap) {
+        // make sure the order line match with the item id and inventory status id
+        if (!orderLine.getItemId().equals(Long.parseLong(inventoryAttributeMap.get("itemId")))) {
+            logger.debug("order line {} / {} 's item id {} doesn't match with the LPN {} 's item id {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getItemId(),
+                    lpn,
+                    inventoryAttributeMap.get("itemId"));
+            return false;
+        }
+        if (!orderLine.getInventoryStatusId().equals(Long.parseLong(inventoryAttributeMap.get("inventoryStatusId")))) {
+            logger.debug("order line {} / {} 's inventory status id {} doesn't match with the LPN {} 's inventory status id {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryStatusId(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryStatusId"));
+            return false;
+        }
+        // for any inventory attribute, the order line match with the inventory if
+        // 1. order line requires a specific value and the inventory's attribute matches
+        // 2. the order line doesn't requires any specific value
+        if (Strings.isNotBlank(orderLine.getColor()) &&
+            !orderLine.getColor().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("color", ""))) {
+            logger.debug("order line {} / {} 's color {} doesn't match with the LPN {} 's color {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getColor(),
+                    lpn,
+                    inventoryAttributeMap.get("color"));
+            return false;
+        }
+
+        if (Strings.isNotBlank(orderLine.getStyle()) &&
+                !orderLine.getStyle().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("style", ""))) {
+            logger.debug("order line {} / {} 's style {} doesn't match with the LPN {} 's style {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getStyle(),
+                    lpn,
+                    inventoryAttributeMap.get("style"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getProductSize()) &&
+                !orderLine.getProductSize().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("productSize", ""))) {
+            logger.debug("order line {} / {} 's productSize {} doesn't match with the LPN {} 's productSize {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getProductSize(),
+                    lpn,
+                    inventoryAttributeMap.get("productSize"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute1()) &&
+                !orderLine.getInventoryAttribute1().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute1", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute1 {} doesn't match with the LPN {} 's inventoryAttribute1 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute1(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute1"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute2()) &&
+                !orderLine.getInventoryAttribute2().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute2", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute2 {} doesn't match with the LPN {} 's inventoryAttribute2 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute2(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute2"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute3()) &&
+                !orderLine.getInventoryAttribute3().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute3", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute3 {} doesn't match with the LPN {} 's inventoryAttribute3 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute3(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute3"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute4()) &&
+                !orderLine.getInventoryAttribute4().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute4", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute4 {} doesn't match with the LPN {} 's inventoryAttribute4 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute4(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute4"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute5()) &&
+                !orderLine.getInventoryAttribute5().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute5", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute5 {} doesn't match with the LPN {} 's inventoryAttribute5 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute5(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute5"));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Return a non mixed inventory attribute from the inventory of the LPN. For manual pick, we don't allow pick from
+     * a LPN with mixed inventory, just to keep the coding and warehouse operation simple
+     * It will return a map of
+     * key: attribute name
+     * value: attribute value
+     *
+     * attribute will include
+     * itemId: required
+     * inventoryStatusId: required
+     * color / style / productSize: optional
+     * inventoryAttribute 1 ~ 5: optional
+     * @param lpn
+     * @param inventories
+     * @return
+     */
+    private Map<String, String> getNonMixedInventoryAttributeForManualPick(Order order, String lpn, List<Inventory> inventories) {
+
+        Map<String, String> inventoryAttributeMap = new HashMap<>();
+
+        Set<Long> itemIdSet = new HashSet<>();
+        Set<Long> inventoryStatusIdSet = new HashSet<>();
+        Set<String> colorSet = new HashSet<>();
+        Set<String> styleSet = new HashSet<>();
+        Set<String> productSizeSet = new HashSet<>();
+        Set<String> inventoryAttribute1Set = new HashSet<>();
+        Set<String> inventoryAttribute2Set = new HashSet<>();
+        Set<String> inventoryAttribute3Set = new HashSet<>();
+        Set<String> inventoryAttribute4Set = new HashSet<>();
+        Set<String> inventoryAttribute5Set = new HashSet<>();
+
+        for (Inventory inventory : inventories) {
+            itemIdSet.add(inventory.getItem().getId());
+            inventoryStatusIdSet.add(inventory.getInventoryStatus().getId());
+            if (Strings.isNotBlank(inventory.getColor())) {
+                colorSet.add(inventory.getColor());
+            }
+            if (Strings.isNotBlank(inventory.getStyle())) {
+                styleSet.add(inventory.getStyle());
+            }
+            if (Strings.isNotBlank(inventory.getProductSize())) {
+                productSizeSet.add(inventory.getProductSize());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute1())) {
+                inventoryAttribute1Set.add(inventory.getAttribute1());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute2())) {
+                inventoryAttribute2Set.add(inventory.getAttribute2());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute3())) {
+                inventoryAttribute3Set.add(inventory.getAttribute3());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute4())) {
+                inventoryAttribute4Set.add(inventory.getAttribute4());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute5())) {
+                inventoryAttribute5Set.add(inventory.getAttribute5());
+            }
+        }
+
+        if (itemIdSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different items. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else {
+            inventoryAttributeMap.put("itemId", String.valueOf(itemIdSet.stream().findFirst().get()));
+        }
+        if (inventoryStatusIdSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different status. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else {
+            inventoryAttributeMap.put("inventoryStatusId", String.valueOf(inventoryStatusIdSet.stream().findFirst().get()));
+        }
+
+        if (colorSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different color. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (colorSet.size() == 1){
+            inventoryAttributeMap.put("color", colorSet.stream().findFirst().get());
+        }
+        if (styleSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different style. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (styleSet.size() == 1){
+            inventoryAttributeMap.put("style", styleSet.stream().findFirst().get());
+        }
+        if (productSizeSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different product size. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (productSizeSet.size() == 1){
+            inventoryAttributeMap.put("productSize", productSizeSet.stream().findFirst().get());
+        }
+
+        InventoryConfiguration inventoryConfiguration =
+                inventoryServiceRestemplateClient.getInventoryConfiguration(order.getWarehouseId());
+
+        if (inventoryAttribute1Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute1DisplayName()) ?
+                        "attribute 1" : inventoryConfiguration.getInventoryAttribute1DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute1Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute1", inventoryAttribute1Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute2Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute2DisplayName()) ?
+                            "attribute 2" : inventoryConfiguration.getInventoryAttribute2DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute2Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute2", inventoryAttribute2Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute3Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute3DisplayName()) ?
+                            "attribute 3" : inventoryConfiguration.getInventoryAttribute3DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute3Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute3", inventoryAttribute3Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute4Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute4DisplayName()) ?
+                            "attribute 4" : inventoryConfiguration.getInventoryAttribute4DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute4Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute4", inventoryAttribute4Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute5Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute5DisplayName()) ?
+                            "attribute 5" : inventoryConfiguration.getInventoryAttribute5DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute5Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute5", inventoryAttribute5Set.stream().findFirst().get());
+        }
+
+        return inventoryAttributeMap;
     }
 
 }

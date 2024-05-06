@@ -955,15 +955,20 @@ public class InventoryServiceRestemplateClient {
         );
     }
 
-    /**
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-     **/
 
+    public InventoryConfiguration getInventoryConfiguration(Long warehouseId)   {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventory_configuration")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                InventoryConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
 }

@@ -73,22 +73,8 @@ public class FileService {
 
     }
 
-    public File convertToCSVFile(File file) throws IOException {
-        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("csv")) {
-            logger.debug("The file is a CSV file, we will return it without convert");
-            return file;
-        }
-        else if (FilenameUtils.isExtension(file.getName(),"xls") || FilenameUtils.isExtension(file.getName(),"xlsx")) {
-            logger.debug("The file is a Excel file, we will convert it to CSV file first");
-            return excelFileHandler.convertExcelToCSV(file);
-        }
-        else {
-            throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +
-                    ". The format and extension is not support");
-        }
-    }
 
-    public <T> List<T> loadData(File file, Class<T> tClass)throws IOException {
+    public <T> List<T> loadData(File file, Class<T> tClass)  {
         CsvMapper csvMapper = new CsvMapper();
         CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
                 .withHeader() //

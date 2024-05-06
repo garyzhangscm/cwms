@@ -18,6 +18,10 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
@@ -25,6 +29,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialLineRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +38,16 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
 @Service
-public class BillOfMaterialLineService implements TestDataInitiableService {
+public class BillOfMaterialLineService  implements TestDataInitiableService {
     private static final Logger logger = LoggerFactory.getLogger(BillOfMaterialLineService.class);
 
     @Autowired
@@ -56,6 +61,13 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private UserService userService;
+
+    private final static int BOM_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
+    private Map<String, Double> bomFileUploadProgress = new ConcurrentHashMap<>();
+    private Map<String, List<FileUploadResult>> bomFileUploadResult = new ConcurrentHashMap<>();
 
     @Value("${fileupload.test-data.bill-of-material-line:bill-of-material-line}")
     String testDataFile;
@@ -172,6 +184,27 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
                 addColumn("expectedQuantity").
                 build().withHeader();
     }
+    public <T> List<T> loadData(File file, Class<T> tClass)  {
+        CsvMapper csvMapper = new CsvMapper();
+        CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
+                .withHeader() //
+                .withColumnSeparator(',');
+
+        ObjectReader reader = csvMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) //
+                .readerFor(tClass) //
+                .with(bootstrapSchema);
+
+        MappingIterator<T> iterator;
+        try {
+            iterator = reader.readValues(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format("could not access file " + file.getName()), e);
+        }
+        List<T> results = new ArrayList<>();
+        iterator.forEachRemaining(results::add);
+        return results;
+    }
+
 
     public List<BillOfMaterialLineCSVWrapper> loadData(File file) throws IOException {
 
@@ -258,18 +291,85 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
             return false;
         }
     }
-    public List<BillOfMaterialLine> saveBOMLineData(File localFile) throws IOException {
-        List<BillOfMaterialLine> billOfMaterialLines = loadBOMLineData(localFile);
-        return billOfMaterialLines.stream().map(this::saveOrUpdate).collect(Collectors.toList());
-    }
+    public String saveBOMLineData(Long warehouseId, File localFile)   {
 
-    public List<BillOfMaterialLine> loadBOMLineData(File  file) throws IOException {
-        List<BillOfMaterialLineCSVWrapper> billOfMaterialLineCSVWrappers = loadData(file);
+        String username = userService.getCurrentUserName();
 
-        logger.debug("loadBOMLineData / billOfMaterialLineCSVWrappers >>\n{}", billOfMaterialLineCSVWrappers);
+        String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
 
-        return billOfMaterialLineCSVWrappers.stream()
-                .map(billOfMaterialLineCSVWrapper -> convertFromWrapper(billOfMaterialLineCSVWrapper)).collect(Collectors.toList());
+        clearBOMFileUploadMap();
+
+        bomFileUploadProgress.put(fileUploadProgressKey, 0.0);
+        bomFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
+
+        List<BillOfMaterialLineCSVWrapper> billOfMaterialLineCSVWrappers
+                = fileService.loadData(localFile, BillOfMaterialLineCSVWrapper.class);
+
+        billOfMaterialLineCSVWrappers.forEach(
+                billOfMaterialLineCSVWrapper ->
+                        billOfMaterialLineCSVWrapper.trim()
+        );
+        logger.debug("start to save {} BOM ", billOfMaterialLineCSVWrappers.size());
+
+        bomFileUploadProgress.put(fileUploadProgressKey, 10.0);
+
+
+        new Thread(() -> {
+
+            int totalBOMLineCount = billOfMaterialLineCSVWrappers.size();
+            int index = 0;
+            // see if we need to create order
+            for (BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper : billOfMaterialLineCSVWrappers) {
+                try {
+
+                    bomFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalBOMLineCount) * (index));
+
+                    BillOfMaterialLine billOfMaterialLine =
+                            convertFromWrapper(billOfMaterialLineCSVWrapper);
+
+
+                    saveOrUpdate(billOfMaterialLine);
+
+
+                    bomFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalBOMLineCount) * (index + 1));
+
+
+                    List<FileUploadResult> fileUploadResults = bomFileUploadResult.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            billOfMaterialLineCSVWrapper.toString(),
+                            "success", ""
+                    ));
+                    bomFileUploadResult.put(fileUploadProgressKey, fileUploadResults);
+                }
+                catch(Exception ex) {
+
+                    ex.printStackTrace();
+                    logger.debug("Error while process BOM line upload file record: {}, \n error message: {}",
+                            billOfMaterialLineCSVWrapper,
+                            ex.getMessage());
+                    List<FileUploadResult> fileUploadResults = bomFileUploadResult.getOrDefault(
+                            fileUploadProgressKey, new ArrayList<>()
+                    );
+                    fileUploadResults.add(new FileUploadResult(
+                            index + 1,
+                            billOfMaterialLineCSVWrapper.toString(),
+                            "fail", ex.getMessage()
+                    ));
+                    bomFileUploadResult.put(fileUploadProgressKey, fileUploadResults);
+                }
+                finally {
+
+                    index++;
+                }
+                // after we process all inventory, mark the progress to 100%
+                bomFileUploadProgress.put(fileUploadProgressKey, 100.0);
+            }
+
+        }).start();
+        return fileUploadProgressKey;
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
@@ -277,4 +377,51 @@ public class BillOfMaterialLineService implements TestDataInitiableService {
                 warehouseId, oldItemId, newItemId
         );
     }
+
+    public Object getBillOfMaterialsFileUploadProgress(String key) {
+
+        return bomFileUploadProgress.getOrDefault(key, 100.0);
+    }
+
+    public List<FileUploadResult> getBillOfMaterialsFileUploadResult(Long warehouseId, String key) {
+        return bomFileUploadResult.getOrDefault(key, new ArrayList<>());
+    }
+
+    private void clearBOMFileUploadMap() {
+
+        if (bomFileUploadProgress.size() > BOM_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = bomFileUploadProgress.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (bomFileUploadResult.size() > BOM_FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
+            // start to clear the date that is already 1 hours old. The file upload should not
+            // take more than 1 hour
+            Iterator<String> iterator = bomFileUploadResult.keySet().iterator();
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                // key should be in the format of
+                // warehouseId + "-" + username + "-" + System.currentTimeMillis()
+                long lastTimeMillis = Long.parseLong(key.substring(key.lastIndexOf("-")));
+                // check the different between current time stamp and the time stamp of when
+                // the record is generated
+                if (System.currentTimeMillis() - lastTimeMillis > 60 * 60 * 1000) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
 }

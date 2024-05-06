@@ -1,10 +1,10 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 public class FileUploadType {
     private String name;
@@ -22,6 +22,35 @@ public class FileUploadType {
     private List<FileUploadTemplateColumn> columns = new ArrayList<>();
 
 
+    public boolean isDateColumn(String columnNumber) {
+        FileUploadTemplateColumn matchedColumn =
+                columns.stream().filter(
+                        column -> column.getName().equalsIgnoreCase(columnNumber)
+                ).findFirst().orElse(null);
+        if (Objects.isNull(matchedColumn)) {
+            return false;
+        }
+        if (matchedColumn.getType().equals(ZonedDateTime.class) ||
+                matchedColumn.getType().equals(LocalDate.class) ||
+                matchedColumn.getType().equals(LocalDateTime.class)) {
+            return true;
+        }
+        return false;
+    }
+
+    public Class getColumnType(String columnNumber) {
+        FileUploadTemplateColumn matchedColumn =
+                columns.stream().filter(
+                        column -> column.getName().equalsIgnoreCase(columnNumber)
+                ).findFirst().orElse(null);
+
+        if (Objects.isNull(matchedColumn)) {
+            return null;
+        }
+        else {
+            return matchedColumn.getType();
+        }
+    }
     public String getName() {
         return name;
     }
@@ -93,4 +122,5 @@ public class FileUploadType {
     public void setResultUrl(String resultUrl) {
         this.resultUrl = resultUrl;
     }
+
 }

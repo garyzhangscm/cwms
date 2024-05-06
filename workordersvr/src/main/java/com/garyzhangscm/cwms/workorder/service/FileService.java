@@ -18,7 +18,9 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
@@ -88,6 +90,27 @@ public class FileService {
 
     }
 
+
+    public <T> List<T> loadData(File file, Class<T> tClass)  {
+        CsvMapper csvMapper = new CsvMapper();
+        CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
+                .withHeader() //
+                .withColumnSeparator(',');
+
+        ObjectReader reader = csvMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) //
+                .readerFor(tClass) //
+                .with(bootstrapSchema);
+
+        MappingIterator<T> iterator;
+        try {
+            iterator = reader.readValues(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format("could not access file " + file.getName()), e);
+        }
+        List<T> results = new ArrayList<>();
+        iterator.forEachRemaining(results::add);
+        return results;
+    }
 
     public <T> List<T> loadData(File file, CsvSchema schema, Class<T> tClass)throws IOException {
 
@@ -175,20 +198,6 @@ public class FileService {
         }
     }
 
-    public File convertToCSVFile(File file) throws IOException {
-        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("csv")) {
-            logger.debug("The file is a CSV file, we will return it without convert");
-            return file;
-        }
-        else if (FilenameUtils.isExtension(file.getName(),"xls") || FilenameUtils.isExtension(file.getName(),"xlsx")) {
-            logger.debug("The file is a Excel file, we will convert it to CSV file first");
-            return excelFileHandler.convertExcelToCSV(file);
-        }
-        else {
-            throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +
-                    ". The format and extension is not support");
-        }
-    }
     public File saveCSVFile(String fileName, String content) throws IOException {
         String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
         File localFile = new File(destination);
