@@ -2295,5 +2295,6 @@
   "inventory-quantity-on-lpn": "Inventory Quantity On the LPN",
   "file-upload.mapping_to_column_name": "Mapping To Column Name",
   "menu.mobile.outbound.manual-pick": "Manual Pick",
-  "allowForManualPick": "Allow For Manual Pick"
+  "allowForManualPick": "Allow For Manual Pick",
+  "ignoreInventoryQuantity": "Ignore Inventory Quantity"
 }

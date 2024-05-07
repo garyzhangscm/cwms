@@ -313,13 +313,14 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNLabel(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabel(id, lpn, quantity, locale, printerName);
+        return receiptService.generatePrePrintLPNLabel(id, lpn, inventoryQuantity, ignoreInventoryQuantity,  locale, printerName);
     }
 
     @BillableEndpoint
@@ -327,13 +328,14 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNReport(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
-    ) throws JsonProcessingException {
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
+    )  {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReport(id, lpn, quantity, locale, printerName);
+        return receiptService.generatePrePrintLPNReport(id, lpn, inventoryQuantity, ignoreInventoryQuantity, locale, printerName);
     }
 
 
@@ -342,15 +344,18 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNLabelInBatch(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
+        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,
+                copies, locale, printerName);
     }
 
     @BillableEndpoint
@@ -358,15 +363,16 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNReportInBatch(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
+        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,  count, copies, locale, printerName);
     }
 
 
