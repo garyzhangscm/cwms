@@ -2296,5 +2296,6 @@
   "file-upload.mapping_to_column_name": "Mapping To Column Name",
   "menu.mobile.outbound.manual-pick": "Manual Pick",
   "allowForManualPick": "Allow For Manual Pick",
-  "ignoreInventoryQuantity": "Ignore Inventory Quantity"
+  "ignoreInventoryQuantity": "Ignore Inventory Quantity",
+  "menu.main.outbound.pick-confirm-strategy": "Pick Confirm Strategy"
 }
