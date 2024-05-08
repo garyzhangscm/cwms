@@ -2290,5 +2290,6 @@
   "file-upload.mapping_to_column_name": "映射的列名",
   "menu.mobile.outbound.manual-pick": "手动分配拣货",
   "allowForManualPick": "允许手动分配拣货",
-  "ignoreInventoryQuantity": "忽略库存数量"
+  "ignoreInventoryQuantity": "忽略库存数量",
+  "menu.main.outbound.pick-confirm-strategy": "拣货确认策略"
 }
