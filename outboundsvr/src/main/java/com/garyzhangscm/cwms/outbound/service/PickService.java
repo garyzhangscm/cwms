@@ -866,7 +866,7 @@ public class PickService {
             logger.debug("No strategy found. Setup confirm flag for all fields");
             pick.setConfirmItemFlag(true);
             pick.setConfirmLocationFlag(true);
-            pick.setConfirmLocationCodeFlag(true);
+            pick.setConfirmLocationCodeFlag(false);
 
             pick.setConfirmLpnFlag(true);
         }

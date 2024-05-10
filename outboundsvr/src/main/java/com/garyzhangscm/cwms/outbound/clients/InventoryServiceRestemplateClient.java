@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.commons.lang.StringUtils;
@@ -266,7 +267,7 @@ public class InventoryServiceRestemplateClient {
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
                                                 String inventoryAttribute5,
-                                                String allocateByReceiptNumber) {
+                                                String allocateByReceiptNumber)  {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
                 color, productSize, style, inventoryAttribute1,
                 inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
@@ -281,7 +282,7 @@ public class InventoryServiceRestemplateClient {
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
                                                 String inventoryAttribute5,
-                                                String allocateByReceiptNumber) {
+                                                String allocateByReceiptNumber)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -297,29 +298,34 @@ public class InventoryServiceRestemplateClient {
         if (Strings.isNotBlank(lpn)) {
             builder = builder.queryParam("lpn", lpn);
         }
-        if (Strings.isNotBlank(color)) {
-            builder = builder.queryParam("color", color);
-        }
-        if (Strings.isNotBlank(productSize)) {
-            builder = builder.queryParam("productSize", productSize);
-        }
-        if (Strings.isNotBlank(style)) {
-            builder = builder.queryParam("style", style);
-        }
-        if (Strings.isNotBlank(inventoryAttribute1)) {
-            builder = builder.queryParam("attribute1", inventoryAttribute1);
-        }
-        if (Strings.isNotBlank(inventoryAttribute2)) {
-            builder = builder.queryParam("attribute2", inventoryAttribute2);
-        }
-        if (Strings.isNotBlank(inventoryAttribute3)) {
-            builder = builder.queryParam("attribute3", inventoryAttribute3);
-        }
-        if (Strings.isNotBlank(inventoryAttribute4)) {
-            builder = builder.queryParam("attribute4", inventoryAttribute4);
-        }
-        if (Strings.isNotBlank(inventoryAttribute5)) {
-            builder = builder.queryParam("attribute5", inventoryAttribute5);
+        try {
+            if (Strings.isNotBlank(color)) {
+                builder = builder.queryParam("color", URLEncoder.encode(color, "UTF-8"));
+            }
+            if (Strings.isNotBlank(productSize)) {
+                builder = builder.queryParam("productSize", URLEncoder.encode(productSize, "UTF-8"));
+            }
+            if (Strings.isNotBlank(style)) {
+                builder = builder.queryParam("style", URLEncoder.encode(style, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute1)) {
+                builder = builder.queryParam("attribute1", URLEncoder.encode(inventoryAttribute1, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute2)) {
+                builder = builder.queryParam("attribute2", URLEncoder.encode(inventoryAttribute2, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute3)) {
+                builder = builder.queryParam("attribute3", URLEncoder.encode(inventoryAttribute3, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute4)) {
+                builder = builder.queryParam("attribute4", URLEncoder.encode(inventoryAttribute4, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute5)) {
+                builder = builder.queryParam("attribute5", URLEncoder.encode(inventoryAttribute5, "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw OrderOperationException.raiseException("Can't get the pickable inventory. Fail to construct the query for inventory");
         }
         if (Strings.isNotBlank(allocateByReceiptNumber)) {
             builder = builder.queryParam("receiptNumber", allocateByReceiptNumber);
