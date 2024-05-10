@@ -2297,5 +2297,9 @@
   "menu.mobile.outbound.manual-pick": "Manual Pick",
   "allowForManualPick": "Allow For Manual Pick",
   "ignoreInventoryQuantity": "Ignore Inventory Quantity",
-  "menu.main.outbound.pick-confirm-strategy": "Pick Confirm Strategy"
+  "menu.main.outbound.pick-confirm-strategy": "Pick Confirm Strategy",
+  "confirmItemFlag": "Confirm Item",
+  "confirmLocationFlag": "Confirm Location",
+  "confirmLocationCodeFlag": "Confirm Location Code",
+  "confirmLpnFlag": "Confirm LPN"
 }

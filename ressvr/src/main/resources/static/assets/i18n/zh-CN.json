@@ -2291,5 +2291,9 @@
   "menu.mobile.outbound.manual-pick": "手动分配拣货",
   "allowForManualPick": "允许手动分配拣货",
   "ignoreInventoryQuantity": "忽略库存数量",
-  "menu.main.outbound.pick-confirm-strategy": "拣货确认策略"
+  "menu.main.outbound.pick-confirm-strategy": "拣货确认策略",
+  "confirmItemFlag": "确认sku",
+  "confirmLocationFlag": "确认库位",
+  "confirmLocationCodeFlag": "确认库位代码",
+  "confirmLpnFlag": "确认 LPN"
 }
