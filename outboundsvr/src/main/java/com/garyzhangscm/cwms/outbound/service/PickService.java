@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.*;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -2661,5 +2662,44 @@ public class PickService {
             return true;
         }
         return pick.getQuantity() >= itemPackageType.getTrackingLpnUOM().getQuantity();
+    }
+
+    public void confirmManualPickForOrder(
+            Long warehouseId,
+            Long clientId,
+            String orderNumber,
+            String lpn,
+            ClientRestriction clientRestriction)  {
+
+        Order order = orderService.findByNumber(warehouseId, clientId, orderNumber, false);
+        if (Objects.isNull(order)) {
+            throw OrderOperationException.raiseException("Can't find order by number " + orderNumber);
+        }
+        List<Pick> picks = orderService.generateManualPick(order, lpn, true);
+
+        if (picks.isEmpty()) {
+            throw OrderOperationException.raiseException("Fail to generate picks for number " + orderNumber +
+                    ", from LPN " + lpn);
+        }
+
+        logger.debug("We generated {} picks for manual pick from order {}, lpn {}, " +
+                "let's confirm all of them",
+                picks.size(), orderNumber, lpn);
+
+
+        picks.forEach(
+                pick -> {
+                    confirmPick(pick.getId(), pick.getQuantity(),
+                            null, null,
+                            false,null,
+                            lpn, null);
+                    logger.debug("Pick with number {} is confirmed with quantity {}",
+                            pick.getNumber(), pick.getQuantity());
+                }
+        );
+
+
+
+
     }
 }
