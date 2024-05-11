@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.PickService;
 import org.apache.commons.lang.StringUtils;
@@ -270,4 +271,16 @@ public class PickController {
         return pickService.getPickCountByLocationGroup(warehouseId, clientRestriction);
     }
 
+    @BillableEndpoint
+    @ClientValidationEndpoint
+    @RequestMapping(value="/picks/orders/confirm-manual-pick", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> confirmManualPickForOrder(
+            @RequestParam Long warehouseId,
+            @RequestParam String orderNumber,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long clientId,
+            @RequestParam String lpn,
+            ClientRestriction clientRestriction) {
+
+        return pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, clientRestriction);
+    }
 }
