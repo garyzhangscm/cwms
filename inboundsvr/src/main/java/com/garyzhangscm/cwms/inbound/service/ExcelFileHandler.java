@@ -87,6 +87,8 @@ public class ExcelFileHandler {
                     Class columnType = rowIndex == 0 ? String.class : fileUploadType.getColumnType(columnName);
 
 
+                    logger.debug("The column type for {} is {}",
+                            columnName, columnType);
                     if (columnType == ZonedDateTime.class || columnType == LocalDateTime.class  ) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                         data.append("\"")

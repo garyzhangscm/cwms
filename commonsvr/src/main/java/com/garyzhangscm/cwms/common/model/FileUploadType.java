@@ -20,30 +20,39 @@ public class FileUploadType {
     private Map<String, String> columnsMapping = new HashMap<>();
 
     private List<FileUploadTemplateColumn> columns = new ArrayList<>();
-
-
-    public boolean isDateColumn(String columnNumber) {
-        FileUploadTemplateColumn matchedColumn =
-                columns.stream().filter(
-                        column -> column.getName().equalsIgnoreCase(columnNumber)
-                ).findFirst().orElse(null);
-        if (Objects.isNull(matchedColumn)) {
+    public boolean isDateColumn(String columnName) {
+        Class columnType = getColumnType(columnName);
+        if (Objects.isNull(columnType)) {
             return false;
         }
-        if (matchedColumn.getType().equals(ZonedDateTime.class) ||
-                matchedColumn.getType().equals(LocalDate.class) ||
-                matchedColumn.getType().equals(LocalDateTime.class)) {
+        if (columnType.equals(ZonedDateTime.class) ||
+                columnType.equals(LocalDate.class) ||
+                columnType.equals(LocalDateTime.class)) {
             return true;
         }
         return false;
     }
 
-    public Class getColumnType(String columnNumber) {
+    public Class getColumnType(String columnName) {
         FileUploadTemplateColumn matchedColumn =
                 columns.stream().filter(
-                        column -> column.getName().equalsIgnoreCase(columnNumber)
+                        column -> column.getName().equalsIgnoreCase(columnName)
                 ).findFirst().orElse(null);
 
+        // if the column name doesn't exists, it may be the alias
+        if (Objects.isNull(matchedColumn)) {
+
+
+            for (Map.Entry<String, String>  columnsMappingEntry: columnsMapping.entrySet()) {
+                if (columnsMappingEntry.getValue().equalsIgnoreCase(columnName)) {
+                    // ok, we get the column, let's find the actual column
+                    matchedColumn =
+                            columns.stream().filter(
+                                    column -> column.getName().equalsIgnoreCase(columnsMappingEntry.getKey())
+                            ).findFirst().orElse(null);
+                }
+            }
+        }
         if (Objects.isNull(matchedColumn)) {
             return null;
         }
@@ -51,6 +60,7 @@ public class FileUploadType {
             return matchedColumn.getType();
         }
     }
+
     public String getName() {
         return name;
     }
