@@ -281,6 +281,8 @@ public class PickController {
             @RequestParam String lpn,
             ClientRestriction clientRestriction) {
 
-        return pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, clientRestriction);
+        pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, clientRestriction);
+
+        return ResponseBodyWrapper.success("pick confirmed");
     }
 }
