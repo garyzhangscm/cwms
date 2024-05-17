@@ -2669,6 +2669,7 @@ public class PickService {
             Long clientId,
             String orderNumber,
             String lpn,
+            boolean completeOrderAfterFullyPicked,
             ClientRestriction clientRestriction)  {
 
         Order order = orderService.findByNumber(warehouseId, clientId, orderNumber, false);
@@ -2698,8 +2699,12 @@ public class PickService {
                 }
         );
 
-
-
+        // see if the order is fully picked
+        logger.debug("do we need to check if we can complete the order after the pick? {}",
+                completeOrderAfterFullyPicked);
+        if (completeOrderAfterFullyPicked && orderService.validateOrderIsFullyStaged(order.getId())) {
+            orderService.completeOrder(order.getId(), order);
+        }
 
     }
 }

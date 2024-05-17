@@ -4467,4 +4467,136 @@ public class OrderService {
         return inventoryAttributeMap;
     }
 
+    /**
+     * Check if the order is fully picked
+     * @param id
+     * @return
+     */
+    public boolean validateOrderIsFullyStaged(Long id) {
+        // get all the picked inventory and make sure they are all staged
+        Order order = findById(id);
+        List<Pick> picks = pickService.findByOrder(order);
+        // make sure all picks are picked and match with the quantity of the order line
+        // key: order line id
+        // value: picked quantity
+        Map<Long, Long> pickedQuantityMap = new HashMap<>();
+        for (Pick pick : picks) {
+            if (pick.getPickedQuantity() < pick.getQuantity()) {
+                // quick check, if the pick is not completed yet, then
+                // the order is not fully picked and we are safe to say it is not
+                // fully staged
+                logger.debug("Pick {} is not fully picked. return false for order {} is not fully staged",
+                        pick.getNumber(), order.getNumber());
+                return false;
+            }
+            Long orderLineId = pick.getShipmentLine().getOrderLineId();
+            Long totalPickedQuantity = pickedQuantityMap.getOrDefault(orderLineId, 0l);
+            pickedQuantityMap.put(orderLineId, totalPickedQuantity + pick.getPickedQuantity());
+        }
+
+        // key: order line id
+        // value: required quantity
+        if (pickedQuantityMap.size() != order.getOrderLines().size()) {
+            logger.debug("The picked quantity map size {} is different from the order lines count {}, " +
+                    "which normally means that there's some order line not picked yet",
+                    pickedQuantityMap.size(), order.getOrderLines().size());
+            return false;
+        }
+        for (OrderLine orderLine : order.getOrderLines()) {
+            if (pickedQuantityMap.getOrDefault(orderLine.getId(), 0l) != orderLine.getExpectedQuantity()) {
+                logger.debug("the picked quantity {} doesn't match with required quantity {} for order line {} / {}",
+                        pickedQuantityMap.getOrDefault(orderLine.getId(), 0l),
+                        orderLine.getExpectedQuantity(),
+                        order.getNumber(),
+                        orderLine.getNumber());
+                return false;
+            }
+        }
+
+        logger.debug("the quantity on the picks match with the quantities from the order lines, let's check" +
+                " if the inventory picked are in ship stage");
+
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getPickedInventory(order.getWarehouseId(),
+                picks);
+
+        if (!inventoryInStageLocation(inventories)) {
+            return false;
+        }
+
+        return true;
+
+
+    }
+
+    /**
+     * Check if the inventory is in ship stage location
+     * @param inventories
+     * @return
+     */
+    private boolean inventoryInStageLocation(List<Inventory> inventories) {
+
+        Map<Long, Location> locations = new HashMap<>();
+
+        for (Inventory inventory : inventories) {
+
+            if (Objects.isNull(inventory.getLocationId())) {
+                logger.debug("Inventory {} / {} doesn't have location information. not able to check if it is in stage location",
+                        inventory.getId(), inventory.getLpn());
+                return false;
+            }
+            if (Objects.nonNull(inventory.getLocation())) {
+                locations.putIfAbsent(inventory.getLocationId(), inventory.getLocation());
+
+            }
+            else if (locations.containsKey(inventory.getLocationId())) {
+                // the inventory doesn't have the location setup yet but we find it in the map, let's setup
+                // the location for the inventory
+                inventory.setLocation(
+                        locations.get(inventory.getLocationId())
+                );
+            }
+            else {
+                // the inventory has locationId but doesn't have the location. We can't find the
+                // location information in the map(cache)
+                inventory.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventory.getLocationId()
+                        )
+                );
+            }
+            // we should already have inventory's location here
+            if (Objects.isNull(inventory.getLocation())) {
+                logger.debug("fail to get location information for inventory {} / {}",
+                        inventory.getId(), inventory.getLpn());
+                return false;
+            }
+            if (Objects.isNull(inventory.getLocation().getLocationGroup()) ||
+                Objects.isNull(inventory.getLocation().getLocationGroup().getLocationGroupType())) {
+                // refresh the location to get the details
+                inventory.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventory.getLocationId()
+                        )
+                );
+            }
+            // return error if we still can't get the details
+            if (Objects.isNull(inventory.getLocation().getLocationGroup()) ||
+                    Objects.isNull(inventory.getLocation().getLocationGroup().getLocationGroupType())) {
+                logger.debug("fail to get location's information for location {}",
+                        inventory.getLocation().getName());
+                return false;
+            }
+            // check if the inventory is in the ship stage
+            if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())) {
+
+                logger.debug("inventory {} / {} in the location {}, which is not a ship stage",
+                        inventory.getId(),
+                        inventory.getLpn(),
+                        inventory.getLocation().getName());
+                return false;
+            }
+
+        }
+        return true;
+    }
 }

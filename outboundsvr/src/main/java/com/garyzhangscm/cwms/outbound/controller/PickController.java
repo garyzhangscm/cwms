@@ -279,9 +279,10 @@ public class PickController {
             @RequestParam String orderNumber,
             @RequestParam(name = "clientId", defaultValue = "", required = false) Long clientId,
             @RequestParam String lpn,
+            @RequestParam(name = "completeOrderAfterFullyPicked", defaultValue = "false", required = false) Boolean completeOrderAfterFullyPicked,
             ClientRestriction clientRestriction) {
 
-        pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, clientRestriction);
+        pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, completeOrderAfterFullyPicked, clientRestriction);
 
         return ResponseBodyWrapper.success("pick confirmed");
     }
