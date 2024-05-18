@@ -1920,6 +1920,7 @@ public class PickService {
                 shipmentLine.getId(),
                 sourceLocation.getName(),
                 lpn, pickableQuantity);
+        
         AllocationResult allocationResult
                 = allocationService.allocate(shipmentLine, sourceLocation, true, lpn, pickableQuantity);
 
