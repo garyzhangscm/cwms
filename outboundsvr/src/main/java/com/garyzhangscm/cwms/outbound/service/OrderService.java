@@ -4075,6 +4075,10 @@ public class OrderService {
                 shipment.getNumber(), itemId);
 
 
+        // we will load the details for the shipment line since allocation may depend on some attribute
+        if (shipmentLine.getOrderLine() != null) {
+            orderLineService.loadOrderLineAttribute(shipmentLine.getOrderLine());
+        }
         AllocationResult allocationResult = pickService.generateManualPickForOutboundShipment(shipmentLine,
                 sourceLocation,lpn, pickableQuantity);
 
@@ -4476,6 +4480,8 @@ public class OrderService {
         // get all the picked inventory and make sure they are all staged
         Order order = findById(id);
         List<Pick> picks = pickService.findByOrder(order);
+        logger.debug("found {} picks for this order, let's see if there's any open picks that has not been done yet",
+                picks.size());
         // make sure all picks are picked and match with the quantity of the order line
         // key: order line id
         // value: picked quantity
@@ -4489,8 +4495,13 @@ public class OrderService {
                         pick.getNumber(), order.getNumber());
                 return false;
             }
-            Long orderLineId = pick.getShipmentLine().getOrderLineId();
+            logger.debug("Pick {} is fully picked, let's add the quantity to the order line map to " +
+                    "keep track of the total picked quantity for order line ",
+                    pick.getNumber());
+            Long orderLineId = pick.getShipmentLine().getOrderLine().getId();
             Long totalPickedQuantity = pickedQuantityMap.getOrDefault(orderLineId, 0l);
+            logger.debug("# So far order line {} 's total picked quantity is {}",
+                    orderLineId, totalPickedQuantity);
             pickedQuantityMap.put(orderLineId, totalPickedQuantity + pick.getPickedQuantity());
         }
 
@@ -4503,7 +4514,7 @@ public class OrderService {
             return false;
         }
         for (OrderLine orderLine : order.getOrderLines()) {
-            if (pickedQuantityMap.getOrDefault(orderLine.getId(), 0l) != orderLine.getExpectedQuantity()) {
+            if (!pickedQuantityMap.getOrDefault(orderLine.getId(), 0l).equals(orderLine.getExpectedQuantity())) {
                 logger.debug("the picked quantity {} doesn't match with required quantity {} for order line {} / {}",
                         pickedQuantityMap.getOrDefault(orderLine.getId(), 0l),
                         orderLine.getExpectedQuantity(),
@@ -4523,6 +4534,7 @@ public class OrderService {
             return false;
         }
 
+        logger.debug("Order {} is fully staged!", order.getNumber());
         return true;
 
 
