@@ -93,6 +93,10 @@ public class Location extends AuditibleEntity<String>{
     @JoinColumn(name="location_group_id")
     private LocationGroup locationGroup;
 
+    @ManyToOne
+    @JoinColumn(name="pick_zone_id")
+    private PickZone pickZone;
+
     @Column(name = "enabled")
     private Boolean enabled = true;
 
@@ -343,5 +347,13 @@ public class Location extends AuditibleEntity<String>{
 
     public void setErrorFlag(Boolean errorFlag) {
         this.errorFlag = errorFlag;
+    }
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
     }
 }

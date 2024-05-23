@@ -85,6 +85,7 @@ public class WarehouseInventorySummaryService {
                 null,
                 null,
                 null,
+                null,
                 clientRestriction, false,
                 null);
 

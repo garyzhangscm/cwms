@@ -474,6 +474,23 @@ public class WarehouseLayoutServiceRestemplateClient {
         );
 
     }
+
+    public List<Location> getLocationByPickZones(Long warehouseId, String pickZoneIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("pickZoneIds", pickZoneIds); 
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
     public List<Location> getLocationsByRange(Long warehouseId, Long beginSequence, Long endSequence, String sequenceType, Boolean includeEmptyLocation) {
 
         UriComponentsBuilder builder =

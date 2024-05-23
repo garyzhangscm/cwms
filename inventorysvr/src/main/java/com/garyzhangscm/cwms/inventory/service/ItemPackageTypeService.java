@@ -430,7 +430,7 @@ public class ItemPackageTypeService {
         if (inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), null, itemPackageType.getName(),
                 null,null,null,null,null, null,
-                null,null,null,null, null,
+                null,null,null,null, null, null,
                 null,null,null,null,null,null, null,null,null,
                         null, null,null,null,null,
                         null, false, null, false,

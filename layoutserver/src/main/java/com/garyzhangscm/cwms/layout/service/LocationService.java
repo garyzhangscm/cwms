@@ -89,6 +89,7 @@ public class LocationService {
     public List<Location> findAll(Long warehouseId,
                                   String locationGroupTypeIds,
                                   String locationGroupIds,
+                                  String pickZoneIds,
                                   String name,
                                   Long beginSequence,
                                   Long endSequence,
@@ -136,6 +137,16 @@ public class LocationService {
                     Join<Location, LocationGroup> joinLocationGroup = root.join("locationGroup", JoinType.INNER);
                     CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinLocationGroup.get("id"));
                     for(String id : locationGroupIds.split(",")) {
+                        in.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
+
+                if (StringUtils.isNotBlank(pickZoneIds)) {
+
+                    Join<Location, PickZone> joinPickZone = root.join("pickZone", JoinType.INNER);
+                    CriteriaBuilder.In<Long> in = criteriaBuilder.in(joinPickZone.get("id"));
+                    for(String id : pickZoneIds.split(",")) {
                         in.value(Long.parseLong(id));
                     }
                     predicates.add(criteriaBuilder.and(in));
@@ -627,7 +638,7 @@ public class LocationService {
         // make sure the location is empty
 
         int inventoryCount = inventoryServiceRestemplateClient.getInventoryCountByLocationGroup(
-                locationGroup.getWarehouse().getId(), locationGroup
+                locationGroup.getWarehouse().getId(), locationGroup.getId()
         );
         logger.debug("There's {} inventory record in the location group {}",
                 inventoryCount, locationGroup.getName());
@@ -747,6 +758,7 @@ public class LocationService {
                 null,
                 null,
                 null,
+                null,
                 null);
 
     }
@@ -812,6 +824,7 @@ public class LocationService {
             return new ArrayList<>();
         }
         return findAll(warehouseId,null,
+                null,
                 null,
                 null,
                 null,
@@ -937,6 +950,7 @@ public class LocationService {
                 List<Location> locations = findAll(warehouseId,
                         null,
                         locationGroupIds,
+                        null,
                         null,
                         null,
                         null,
@@ -1216,4 +1230,17 @@ public class LocationService {
         return saveOrUpdate(location);
     }
 
+    public void removeLocationByPickZone(PickZone pickZone) {
+        // make sure the location is empty
+
+        int inventoryCount = inventoryServiceRestemplateClient.getInventoryCountByPickZone(
+                pickZone.getWarehouse().getId(), pickZone.getId()
+        );
+
+        if(inventoryCount > 0) {
+            throw LocationOperationException.raiseException("There's inventory in the pick zone " +
+                    pickZone.getName() + ", can't remove it");
+        }
+        locationRepository.deleteByPickZoneId(pickZone.getId());
+    }
 }
