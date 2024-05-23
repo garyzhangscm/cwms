@@ -128,6 +128,7 @@ public class LocationController {
     public List<Long> findLocationIds(@RequestParam Long warehouseId,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
+                                      @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "code", required = false, defaultValue = "") String code,
                                         @RequestParam(name = "locationStatus", required = false, defaultValue = "") String locationStatus,
@@ -147,7 +148,7 @@ public class LocationController {
     ) {
         return locationService.findAll(
                 warehouseId,
-                locationGroupTypeIds, locationGroupIds, name,
+                locationGroupTypeIds, locationGroupIds, pickZoneIds, name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
                 includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus).stream()
@@ -157,6 +158,7 @@ public class LocationController {
     public List<Location> findLocations(@RequestParam Long warehouseId,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
+                                        @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "code", required = false, defaultValue = "") String code,
                                         @RequestParam(name = "locationStatus", required = false, defaultValue = "") String locationStatus,
@@ -180,6 +182,7 @@ public class LocationController {
                 .append("\nwarehouseId: ").append(warehouseId)
                 .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
                 .append("\nlocationGroupIds: ").append(locationGroupIds)
+                .append("\npickZoneIds: ").append(pickZoneIds)
                 .append("\nname: ").append(name)
                 .append("\ncode: ").append(code)
                 .append("\nbeginSequence: ").append(beginSequence)
@@ -199,7 +202,8 @@ public class LocationController {
 
         List<Location> locations = locationService.findAll(
                 warehouseId,
-                locationGroupTypeIds, locationGroupIds, name,
+                locationGroupTypeIds, locationGroupIds, pickZoneIds,
+                name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
                 includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus);

@@ -1013,7 +1013,7 @@ public class ItemService {
                 findAll(item.getWarehouseId(), null, item.getName(), null, null,
                         null,null,null,null,null, null,
                         null,null,null,null,null,
-                        null,null,null,null, null,null,null,
+                        null,null,null,null, null,null,null, null,
                         null,null,null,null,null,
                         null,null,null,
                         false, null, null)

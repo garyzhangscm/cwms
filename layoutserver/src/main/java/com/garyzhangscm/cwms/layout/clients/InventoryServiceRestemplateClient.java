@@ -23,10 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.layout.model.InventoryStatus;
-import com.garyzhangscm.cwms.layout.model.Item;
-import com.garyzhangscm.cwms.layout.model.LocationGroup;
-import com.garyzhangscm.cwms.layout.model.ShippingStageAreaConfiguration;
+import com.garyzhangscm.cwms.layout.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,14 +118,14 @@ public class InventoryServiceRestemplateClient {
     }
 
 
-    public Integer getInventoryCountByLocationGroup(Long warehouseId, LocationGroup locationGroup) {
+    public Integer getInventoryCountByLocationGroup(Long warehouseId, Long locationGroupId) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inventory/inventories/count")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("locationGroupId", locationGroup.getId());
+                        .queryParam("locationGroupId", locationGroupId);
 
         ResponseBodyWrapper<Integer> responseBodyWrapper
                 = restTemplate.exchange(
@@ -140,6 +137,24 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
     }
 
+    public Integer getInventoryCountByPickZone(Long warehouseId, Long pickZoneId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories/count")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("pickZoneId", pickZoneId);
+
+        ResponseBodyWrapper<Integer> responseBodyWrapper
+                = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<ResponseBodyWrapper<Integer>>() {}).getBody();
+
+        return responseBodyWrapper.getData();
+    }
 
 
     public Integer getInventoryCountByLocations(Long warehouseId, String locationIds) {

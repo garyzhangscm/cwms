@@ -168,6 +168,7 @@ public class InventoryService {
                                    Long locationId,
                                    String locationIds,
                                    Long locationGroupId,
+                                   Long pickZoneId,
                                    String receiptId,
                                    String receiptNumber,
                                    String customerReturnOrderId,
@@ -191,7 +192,7 @@ public class InventoryService {
                                    Integer maxLPNCount) {
         return findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationIds, locationGroupId,
+                locationName, locationId, locationIds, locationGroupId, pickZoneId,
                 receiptId, receiptNumber,
                 customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
@@ -216,6 +217,7 @@ public class InventoryService {
                                    Long locationId,
                                    String locationIds,
                                    Long locationGroupId,
+                                   Long pickZoneId,
                                    String receiptId,
                                    String receiptNumber,
                                    String customerReturnOrderId,
@@ -605,8 +607,22 @@ public class InventoryService {
             Map<Long, Long> locationMap = new HashMap<>();
             locations.stream().forEach(location -> locationMap.put(location.getId(), location.getId()));
 
-            return inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
+            inventories = inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
         }
+
+        if (pickZoneId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByPickZones(
+                            warehouseId, String.valueOf(pickZoneId));
+            // convert the list of locations to map of Long so as to speed up
+            // when compare the inventory's location id with the locations from the group
+            Map<Long, Long> locationMap = new HashMap<>();
+            locations.stream().forEach(location -> locationMap.put(location.getId(), location.getId()));
+
+            inventories =  inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
+        }
+
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we will return inventory for {} record",
                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
                 LocalDateTime.now(),
@@ -678,6 +694,7 @@ public class InventoryService {
                 null,
                 null,
                 locationIds,
+                null,
                 null,
                 null,
                 null,
@@ -920,6 +937,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, null, includeDetails,
                 null);
     }
@@ -955,6 +973,7 @@ public class InventoryService {
                 null,
                 null,
                 locationGroupId,
+                null,
                 null,
                 null,
                 null,
@@ -2784,6 +2803,7 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2844,6 +2864,7 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
                     lpn,
                     null,
                     null,
@@ -2881,6 +2902,7 @@ public class InventoryService {
                         null,
                         null,
                         inboundLocationId,
+                        null,
                         null,
                         null,
                         null,
@@ -3407,6 +3429,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, null,
                 null,
                 null,
@@ -3509,6 +3532,7 @@ public class InventoryService {
                                     Long locationId,
                                     String locationIds,
                                     Long locationGroupId,
+                                     Long pickZoneId,
                                     String receiptId,
                                      String receiptNumber,
                                     String customerReturnOrderId,
@@ -3526,7 +3550,7 @@ public class InventoryService {
                                     ClientRestriction clientRestriction) {
         List<Inventory> inventories = findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationIds, locationGroupId,
+                locationName, locationId, locationIds, locationGroupId, pickZoneId,
                 receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
@@ -4148,6 +4172,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, includeDetails,
                 null);
     }
@@ -4492,6 +4517,7 @@ public class InventoryService {
                         clientId, null, null,
                         inventoryStatusId, null,
                         locationId, null, null,
+                        null,
                         null, null, null, null,
                         null, null, null,
                         lpn, null, null, null,
@@ -4526,6 +4552,7 @@ public class InventoryService {
                         null, null, null, null,
                         null, null, null,
                         null, null, null, null,
+                        null,
                         null,
                         null,
                         null,
@@ -4674,6 +4701,7 @@ public class InventoryService {
                 null,
                 null,
                 clientId,
+                null,
                 null,
                 null,
                 null,

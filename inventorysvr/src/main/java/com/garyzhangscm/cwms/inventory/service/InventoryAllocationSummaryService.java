@@ -62,7 +62,8 @@ public class InventoryAllocationSummaryService {
         //get all the inventory based on the criteria
         List<Inventory> inventories = inventoryService.findAll(warehouseId,
                 itemId, itemName,null, null,null,null,null, null,locationName,
-                locationId,null,null,null,null,null, null,
+                locationId,null,
+                null, null,null,null,null, null,
                 null,null,null,null,null, null,null,null,null,
                 null,null,null,null,null,
                 false, null,
