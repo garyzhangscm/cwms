@@ -47,6 +47,8 @@ public class LocationCSVWrapper {
 
     private String locationGroup;
 
+    private String pickZone;
+
     private String enabled;
 
 
@@ -57,6 +59,8 @@ public class LocationCSVWrapper {
         aisle = Strings.isBlank(aisle) ? "" : aisle.trim();
 
         locationGroup = Strings.isBlank(locationGroup) ? "" : locationGroup.trim();
+
+        pickZone = Strings.isBlank(pickZone) ? "" : pickZone.trim();
 
         enabled = Strings.isBlank(enabled) ? "" : enabled.trim();
         return this;
@@ -189,5 +193,13 @@ public class LocationCSVWrapper {
 
     public void setEnabled(String enabled) {
         this.enabled = enabled;
+    }
+
+    public String getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(String pickZone) {
+        this.pickZone = pickZone;
     }
 }

@@ -53,6 +53,8 @@ public class LocationService {
     @Autowired
     private LocationGroupService locationGroupService;
     @Autowired
+    private PickZoneService pickZoneService;
+    @Autowired
     private LocationGroupTypeService locationGroupTypeService;
     @Autowired
     private WarehouseService warehouseService;
@@ -424,6 +426,20 @@ public class LocationService {
                         locationCSVWrapper.getLocationGroup() + " is not valid");
             }
             location.setLocationGroup(locationGroup);
+        }
+        if (StringUtils.isNotBlank(locationCSVWrapper.getPickZone())) {
+            PickZone pickZone = pickZoneService.findByName(
+                    warehouseId,
+                    locationCSVWrapper.getPickZone());
+            logger.debug("Get pick zone id {} by warehouse {} / name {}",
+                    pickZone.getId(),
+                    warehouseId,
+                    locationCSVWrapper.getPickZone());
+            if (Objects.isNull(pickZone)) {
+                throw ResourceNotFoundException.raiseException("Pick Zone " +
+                        locationCSVWrapper.getPickZone() + " is not valid");
+            }
+            location.setPickZone(pickZone);
         }
         return location;
 
