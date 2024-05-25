@@ -2297,5 +2297,6 @@
   "confirmLocationCodeFlag": "确认库位代码",
   "confirmLpnFlag": "确认 LPN",
   "menu.main.layout.location.pick-zone": "拣货区",
-  "pick-zone": "拣货区"
+  "pick-zone": "拣货区",
+  "pickable": "是否可拣选"
 }
