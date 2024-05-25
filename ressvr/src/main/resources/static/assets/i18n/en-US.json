@@ -2301,5 +2301,7 @@
   "confirmItemFlag": "Confirm Item",
   "confirmLocationFlag": "Confirm Location",
   "confirmLocationCodeFlag": "Confirm Location Code",
-  "confirmLpnFlag": "Confirm LPN"
+  "confirmLpnFlag": "Confirm LPN",
+  "menu.main.layout.location.pick-zone": "Pick Zone",
+  "pick-zone": "Pick Zone"
 }

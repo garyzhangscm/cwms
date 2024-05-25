@@ -58,7 +58,7 @@ public class PickZone extends AuditibleEntity<String>{
             mappedBy = "pickZone",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<PickableUnitOfMeasure> pickableUnitOfMeasures = new ArrayList<>();
 
