@@ -12,6 +12,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,,true,false
 "WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,,true,false
 "Warehouse Configuration",menu.main.layout.warehouse-configuration,/warehouse-layout/warehouse-configuration,4,Main-Menu-Layout,Warehouse-Config,,true,false
+"Pick Zone",menu.main.layout.location.pick-zone,/warehouse-layout/pick-zone,5,Main-Menu-Layout,Layout-Location-PickZone,,true,false
 "Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily,,true,false
 "Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item,,true,false
 "inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory,,true,false

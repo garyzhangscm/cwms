@@ -2295,5 +2295,7 @@
   "confirmItemFlag": "确认sku",
   "confirmLocationFlag": "确认库位",
   "confirmLocationCodeFlag": "确认库位代码",
-  "confirmLpnFlag": "确认 LPN"
+  "confirmLpnFlag": "确认 LPN",
+  "menu.main.layout.location.pick-zone": "拣货区",
+  "pick-zone": "拣货区"
 }
