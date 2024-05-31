@@ -28,6 +28,14 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
     @Transient
     private Warehouse warehouse;
 
+
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
+
     @Column(name = "customer_id")
     private Long customerId;
 
@@ -210,5 +218,21 @@ public class ListPickConfiguration extends AuditibleEntity<String> {
 
     public void setMaxWeightUnit(String maxWeightUnit) {
         this.maxWeightUnit = maxWeightUnit;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

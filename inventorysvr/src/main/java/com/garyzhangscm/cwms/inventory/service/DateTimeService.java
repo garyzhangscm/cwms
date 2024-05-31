@@ -29,7 +29,7 @@ public class DateTimeService {
             dateFormat = getDateFormat(dateString, "-", new String[]{"y", "M", "d"});
             formatter = DateTimeFormatter.ofPattern(dateFormat);
             try {
-                LocalDate.parse(dateString, formatter).atStartOfDay().atZone(ZoneOffset.UTC);
+                return LocalDate.parse(dateString, formatter).atStartOfDay().atZone(ZoneOffset.UTC);
             }
             catch (Exception ex) {
                 ex.printStackTrace();

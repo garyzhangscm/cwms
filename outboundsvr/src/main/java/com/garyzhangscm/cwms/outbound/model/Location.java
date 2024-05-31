@@ -41,6 +41,8 @@ public class Location {
 
     private Long pickSequence;
 
+    private PickZone pickZone;
+
     @Override
     public String toString() {
         try {
@@ -113,5 +115,14 @@ public class Location {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
     }
 }

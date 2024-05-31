@@ -185,6 +185,14 @@ public class ListPickConfigurationService implements TestDataInitiableService {
             }
         }
         catch (Exception ex) {}
+        try {
+            if (Objects.nonNull(listPickConfiguration.getClientId()) &&
+                    Objects.isNull(listPickConfiguration.getClient())) {
+                listPickConfiguration.setClient(
+                        commonServiceRestemplateClient.getClientById(listPickConfiguration.getClientId()));
+            }
+        }
+        catch (Exception ex) {}
     }
 
     private void loadAttribute(List<ListPickConfiguration> listPickConfigurations) {
@@ -323,6 +331,16 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                     listPickConfiguration.getPickType(), pick.getPickType());
             return false;
         }
+
+        if (Objects.nonNull(listPickConfiguration.getClientId()) &&
+            !listPickConfiguration.getClientId().equals(pick.getClientId())) {
+
+            logger.debug("The client id doesn't match! client id in configuration {} " +
+                            "doesnt match with pick's type {}",
+                    listPickConfiguration.getClientId(), pick.getClientId());
+            return false;
+        }
+
         logger.debug(">> list picking configuraiton matches with the pick!");
         return true;
 
