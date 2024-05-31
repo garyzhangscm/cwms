@@ -2304,5 +2304,7 @@
   "confirmLpnFlag": "Confirm LPN",
   "menu.main.layout.location.pick-zone": "Pick Zone",
   "pick-zone": "Pick Zone",
-  "pickable": "Pickable"
+  "pickable": "Pickable",
+  "LIST-PICK-GROUP-RULE-TYPE-BY_PICK_ZONE": "By Pick Zone",
+  "allowLPNPick": "Allow LPN Pick"
 }

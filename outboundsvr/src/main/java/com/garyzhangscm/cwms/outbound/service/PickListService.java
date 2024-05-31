@@ -289,7 +289,8 @@ public class PickListService {
                 !Boolean.TRUE.equals(warehouseConfiguration.getListPickEnabledFlag())) {
             // warehouse configuration is not setup
             // or list pick is not enabled
-            logger.debug("Pick list is not enabled for the warehouse ");
+            logger.debug("Pick list is not enabled for the warehouse with id {}",
+                    pick.getWarehouseId());
             return false;
         }
 
@@ -612,23 +613,29 @@ public class PickListService {
             groupRule -> {
                 switch (groupRule.getGroupRuleType()) {
                     case BY_ORDER:
-                        groupKeyList.add(pick.getOrderNumber());
+                        groupKeyList.add("orderNumber=" + pick.getOrderNumber());
                         break;
                     case BY_SHIPMENT:
-                        groupKeyList.add(pick.getShipmentLine().getShipmentNumber());
+                        groupKeyList.add("shipmentNumber=" + pick.getShipmentLine().getShipmentNumber());
                         break;
                     case BY_CUSTOMER:
                         groupKeyList.add(
-                                Objects.nonNull(pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId()) ?
-                                        pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId().toString() :
-                                        "****"
+                                "customerId=" +
+                                        (
+                                                Objects.nonNull(pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId()) ?
+                                                pick.getShipmentLine().getOrderLine().getOrder().getShipToCustomerId().toString() :
+                                                "****"
+                                        )
                                 );
                         break;
                     case BY_ITEM:
                         groupKeyList.add(
-                                Objects.nonNull(pick.getShipmentLine().getOrderLine().getItemId()) ?
-                                        pick.getShipmentLine().getOrderLine().getItemId().toString() :
-                                        "****"
+                                "itemId=" +
+                                        (
+                                            Objects.nonNull(pick.getShipmentLine().getOrderLine().getItemId()) ?
+                                                    pick.getShipmentLine().getOrderLine().getItemId().toString() :
+                                                    "****"
+                                        )
                         );
                         break;
                     case BY_TRAILER_APPOINTMENT:
@@ -637,22 +644,43 @@ public class PickListService {
                                 Objects.nonNull(pick.getShipmentLine().getShipment().getStop()) &&
                                 Objects.nonNull(pick.getShipmentLine().getShipment().getStop().getTrailerAppointmentId())) {
 
-                            groupKeyList.add(pick.getShipmentLine().getShipment().getStop().getTrailerAppointmentId().toString());
+                            groupKeyList.add(
+                                    "trailerAppointmentId=" + pick.getShipmentLine().getShipment().getStop().getTrailerAppointmentId().toString());
                         }
                         else {
 
-                            groupKeyList.add("****");
+                            groupKeyList.add("trailerAppointmentId=****");
                         }
 
                         break;
                     case BY_WAVE:
                         if (Objects.nonNull(pick.getShipmentLine()) &&
                             Objects.nonNull(pick.getShipmentLine().getWave())) {
-                            groupKeyList.add(pick.getShipmentLine().getWave().getNumber());
+                            groupKeyList.add(
+                                    "waveNumber=" + pick.getShipmentLine().getWave().getNumber());
                         }
                         else {
 
-                            groupKeyList.add("****");
+                            groupKeyList.add("waveNumber=****");
+                        }
+                        break;
+                    case BY_PICK_ZONE:
+                        // load the source location information for
+                        if (Objects.isNull(pick.getSourceLocation())) {
+                            pick.setSourceLocation(
+                                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                                            pick.getSourceLocationId()
+                                    )
+                            );
+                        }
+                        if (Objects.nonNull(pick.getSourceLocation()) &&
+                                Objects.nonNull(pick.getSourceLocation().getPickZone())) {
+                            groupKeyList.add(
+                                    "pickZoneId=" + pick.getSourceLocation().getPickZone().getId());
+                        }
+                        else {
+
+                            groupKeyList.add("pickZoneId=****");
                         }
                         break;
                 }

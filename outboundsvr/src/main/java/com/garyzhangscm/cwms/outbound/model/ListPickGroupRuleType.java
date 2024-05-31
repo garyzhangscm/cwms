@@ -9,5 +9,6 @@ public enum ListPickGroupRuleType {
     BY_STOP,
     BY_TRAILER_APPOINTMENT,
     BY_ITEM,
-    BY_WAVE
+    BY_WAVE,
+    BY_PICK_ZONE
 }
