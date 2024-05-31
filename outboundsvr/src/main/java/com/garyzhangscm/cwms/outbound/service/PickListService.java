@@ -375,7 +375,7 @@ public class PickListService {
         // see if we have pick list with same group key that is created
         // from the same session
         for (PickList pickList : pickListsFromSameSession) {
-            logger.debug("start to check if save session pick list {} with status {} " +
+            logger.debug("start to check if   pick list {} with status {} " +
                             " has the same group key {} as the pick's group key {}",
                     pickList.getNumber(),
                     pickList.getStatus(),
@@ -608,6 +608,8 @@ public class PickListService {
             logger.debug(errorMessage);
             throw PickingException.raiseException(errorMessage);
         }
+
+
         List<String> groupKeyList = new ArrayList<>();
         listPickConfiguration.getGroupRules().forEach(
             groupRule -> {
@@ -673,6 +675,7 @@ public class PickListService {
                                     )
                             );
                         }
+
                         if (Objects.nonNull(pick.getSourceLocation()) &&
                                 Objects.nonNull(pick.getSourceLocation().getPickZone())) {
                             groupKeyList.add(

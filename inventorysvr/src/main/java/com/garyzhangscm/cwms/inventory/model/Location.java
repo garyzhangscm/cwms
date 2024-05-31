@@ -62,6 +62,8 @@ public class Location {
     private Warehouse warehouse;
     private Boolean locked;
 
+    private PickZone pickZone;
+
     @Override
     public Object clone() {
         Location location = null;
@@ -93,6 +95,8 @@ public class Location {
 
             location.setPendingVolume(pendingVolume);
             location.setLocationGroup(locationGroup);
+
+            location.setPickZone(pickZone);
 
             location.setEnabled(enabled);
 
@@ -281,6 +285,14 @@ public class Location {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
     }
 
     public Boolean getLocked() {
