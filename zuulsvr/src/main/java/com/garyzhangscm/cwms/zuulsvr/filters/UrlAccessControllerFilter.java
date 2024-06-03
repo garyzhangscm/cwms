@@ -71,7 +71,8 @@ public class UrlAccessControllerFilter implements Filter {
 
 
     private static final String[] URL_WHITE_LIST = new String[]{
-            "/api/integration/tiktok/webhook"
+            "/api/integration/tiktok/webhook",
+            "/api/integration/shopify/shop-oauth"
     };
 
     @Override

@@ -255,6 +255,8 @@ public class ReportHistoryService {
      * @return
      */
     private File convertLabelFileToPDF(File zplFile) {
+        // use labelary.com to convert from ZPL into PDF
+        // May consider https://www.labelzoom.net/ as well
         return labelaryRestemplateClient.convertZPLToPDF(zplFile);
 
 

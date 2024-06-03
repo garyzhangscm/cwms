@@ -2306,5 +2306,6 @@
   "pick-zone": "Pick Zone",
   "pickable": "Pickable",
   "LIST-PICK-GROUP-RULE-TYPE-BY_PICK_ZONE": "By Pick Zone",
-  "allowLPNPick": "Allow LPN Pick"
+  "allowLPNPick": "Allow LPN Pick",
+  "menu.main.integration.shopify-config": "Shopify Integration"
 }
