@@ -2300,5 +2300,6 @@
   "pick-zone": "拣货区",
   "pickable": "是否可拣选",
   "LIST-PICK-GROUP-RULE-TYPE-BY_PICK_ZONE": "按拣货区",
-  "allowLPNPick": "允许LPN拣货任务"
+  "allowLPNPick": "允许LPN拣货任务",
+  "menu.main.integration.shopify-config": "Shopify 接口"
 }
