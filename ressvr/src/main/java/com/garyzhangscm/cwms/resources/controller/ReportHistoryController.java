@@ -134,7 +134,8 @@ public class ReportHistoryController {
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
                                                     @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
-                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies,
+                                                    @RequestParam(name = "collated", required = false, defaultValue = "false") Boolean collated)
             throws FileNotFoundException, IOException {
 
         logger.debug("Start to print report for {} / {}, copies: {}",
@@ -145,7 +146,7 @@ public class ReportHistoryController {
         // print the report from the printer attached to the server
         File reportResultFile =
                 reportHistoryService.printReport(companyId, warehouseId, type, filename,
-                        findPrinterBy, printerName, copies);
+                        findPrinterBy, printerName, copies, collated);
         return ResponseBodyWrapper.success(reportResultFile.getName() + " printed!");
 
     }
@@ -158,7 +159,8 @@ public class ReportHistoryController {
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
                                                     @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
-                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies,
+                                                           @RequestParam(name = "collated", required = false, defaultValue = "false") Boolean collated)
             throws FileNotFoundException, IOException {
 
         logger.debug("Start to print report for {} / {}, copies: {}",
@@ -168,7 +170,7 @@ public class ReportHistoryController {
                 printerName, findPrinterBy);
         // print the report from the printer attached to the server
         reportHistoryService.printReportInBatch(companyId, warehouseId, type, filenames,
-                        findPrinterBy, printerName, copies);
+                        findPrinterBy, printerName, copies, collated);
         return ResponseBodyWrapper.success(filenames + " printed!");
 
     }

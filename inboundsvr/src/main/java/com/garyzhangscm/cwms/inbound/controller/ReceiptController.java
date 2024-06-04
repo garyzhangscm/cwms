@@ -347,6 +347,7 @@ public class ReceiptController {
             @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
+            @RequestParam(name = "collated", defaultValue = "false", required = false) Boolean collated, // collated: 1, 2, 3  1, 2, 3  NOT collated: 1, 1, 2, 2, 3, 3
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
             @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
@@ -355,7 +356,8 @@ public class ReceiptController {
         logger.debug("start generate pre-printed lpn label with id: {}", id);
         return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
                 count,
-                copies, locale, printerName);
+                copies, collated,
+                locale, printerName);
     }
 
     @BillableEndpoint
@@ -366,13 +368,15 @@ public class ReceiptController {
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
             @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
+            @RequestParam(name = "collated", defaultValue = "false", required = false) Boolean collated, // collated: 1, 2, 3  1, 2, 3  NOT collated: 1, 1, 2, 2, 3, 3
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
             @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
     ) throws JsonProcessingException {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,  count, copies, locale, printerName);
+        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count, copies,  collated, locale, printerName);
     }
 
 

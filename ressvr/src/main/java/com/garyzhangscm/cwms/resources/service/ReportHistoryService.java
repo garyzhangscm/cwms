@@ -296,7 +296,7 @@ public class ReportHistoryService {
                             String type, String filenames,
                             String findPrinterBy,
                             String printerName,
-                            Integer copies) {
+                            Integer copies, Boolean collated) {
         String[] fileNameArray = filenames.split(",");
 
         String printer = printerName;
@@ -327,7 +327,8 @@ public class ReportHistoryService {
                     companyId, warehouseId, type, findPrinterBy, printerName, printer);
             logger.debug("and will printer copies: {} ", copies );
 
-            printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
+            printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer,
+                    copies, collated);
 
             // we will send the printing request to the remote printing service
 
@@ -338,7 +339,7 @@ public class ReportHistoryService {
                             String type, String filename,
                             String findPrinterBy,
                             String printerName,
-                            Integer copies)
+                            Integer copies, Boolean collated)
         throws  IOException{
 
 
@@ -374,7 +375,8 @@ public class ReportHistoryService {
                 companyId, warehouseId, type, findPrinterBy, printerName, printer);
         logger.debug("and will printer copies: {} ", copies );
 
-        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
+        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type),
+                printer, copies, collated);
 
         // we will send the printing request to the remote printing service
 

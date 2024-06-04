@@ -1,15 +1,24 @@
 package com.garyzhangscm.cwms.integration.service;
 
+import com.garyzhangscm.cwms.integration.clients.ResourceServiceRestemplateClient;
+import com.garyzhangscm.cwms.integration.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 @Service
 public class UserService {
 
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+
     public String getCurrentUserName() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+
+    public User getCurrentUser(Long companyId) {
+        return resourceServiceRestemplateClient.getUserByUsername(companyId, getCurrentUserName());
     }
 }

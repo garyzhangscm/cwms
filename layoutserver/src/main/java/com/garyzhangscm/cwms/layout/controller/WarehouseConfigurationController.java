@@ -70,6 +70,7 @@ public class WarehouseConfigurationController {
                     @CacheEvict(cacheNames = "OutboundService_WarehouseConfiguration", allEntries = true),
                     @CacheEvict(cacheNames = "ResourceService_WarehouseConfiguration", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_WarehouseConfiguration", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_WarehouseConfiguration", allEntries = true),
             }
     )
     public WarehouseConfiguration changeWarehouseConfiguration(@RequestParam Long companyId,

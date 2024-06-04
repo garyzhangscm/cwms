@@ -94,7 +94,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Production Mold Count History",menu.main.work-order.production-mold-count-history,/work-order/production-mold-count-history,26,Main-Menu-WorkOrder,Work-Order-ProductionMoldCountHistory,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
 "Tiktok Seller Shop Integration Configuration",menu.main.integration.tiktok-tts-config,/integration/tiktok/tts/config,2,Main-Menu-Integration,Integration-TTS-CONFIG,
-"Shopify Integration Configuration",menu.main.integration.shopify-config,/integration/shopify/config,3,Main-Menu-Integration,Integration-Shopify-CONFIG,
+"Shopify Integration Configuration",menu.main.integration.shopify-config,/integration/shopify/integration-configuration,3,Main-Menu-Integration,Integration-Shopify-CONFIG,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
 "Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,,true,false
