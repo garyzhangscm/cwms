@@ -90,7 +90,8 @@ public class PrintingServiceRestemplateClient  {
 
 
     }
-    public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies) {
+    public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies,
+                                    Boolean collated) {
         logger.debug("Start to send file {} to printing server: {}, copies: {}",
                 file.getName(), printerConfiguration.getUrl(), copies);
 
@@ -102,6 +103,14 @@ public class PrintingServiceRestemplateClient  {
         // if printer is specified, add printer to the parameters
         if (Strings.isNotBlank(printer)) {
             url +="&printer=" + printer;
+        }
+
+        if (Boolean.TRUE.equals(collated)) {
+            url +="&collated=true";
+        }
+        else {
+
+            url +="&collated=false";
         }
 
         HttpHeaders headers = new HttpHeaders();

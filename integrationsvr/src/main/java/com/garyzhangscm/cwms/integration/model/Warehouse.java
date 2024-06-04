@@ -29,6 +29,8 @@ public class Warehouse implements Serializable {
     private Long id;
     private Company company;
 
+    private Long companyId;
+
     private String name;
 
     private String size;
@@ -48,6 +50,14 @@ public class Warehouse implements Serializable {
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Long getId() {

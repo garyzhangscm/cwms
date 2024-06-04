@@ -90,6 +90,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -122,6 +123,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -153,6 +155,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -170,6 +173,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -189,6 +193,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -206,6 +211,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -249,6 +255,7 @@ public class UserController {
             evict = {
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),

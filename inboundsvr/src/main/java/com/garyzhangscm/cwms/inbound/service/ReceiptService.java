@@ -968,6 +968,23 @@ public class ReceiptService {
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
+        if (Objects.nonNull(receiptLine.getReceipt().getClient())) {
+
+            lpnLabelContent.put("client", receiptLine.getReceipt().getClient().getName());
+        }
+        else if (Objects.nonNull(receiptLine.getReceipt().getClientId())) {
+            Client client = commonServiceRestemplateClient.getClientById(
+                    receiptLine.getReceipt().getClientId()
+            );
+            if (Objects.nonNull(client)) {
+
+                lpnLabelContent.put("client", client.getName());
+            }
+        }
+        else {
+
+            lpnLabelContent.put("client", "");
+        }
 
         if (Strings.isNotBlank(receiptLine.getColor())) {
             lpnLabelContent.put("color", receiptLine.getColor());
@@ -1078,24 +1095,26 @@ public class ReceiptService {
 
     public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long inventoryQuantity,
                                                          Boolean ignoreInventoryQuantity, Integer count,
-                                                         Integer copies, String locale,
+                                                         Integer copies, Boolean collated,
+                                                         String locale,
                                                          String printerName) {
         return generatePrePrintLPNDocumentInBatch(
                 ReportType.RECEIVING_LPN_LABEL, id,
                 lpn, inventoryQuantity, ignoreInventoryQuantity,
-                count, copies, locale, printerName
+                count, copies, collated, locale, printerName
         );
     }
 
 
     public ReportHistory generatePrePrintLPNReportInBatch(Long id, String lpn, Long inventoryQuantity, Boolean ignoreInventoryQuantity,
                                                           Integer count,
-                                                         Integer copies, String locale,
+                                                         Integer copies, Boolean collated,
+                                                          String locale,
                                                          String printerName)  {
         return generatePrePrintLPNDocumentInBatch(
                 ReportType.RECEIVING_LPN_REPORT, id,
                 lpn, inventoryQuantity, ignoreInventoryQuantity,
-                count, copies, locale, printerName
+                count, copies, collated, locale, printerName
         );
     }
 
@@ -1111,12 +1130,14 @@ public class ReceiptService {
     public ReportHistory generatePrePrintLPNDocumentInBatch(ReportType reportType,
                                                          Long id, String lpn, Long inventoryQuantity,
                                                             Boolean ignoreInventoryQuantity, Integer count,
-                                                         Integer copies, String locale,
+                                                         Integer copies, Boolean collated,
+                                                            String locale,
                                                          String printerName)   {
         return generatePrePrintLPNDocumentInBatch(
                 reportType, receiptLineService.findById(id),
                 lpn, inventoryQuantity, ignoreInventoryQuantity,
-                count, copies, locale, printerName
+                count, copies, collated,
+                locale, printerName
         );
     }
 
@@ -1124,7 +1145,8 @@ public class ReceiptService {
                                                          ReceiptLine receiptLine, String lpn,
                                                             Long inventoryQuantity, Boolean ignoreInventoryQuantity,
                                                             Integer count,
-                                                         Integer copies, String locale,
+                                                         Integer copies, Boolean collated,
+                                                            String locale,
                                                          String printerName)  {
 
         Long warehouseId = receiptLine.getWarehouseId();
@@ -1147,7 +1169,8 @@ public class ReceiptService {
             if (reportType.isLabel()) {
 
                 setupPrePrintLPNLabelData(
-                        reportData, receiptLine, lpnNumbers, inventoryQuantity, ignoreInventoryQuantity, copies
+                        reportData, receiptLine, lpnNumbers, inventoryQuantity, ignoreInventoryQuantity,
+                        copies, collated
                 );
             }
             else {
@@ -1174,21 +1197,38 @@ public class ReceiptService {
     }
 
     private void setupPrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
-                                           Long inventoryQuantity, Boolean ignoreInventoryQuantity, Integer copies) {
+                                           Long inventoryQuantity, Boolean ignoreInventoryQuantity, Integer copies, Boolean collated) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
-        lpnNumbers.forEach(
-                lpnNumber -> {
+        // collated: 1, 2, 3, 1, 2, 3
+        // NOT collated: 1, 1, 2, 2, 3, 3,
+        if (Boolean.TRUE.equals(collated)) {
+            for (int i = 1; i < copies; i++) {
+                lpnNumbers.forEach(
+                        lpnNumber -> {
+                            Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
+                                    receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
+                            );
+                            lpnLabelContents.add(lpnLabelContent);
+                        }
+                );
+            }
+        }
+        else {
 
-                    Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
-                    );
-                    for (int i = 0; i < copies; i++) {
+            lpnNumbers.forEach(
+                    lpnNumber -> {
 
-                        lpnLabelContents.add(lpnLabelContent);
+                        Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
+                                receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
+                        );
+                        for (int i = 0; i < copies; i++) {
+
+                            lpnLabelContents.add(lpnLabelContent);
+                        }
                     }
-                }
-        );
+            );
+        }
         reportData.setData(lpnLabelContents);
 
     }

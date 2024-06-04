@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.clients;
 import com.garyzhangscm.cwms.integration.model.Company;
 import com.garyzhangscm.cwms.integration.model.Warehouse;
 
+import com.garyzhangscm.cwms.integration.model.WarehouseConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,33 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     @Autowired
     private RestTemplateProxy restTemplateProxy;
+
+    @Cacheable(cacheNames = "IntegrationService_WarehouseConfiguration", unless="#result == null")
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
+/**
+ ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+ = restTemplate.exchange(
+ builder.buildAndExpand(warehouseId).toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+ return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                WarehouseConfiguration.class,
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
     @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
