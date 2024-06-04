@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>integrationserver</artifactId>
-    <version>v1.38</version>
+    <version>v1.39</version>
     <name>Integration Server</name>
     <description>Integration Server</description>
 
