@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>zuulsvr</artifactId>
-	<version>v1.38</version>
+	<version>v1.39</version>
 	<name>Zuul Server</name>
 	<description>Zuul Server</description>
 
