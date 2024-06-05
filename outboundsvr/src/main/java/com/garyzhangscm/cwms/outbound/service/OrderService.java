@@ -924,7 +924,7 @@ public class OrderService {
                                      OrderLineCSVWrapper orderLineCSVWrapper) {
 
         Order order = new Order();
-        order.setNumber(orderLineCSVWrapper.getOrder());
+        order.setNumber(orderLineCSVWrapper.getOrder().trim());
 
 
         Warehouse warehouse =
@@ -949,85 +949,85 @@ public class OrderService {
             );
         }
         if (billToAddressSameAsShipToAddress) {
-            orderLineCSVWrapper.setBillToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
-            orderLineCSVWrapper.setBillToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
-            orderLineCSVWrapper.setBillToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
-            orderLineCSVWrapper.setBillToAddressState(orderLineCSVWrapper.getShipToAddressState());
-            orderLineCSVWrapper.setBillToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
-            orderLineCSVWrapper.setBillToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
-            orderLineCSVWrapper.setBillToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
-            orderLineCSVWrapper.setBillToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
-            orderLineCSVWrapper.setBillToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
-            orderLineCSVWrapper.setBillToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+            orderLineCSVWrapper.setBillToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname().trim());
+            orderLineCSVWrapper.setBillToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname().trim());
+            orderLineCSVWrapper.setBillToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry().trim());
+            orderLineCSVWrapper.setBillToAddressState(orderLineCSVWrapper.getShipToAddressState().trim());
+            orderLineCSVWrapper.setBillToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty().trim());
+            orderLineCSVWrapper.setBillToAddressCity(orderLineCSVWrapper.getShipToAddressCity().trim());
+            orderLineCSVWrapper.setBillToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict().trim());
+            orderLineCSVWrapper.setBillToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1().trim());
+            orderLineCSVWrapper.setBillToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2().trim());
+            orderLineCSVWrapper.setBillToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode().trim());
         }
 
 
         // if we specify the ship to customer, we load information with the customer
         if (!StringUtils.isBlank(orderLineCSVWrapper.getShipToCustomer())) {
             Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(),
-                    warehouse.getId(), orderLineCSVWrapper.getShipToCustomer());
+                    warehouse.getId(), orderLineCSVWrapper.getShipToCustomer().trim());
 
             order.setShipToCustomer(shipToCustomer);
             order.setShipToCustomerId(shipToCustomer.getId());
 
-            order.setShipToContactorFirstname(shipToCustomer.getContactorFirstname());
-            order.setShipToContactorLastname(shipToCustomer.getContactorLastname());
-            order.setShipToAddressCountry(shipToCustomer.getAddressCountry());
-            order.setShipToAddressState(shipToCustomer.getAddressState());
-            order.setShipToAddressCounty(shipToCustomer.getAddressCounty());
-            order.setShipToAddressCity(shipToCustomer.getAddressCity());
-            order.setShipToAddressDistrict(shipToCustomer.getAddressDistrict());
-            order.setShipToAddressLine1(shipToCustomer.getAddressLine1());
-            order.setShipToAddressLine2(shipToCustomer.getAddressLine2());
-            order.setShipToAddressPostcode(shipToCustomer.getAddressPostcode());
+            order.setShipToContactorFirstname(shipToCustomer.getContactorFirstname().trim());
+            order.setShipToContactorLastname(shipToCustomer.getContactorLastname().trim());
+            order.setShipToAddressCountry(shipToCustomer.getAddressCountry().trim());
+            order.setShipToAddressState(shipToCustomer.getAddressState().trim());
+            order.setShipToAddressCounty(shipToCustomer.getAddressCounty().trim());
+            order.setShipToAddressCity(shipToCustomer.getAddressCity().trim());
+            order.setShipToAddressDistrict(shipToCustomer.getAddressDistrict().trim());
+            order.setShipToAddressLine1(shipToCustomer.getAddressLine1().trim());
+            order.setShipToAddressLine2(shipToCustomer.getAddressLine2().trim());
+            order.setShipToAddressPostcode(shipToCustomer.getAddressPostcode().trim());
         } else {
-            order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
-            order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
-            order.setShipToContactorPhoneNumber(orderLineCSVWrapper.getShipToContactorPhoneNumber());
-            order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
-            order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState());
-            order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
-            order.setShipToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
-            order.setShipToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
-            order.setShipToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
-            order.setShipToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
-            order.setShipToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+            order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname().trim());
+            order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname().trim());
+            order.setShipToContactorPhoneNumber(orderLineCSVWrapper.getShipToContactorPhoneNumber().trim());
+            order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry().trim());
+            order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState().trim());
+            order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty().trim());
+            order.setShipToAddressCity(orderLineCSVWrapper.getShipToAddressCity().trim());
+            order.setShipToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict().trim());
+            order.setShipToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1().trim());
+            order.setShipToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2().trim());
+            order.setShipToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode().trim());
         }
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getBillToCustomer())) {
             Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(), warehouse.getId(),
-                    orderLineCSVWrapper.getBillToCustomer());
+                    orderLineCSVWrapper.getBillToCustomer().trim());
 
             order.setBillToCustomer(billToCustomer);
             order.setBillToCustomerId(billToCustomer.getId());
 
-            order.setBillToContactorFirstname(billToCustomer.getContactorFirstname());
-            order.setBillToContactorLastname(billToCustomer.getContactorLastname());
-            order.setBillToAddressCountry(billToCustomer.getAddressCountry());
-            order.setBillToAddressState(billToCustomer.getAddressState());
-            order.setBillToAddressCounty(billToCustomer.getAddressCounty());
-            order.setBillToAddressCity(billToCustomer.getAddressCity());
-            order.setBillToAddressDistrict(billToCustomer.getAddressDistrict());
-            order.setBillToAddressLine1(billToCustomer.getAddressLine1());
-            order.setBillToAddressLine2(billToCustomer.getAddressLine2());
-            order.setBillToAddressPostcode(billToCustomer.getAddressPostcode());
+            order.setBillToContactorFirstname(billToCustomer.getContactorFirstname().trim());
+            order.setBillToContactorLastname(billToCustomer.getContactorLastname().trim());
+            order.setBillToAddressCountry(billToCustomer.getAddressCountry().trim());
+            order.setBillToAddressState(billToCustomer.getAddressState().trim());
+            order.setBillToAddressCounty(billToCustomer.getAddressCounty().trim());
+            order.setBillToAddressCity(billToCustomer.getAddressCity().trim());
+            order.setBillToAddressDistrict(billToCustomer.getAddressDistrict().trim());
+            order.setBillToAddressLine1(billToCustomer.getAddressLine1().trim());
+            order.setBillToAddressLine2(billToCustomer.getAddressLine2().trim());
+            order.setBillToAddressPostcode(billToCustomer.getAddressPostcode().trim());
         } else {
-            order.setBillToContactorFirstname(orderLineCSVWrapper.getBillToContactorFirstname());
-            order.setBillToContactorLastname(orderLineCSVWrapper.getBillToContactorLastname());
-            order.setBillToAddressCountry(orderLineCSVWrapper.getBillToAddressCountry());
-            order.setBillToAddressState(orderLineCSVWrapper.getBillToAddressState());
-            order.setBillToAddressCounty(orderLineCSVWrapper.getBillToAddressCounty());
-            order.setBillToAddressCity(orderLineCSVWrapper.getBillToAddressCity());
-            order.setBillToAddressDistrict(orderLineCSVWrapper.getBillToAddressDistrict());
-            order.setBillToAddressLine1(orderLineCSVWrapper.getBillToAddressLine1());
-            order.setBillToAddressLine2(orderLineCSVWrapper.getBillToAddressLine2());
-            order.setBillToAddressPostcode(orderLineCSVWrapper.getBillToAddressPostcode());
+            order.setBillToContactorFirstname(orderLineCSVWrapper.getBillToContactorFirstname().trim());
+            order.setBillToContactorLastname(orderLineCSVWrapper.getBillToContactorLastname().trim());
+            order.setBillToAddressCountry(orderLineCSVWrapper.getBillToAddressCountry().trim());
+            order.setBillToAddressState(orderLineCSVWrapper.getBillToAddressState().trim());
+            order.setBillToAddressCounty(orderLineCSVWrapper.getBillToAddressCounty().trim());
+            order.setBillToAddressCity(orderLineCSVWrapper.getBillToAddressCity().trim());
+            order.setBillToAddressDistrict(orderLineCSVWrapper.getBillToAddressDistrict().trim());
+            order.setBillToAddressLine1(orderLineCSVWrapper.getBillToAddressLine1().trim());
+            order.setBillToAddressLine2(orderLineCSVWrapper.getBillToAddressLine2().trim());
+            order.setBillToAddressPostcode(orderLineCSVWrapper.getBillToAddressPostcode().trim());
         }
 
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
-                    warehouse.getId(), orderLineCSVWrapper.getClient());
+                    warehouse.getId(), orderLineCSVWrapper.getClient().trim());
             order.setClientId(client.getId());
             order.setClient(client);
         }

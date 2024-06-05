@@ -343,7 +343,7 @@ public class InventoryServiceRestemplateClient {
 
         List<Inventory> pickableInventory = restTemplateProxy.exchangeList(
                 Inventory.class,
-                builder.toUriString(),
+                builder.build(true).toUriString(),
                 HttpMethod.GET,
                 null
         );
