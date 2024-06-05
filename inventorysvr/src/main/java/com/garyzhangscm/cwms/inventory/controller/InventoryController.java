@@ -36,6 +36,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -178,22 +181,47 @@ public class InventoryController {
                                                    @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                                    @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
-                                                   @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) {
+                                                   @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) throws UnsupportedEncodingException {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
-        // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        List<Inventory> pickableInventory = inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style,
-                attribute1, attribute2, attribute3, attribute4, attribute5,
-                receiptNumber, lpnLimit);
-        logger.debug("return {} pickable inventory with criteria ",
-                pickableInventory.size());
+
+        logger.debug("Start to find pickable inventory by criteria");
         logger.debug("itemId = {}", itemId);
         logger.debug("inventoryStatusId = {}", inventoryStatusId);
         logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
-        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
-        logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("color = {}", Strings.isBlank(URLDecoder.decode(color, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()));
+        logger.debug("productSize = {}", Strings.isBlank(URLDecoder.decode(productSize, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()));
+
+        logger.debug("style = {}", Strings.isBlank(URLDecoder.decode(style, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute1 = {}", Strings.isBlank(URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute2 = {}", Strings.isBlank(URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute3 = {}", Strings.isBlank(URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute4 = {}", Strings.isBlank(URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute5 = {}", Strings.isBlank(URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()));
+
         logger.debug("receiptNumber = {}", Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
         logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
+        List<Inventory> pickableInventory = inventoryService.findPickableInventories(
+                itemId, inventoryStatusId, locationId, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                receiptNumber, lpnLimit);
+        logger.debug("return {} pickable inventory with criteria ",
+                pickableInventory.size());
         logger.debug("=========   Pickable   Inventory   ===============");
         pickableInventory.forEach(
                 inventory -> logger.debug(">> id: {}, LPN : {}", inventory.getId(), inventory.getLpn())

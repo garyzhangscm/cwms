@@ -511,7 +511,7 @@ public class OrderLineService{
             int maxExistingOrderLineNumber = 0;
             for (OrderLine existingOrderLine : order.getOrderLines()) {
                 try {
-                    int orderLineNumber = Integer.parseInt(existingOrderLine.getNumber());
+                    int orderLineNumber = Integer.parseInt(existingOrderLine.getNumber().trim());
                     maxExistingOrderLineNumber = Math.max(maxExistingOrderLineNumber, orderLineNumber);
                 }
                 catch (Exception ex) {
@@ -530,15 +530,23 @@ public class OrderLineService{
         }
 
 
-        orderLine.setColor(orderLineCSVWrapper.getColor());
-        orderLine.setProductSize(orderLineCSVWrapper.getProductSize());
-        orderLine.setStyle(orderLineCSVWrapper.getStyle());
+        orderLine.setColor(
+                Strings.isBlank(orderLineCSVWrapper.getColor()) ? "" : orderLineCSVWrapper.getColor().trim());
+        orderLine.setProductSize(
+                Strings.isBlank(orderLineCSVWrapper.getProductSize()) ? "" : orderLineCSVWrapper.getProductSize().trim());
+        orderLine.setStyle(
+                Strings.isBlank(orderLineCSVWrapper.getStyle()) ? "" : orderLineCSVWrapper.getStyle().trim());
 
-        orderLine.setInventoryAttribute1(orderLineCSVWrapper.getInventoryAttribute1());
-        orderLine.setInventoryAttribute2(orderLineCSVWrapper.getInventoryAttribute2());
-        orderLine.setInventoryAttribute3(orderLineCSVWrapper.getInventoryAttribute3());
-        orderLine.setInventoryAttribute4(orderLineCSVWrapper.getInventoryAttribute4());
-        orderLine.setInventoryAttribute5(orderLineCSVWrapper.getInventoryAttribute5());
+        orderLine.setInventoryAttribute1(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute1()) ? "" : orderLineCSVWrapper.getInventoryAttribute1().trim());
+        orderLine.setInventoryAttribute2(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute2()) ? "" : orderLineCSVWrapper.getInventoryAttribute2().trim());
+        orderLine.setInventoryAttribute3(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute3()) ? "" : orderLineCSVWrapper.getInventoryAttribute3().trim());
+        orderLine.setInventoryAttribute4(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute4()) ? "" : orderLineCSVWrapper.getInventoryAttribute4().trim());
+        orderLine.setInventoryAttribute5(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute5()) ? "" : orderLineCSVWrapper.getInventoryAttribute5().trim());
 
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
