@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.integration.repository.shopify;
 
 
-import com.garyzhangscm.cwms.integration.model.shopify.OAuthUrl;
 import com.garyzhangscm.cwms.integration.model.shopify.ShopifyIntegrationConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

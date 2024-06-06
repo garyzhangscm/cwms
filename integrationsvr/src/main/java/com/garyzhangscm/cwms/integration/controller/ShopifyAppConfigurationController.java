@@ -2,16 +2,15 @@ package com.garyzhangscm.cwms.integration.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.integration.model.shopify.OAuthUrl;
-import com.garyzhangscm.cwms.integration.service.shopify.OAuthService;
+import com.garyzhangscm.cwms.integration.model.shopify.AppConfiguration;
+import com.garyzhangscm.cwms.integration.service.shopify.AppConfigurationService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,29 +22,30 @@ import org.springframework.web.servlet.ModelAndView;
  *
  */
 @Controller
-@RequestMapping(value="/shopify/shop-oauth")
-public class ShopifyOAuthController {
-    private static final Logger logger = LoggerFactory.getLogger(ShopifyOAuthController.class);
+@RequestMapping(value="/shopify/app-configuration")
+public class ShopifyAppConfigurationController {
+    private static final Logger logger = LoggerFactory.getLogger(ShopifyAppConfigurationController.class);
 
     @Autowired
-    private OAuthService oAuthService;
+    private AppConfigurationService appConfigurationService;
 
 
     @Autowired
     @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
 
+    @Value("${shopify.redirectUrlAfterShopTokenSaved:https://staging.claytechsuite.com/#/integration/shopify/integration-configuration}")
+    private String redirectUrlAfterShopTokenSaved;
 
     /**
      * Webhook URL - Optionally, enter the URL to receive push notifications (it can be the URL of your system).
      * @return
      */
     @ResponseBody
-    @RequestMapping(value="/url")
-    public OAuthUrl getOAuthUrl(@RequestParam Long companyId,
-                                @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId) {
+    @RequestMapping(value="/oauth-url")
+    public AppConfiguration getOAuthUrl(@RequestParam Long companyId) {
 
-        return oAuthService.findByCompanyIdAndClientId(companyId, clientId);
+        return appConfigurationService.getSingletonAppConfiguration();
     }
 
 
@@ -60,7 +60,7 @@ public class ShopifyOAuthController {
                 Strings.isBlank(shop) ? "N/A": shop,
                 Strings.isBlank(timestamp) ? "N/A": timestamp);
 
-        boolean result = oAuthService.validateShopOAuthRequest(hmac, shop, timestamp);
+        boolean result = appConfigurationService.validateShopOAuthRequest(hmac, shop, timestamp);
         logger.debug("validate the parameters, result is {}", result);
 
         // redirect to the URL for user's authorization
@@ -70,21 +70,21 @@ public class ShopifyOAuthController {
         // &redirect_uri={redirect_uri}
         // &state={nonce}
         // &grant_options[]={access_mode}
-        String redirectUrlForUserAuthorization = oAuthService.getRedirectUrlForUserAuthorization(shop);
+        String redirectUrlForUserAuthorization = appConfigurationService.getRedirectUrlForUserAuthorization(shop);
         logger.debug("Redirect for user authorization\n{}", redirectUrlForUserAuthorization);
         return new ModelAndView("redirect:" + redirectUrlForUserAuthorization);
     }
 
 
-    @RequestMapping(value="/user-authorization-callback")
-    public ModelAndView processUserAuthorizationCallback(
+    @RequestMapping(value="/shop-authorization-callback")
+    public ModelAndView processShopAuthorizationCallback(
             @RequestParam(name = "code", required = false, defaultValue = "") String code,
             @RequestParam(name = "hmac", required = false, defaultValue = "") String hmac,
             @RequestParam(name = "host", required = false, defaultValue = "") String host,
             @RequestParam(name = "shop", required = false, defaultValue = "") String shop,
             @RequestParam(name = "timestamp", required = false, defaultValue = "") String timestamp) {
 
-        logger.debug("Start to process shop oauth with parameters");
+        logger.debug("Start to handle shop's authorization with parameters");
         logger.debug("code:{}\nhmac: {}\nhost: {}\nshop: {}\ntimestamp: {}\n",
                 Strings.isBlank(code) ? "N/A": code,
                 Strings.isBlank(hmac) ? "N/A": hmac,
@@ -92,11 +92,10 @@ public class ShopifyOAuthController {
                 Strings.isBlank(shop) ? "N/A": shop,
                 Strings.isBlank(timestamp) ? "N/A": timestamp);
 
-        boolean result = oAuthService.validateShopOAuthRequest(hmac, shop, timestamp);
+        boolean result = appConfigurationService.validateShopOAuthRequest(hmac, shop, timestamp);
         logger.debug("validate the parameters, result is {}", result);
 
-        String redirectUrlAfterUserAuthorization = "https://prod.claytechsuite.com/#/integration/tiktok/tts/config";
-        logger.debug("Redirect after user authorization\n{}", redirectUrlAfterUserAuthorization);
-        return new ModelAndView("redirect:" + redirectUrlAfterUserAuthorization);
+        logger.debug("Redirect after shop authorization\n{}", redirectUrlAfterShopTokenSaved);
+        return new ModelAndView("redirect:" + redirectUrlAfterShopTokenSaved);
     }
 }

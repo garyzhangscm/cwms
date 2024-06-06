@@ -19,8 +19,7 @@
 package com.garyzhangscm.cwms.integration.repository.shopify;
 
 
-import com.garyzhangscm.cwms.integration.model.shopify.OAuthUrl;
-import com.garyzhangscm.cwms.integration.model.tiktok.TikTokSellerAuthorizedShop;
+import com.garyzhangscm.cwms.integration.model.shopify.AppConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -28,8 +27,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface OAuthUrlRepository extends JpaRepository<OAuthUrl, Long>, JpaSpecificationExecutor<OAuthUrl> {
+public interface AppConfigurationRepository extends JpaRepository<AppConfiguration, Long>, JpaSpecificationExecutor<AppConfiguration> {
 
-
-    List<OAuthUrl> findByCompanyId(Long companyId);
 }
