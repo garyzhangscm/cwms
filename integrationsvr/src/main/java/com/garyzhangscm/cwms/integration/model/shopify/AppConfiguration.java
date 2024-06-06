@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.integration.model.shopify;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -26,23 +27,24 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "shopify_oauth_url")
-public class OAuthUrl extends AuditibleEntity<String> implements Serializable {
+@Table(name = "shopify_app_configuration")
+public class AppConfiguration extends AuditibleEntity<String> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shopify_oauth_url_id")
+    @Column(name = "shopify_app_configuration_id")
     @JsonProperty(value="id")
     private Long id;
 
-    @Column(name = "company_id")
-    private Long companyId;
-    @Column(name = "client_id")
-    private Long clientId;
-
-
     @Column(name = "url")
     private String url;
+
+    @JsonIgnore
+    @Column(name = "shopify_app_client_id")
+    private String shopifyAppClientId;
+    @JsonIgnore
+    @Column(name = "shopify_app_client_secret")
+    private String shopifyAppClientSecret;
 
     public Long getId() {
         return id;
@@ -52,21 +54,6 @@ public class OAuthUrl extends AuditibleEntity<String> implements Serializable {
         this.id = id;
     }
 
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
-
-    public Long getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
-    }
 
     public String getUrl() {
         return url;
@@ -74,5 +61,21 @@ public class OAuthUrl extends AuditibleEntity<String> implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getShopifyAppClientId() {
+        return shopifyAppClientId;
+    }
+
+    public void setShopifyAppClientId(String shopifyAppClientId) {
+        this.shopifyAppClientId = shopifyAppClientId;
+    }
+
+    public String getShopifyAppClientSecret() {
+        return shopifyAppClientSecret;
+    }
+
+    public void setShopifyAppClientSecret(String shopifyAppClientSecret) {
+        this.shopifyAppClientSecret = shopifyAppClientSecret;
     }
 }

@@ -2,9 +2,7 @@ package com.garyzhangscm.cwms.integration.service.shopify;
 
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.ClientRestriction;
-import com.garyzhangscm.cwms.integration.model.shopify.OAuthUrl;
 import com.garyzhangscm.cwms.integration.model.shopify.ShopifyIntegrationConfiguration;
-import com.garyzhangscm.cwms.integration.repository.shopify.OAuthUrlRepository;
 import com.garyzhangscm.cwms.integration.repository.shopify.ShopifyIntegrationConfigurationRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
