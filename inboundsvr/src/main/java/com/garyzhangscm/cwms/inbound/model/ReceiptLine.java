@@ -109,6 +109,15 @@ public class ReceiptLine extends AuditibleEntity<String>{
     private String style;
 
 
+    @Column(name="item_package_type_id")
+    private Long itemPackageTypeId;
+
+    @Transient
+    private ItemPackageType itemPackageType;
+
+    @Column(name="cubic_meter")
+    private Double cubicMeter;
+
     @Column(name="inventory_attribute_1")
     private String inventoryAttribute1;
     @Column(name="inventory_attribute_2")
@@ -239,6 +248,30 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public Double getCubicMeter() {
+        return cubicMeter;
+    }
+
+    public void setCubicMeter(Double cubicMeter) {
+        this.cubicMeter = cubicMeter;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 
     public Long getQcQuantity() {

@@ -43,6 +43,10 @@ public class ReceiptLineCSVWrapper {
     private String productSize;
     private String style;
 
+    private String itemPackageType;
+
+    private Double cubicMeter;
+
     private String inventoryAttribute1;
     private String inventoryAttribute2;
     private String inventoryAttribute3;
@@ -64,6 +68,11 @@ public class ReceiptLineCSVWrapper {
         color = Strings.isBlank(color) ? "" : color.trim();
         productSize = Strings.isBlank(productSize) ? "" : productSize.trim();
         style = Strings.isBlank(style) ? "" : style.trim();
+
+
+        itemPackageType = Strings.isBlank(itemPackageType) ? "" : itemPackageType.trim();
+
+
         inventoryAttribute1 = Strings.isBlank(inventoryAttribute1) ? "" : inventoryAttribute1.trim();
         inventoryAttribute2 = Strings.isBlank(inventoryAttribute2) ? "" : inventoryAttribute2.trim();
         inventoryAttribute3 = Strings.isBlank(inventoryAttribute3) ? "" : inventoryAttribute3.trim();
@@ -145,6 +154,22 @@ public class ReceiptLineCSVWrapper {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(String itemPackageType) {
+        this.itemPackageType = itemPackageType;
+    }
+
+    public Double getCubicMeter() {
+        return cubicMeter;
+    }
+
+    public void setCubicMeter(Double cubicMeter) {
+        this.cubicMeter = cubicMeter;
     }
 
     public String getInventoryAttribute1() {

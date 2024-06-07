@@ -76,6 +76,17 @@ public class ReceiptFileUpload extends FileUploadType {
                 "style", "Style",
                 String.class, 100, true
         ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "itemPackageType", "itemPackageType",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "cubicMeter", "cubicMeter",
+                Double.class, 100, true
+        ));
+
         addColumn(new FileUploadTemplateColumn(
                 "inventoryAttribute1", "Inventory Attribute 1",
                 String.class, 200, true

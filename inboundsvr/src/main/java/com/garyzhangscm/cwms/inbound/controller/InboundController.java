@@ -38,6 +38,8 @@ public class InboundController {
     @Autowired
     InboundQCConfigurationService inboundQCConfigurationService;
     @Autowired
+    InboundReceivingConfigurationService inboundReceivingConfigurationService;
+    @Autowired
     PutawayConfigurationService putawayConfigurationService;
     @Autowired
     PurchaseOrderService purchaseOrderService;
@@ -57,6 +59,9 @@ public class InboundController {
                 oldItemId, newItemId);
 
         inboundQCConfigurationService.handleItemOverride(warehouseId,
+                oldItemId, newItemId);
+
+        inboundReceivingConfigurationService.handleItemOverride(warehouseId,
                 oldItemId, newItemId);
 
         putawayConfigurationService.handleItemOverride(warehouseId,
