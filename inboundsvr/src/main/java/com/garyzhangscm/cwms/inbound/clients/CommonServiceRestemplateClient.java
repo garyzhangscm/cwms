@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class CommonServiceRestemplateClient {
@@ -280,5 +281,37 @@ public class CommonServiceRestemplateClient {
                 HttpMethod.GET,
                 null
         );
+    }
+
+    @Cacheable(cacheNames = "InboundService_UnitOfMeasure", unless="#result == null")
+    public UnitOfMeasure getUnitOfMeasureByName(Long companyId,
+                                                Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/unit-of-measures")
+                        .queryParam("name", name);
+
+        if (Objects.nonNull(companyId)) {
+            builder = builder.queryParam("companyId", companyId);
+        }
+        if (Objects.nonNull(warehouseId)) {
+            builder = builder.queryParam("warehouseId", warehouseId);
+        }
+
+        List<UnitOfMeasure> unitOfMeasures =  restTemplateProxy.exchangeList(
+                UnitOfMeasure.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+        if (unitOfMeasures.size() != 1) {
+            return null;
+        }
+        else {
+            return unitOfMeasures.get(0);
+        }
     }
 }

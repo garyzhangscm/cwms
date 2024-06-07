@@ -8,10 +8,10 @@ public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
 
     public EulogiaSupplierPackingSlipFileUpload(){
         super("eulogia_customer_packing_slip", "Eulogia Customer Packing Slip",
-                "inbound/receipts/eulogia_customer_packing_slip/upload",
+                "inbound/eulogia/customer_packing_slip/upload",
                 "resource/assets/file-templates/eulogia_customer_packing_slip.csv",
-                "inbound/receipts/eulogia_customer_packing_slip/upload/progress",
-                "inbound/receipts/eulogia_customer_packing_slip/upload/result");
+                "inbound/eulogia/customer_packing_slip/upload/progress",
+                "inbound/eulogia/customer_packing_slip/upload/result");
         setupColumns();
     }
 
@@ -35,17 +35,12 @@ public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
         ));
 
         addColumn(new FileUploadTemplateColumn(
-                "line", "Receipt Line Number",
-                String.class, 100, true
-        ));
-
-        addColumn(new FileUploadTemplateColumn(
                 "item", "Item Number",
                 String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
-                "expectedQuantity", "carton quantity",
+                "cartonQuantity", "carton quantity",
                 String.class, 100, false
         ));
 
@@ -111,23 +106,31 @@ public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "unitPerPack", "Unit per Pack",
-                String.class, 200, true
+                Integer.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "packPerCarton", "Pack Per Carton",
-                String.class, 200, true
+                Integer.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "unitPerCarton", "Unit Per Carton",
+                Integer.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "cartonWeight", "Carton Weight",
-                String.class, 200, true
+                Double.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "cartonLength", "Carton Length",
-                String.class, 200, true
+                Double.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "cartonWidth", "Carton Width",
-                String.class, 200, true
+                Double.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "cartonHeight", "Carton Height",
+                Double.class, 200, true
         ));
 
     }

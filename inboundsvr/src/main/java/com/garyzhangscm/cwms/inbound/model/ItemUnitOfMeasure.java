@@ -18,16 +18,16 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
 
 public class ItemUnitOfMeasure implements Serializable {
 
     private Long id;
+
+    private Long warehouseId;
+
+    private Long companyId;
 
     private Long unitOfMeasureId;
 
@@ -50,6 +50,9 @@ public class ItemUnitOfMeasure implements Serializable {
     private Boolean trackingLpn;
     private Boolean defaultForDisplay;
 
+
+    private Boolean caseFlag;
+
     public Long getId() {
         return id;
     }
@@ -58,6 +61,29 @@ public class ItemUnitOfMeasure implements Serializable {
         this.id = id;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Boolean getCaseFlag() {
+        return caseFlag;
+    }
+
+    public void setCaseFlag(Boolean caseFlag) {
+        this.caseFlag = caseFlag;
+    }
 
     public Long getUnitOfMeasureId() {
         return unitOfMeasureId;
