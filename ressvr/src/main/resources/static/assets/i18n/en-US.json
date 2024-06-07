@@ -2307,5 +2307,9 @@
   "pickable": "Pickable",
   "LIST-PICK-GROUP-RULE-TYPE-BY_PICK_ZONE": "By Pick Zone",
   "allowLPNPick": "Allow LPN Pick",
-  "menu.main.integration.shopify-config": "Shopify Integration"
+  "menu.main.integration.shopify-config": "Shopify Integration",
+  "menu.main.inbound.inbound-receiving-configuration": "Inbound Receiving Configuration",
+  "standardPalletSize": "Standard Pallet Size",
+  "estimatePalletCountBySize": "Estimate Pallet Count By Size",
+  "estimatePalletCountByReceiptLineCubicMeter": "Estimate Pallet Count By Receipt Line Cubic Meter"
 }

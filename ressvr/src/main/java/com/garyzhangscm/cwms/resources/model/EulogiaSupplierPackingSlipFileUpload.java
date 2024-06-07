@@ -1,13 +1,17 @@
 package com.garyzhangscm.cwms.resources.model;
 
-public class ReceiptFileUpload extends FileUploadType {
+/**
+ * upload supplier's packing slip. We will create the item, item unit of measure
+ * and the receipt
+ */
+public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
 
-    public ReceiptFileUpload(){
-        super("receipts", "Receipt",
-                "inbound/receipts/upload",
-                "resource/assets/file-templates/receipts.csv",
-                "inbound/receipts/upload/progress",
-                "inbound/receipts/upload/result");
+    public EulogiaSupplierPackingSlipFileUpload(){
+        super("eulogia_customer_packing_slip", "Eulogia Customer Packing Slip",
+                "inbound/receipts/eulogia_customer_packing_slip/upload",
+                "resource/assets/file-templates/eulogia_customer_packing_slip.csv",
+                "inbound/receipts/eulogia_customer_packing_slip/upload/progress",
+                "inbound/receipts/eulogia_customer_packing_slip/upload/result");
         setupColumns();
     }
 
@@ -32,23 +36,19 @@ public class ReceiptFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "line", "Receipt Line Number",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "item", "Item Number",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
-                "expectedQuantity", "Quantity",
+                "expectedQuantity", "carton quantity",
                 String.class, 100, false
         ));
 
-        addColumn(new FileUploadTemplateColumn(
-                "unitOfMeasure", "Unit Of Measure",
-                String.class, 10, true
-        ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryStatus", "Inventory Status",
                 String.class, 100, true
@@ -105,6 +105,28 @@ public class ReceiptFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "inventoryAttribute5", "Inventory Attribute 5",
+                String.class, 200, true
+        ));
+
+
+        addColumn(new FileUploadTemplateColumn(
+                "unitPerPack", "Unit per Pack",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "packPerCarton", "Pack Per Carton",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "cartonWeight", "Carton Weight",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "cartonLength", "Carton Length",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "cartonWidth", "Carton Width",
                 String.class, 200, true
         ));
 
