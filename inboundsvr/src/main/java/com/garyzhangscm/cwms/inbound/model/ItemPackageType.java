@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +38,10 @@ public class ItemPackageType implements Serializable {
     private Long clientId;
     private Client client;
 
+    private Long warehouseId;
+    private Long companyId;
+
+
     private Long supplierId;
     private Supplier supplier;
     private Item item;
@@ -51,6 +56,11 @@ public class ItemPackageType implements Serializable {
 
     private ItemUnitOfMeasure stockItemUnitOfMeasure;
     private ItemUnitOfMeasure displayItemUnitOfMeasure;
+
+
+    private Boolean defaultFlag;
+
+    private Integer casePerTier;
 
     @Override
     public String toString() {
@@ -240,5 +250,37 @@ public class ItemPackageType implements Serializable {
 
     public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
         this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Boolean getDefaultFlag() {
+        return defaultFlag;
+    }
+
+    public void setDefaultFlag(Boolean defaultFlag) {
+        this.defaultFlag = defaultFlag;
+    }
+
+    public Integer getCasePerTier() {
+        return casePerTier;
+    }
+
+    public void setCasePerTier(Integer casePerTier) {
+        this.casePerTier = casePerTier;
     }
 }

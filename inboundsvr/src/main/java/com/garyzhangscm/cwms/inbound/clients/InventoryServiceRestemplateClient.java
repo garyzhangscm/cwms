@@ -123,6 +123,42 @@ public class InventoryServiceRestemplateClient {
         }
     }
 
+    public Item createItem(Item item) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/items");
+
+
+        return restTemplateProxy.exchange(
+                Item.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                item
+        );
+
+
+    }
+
+    public Item changeItem(Item item) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/items/{id}");
+
+
+        return restTemplateProxy.exchange(
+                Item.class,
+                builder.buildAndExpand(item.getId()).toUriString(),
+                HttpMethod.PUT,
+                item
+        );
+
+
+    }
+
 
     @Cacheable(cacheNames = "InboundService_ItemFamily", unless="#result == null")
     public ItemFamily getItemFamilyById(Long id) {

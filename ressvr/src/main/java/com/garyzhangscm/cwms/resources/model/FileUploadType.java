@@ -52,6 +52,7 @@ public class FileUploadType {
         fileUploadTypes.add(new TargetShippingCartonLabelFileUpload());
         // fileUploadTypes.add(new ShippingTrailerAppointmentFileUpload());
         fileUploadTypes.add(new LoadFileUpload());
+        fileUploadTypes.add(new EulogiaSupplierPackingSlipFileUpload());
 
         return fileUploadTypes;
     }
