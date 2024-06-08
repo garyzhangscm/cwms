@@ -263,6 +263,8 @@ public class EulogiaService {
             }
         }
         receiptLine.setNumber(String.valueOf(maxLineNumber + 1));
+        receiptLine.setItemId(item.getId());
+        receiptLine.setItem(item);
 
         receiptLine.setReceivedQuantity(0L);
 

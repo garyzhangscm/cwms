@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class EulogiaController {
@@ -46,7 +47,7 @@ public class EulogiaController {
     private EulogiaService eulogiaService;
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/eulogia/customer_packing_slip/upload")
+    @RequestMapping(method=RequestMethod.POST, value="/eulogia/customer-packing-slip/upload")
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
@@ -61,7 +62,7 @@ public class EulogiaController {
 
         try {
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "eulogia_customer_packing_slip", fileService.saveFile(file));
+                    companyId, warehouseId, "eulogia-customer-packing-slip", fileService.saveFile(file));
             // fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
             String fileUploadProgressKey = eulogiaService.saveCustomerPackingSlipData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
@@ -69,5 +70,23 @@ public class EulogiaController {
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
+    }
+
+
+    @RequestMapping(method=RequestMethod.GET, value="/eulogia/customer-packing-slip/upload/progress")
+    public ResponseBodyWrapper getCustomerPackingSlipFileUploadProgress(Long warehouseId,
+                                                            String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",eulogiaService.getCustomerPackingSlipFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/eulogia/customer-packing-slip/upload/result")
+    public List<FileUploadResult> getCustomerPackingSlipFileUploadResult(Long warehouseId,
+                                                             String key) throws IOException {
+
+
+        return eulogiaService.getCustomerPackingSlipFileUploadResult(warehouseId, key);
     }
 }

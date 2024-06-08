@@ -38,6 +38,7 @@ Util-File-Upload,shipping-trailer-appointment,Shipping Trailer Appointment
 Util-File-Upload,loads,Loads
 Util-File-Upload,walmart-shipping-carton-labels,Walmart Shipping Carton Labels
 Util-File-Upload,target-shipping-carton-labels,Target Shipping Carton Labels
+Util-File-Upload,eulogia-customer-packing-slip,Eulogia Customer Packing Slip
 Inbound-receipt,modify-receipt,Modify Receipt
 Inbound-receipt,check-in-receipt,Check In Receipt
 Inbound-receipt,complete-receipt,Complete Receipt
