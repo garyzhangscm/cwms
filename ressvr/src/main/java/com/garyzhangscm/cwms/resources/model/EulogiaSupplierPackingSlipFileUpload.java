@@ -7,11 +7,11 @@ package com.garyzhangscm.cwms.resources.model;
 public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
 
     public EulogiaSupplierPackingSlipFileUpload(){
-        super("eulogia_customer_packing_slip", "Eulogia Customer Packing Slip",
-                "inbound/eulogia/customer_packing_slip/upload",
-                "resource/assets/file-templates/eulogia_customer_packing_slip.csv",
-                "inbound/eulogia/customer_packing_slip/upload/progress",
-                "inbound/eulogia/customer_packing_slip/upload/result");
+        super("eulogia-customer-packing-slip", "Eulogia Customer Packing Slip",
+                "inbound/eulogia/customer-packing-slip/upload",
+                "resource/assets/file-templates/eulogia-customer-packing-slip.csv",
+                "inbound/eulogia/customer-packing-slip/upload/progress",
+                "inbound/eulogia/customer-packing-slip/upload/result");
         setupColumns();
     }
 
