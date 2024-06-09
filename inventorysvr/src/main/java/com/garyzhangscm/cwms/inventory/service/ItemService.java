@@ -665,12 +665,13 @@ public class ItemService {
 
 
     public Item addItem(Item item) {
-
+/**
+        if(Objects.isNull(item.getItemFamily().getId())) {
+            item.setItemFamily(getOrCreateItemFamily(item.getItemFamily()));
+        }
+ **/
         item.getItemPackageTypes().forEach(itemPackageType -> {
             itemPackageType.setItem(item);
-            if(Objects.isNull(item.getItemFamily().getId())) {
-                item.setItemFamily(getOrCreateItemFamily(item.getItemFamily()));
-            }
             itemPackageType.getItemUnitOfMeasures().forEach(
                     itemUnitOfMeasure -> {
                         itemUnitOfMeasure.setItemPackageType(

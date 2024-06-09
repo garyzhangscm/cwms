@@ -132,7 +132,7 @@ public class EulogiaService {
 
         new Thread(() -> {
 
-            int totalCustomerPackingSlipLineCount = customerPackingSlipFileUploadProgress.size();
+            int totalCustomerPackingSlipLineCount = eulogiaCustomerPackingSlipCSVWrappers.size();
             int index = 0;
             // see if we need to create order
             for (EulogiaCustomerPackingSlipCSVWrapper eulogiaCustomerPackingSlipCSVWrapper : eulogiaCustomerPackingSlipCSVWrappers) {
@@ -181,7 +181,6 @@ public class EulogiaService {
                             getReceiptLineFromCustomerPackingSlipCSVWrapper(warehouseId,
                                 receipt, item, eulogiaCustomerPackingSlipCSVWrapper));
 
-                    customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 1));
 
 
                     List<FileUploadResult> fileUploadResults = customerPackingSlipFileUploadResult.getOrDefault(
@@ -193,6 +192,8 @@ public class EulogiaService {
                             "success", ""
                     ));
                     customerPackingSlipFileUploadResult.put(fileUploadProgressKey, fileUploadResults);
+
+                    customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 1));
                 }
                 catch(Exception ex) {
 
@@ -214,9 +215,9 @@ public class EulogiaService {
 
                     index++;
                 }
-                // after we process all inventory, mark the progress to 100%
-                customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 100.0);
             }
+            // after we process all lines, mark the progress to 100%
+            customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 100.0);
 
         }).start();
         return fileUploadProgressKey;
@@ -265,6 +266,9 @@ public class EulogiaService {
         receiptLine.setNumber(String.valueOf(maxLineNumber + 1));
         receiptLine.setItemId(item.getId());
         receiptLine.setItem(item);
+
+        logger.debug("created receipt line with number {}, for eulogiaCustomerPackingSlipCSVWrapper: {}",
+                receiptLine.getNumber(), eulogiaCustomerPackingSlipCSVWrapper);
 
         receiptLine.setReceivedQuantity(0L);
 
@@ -560,6 +564,46 @@ public class EulogiaService {
                     eulogiaCustomerPackingSlipCSVWrapper.getStyle()
             );
         }
+
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setUnitPerPack(1);
+        }
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getPackPerCarton())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setPackPerCarton(1);
+        }
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getUnitPerCarton())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setUnitPerCarton(
+                    eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack() *
+                            eulogiaCustomerPackingSlipCSVWrapper.getPackPerCarton()
+            );
+        }
+
+        /**
+         * If the quantity doesn't match, then we may need to recalculate the quantities
+         */
+        if (eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack() * eulogiaCustomerPackingSlipCSVWrapper.getPackPerCarton() !=
+            eulogiaCustomerPackingSlipCSVWrapper.getUnitPerCarton()) {
+            if (eulogiaCustomerPackingSlipCSVWrapper.getUnitPerCarton() % eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack() != 0) {
+                throw MissingInformationException.raiseException("unit per carton can't be divided by unit per pack");
+            }
+            eulogiaCustomerPackingSlipCSVWrapper.setPackPerCarton(
+                    eulogiaCustomerPackingSlipCSVWrapper.getUnitPerCarton() / eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack()
+            );
+        }
+
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getCartonWeight())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setCartonWeight(1.0);
+        }
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getCartonLength())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setCartonLength(1.0);
+        }
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getCartonWidth())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setCartonWidth(1.0);
+        }
+        if (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getCartonHeight())) {
+            eulogiaCustomerPackingSlipCSVWrapper.setCartonHeight(1.0);
+        }
+
         if (Strings.isBlank(eulogiaCustomerPackingSlipCSVWrapper.getItemPackageType())) {
             String itemPackageType =
                     (Objects.isNull(eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack()) ? "1" :  eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack().toString())
