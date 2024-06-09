@@ -1492,9 +1492,9 @@ public class ReceiptService {
 
                     index++;
                 }
-                // after we process all inventory, mark the progress to 100%
-                receiptFileUploadProgress.put(fileUploadProgressKey, 100.0);
             }
+            // after we process all inventory, mark the progress to 100%
+            receiptFileUploadProgress.put(fileUploadProgressKey, 100.0);
 
         }).start();
         return fileUploadProgressKey;
