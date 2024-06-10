@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.*;
+import org.apache.coyote.Request;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -346,19 +347,34 @@ public class ReceiptController {
             @RequestParam String lpn,
             @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
-            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
-            @RequestParam(name = "collated", defaultValue = "false", required = false) Boolean collated, // collated: 1, 2, 3  1, 2, 3  NOT collated: 1, 1, 2, 2, 3, 3
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
             @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
-    ) throws JsonProcessingException {
+    )   {
 
-        logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+        logger.debug("start generate pre-printed lpn label with receipt line id: {}", id);
+        return receiptService.generateReceiptLinePrePrintLPNLabelInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
                 count,
-                copies, collated,
                 locale, printerName);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/{id}/pre-print-lpn-label/batch", method = RequestMethod.POST)
+    public ReportHistory generateReceiptPrePrintLPNLabelInBatch(
+            @PathVariable Long id,
+            @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestBody PrintingLPNByReceiptParameters printingLPNByReceiptParameters
+    )  {
+
+        logger.debug("start generate pre-printed lpn label with receipt id: {}", id);
+        logger.debug("lpn : {}", lpn);
+        logger.debug("printerName : {}", printerName);
+        logger.debug("printingLPNByReceiptParameters : {}", printingLPNByReceiptParameters.toString());
+        return receiptService.generateReceiptPrePrintLPNLabelInBatch(id, lpn, printingLPNByReceiptParameters, locale, printerName);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-report/batch", method = RequestMethod.POST)
@@ -367,16 +383,14 @@ public class ReceiptController {
             @RequestParam String lpn,
             @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
-            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
-            @RequestParam(name = "collated", defaultValue = "false", required = false) Boolean collated, // collated: 1, 2, 3  1, 2, 3  NOT collated: 1, 1, 2, 2, 3, 3
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
             @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
-    ) throws JsonProcessingException {
+    )  {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
-                count, copies,  collated, locale, printerName);
+        return receiptService.generateReceiptLinePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,   locale, printerName);
     }
 
 
