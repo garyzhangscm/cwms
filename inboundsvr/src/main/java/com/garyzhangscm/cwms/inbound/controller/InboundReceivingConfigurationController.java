@@ -46,6 +46,19 @@ public class InboundReceivingConfigurationController {
         return inboundReceivingConfigurationService.findAll(supplierId, itemFamilyId,  itemId,  warehouseId, companyId);
     }
 
+    @RequestMapping(value="/inbound-receiving-configuration/best-match", method = RequestMethod.GET)
+    public InboundReceivingConfiguration findBestMatchInboundReceivingConfiguration(
+            @RequestParam Long companyId,
+            @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
+            @RequestParam(name="itemFamilyId", required = false, defaultValue = "") Long itemFamilyId,
+            @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+            @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId
+    ) {
+        return inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(supplierId, itemFamilyId,  itemId,  warehouseId, companyId);
+    }
+
+
+
     @BillableEndpoint
     @RequestMapping(value="/inbound-receiving-configuration", method = RequestMethod.PUT)
     public InboundReceivingConfiguration addInboundReceivingConfiguration(@RequestBody InboundReceivingConfiguration inboundReceivingConfiguration) {

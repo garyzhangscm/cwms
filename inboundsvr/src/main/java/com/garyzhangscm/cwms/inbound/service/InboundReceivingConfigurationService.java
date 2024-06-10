@@ -404,4 +404,5 @@ public class InboundReceivingConfigurationService {
                 warehouseId, oldItemId, newItemId);
         inboundReceivingConfigurationRepository.processItemOverride(oldItemId, newItemId, warehouseId);
     }
+
 }

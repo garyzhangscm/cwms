@@ -267,6 +267,14 @@ public class EulogiaService {
         receiptLine.setItemId(item.getId());
         receiptLine.setItem(item);
 
+        for (ItemPackageType itemPackageType : item.getItemPackageTypes()) {
+            if (itemPackageType.getName().equalsIgnoreCase(eulogiaCustomerPackingSlipCSVWrapper.getItemPackageType())) {
+                logger.debug("the receipt's item package type is setup to {} / {}",
+                        item.getName(), itemPackageType.getName());
+                receiptLine.setItemPackageTypeId(itemPackageType.getId());
+            }
+        }
+
         logger.debug("created receipt line with number {}, for eulogiaCustomerPackingSlipCSVWrapper: {}",
                 receiptLine.getNumber(), eulogiaCustomerPackingSlipCSVWrapper);
 
@@ -326,6 +334,8 @@ public class EulogiaService {
         receiptLine.setInventoryAttribute3(eulogiaCustomerPackingSlipCSVWrapper.getInventoryAttribute3());
         receiptLine.setInventoryAttribute4(eulogiaCustomerPackingSlipCSVWrapper.getInventoryAttribute4());
         receiptLine.setInventoryAttribute5(eulogiaCustomerPackingSlipCSVWrapper.getInventoryAttribute5());
+
+        receiptLine.setCubicMeter(eulogiaCustomerPackingSlipCSVWrapper.getCubicMeter());
         return receiptLine;
     }
 
