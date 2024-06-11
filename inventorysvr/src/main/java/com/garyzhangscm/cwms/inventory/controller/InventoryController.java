@@ -681,13 +681,14 @@ public class InventoryController {
     public ResponseBodyWrapper uploadInventories(Long companyId,
                                                  Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
+                                                 @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "inventory", fileService.saveFile(file));
+                    companyId, warehouseId, "inventory", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
@@ -726,12 +727,13 @@ public class InventoryController {
     @RequestMapping(method=RequestMethod.POST, value="/inventories/putaway-inventory/upload")
     public ResponseBodyWrapper uploadPutawayInventories(Long companyId, Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "putaway-inventories", fileService.saveFile(file));
+                    companyId, warehouseId, "putaway-inventories", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

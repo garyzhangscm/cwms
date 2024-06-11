@@ -413,13 +413,14 @@ public class ReceiptController {
     )
     public ResponseBodyWrapper uploadReceipts(Long companyId,
                                               Long warehouseId,
+                                              @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
 
         try {
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "receipts", fileService.saveFile(file));
+                    companyId, warehouseId, "receipts", fileService.saveFile(file), ignoreUnknownFields);
             // fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
             String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
@@ -456,13 +457,14 @@ public class ReceiptController {
             }
     )
     public ResponseBodyWrapper updateReceivingInventory(Long companyId, Long warehouseId,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                               @RequestParam("file") MultipartFile file) throws IOException {
 
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "receiving-inventories", fileService.saveFile(file));
+                    companyId, warehouseId, "receiving-inventories", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

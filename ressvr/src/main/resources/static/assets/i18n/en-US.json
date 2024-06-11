@@ -2311,5 +2311,6 @@
   "menu.main.inbound.inbound-receiving-configuration": "Inbound Receiving Configuration",
   "standardPalletSize": "Standard Pallet Size",
   "estimatePalletCountBySize": "Estimate Pallet Count By Size",
-  "estimatePalletCountByReceiptLineCubicMeter": "Estimate Pallet Count By Receipt Line Cubic Meter"
+  "estimatePalletCountByReceiptLineCubicMeter": "Estimate Pallet Count By Receipt Line Cubic Meter",
+  "ignoreUnknownFields": "Ignore Unknown Fields"
 }

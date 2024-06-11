@@ -85,16 +85,16 @@ public class FileUploadService {
 
 
     public boolean validateCSVFile(Long companyId, Long warehouseId,
-                                  String typename, String headers) {
+                                  String typename, String headers, Boolean ignoreUnknownFields) {
 
         FileUploadType fileUploadType = getFileUploadType(companyId, warehouseId, typename);
         if (Objects.isNull(fileUploadType)) {
             throw MissingInformationException.raiseException("Can't find by type " + typename);
         }
-        return validateCSVFile(fileUploadType, headers);
+        return validateCSVFile(fileUploadType, headers, ignoreUnknownFields);
     }
 
-    public boolean validateCSVFile(FileUploadType fileUploadType, String headers) {
+    public boolean validateCSVFile(FileUploadType fileUploadType, String headers, Boolean ignoreUnknownFields) {
         String[] csvFileHeaderNames = headers.split(",");
 
         // for each header name, make sure it is defined in the column
@@ -133,15 +133,18 @@ public class FileUploadService {
         }
 
         List<String> invalidColumns = new ArrayList<>();
-        for (String csvFileHeaderName : csvFileHeaderNames) {
-            if (!columnMap.containsKey(csvFileHeaderName.toLowerCase(Locale.ROOT))) {
-                invalidColumns.add(csvFileHeaderName);
-            }
-        }
-        if (!invalidColumns.isEmpty()) {
-            throw MissingInformationException.raiseException("CSV file is not in the right format. Unknown columns: " + invalidColumns);
-        }
+        if (!Boolean.TRUE.equals(ignoreUnknownFields)) {
 
+            for (String csvFileHeaderName : csvFileHeaderNames) {
+                if (!columnMap.containsKey(csvFileHeaderName.toLowerCase(Locale.ROOT))) {
+                    invalidColumns.add(csvFileHeaderName);
+                }
+            }
+            if (!invalidColumns.isEmpty()) {
+                throw MissingInformationException.raiseException("CSV file is not in the right format. Unknown columns: " + invalidColumns);
+            }
+
+        }
         return true;
 
 

@@ -158,7 +158,7 @@ public class FileService {
     public void validateCSVFile(Long companyId,
                                 Long warehouseId,
                                 String type,
-                                File file) {
+                                File file, Boolean ignoreUnknownFields) {
         // we will assume the first line of the file is the hader of the CSV file
 
         BufferedReader br = null;
@@ -166,7 +166,7 @@ public class FileService {
             br = new BufferedReader(new FileReader(file));
             String header = br.readLine();
             if (header != null) {
-                validateCSVFile(companyId, warehouseId, type, header);
+                validateCSVFile(companyId, warehouseId, type, header, ignoreUnknownFields);
             }
             else {
                 logger.debug("Can't get header information from file {}", file);
@@ -189,8 +189,9 @@ public class FileService {
     }
 
     public void validateCSVFile(Long companyId, Long warehouseId,
-                                String type, String headers) {
-        String result = resourceServiceRestemplateClient.validateCSVFile(companyId, warehouseId, type, headers);
+                                String type, String headers, Boolean ignoreUnknownFields) {
+        String result = resourceServiceRestemplateClient.validateCSVFile(
+                companyId, warehouseId, type, headers, ignoreUnknownFields);
         if (Strings.isNotBlank(result)) {
             logger.debug("Get error while validate CSV file of type {}, \n{}",
                     type, result);

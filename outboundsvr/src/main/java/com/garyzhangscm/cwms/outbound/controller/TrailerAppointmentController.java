@@ -75,12 +75,13 @@ public class TrailerAppointmentController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/trailer-appointments/shipping/upload")
     public ResponseBodyWrapper uploadShippingTrailerAppointments(Long companyId, Long warehouseId,
+                                                                 @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                                  @RequestParam("file") MultipartFile file) throws IOException {
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "loads", fileService.saveFile(file));
+                    companyId, warehouseId, "loads", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = trailerAppointmentService.saveShippingTrailerAppointmentData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

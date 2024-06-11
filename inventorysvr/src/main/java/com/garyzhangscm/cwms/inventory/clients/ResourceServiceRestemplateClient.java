@@ -232,7 +232,7 @@ public class ResourceServiceRestemplateClient {
         );
     }
     public String validateCSVFile(Long companyId, Long warehouseId,
-                                  String type, String headers) {
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -242,6 +242,10 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(

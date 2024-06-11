@@ -43,7 +43,7 @@ public class UploadFileService {
     @Autowired
     private FileService fileService;
 
-    public File convertToCSVFile(Long companyId, Long warehouseId, String type, File file) throws IOException {
+    public File convertToCSVFile(Long companyId, Long warehouseId, String type, File file, Boolean ignoreUnknownFields) throws IOException {
         File csvFile = null;
         if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("csv")) {
             logger.debug("The file is a CSV file, we will return it without convert");
@@ -58,7 +58,7 @@ public class UploadFileService {
             throw MissingInformationException.raiseException("Can't recognize the file " + file.getName() +
                     ". The format and extension is not support");
         }
-        validateCSVFile(companyId, warehouseId, type, csvFile);
+        validateCSVFile(companyId, warehouseId, type, csvFile, ignoreUnknownFields);
 
         return csvFile;
     }
@@ -172,7 +172,7 @@ public class UploadFileService {
 
     public void validateCSVFile(Long companyId, Long warehouseId,
                                 String type,
-                                File file) {
+                                File file, Boolean ignoreUnknownFields) {
         // we will assume the first line of the file is the hader of the CSV file
 
         BufferedReader br = null;
@@ -180,7 +180,7 @@ public class UploadFileService {
             br = new BufferedReader(new FileReader(file));
             String header = br.readLine();
             if (header != null) {
-                validateCSVFile(companyId, warehouseId, type, header);
+                validateCSVFile(companyId, warehouseId, type, header, ignoreUnknownFields);
             }
             else {
                 logger.debug("Can't get header information from file {}", file);
@@ -202,10 +202,11 @@ public class UploadFileService {
     }
 
     public void validateCSVFile(Long companyId, Long warehouseId,
-                                String type, String headers) {
+                                String type, String headers, Boolean ignoreUnknownFields) {
         // remove all " before we can validate the CSV file's header
         headers = headers.replace("\"", "");
-        String result = resourceServiceRestemplateClient.validateCSVFile(companyId, warehouseId, type, headers);
+        String result = resourceServiceRestemplateClient.validateCSVFile(
+                companyId, warehouseId, type, headers, ignoreUnknownFields);
 
         if (Strings.isNotBlank(result)) {
             logger.debug("Get error while validate CSV file of type {}, \n{}",

@@ -87,12 +87,13 @@ public class LocationController {
             }
     )
     public ResponseBodyWrapper uploadLocations(Long companyId, Long warehouseId,
+                                               @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                @RequestParam("file") MultipartFile file) throws IOException {
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "locations", fileService.saveFile(file));
+                    companyId, warehouseId, "locations", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
