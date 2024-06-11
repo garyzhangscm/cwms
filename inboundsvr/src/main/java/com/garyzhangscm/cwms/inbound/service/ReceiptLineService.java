@@ -121,6 +121,18 @@ public class ReceiptLineService {
             receiptLine.setItem(inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId()));
 
         }
+
+        // Load Item information
+        if (receiptLine.getItemPackageTypeId() != null && receiptLine.getItemPackageType() == null) {
+            ItemPackageType itemPackageType = receiptLine.getItem().getItemPackageTypes().stream().filter(
+                    existingItemPackageType -> existingItemPackageType.getId().equals(
+                            receiptLine.getItemPackageTypeId()
+                    )
+            ).findFirst().orElse(null);
+            receiptLine.setItemPackageType(itemPackageType);
+
+        }
+
         // load the receipt number
         if (Objects.nonNull(receiptLine.getReceipt())) {
             receiptLine.setReceiptNumber(receiptLine.getReceipt().getNumber());
