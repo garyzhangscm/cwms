@@ -48,13 +48,14 @@ public class ItemUnitOfMeasureController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/item-unit-of-measures/upload")
     public ResponseBodyWrapper uploadItemUnitOfMeasures(Long companyId, Long warehouseId,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                         @RequestParam("file") MultipartFile file) throws IOException {
 
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "itemUnitOfMeasure", fileService.saveFile(file));
+                    companyId, warehouseId, "itemUnitOfMeasure", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = itemUnitOfMeasureService.uploadItemUnitOfMeasureData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

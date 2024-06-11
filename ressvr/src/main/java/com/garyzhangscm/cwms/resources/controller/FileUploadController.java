@@ -35,10 +35,12 @@ public class FileUploadController {
     public ResponseBodyWrapper<String> validateCSVFile(@RequestParam Long companyId,
                                                        @RequestParam Long warehouseId,
                                                        @RequestParam String type,
-                                                       @RequestParam String headers) {
+                                                       @RequestParam String headers,
+                                                       @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields
+                                                       ) {
 
         try {
-            if (fileUploadService.validateCSVFile(companyId, warehouseId, type, headers)) {
+            if (fileUploadService.validateCSVFile(companyId, warehouseId, type, headers, ignoreUnknownFields)) {
                 return ResponseBodyWrapper.success("");
             }
             else {

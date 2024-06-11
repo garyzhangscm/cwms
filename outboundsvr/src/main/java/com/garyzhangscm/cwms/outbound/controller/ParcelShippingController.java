@@ -112,12 +112,13 @@ public class ParcelShippingController {
     @RequestMapping(method=RequestMethod.POST, value="/parcel/packages/upload")
     public ResponseBodyWrapper uploadParcelPackage(Long companyId,
                                                    Long warehouseId,
+                                                   @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                          @RequestParam("file") MultipartFile file) throws IOException {
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "parcel-packages", fileService.saveFile(file));
+                    companyId, warehouseId, "parcel-packages", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

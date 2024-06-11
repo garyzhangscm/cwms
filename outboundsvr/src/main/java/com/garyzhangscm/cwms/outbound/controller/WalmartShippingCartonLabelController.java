@@ -79,12 +79,13 @@ public class WalmartShippingCartonLabelController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/walmart-shipping-carton-labels/upload")
     public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long companyId, Long warehouseId,
+                                                                 @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "walmart-shipping-carton-labels", fileService.saveFile(file));
+                    companyId, warehouseId, "walmart-shipping-carton-labels", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = walmartShippingCartonLabelService.updateWalmartShippingCartonLabels(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

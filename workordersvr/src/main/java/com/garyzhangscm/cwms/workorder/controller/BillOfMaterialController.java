@@ -102,13 +102,14 @@ public class BillOfMaterialController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/bill-of-materials/upload")
     public ResponseBodyWrapper uploadBillOfMaterials(Long companyId, Long warehouseId,
+                                                     @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                      @RequestParam("file") MultipartFile file) throws IOException {
 
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "BOMs", fileService.saveFile(file));
+                    companyId, warehouseId, "BOMs", fileService.saveFile(file), ignoreUnknownFields);
 
 
             String fileUploadProgressKey = billOfMaterialLineService.saveBOMLineData(warehouseId, localFile);

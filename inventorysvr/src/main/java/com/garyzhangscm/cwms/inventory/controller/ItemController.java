@@ -290,13 +290,14 @@ public class ItemController {
             }
     )
     public ResponseBodyWrapper uploadItems(Long companyId, Long warehouseId,
+                                           @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                            @RequestParam("file") MultipartFile file) throws IOException {
 
 
         try {
 
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "items", fileService.saveFile(file));
+                    companyId, warehouseId, "items", fileService.saveFile(file), ignoreUnknownFields);
 
             String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

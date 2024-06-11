@@ -55,14 +55,15 @@ public class EulogiaController {
             }
     )
     public ResponseBodyWrapper uploadCustomerPackingSlip(Long companyId,
-                                              Long warehouseId,
-                                              @RequestParam("file") MultipartFile file) {
+                                                         Long warehouseId,
+                                                         @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
+                                                         @RequestParam("file") MultipartFile file) {
 
 
 
         try {
             File localFile = uploadFileService.convertToCSVFile(
-                    companyId, warehouseId, "eulogia-customer-packing-slip", fileService.saveFile(file));
+                    companyId, warehouseId, "eulogia-customer-packing-slip", fileService.saveFile(file), ignoreUnknownFields);
             // fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
             String fileUploadProgressKey = eulogiaService.saveCustomerPackingSlipData(warehouseId, localFile);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);

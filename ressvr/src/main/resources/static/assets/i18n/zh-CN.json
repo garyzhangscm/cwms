@@ -2305,5 +2305,6 @@
   "menu.main.inbound.inbound-receiving-configuration": "入库配置",
   "standardPalletSize": "托盘尺寸",
   "estimatePalletCountBySize": "按尺寸估算托盘数量",
-  "estimatePalletCountByReceiptLineCubicMeter": "按入库单上的尺寸估算托盘数量"
+  "estimatePalletCountByReceiptLineCubicMeter": "按入库单上的尺寸估算托盘数量",
+  "ignoreUnknownFields": "忽略未知的字段"
 }

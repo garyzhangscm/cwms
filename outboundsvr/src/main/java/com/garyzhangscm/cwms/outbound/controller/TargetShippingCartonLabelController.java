@@ -71,12 +71,13 @@ public class TargetShippingCartonLabelController {
     @RequestMapping(method=RequestMethod.POST, value="/target-shipping-carton-labels/upload")
     public ResponseBodyWrapper updateTargetShippingCartonLabels(Long companyId,
                                                                 Long warehouseId,
+                                                                @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
 
         File localFile = fileService.processUploadedFile("target-shipping-carton-labels", file);
         try {
-            fileService.validateCSVFile(companyId, warehouseId, "target-shipping-carton-labels", localFile);
+            fileService.validateCSVFile(companyId, warehouseId, "target-shipping-carton-labels", localFile, ignoreUnknownFields);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");

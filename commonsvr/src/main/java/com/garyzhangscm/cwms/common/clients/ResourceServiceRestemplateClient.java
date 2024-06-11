@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ResourceServiceRestemplateClient {
@@ -210,7 +211,7 @@ public class ResourceServiceRestemplateClient {
     }
 
     public String validateCSVFile(Long companyId, Long warehouseId,
-                                  String type, String headers) {
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -220,6 +221,10 @@ public class ResourceServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 
         return restTemplateProxy.exchange(
                 String.class,
