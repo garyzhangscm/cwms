@@ -967,6 +967,17 @@ public class ReceiptService {
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
+        if (Objects.nonNull(receiptLine.getItemPackageType())) {
+
+            lpnLabelContent.put("item_package_type_name", receiptLine.getItemPackageType().getName());
+            qrCode.append("itemPackageTypeName=").append(receiptLine.getItemPackageType().getName()).append(";");
+        }
+        if (Objects.nonNull(receiptLine.getItemPackageTypeId())) {
+
+            lpnLabelContent.put("item_package_type_id", receiptLine.getItemPackageTypeId());
+            qrCode.append("itemPackageTypeId=").append(receiptLine.getItemPackageTypeId()).append(";");
+        }
+
         if (Objects.nonNull(receiptLine.getReceipt().getClient())) {
 
             lpnLabelContent.put("client", receiptLine.getReceipt().getClient().getName());
