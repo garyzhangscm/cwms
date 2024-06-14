@@ -45,6 +45,8 @@ public class RF extends AuditibleEntity<String>  {
 
     @Transient
     private String currentLocationName;
+    @Transient
+    private Location currentLocation;
 
     @Column(name = "current_location_id")
     private Long currentLocationId;
@@ -114,6 +116,14 @@ public class RF extends AuditibleEntity<String>  {
 
     public void setCurrentLocationId(Long currentLocationId) {
         this.currentLocationId = currentLocationId;
+    }
+
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
     }
 
     public String getCurrentLocationName() {

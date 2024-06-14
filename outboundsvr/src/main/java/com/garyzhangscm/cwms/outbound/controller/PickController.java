@@ -286,4 +286,14 @@ public class PickController {
 
         return ResponseBodyWrapper.success("pick confirmed");
     }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/pick/{id}/acknowledgeable-by-current-user", method = RequestMethod.POST)
+    public Boolean isPickAcknowledgeableByCurrentUser(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId) {
+
+        return pickService.isPickAcknowledgeableByCurrentUser(warehouseId, id);
+    }
 }
