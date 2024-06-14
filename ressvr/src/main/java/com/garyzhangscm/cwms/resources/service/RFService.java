@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.RFRepository;
 import com.garyzhangscm.cwms.resources.repository.UserRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class RFService implements TestDataInitiableService{
+public class RFService {
     private static final Logger logger = LoggerFactory.getLogger(RFService.class);
     @Autowired
     private RFRepository rfRepository;
@@ -64,12 +65,22 @@ public class RFService implements TestDataInitiableService{
     public RF findById(Long id) {
         RF rf =  rfRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("rf not found by id: " + id));
-        return rf;
+        loadAttribute(rf);
+
+        return  rf;
     }
 
     public RF findByRFCode(Long warehouseId, String rfCode) {
-        return rfRepository.findByWarehouseIdAndRfCode(warehouseId, rfCode);
+        return findByRFCode(warehouseId, rfCode, true);
+    }
+    public RF findByRFCode(Long warehouseId, String rfCode, Boolean loadDetails) {
+        RF rf =   rfRepository.findByWarehouseIdAndRfCode(warehouseId, rfCode);
+        if (Objects.nonNull(rf) && loadDetails) {
 
+            loadAttribute(rf);
+        }
+
+        return  rf;
     }
 
     public List<RF> findAll(Long warehouseId) {
@@ -80,7 +91,8 @@ public class RFService implements TestDataInitiableService{
     public List<RF> findAll(Long warehouseId,
                               String rfCode) {
 
-        return rfRepository.findAll(
+        List<RF> rfs =
+                rfRepository.findAll(
                 (Root<RF> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -93,7 +105,9 @@ public class RFService implements TestDataInitiableService{
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
+        loadAttribute(rfs);
 
+        return  rfs;
 
 
     }
@@ -109,7 +123,10 @@ public class RFService implements TestDataInitiableService{
 
 
 
-        return rfRepository.save(rf);
+        rf = rfRepository.save(rf);
+        loadAttribute(rf);
+
+        return  rf;
     }
 
     public RF saveOrUpdate(RF rf) {
@@ -121,57 +138,23 @@ public class RFService implements TestDataInitiableService{
     }
 
 
-    public List<RFCSVWrapper> loadData(InputStream inputStream) throws IOException {
+    private void loadAttribute(List<RF> rfs) {
 
-        CsvSchema schema = CsvSchema.builder().
-                addColumn("company").
-                addColumn("warehouse").
-                addColumn("rfCode").
-                build().withHeader();
+        rfs.forEach(rf -> loadAttribute(rf));
 
-        return fileService.loadData(inputStream, schema, RFCSVWrapper.class);
     }
+    private void loadAttribute(RF rf) {
 
-    public void initTestData(Long companyId, String warehouseName) {
-        try {
-
-            String companyCode = layoutServiceRestemplateClient.getCompanyById(companyId).getCode();
-
-            String testDataFileName = StringUtils.isBlank(warehouseName) ?
-                    testDataFile + ".csv" :
-                    testDataFile + "-" + companyCode + "-" + warehouseName + ".csv";
-
-            InputStream inputStream = new ClassPathResource(testDataFileName).getInputStream();
-            List<RFCSVWrapper> rfCSVWrappers = loadData(inputStream);
-            rfCSVWrappers.stream().forEach(rfCSVWrapper -> saveOrUpdate(convertFromWrapper(rfCSVWrapper)));
-        } catch (IOException ex) {
-            logger.debug("Exception while load test data: {}", ex.getMessage());
+        if (Objects.nonNull(rf.getCurrentLocationId()) && Strings.isBlank(rf.getCurrentLocationName())) {
+            rf.setCurrentLocationName(
+                    layoutServiceRestemplateClient.getLocationById(rf.getCurrentLocationId()).getName()
+            );
         }
+
     }
-
-
-
-    private RF convertFromWrapper(RFCSVWrapper rfCSVWrapper) {
-
-        RF rf = new RF();
-
-
-
-        Warehouse warehouse =
-                layoutServiceRestemplateClient.getWarehouseByName(
-                        rfCSVWrapper.getCompany(),
-                        rfCSVWrapper.getWarehouse());
-        rf.setWarehouseId(warehouse.getId());
-
-        rf.setRfCode(rfCSVWrapper.getRfCode());
-
-
-        return rf;
-    }
-
 
     public Boolean validateRFCode(Long warehouseId, String rfCode) {
-        return Objects.nonNull(findByRFCode(warehouseId, rfCode));
+        return Objects.nonNull(findByRFCode(warehouseId, rfCode, false));
     }
 
     public RF addRF(RF rf) {
@@ -204,5 +187,12 @@ public class RFService implements TestDataInitiableService{
         rf.setCurrentLocationId(locationId);
 
         saveOrUpdate(rf);
+    }
+
+    public RF changeLocation(Long id, Long locationId) {
+        RF rf = findById(id);
+        rf.setCurrentLocationId(locationId);
+
+        return saveOrUpdate(rf);
     }
 }
