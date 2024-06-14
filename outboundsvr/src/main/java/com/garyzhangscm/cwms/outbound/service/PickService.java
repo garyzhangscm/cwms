@@ -2708,4 +2708,12 @@ public class PickService {
         }
 
     }
+
+    public Boolean isPickAcknowledgeableByCurrentUser(Long warehouseId, Long id) {
+
+        Pick pick = findById(id);
+        String currentUserName = userService.getCurrentUserName();
+        return Strings.isBlank(pick.getAcknowledgedUsername()) ||
+                pick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName);
+    }
 }

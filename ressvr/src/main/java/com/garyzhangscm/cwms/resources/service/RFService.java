@@ -145,10 +145,10 @@ public class RFService {
     }
     private void loadAttribute(RF rf) {
 
-        if (Objects.nonNull(rf.getCurrentLocationId()) && Strings.isBlank(rf.getCurrentLocationName())) {
-            rf.setCurrentLocationName(
-                    layoutServiceRestemplateClient.getLocationById(rf.getCurrentLocationId()).getName()
-            );
+        if (Objects.nonNull(rf.getCurrentLocationId()) &&
+                ( Strings.isBlank(rf.getCurrentLocationName()) || Objects.isNull(rf.getCurrentLocation()))) {
+            rf.setCurrentLocation(layoutServiceRestemplateClient.getLocationById(rf.getCurrentLocationId()));
+            rf.setCurrentLocationName(rf.getCurrentLocation().getName());
         }
 
     }
