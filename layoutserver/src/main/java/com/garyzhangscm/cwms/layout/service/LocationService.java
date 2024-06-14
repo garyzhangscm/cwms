@@ -1259,4 +1259,8 @@ public class LocationService {
         }
         locationRepository.deleteByPickZoneId(pickZone.getId());
     }
+
+    public Boolean validateLocation(Long warehouseId, String locationName) {
+        return Objects.nonNull(findByName(locationName, warehouseId));
+    }
 }

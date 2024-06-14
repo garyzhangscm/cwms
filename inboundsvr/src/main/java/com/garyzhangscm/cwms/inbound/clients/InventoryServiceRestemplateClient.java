@@ -73,6 +73,22 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    public ItemPackageType getItemPackageTypeById(Long id) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/itemPackageTypes/{id}");
+        return restTemplateProxy.exchange(
+                ItemPackageType.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
     @Cacheable(cacheNames = "InboundService_Item", unless="#result == null" )
     public Item getItemByName(Long warehouseId, Long clientId, String name) {
         logger.debug("Start to get item by name {} / {}",

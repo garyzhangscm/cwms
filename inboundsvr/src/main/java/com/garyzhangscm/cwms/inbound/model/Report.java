@@ -15,6 +15,8 @@ public class Report   {
 
     Map<String, Object> parameters = new HashMap<>();
 
+    Map<String, Integer> parametersLength = new HashMap<>();
+
 
     @Override
     public String toString() {
@@ -45,5 +47,13 @@ public class Report   {
     public void addParameter(String name, Object value) {
 
         this.parameters.put(name, value);
+    }
+
+    public Map<String, Integer> getParametersLength() {
+        return parametersLength;
+    }
+
+    public void setParametersLength(Map<String, Integer> parametersLength) {
+        this.parametersLength = parametersLength;
     }
 }

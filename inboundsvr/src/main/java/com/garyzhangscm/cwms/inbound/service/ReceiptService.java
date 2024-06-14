@@ -941,9 +941,6 @@ public class ReceiptService {
 
             report.addParameter(entry.getKey(), entry.getValue());
         }
-
-
-
     }
 
     private Map<String, Object> getLPNDocumentContent(ReceiptLine receiptLine, String lpnNumber,
@@ -967,15 +964,40 @@ public class ReceiptService {
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
+        if (Objects.nonNull(receiptLine.getItemPackageTypeId()) &&
+                Objects.isNull(receiptLine.getItemPackageType())) {
+            receiptLine.setItemPackageType(
+                    inventoryServiceRestemplateClient.getItemPackageTypeById(receiptLine.getItemPackageTypeId())
+            );
+
+        }
         if (Objects.nonNull(receiptLine.getItemPackageType())) {
+
+            lpnLabelContent.put("item_package_type_id", receiptLine.getItemPackageType().getId());
+            qrCode.append("itemPackageTypeId=").append(receiptLine.getItemPackageType().getId()).append(";");
 
             lpnLabelContent.put("item_package_type_name", receiptLine.getItemPackageType().getName());
             qrCode.append("itemPackageTypeName=").append(receiptLine.getItemPackageType().getName()).append(";");
-        }
-        if (Objects.nonNull(receiptLine.getItemPackageTypeId())) {
 
-            lpnLabelContent.put("item_package_type_id", receiptLine.getItemPackageTypeId());
-            qrCode.append("itemPackageTypeId=").append(receiptLine.getItemPackageTypeId()).append(";");
+            ItemUnitOfMeasure caseItemUnitOfMeasure = receiptLine.getItemPackageType().getItemUnitOfMeasures().stream().filter(
+                    itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+            ).findFirst().orElse(null);
+            if (Objects.nonNull(caseItemUnitOfMeasure)) {
+
+                logger.debug("Find case quantity {} for this item package type {} / {}",
+                        caseItemUnitOfMeasure.getQuantity(), receiptLine.getItem().getName(),
+                        receiptLine.getItemPackageType().getName());
+                lpnLabelContent.put("caseQuantity", caseItemUnitOfMeasure.getQuantity());
+                qrCode.append("caseQuantity=").append(receiptLine.getItemPackageType().getName()).append(";");
+            }
+            else {
+
+                logger.debug("Fail to find case quantity  for this item package type {} / {}",
+                        receiptLine.getItem().getName(),
+                        receiptLine.getItemPackageType().getName());
+            }
+
+
         }
 
         if (Objects.nonNull(receiptLine.getReceipt().getClient())) {
@@ -997,7 +1019,7 @@ public class ReceiptService {
         }
 
         if (Strings.isNotBlank(receiptLine.getColor())) {
-            lpnLabelContent.put("color", receiptLine.getColor());
+            lpnLabelContent.put("color", receiptLine.getColor().trim().replace(" ", "\\\\&"));
             qrCode.append("color=").append(receiptLine.getColor()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getProductSize())) {

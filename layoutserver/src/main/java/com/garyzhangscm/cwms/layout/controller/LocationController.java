@@ -641,4 +641,12 @@ public class LocationController {
         return locationService.getOrCreateProductionLineOutboundLocation(warehouseId, locationName, location);
     }
 
+
+    @RequestMapping(value = "/validate/locations", method = RequestMethod.GET)
+    public Boolean validateLocation(Long warehouseId, String locationName) {
+        // return ApplicationInformation.getApplicationInformation();
+        return locationService.validateLocation(warehouseId, locationName);
+    }
+
+
 }
