@@ -688,35 +688,35 @@ public class InventoryServiceRestemplateClient {
 
             // If this is a allocated by LPN, then only pick the specific LPN
             if (StringUtils.isNotBlank(pick.getLpn())) {
-                builder = builder.queryParam("lpn", pick.getLpn());
+                builder = builder.queryParam("lpn", URLEncoder.encode(pick.getLpn(), "UTF-8"));
             }
 
             if (StringUtils.isNotBlank(pick.getColor())) {
-                builder = builder.queryParam("color", pick.getColor());
+                builder = builder.queryParam("color", URLEncoder.encode(pick.getColor(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getProductSize())) {
-                builder = builder.queryParam("productSize", pick.getProductSize());
+                builder = builder.queryParam("productSize", URLEncoder.encode(pick.getProductSize(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getStyle())) {
-                builder = builder.queryParam("style", pick.getStyle());
+                builder = builder.queryParam("style", URLEncoder.encode(pick.getStyle(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getInventoryAttribute1())) {
-                builder = builder.queryParam("attribute1", pick.getInventoryAttribute1());
+                builder = builder.queryParam("attribute1", URLEncoder.encode(pick.getInventoryAttribute1(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getInventoryAttribute2())) {
-                builder = builder.queryParam("attribute2", pick.getInventoryAttribute2());
+                builder = builder.queryParam("attribute2", URLEncoder.encode(pick.getInventoryAttribute2(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getInventoryAttribute3())) {
-                builder = builder.queryParam("attribute3", pick.getInventoryAttribute3());
+                builder = builder.queryParam("attribute3", URLEncoder.encode(pick.getInventoryAttribute3(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getInventoryAttribute4())) {
-                builder = builder.queryParam("attribute4", pick.getInventoryAttribute4());
+                builder = builder.queryParam("attribute4", URLEncoder.encode(pick.getInventoryAttribute4(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getInventoryAttribute5())) {
-                builder = builder.queryParam("attribute5", pick.getInventoryAttribute5());
+                builder = builder.queryParam("attribute5", URLEncoder.encode(pick.getInventoryAttribute5(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getAllocateByReceiptNumber())) {
-                builder = builder.queryParam("receiptNumber", pick.getAllocateByReceiptNumber());
+                builder = builder.queryParam("receiptNumber", URLEncoder.encode(pick.getAllocateByReceiptNumber(), "UTF-8"));
             }
 /**
             ResponseBodyWrapper<List<Inventory>> responseBodyWrapper

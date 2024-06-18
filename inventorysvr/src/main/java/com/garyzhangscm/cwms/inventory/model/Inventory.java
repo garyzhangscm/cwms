@@ -250,7 +250,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
         inventory.setColor(getColor());
         inventory.setProductSize(getProductSize());
-        inventory.setColor(getColor());
+        inventory.setStyle(getStyle());
 
         inventory.setAttribute1(getAttribute1());
         inventory.setAttribute2(getAttribute2());
