@@ -241,7 +241,6 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setLocationId(getLocationId());
         inventory.setLocation(getLocation());
         inventory.setQuantity(newQuantity);
-        inventory.setReceiptId(getReceiptId());
         inventory.setWorkOrderId(getWorkOrderId());
         inventory.setVirtual(getVirtual());
         inventory.setReceiptId(getReceiptId());
