@@ -67,36 +67,40 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "color", "Color",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "productSize", "Product Size",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "style", "Style",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
-                "inventoryAttribute1", "Inventory Attribute 1",
+                "attribute1", "Inventory Attribute 1",
                 String.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "inventoryAttribute2", "Inventory Attribute 2",
+                "attribute2", "Inventory Attribute 2",
                 String.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "inventoryAttribute3", "Inventory Attribute 3",
+                "attribute3", "Inventory Attribute 3",
                 String.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "inventoryAttribute4", "Inventory Attribute 4",
+                "attribute4", "Inventory Attribute 4",
                 String.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "inventoryAttribute5", "Inventory  Attribute 5",
+                "attribute5", "Inventory  Attribute 5",
                 String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inWarehouseDatetime", "In Warehouse Date Time",
+                ZonedDateTime.class, 100, true
         ));
 
     }

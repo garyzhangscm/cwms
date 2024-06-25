@@ -39,6 +39,7 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -1607,7 +1608,7 @@ public class ReceiptService {
         return fileService.loadData(file, ReceiptLineCSVWrapper.class);
     }
 
-    public String saveReceivingInventoryData(Long warehouseId, File file) throws IOException {
+    public String saveReceivingInventoryData(Long warehouseId, File file, Boolean removeExistingInventory) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -1616,12 +1617,13 @@ public class ReceiptService {
         receivingInventoryFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
 
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
-
+/**
         List<InventoryCSVWrapper> inventoryCSVWrappers =
                 fileService.loadData(file, InventoryCSVWrapper.class).stream().filter(
                         inventoryCSVWrapper -> validateInventoryCSVWrapperForReceiving(inventoryCSVWrapper)
                 ).map(InventoryCSVWrapper::trim).collect(Collectors.toList());
-
+**/
+        List<InventoryCSVWrapper> inventoryCSVWrappers = fileService.loadData(file, InventoryCSVWrapper.class);
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
 
 
@@ -1680,14 +1682,8 @@ public class ReceiptService {
                     }
                     logger.debug("got receipt by number {}", receipt.getNumber());
                     // get the first matched line that has enough open quantity
-                    Optional<ReceiptLine> matchedReceiptLineOptional = receipt.getReceiptLines().stream().filter(
-                            receiptLine ->
-                                    receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) &&
-                                            item.getId().equals(receiptLine.getItemId()) &&
-                                            receiptLineService.getOpenQuantity(receiptLine) > 0
-                    ).sorted(Comparator.comparing(a -> receiptLineService.getOpenQuantity(a)))
-                            .findFirst();
-                    if (matchedReceiptLineOptional.isEmpty()) {
+                    ReceiptLine matchedReceiptLine = getBestMatchReceiptLineForReceiving(receipt, item, inventoryCSVWrapper);
+                    if (Objects.isNull(matchedReceiptLine)) {
                         logger.debug("can't find an open line from receipt {} for item {} with quantity",
                                 receipt.getNumber(),
                                 inventoryCSVWrapper.getItem(),
@@ -1700,7 +1696,6 @@ public class ReceiptService {
 
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.6));
 
-                    ReceiptLine matchedReceiptLine = matchedReceiptLineOptional.get();
                     logger.debug("we found the matched line, number is {}",
                             matchedReceiptLine.getNumber());
 
@@ -1720,6 +1715,10 @@ public class ReceiptService {
                             inventory.getLpn(),
                             inventory.getQuantity(),
                             inventory.getLocation().getName());
+                    if (Boolean.TRUE.equals(removeExistingInventory)) {
+
+                        inventoryServiceRestemplateClient.removeInventoryAtLocation(inventory.getWarehouseId(), inventory.getLocationId());
+                    }
                     receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
                     // we complete this inventory
                     logger.debug("Inventory received, continue with next line");
@@ -1768,6 +1767,96 @@ public class ReceiptService {
 
     }
 
+    public ReceiptLine getBestMatchReceiptLineForReceiving(Receipt receipt, Item item, InventoryCSVWrapper inventoryCSVWrapper) {
+
+        ReceiptLine bestMatchReceiptLine = null;
+        int bestMatchReceiptLineScore = 0;
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+            // get the matching score of the inventory to the receipt. The one
+            // with highest score is the receipt line that best match with the inventory
+            // score = 0 means not match
+            int score = getMatchingScore(receiptLine, item, inventoryCSVWrapper);
+            if (score <= bestMatchReceiptLineScore) {
+                continue;
+            }
+            bestMatchReceiptLine = receiptLine;
+            bestMatchReceiptLineScore = score;
+        }
+
+        return bestMatchReceiptLine;
+    }
+
+    /**
+     * Return the matching score of the inventory to be received against the receipt line
+     * 0: not match
+     * 1: the receipt line doesn't have the trait but the inventory has
+     * 2: the receipt line has the trait and its value is the same as inventory
+     * @param receiptLine
+     * @param item
+     * @param inventoryCSVWrapper
+     * @return
+     */
+    public int getMatchingScore(ReceiptLine receiptLine, Item item, InventoryCSVWrapper inventoryCSVWrapper) {
+        // make sure the item matches
+        int score = 0;
+
+        if (!receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) ||
+                !item.getId().equals(receiptLine.getItemId())) {
+            return 0;
+        }
+        // if the receipt line has item package type, make sure it matches
+        if (Objects.nonNull(receiptLine.getItemPackageType()) &&
+                !receiptLine.getItemPackageType().getName().equalsIgnoreCase(inventoryCSVWrapper.getItemPackageType())) {
+            return 0;
+        }
+        else {
+            // the receipt line doesn't have restriction on the item package type
+            score += 1;
+        }
+
+
+
+
+        return score;
+    }
+
+    public int getMatchingScoreForInventoryAttribute(ReceiptLine receiptLine, InventoryCSVWrapper inventoryCSVWrapper,
+                                                     String receiptLineAttributeName, String inventoryAttributeName) throws NoSuchFieldException, IllegalAccessException {
+
+        Field receiptLineField = receiptLine.getClass().getField(receiptLineAttributeName);
+        receiptLineField.setAccessible(true);
+        Field inventoryField = receiptLine.getClass().getField(inventoryAttributeName);
+        inventoryField.setAccessible(true);
+
+        String receiptLineAttributeValue = (String)receiptLineField.get(receiptLine);
+        String inventoryAttributeValue = (String)inventoryField.get(inventoryCSVWrapper);
+
+        int score = 0;
+        // for any trait, if
+        // the receipt line doesn't have any restriction but the inventory has value: 1 score
+        // the receipt line doesn't have any restriction and the inventory doens't have value: 2 score
+        // the receipt line has restriction but the inventory doesn't match: return with 0 overall score
+        // the receipt line has restriction and the inventory matches: 2 score
+
+        if (Strings.isBlank(receiptLineAttributeValue)) {
+            if (Strings.isBlank(inventoryAttributeValue)) {
+                score = 2;
+            }
+            else {
+                score = 1;
+            }
+        }
+        else {
+            if (receiptLineAttributeValue.equalsIgnoreCase(inventoryAttributeValue)) {
+                score = 0;
+            }
+            else {
+                score = 2;
+            }
+        }
+        return  score;
+
+    }
     private boolean validateInventoryCSVWrapperForReceiving(InventoryCSVWrapper inventoryCSVWrapper) {
         if (Strings.isBlank(inventoryCSVWrapper.getReceipt())) {
             return false;
@@ -1813,6 +1902,12 @@ public class ReceiptService {
         inventory.setColor(inventoryCSVWrapper.getColor());
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
+
+        inventory.setAttribute1(inventoryCSVWrapper.getAttribute1());
+        inventory.setAttribute2(inventoryCSVWrapper.getAttribute2());
+        inventory.setAttribute3(inventoryCSVWrapper.getAttribute3());
+        inventory.setAttribute4(inventoryCSVWrapper.getAttribute4());
+        inventory.setAttribute5(inventoryCSVWrapper.getAttribute5());
 
         inventory.setWarehouseId(warehouseId);
 
@@ -1883,6 +1978,13 @@ public class ReceiptService {
             LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
             if (Objects.nonNull(localDate)) {
                 inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+            }
+        }
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            if (Objects.nonNull(zonedDateTime)) {
+                inventory.setInWarehouseDatetime(zonedDateTime);
             }
         }
 

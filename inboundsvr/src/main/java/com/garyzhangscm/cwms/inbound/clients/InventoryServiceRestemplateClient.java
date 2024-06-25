@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -583,6 +584,24 @@ public class InventoryServiceRestemplateClient {
                 HttpMethod.DELETE,
                 null
         );
+    }
+    public String removeInventoryAtLocation(Long warehouseId, Long locationId) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("locationId", locationId);
+
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.DELETE,
+                null
+        );
+
     }
 
 }
