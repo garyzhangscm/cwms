@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
@@ -39,6 +40,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -81,6 +83,8 @@ public class WaveService {
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
     private BulkPickConfigurationService bulkPickConfigurationService;
@@ -738,4 +742,147 @@ public class WaveService {
         return wave;
     }
 
+    public ReportHistory generateWavePickReport(Long waveId, String locale) {
+        return generateWavePickReport(findById(waveId), locale);
+}
+    public ReportHistory generateWavePickReport(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWavePickReportParameters(
+                reportData, wave
+        );
+        setupWavePickReportData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PICK_SHEET_BY_LOCATION, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+
+    private void setupWavePickReportParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+
+    private void setupWavePickReportData(Report report, Wave wave) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByWave(wave);
+
+        // whether we add an empty line between pick groups
+        // pick groups are group of picks that can be bulk picked
+        boolean addEmptyLineBetweenPickGroup = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, String> quantityPerCaseMap = new HashMap<>();
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat df = new DecimalFormat("0.00");
+        // Setup display field
+        picks.forEach(
+                pick -> {
+                    // set the inventory attribute in one string
+                    StringBuilder inventoryAttribute = new StringBuilder()
+                            .append(pick.getSourceLocationId()).append("-")
+                            .append(pick.getItemId()).append("-")
+                            .append(Strings.isBlank(pick.getStyle()) ? "____" : pick.getStyle()).append("-")
+                            .append(Strings.isBlank(pick.getColor()) ? "____" : pick.getColor()).append("-")
+                            .append(Strings.isBlank(pick.getProductSize()) ? "____" : pick.getProductSize()).append("-")
+                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "____" : pick.getInventoryAttribute1()).append("-")
+                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "____" : pick.getInventoryAttribute2()).append("-")
+                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "____" : pick.getInventoryAttribute3()).append("-")
+                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "____" : pick.getInventoryAttribute4()).append("-")
+                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "____" : pick.getInventoryAttribute5()).append("-");
+
+                    // get the value of quantity per case by the pickable inventory from the source location
+                    // and save it temporary
+                    String key = inventoryAttribute.toString();
+                    String quantityPerCase = quantityPerCaseMap.getOrDefault(key, "");
+                    if (Strings.isBlank(quantityPerCase)) {
+                        // get the case quantity from the inventory
+                        quantityPerCase = getQuantityPerCaseForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+                                pick.getColor(), pick.getProductSize(),
+                                pick.getStyle(),
+                                pick.getInventoryAttribute1(),
+                                pick.getInventoryAttribute2(),
+                                pick.getInventoryAttribute3(),
+                                pick.getInventoryAttribute4(),
+                                pick.getInventoryAttribute5());
+
+                    }
+                    quantityPerCaseMap.put(key, quantityPerCase);
+                    pick.setQuantityPerCase(quantityPerCase);
+                    try {
+
+                        pick.setCaseQuantity(df.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
+                    }
+                    catch (NumberFormatException ex) {
+                        // if we can't pass the quantityPerCase to number, it normally means the location is
+                        // mixed of different case quantity , so we can't calculate how many cases we will need
+                        // for the pick
+                        pick.setCaseQuantity("");
+                    }
+
+
+                }
+        );
+
+
+        report.setData(picks);
+    }
+
+    private String getQuantityPerCaseForWavePickSheet(
+            Long itemId, Long inventoryStatusId, Long sourceLocationId, String color, String productSize, String style,
+            String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3, String inventoryAttribute4,
+            String inventoryAttribute5) {
+
+        List<Inventory> inventoryList = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, inventoryStatusId, sourceLocationId, color, productSize, style,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
+                inventoryAttribute5,
+                "");
+        logger.debug("Get a list of pickable inventory for printing wave pick sheet with item id {} and location id {}",
+                itemId, sourceLocationId);
+
+        if (inventoryList.isEmpty()) {
+            return "";
+        }
+        Long caseQuantity = 0l;
+        for (Inventory inventory : inventoryList) {
+            logger.debug(inventory.toString());
+
+            if (Objects.nonNull(inventory.getItemPackageType()) &&
+                Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure())) {
+                if (caseQuantity.equals(0l)) {
+                    caseQuantity = inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+                }
+                else if (!caseQuantity.equals(inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity())){
+                    return "MIXED";
+                }
+            }
+        }
+        return String.valueOf(caseQuantity);
+    }
 }

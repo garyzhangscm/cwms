@@ -212,6 +212,10 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     private String inventoryAttribute = "";
     @Transient
     private String quantityByUOM = "";
+    @Transient
+    private String quantityPerCase = "";
+    @Transient
+    private String caseQuantity = "";
 
     /**
      * Note: the size will be in the format of the base unit
@@ -934,5 +938,21 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setInventoryAttribute5(String inventoryAttribute5) {
         this.inventoryAttribute5 = inventoryAttribute5;
+    }
+
+    public String getQuantityPerCase() {
+        return quantityPerCase;
+    }
+
+    public void setQuantityPerCase(String quantityPerCase) {
+        this.quantityPerCase = quantityPerCase;
+    }
+
+    public String getCaseQuantity() {
+        return caseQuantity;
+    }
+
+    public void setCaseQuantity(String caseQuantity) {
+        this.caseQuantity = caseQuantity;
     }
 }
