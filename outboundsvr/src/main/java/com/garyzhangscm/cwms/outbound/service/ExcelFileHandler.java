@@ -87,6 +87,8 @@ public class ExcelFileHandler {
                     Class columnType = rowIndex == 0 ? String.class : fileUploadType.getColumnType(columnName);
 
 
+                    logger.debug("The column type for {} is {}",
+                            columnName, columnType);
                     if (columnType == ZonedDateTime.class || columnType == LocalDateTime.class  ) {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                         data.append("\"")
@@ -101,6 +103,12 @@ public class ExcelFileHandler {
                     }
                     else {
                         CellType type = cell.getCellType();
+                        // if type is formula, then get the result type
+                        if (type == CellType.FORMULA) {
+                            type = cell.getCachedFormulaResultType();
+                            logger.debug("Current column {} is formula, let's get the result type {}",
+                                    columnName, type);
+                        }
                         if (type == CellType.BOOLEAN) {
                             data.append(cell.getBooleanCellValue());
                         } else if (type == CellType.NUMERIC) {

@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
@@ -113,6 +114,17 @@ public class WaveController {
     public ResponseBodyWrapper<String> cancelWave(@PathVariable Long id) {
         waveService.cancelWave(id);
         return ResponseBodyWrapper.success("WAVE " + id + " is cancelled");
+    }
+
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/pick-report", method = RequestMethod.POST)
+    public ReportHistory generateWavePickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)  {
+
+        return waveService.generateWavePickReport(id, locale);
     }
 
 }

@@ -28,7 +28,8 @@ public enum ReportType {
     TARGET_SHIPPING_CARTON_LABEL(true),
     TARGET_PALLET_PICK_LABEL(true),
     COMBINED_LABELS(true),
-    PALLET_PICK_SUMMARY_LABEL(true);
+    PALLET_PICK_SUMMARY_LABEL(true),
+    WAVE_PICK_SHEET_BY_LOCATION(false);
 
     private boolean isLabelFlag;
 
