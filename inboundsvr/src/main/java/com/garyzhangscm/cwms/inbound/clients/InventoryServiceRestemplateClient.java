@@ -604,4 +604,23 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    public List<Inventory> findInventoryByLPN(Long warehouseId, String lpn) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn);
+
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+    }
+
 }

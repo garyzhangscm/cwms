@@ -1636,7 +1636,7 @@ public class ReceiptService {
                     // let's get the receipt and reciept line
                     // make sure all the necessary data exists
                     logger.debug("start to process inventory {}", inventoryCSVWrapper);
-                    if (Strings.isNotBlank(inventoryCSVWrapper.getLpn())) {
+                    if (Strings.isNotBlank(inventoryCSVWrapper.getLpn()) && !removeExistingInventory) {
                         // first make sure the LPN is a new LPN
                         // validateNewLPN will return the error message if the LPN is not a new LPN
                         String validateNewLPNResult = inventoryServiceRestemplateClient.validateNewLPN(warehouseId, inventoryCSVWrapper.getLpn());
@@ -1718,6 +1718,7 @@ public class ReceiptService {
                     if (Boolean.TRUE.equals(removeExistingInventory)) {
 
                         inventoryServiceRestemplateClient.removeInventoryAtLocation(inventory.getWarehouseId(), inventory.getLocationId());
+                        inventoryServiceRestemplateClient.re(inventory.getWarehouseId(), inventory.getLocationId());
                     }
                     receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
                     // we complete this inventory

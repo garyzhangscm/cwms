@@ -759,8 +759,8 @@ public class WaveService {
 
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
-        // logger.debug("####   Report   Data  ######");
-        // logger.debug(reportData.toString());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                         warehouseId, ReportType.WAVE_PICK_SHEET_BY_LOCATION, reportData, locale
@@ -787,6 +787,35 @@ public class WaveService {
 
         // set data to be all picks
         List<Pick> picks = pickService.findByWave(wave);
+        Collections.sort(picks, (a, b) -> {
+
+            String inventoryAttributeA = new StringBuilder()
+                    .append(a.getSourceLocation().getPickSequence()).append("-")
+                    .append(a.getItemId()).append("-")
+                    .append(Strings.isBlank(a.getStyle()) ? "____" : a.getStyle()).append("-")
+                    .append(Strings.isBlank(a.getColor()) ? "____" : a.getColor()).append("-")
+                    .append(Strings.isBlank(a.getProductSize()) ? "____" : a.getProductSize()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute1()) ? "____" : a.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute2()) ? "____" : a.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute3()) ? "____" : a.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute4()) ? "____" : a.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute5()) ? "____" : a.getInventoryAttribute5()).append("-")
+                    .toString();
+
+            String inventoryAttributeB = new StringBuilder()
+                    .append(b.getSourceLocation().getPickSequence()).append("-")
+                    .append(b.getItemId()).append("-")
+                    .append(Strings.isBlank(b.getStyle()) ? "____" : b.getStyle()).append("-")
+                    .append(Strings.isBlank(b.getColor()) ? "____" : b.getColor()).append("-")
+                    .append(Strings.isBlank(b.getProductSize()) ? "____" : b.getProductSize()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute1()) ? "____" : b.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute2()) ? "____" : b.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute3()) ? "____" : b.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute4()) ? "____" : b.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute5()) ? "____" : b.getInventoryAttribute5()).append("-")
+                    .toString();
+            return inventoryAttributeA.compareTo(inventoryAttributeB);
+        });
 
         // whether we add an empty line between pick groups
         // pick groups are group of picks that can be bulk picked
@@ -800,57 +829,85 @@ public class WaveService {
         Map<String, String> quantityPerCaseMap = new HashMap<>();
         // decimal format to format the case quantity in case of picking partial cases
         DecimalFormat df = new DecimalFormat("0.00");
+        List<Pick> results = new ArrayList<>();
+        String lastKey = "";
         // Setup display field
-        picks.forEach(
-                pick -> {
-                    // set the inventory attribute in one string
-                    StringBuilder inventoryAttribute = new StringBuilder()
-                            .append(pick.getSourceLocationId()).append("-")
-                            .append(pick.getItemId()).append("-")
-                            .append(Strings.isBlank(pick.getStyle()) ? "____" : pick.getStyle()).append("-")
-                            .append(Strings.isBlank(pick.getColor()) ? "____" : pick.getColor()).append("-")
-                            .append(Strings.isBlank(pick.getProductSize()) ? "____" : pick.getProductSize()).append("-")
-                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "____" : pick.getInventoryAttribute1()).append("-")
-                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "____" : pick.getInventoryAttribute2()).append("-")
-                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "____" : pick.getInventoryAttribute3()).append("-")
-                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "____" : pick.getInventoryAttribute4()).append("-")
-                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "____" : pick.getInventoryAttribute5()).append("-");
+        for (Pick pick : picks) {
 
-                    // get the value of quantity per case by the pickable inventory from the source location
-                    // and save it temporary
-                    String key = inventoryAttribute.toString();
-                    String quantityPerCase = quantityPerCaseMap.getOrDefault(key, "");
-                    if (Strings.isBlank(quantityPerCase)) {
-                        // get the case quantity from the inventory
-                        quantityPerCase = getQuantityPerCaseForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
-                                pick.getColor(), pick.getProductSize(),
-                                pick.getStyle(),
-                                pick.getInventoryAttribute1(),
-                                pick.getInventoryAttribute2(),
-                                pick.getInventoryAttribute3(),
-                                pick.getInventoryAttribute4(),
-                                pick.getInventoryAttribute5());
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = new StringBuilder()
+                    .append(pick.getSourceLocationId()).append("-")
+                    .append(pick.getItemId()).append("-")
+                    .append(Strings.isBlank(pick.getStyle()) ? "____" : pick.getStyle()).append("-")
+                    .append(Strings.isBlank(pick.getColor()) ? "____" : pick.getColor()).append("-")
+                    .append(Strings.isBlank(pick.getProductSize()) ? "____" : pick.getProductSize()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "____" : pick.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "____" : pick.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "____" : pick.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "____" : pick.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "____" : pick.getInventoryAttribute5()).append("-");
 
-                    }
-                    quantityPerCaseMap.put(key, quantityPerCase);
-                    pick.setQuantityPerCase(quantityPerCase);
-                    try {
-
-                        pick.setCaseQuantity(df.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
-                    }
-                    catch (NumberFormatException ex) {
-                        // if we can't pass the quantityPerCase to number, it normally means the location is
-                        // mixed of different case quantity , so we can't calculate how many cases we will need
-                        // for the pick
-                        pick.setCaseQuantity("");
-                    }
-
-
+            // get the value of quantity per case by the pickable inventory from the source location
+            // and save it temporary
+            String key = inventoryAttribute.toString();
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                lastKey = key;
+                if (addEmptyLineBetweenPickGroup) {
+                    // everytime we started a new pick group, add a empty line
+                    Pick emptyPick = new Pick();
+                    emptyPick.setSourceLocation(new Location());
+                    // emptyPick.setQuantity(0l);
+                    results.add(emptyPick);
                 }
-        );
+            }
+
+            String quantityPerCase = quantityPerCaseMap.getOrDefault(key, "");
+            if (Strings.isBlank(quantityPerCase)) {
+                // get the case quantity from the inventory
+                quantityPerCase = getQuantityPerCaseForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+                        pick.getColor(), pick.getProductSize(),
+                        pick.getStyle(),
+                        pick.getInventoryAttribute1(),
+                        pick.getInventoryAttribute2(),
+                        pick.getInventoryAttribute3(),
+                        pick.getInventoryAttribute4(),
+                        pick.getInventoryAttribute5());
+
+            }
+            quantityPerCaseMap.put(key, quantityPerCase);
+            pick.setQuantityPerCase(quantityPerCase);
+            try {
+
+                int quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
+                if (pick.getQuantity() % quantityPerCaseNumber == 0) {
+
+                    pick.setCaseQuantity(String.valueOf(pick.getQuantity() / quantityPerCaseNumber));
+                } else {
+
+                    pick.setCaseQuantity(df.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
+                }
+            } catch (NumberFormatException ex) {
+                // if we can't pass the quantityPerCase to number, it normally means the location is
+                // mixed of different case quantity , so we can't calculate how many cases we will need
+                // for the pick
+                pick.setCaseQuantity("");
+            }
+
+            results.add(pick);
 
 
-        report.setData(picks);
+        }
+
+
+        report.setData(results);
     }
 
     private String getQuantityPerCaseForWavePickSheet(
