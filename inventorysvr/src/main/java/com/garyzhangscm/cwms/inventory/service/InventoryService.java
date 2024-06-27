@@ -820,28 +820,67 @@ public class InventoryService {
                                             String style,
                                             String attribute1, String attribute2, String attribute3,
                                             String attribute4, String attribute5 , String receiptNumber) {
+        logger.debug("start to check if the inventory {} / {} matches with the criteria",
+                inventory.getId(), inventory.getLpn());
+        logger.debug("color: {}, productSize: {}, style: {}",
+                Strings.isBlank(color) ? "N/A" : color,
+                Strings.isBlank(productSize) ? "N/A" : productSize,
+                Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("inventory attribute 1 ~ 5: {}, {}, {}, {}, {}",
+                Strings.isBlank(attribute1) ? "N/A" : attribute1,
+                Strings.isBlank(attribute2) ? "N/A" : attribute2,
+                Strings.isBlank(attribute3) ? "N/A" : attribute3,
+                Strings.isBlank(attribute4) ? "N/A" : attribute4,
+                Strings.isBlank(attribute5) ? "N/A" : attribute5);
+        logger.debug("receiptNumber: {}",
+                Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
+
         if (Strings.isNotBlank(color) && !color.equalsIgnoreCase(inventory.getColor())) {
+            logger.debug("inventory's color {} doesn't match with the criteria color = {}",
+                    Strings.isBlank(inventory.getColor()) ? "N/A" : inventory.getColor(),
+                    color);
             return false;
         }
         if (Strings.isNotBlank(productSize) && !productSize.equalsIgnoreCase(inventory.getProductSize())) {
+            logger.debug("inventory's productSize {} doesn't match with the criteria productSize = {}",
+                    Strings.isBlank(inventory.getProductSize()) ? "N/A" : inventory.getProductSize(),
+                    productSize);
             return false;
         }
         if (Strings.isNotBlank(style) && !style.equalsIgnoreCase(inventory.getStyle())) {
+            logger.debug("inventory's style {} doesn't match with the criteria style = {}",
+                    Strings.isBlank(inventory.getStyle()) ? "N/A" : inventory.getStyle(),
+                    style);
             return false;
         }
         if (Strings.isNotBlank(attribute1) && !attribute1.equalsIgnoreCase(inventory.getAttribute1())) {
+            logger.debug("inventory's attribute1 {} doesn't match with the criteria attribute1 = {}",
+                    Strings.isBlank(inventory.getAttribute1()) ? "N/A" : inventory.getAttribute1(),
+                    attribute1);
             return false;
         }
         if (Strings.isNotBlank(attribute2) && !attribute2.equalsIgnoreCase(inventory.getAttribute2())) {
+            logger.debug("inventory's attribute2 {} doesn't match with the criteria attribute2 = {}",
+                    Strings.isBlank(inventory.getAttribute2()) ? "N/A" : inventory.getAttribute2(),
+                    attribute2);
             return false;
         }
         if (Strings.isNotBlank(attribute3) && !attribute3.equalsIgnoreCase(inventory.getAttribute3())) {
+            logger.debug("inventory's attribute3 {} doesn't match with the criteria attribute3 = {}",
+                    Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3(),
+                    attribute3);
             return false;
         }
         if (Strings.isNotBlank(attribute4) && !attribute4.equalsIgnoreCase(inventory.getAttribute4())) {
+            logger.debug("inventory's attribute4 {} doesn't match with the criteria attribute4 = {}",
+                    Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4(),
+                    attribute4);
             return false;
         }
         if (Strings.isNotBlank(attribute5) && !attribute5.equalsIgnoreCase(inventory.getAttribute5())) {
+            logger.debug("inventory's attribute5 {} doesn't match with the criteria attribute5 = {}",
+                    Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5(),
+                    attribute5);
             return false;
         }
         if (Strings.isNotBlank(receiptNumber)) {

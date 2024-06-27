@@ -21,11 +21,11 @@
 	<field name="inventoryAttribute1" class="java.lang.String"/>
 	<field name="style" class="java.lang.String"/>
 	<field name="color" class="java.lang.String"/>
-	<field name="quantity" class="java.lang.String"/>
 	<field name="quantityPerCase" class="java.lang.String"/>
 	<field name="caseQuantity" class="java.lang.String"/>
+	<field name="quantity" class="java.lang.Integer"/>
 	<pageHeader>
-		<band height="78" splitType="Stretch">
+		<band height="80" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
 				<reportElement x="0" y="10" width="140" height="40" uuid="a92d8d79-8a80-4625-a839-fb50ee77387d">
@@ -37,16 +37,21 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{wave}]]></textFieldExpression>
 			</textField>
-			<componentElement>
-				<reportElement x="480" y="0" width="81" height="77" uuid="abc6b64c-c545-48de-a8a4-d46c120385a3"/>
-				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<jr:codeExpression><![CDATA[$P{waveNumber}]]></jr:codeExpression>
-				</jr:QRCode>
-			</componentElement>
 			<textField>
 				<reportElement x="140" y="10" width="300" height="39" uuid="0fd5a6a4-8365-437d-9d5f-f0fcadff9d43"/>
+				<textElement>
+					<font size="29" isBold="true"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$P{waveNumber}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement x="440" y="0" width="300" height="80" uuid="d5676d36-5236-4f08-9781-d71fd86b7556">
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="60">
+					<jr:codeExpression><![CDATA[$P{waveNumber}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -189,7 +194,7 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="46" splitType="Stretch">
+		<band height="40" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<rectangle>
 				<reportElement x="660" y="0" width="90" height="40" uuid="fc328735-5828-4840-b038-e626b8ab104b">
@@ -248,49 +253,57 @@
 				<reportElement x="0" y="0" width="110" height="40" uuid="a83a6777-bba0-4d19-83cc-7ebc588bc4d9">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="90ab2008-0a75-412b-97b0-88e7a2e64667"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{orderNumber}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="660" y="0" width="90" height="40" uuid="43343e18-2d40-42fe-9a7e-36819e84aebb">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="07235930-e65e-4b26-9288-0045a379d141"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{sourceLocation.name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="110" y="0" width="110" height="40" uuid="81a77e56-4051-449c-b9b8-d2c3459dd713">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7a0caa82-b36e-4394-866b-10d2fd893219"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{inventoryAttribute1}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="220" y="0" width="100" height="40" uuid="0ea8f6e1-2fe1-4c64-a703-5013285b3d1b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d2a98be8-c4cd-40fd-b3bb-1ee03b7b7997"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{style}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="320" y="0" width="120" height="40" uuid="6c3b646a-9deb-4359-8522-39a688e0eb84">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1631d20-3ea9-43bb-9b24-326c201ffdca"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{color}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="440" y="0" width="80" height="40" uuid="8ecb7ed1-fb6b-4d08-8d7e-4f8f8728ed3b">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6927566d-76ca-48dc-8846-0827ce35c19e"/>
-				</reportElement>
-				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="520" y="0" width="70" height="40" uuid="02b43d68-7d9b-48ba-9704-a50aba797e6e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b39353d6-d272-4fbb-838d-4265c23b6b5b"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{quantityPerCase}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="590" y="0" width="70" height="40" uuid="8b07fb32-485b-47ef-b303-98b45b518d43">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a3db5154-f2f4-4e40-87da-80ab61aa9ace"/>
 				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{caseQuantity}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="440" y="0" width="80" height="40" uuid="56c2215d-6372-4e81-b1f2-50903a31f4f5">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4840585-0ed5-4f86-8a03-b04d315c8edc"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

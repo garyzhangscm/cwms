@@ -193,15 +193,15 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     // required inventory attribute
     @Column(name="inventory_attribute_1")
-    private String inventoryAttribute1;
+    private String inventoryAttribute1 = "";
     @Column(name="inventory_attribute_2")
-    private String inventoryAttribute2;
+    private String inventoryAttribute2 = "";
     @Column(name="inventory_attribute_3")
-    private String inventoryAttribute3;
+    private String inventoryAttribute3 = "";
     @Column(name="inventory_attribute_4")
-    private String inventoryAttribute4;
+    private String inventoryAttribute4 = "";
     @Column(name="inventory_attribute_5")
-    private String inventoryAttribute5;
+    private String inventoryAttribute5 = "";
 
     // only allocate inventory that received by certain receipt
     @Column(name = "allocate_by_receipt_number")
