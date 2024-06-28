@@ -603,6 +603,42 @@ public class InventoryServiceRestemplateClient {
         );
 
     }
+    public String removeInventoryAtLocation(Long warehouseId, String locationName) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("location", locationName);
+
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.DELETE,
+                null
+        );
+
+    }
+    public String removeInventoryByLpn(Long warehouseId, String lpn) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn);
+
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.DELETE,
+                null
+        );
+
+    }
 
     public List<Inventory> findInventoryByLPN(Long warehouseId, String lpn) {
 

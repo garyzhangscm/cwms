@@ -458,7 +458,8 @@ public class ReceiptController {
     )
     public ResponseBodyWrapper updateReceivingInventory(Long companyId, Long warehouseId,
                                                         @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
-                                                        @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory,
+                                                        @RequestParam(name = "removeExistingInventoryWithSameLPN", defaultValue = "true", required = false) Boolean removeExistingInventoryWithSameLPN,
+                                                        @RequestParam(name = "emptyLocation", defaultValue = "true", required = false) Boolean emptyLocation,
                                                         @RequestParam("file") MultipartFile file) throws IOException {
 
 
@@ -467,7 +468,7 @@ public class ReceiptController {
             File localFile = uploadFileService.convertToCSVFile(
                     companyId, warehouseId, "receiving-inventories", fileService.saveFile(file), ignoreUnknownFields);
 
-            String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile, removeExistingInventory);
+            String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile, removeExistingInventoryWithSameLPN, emptyLocation);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
