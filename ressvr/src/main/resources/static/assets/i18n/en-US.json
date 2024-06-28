@@ -2313,5 +2313,8 @@
   "estimatePalletCountBySize": "Estimate Pallet Count By Size",
   "estimatePalletCountByReceiptLineCubicMeter": "Estimate Pallet Count By Receipt Line Cubic Meter",
   "ignoreUnknownFields": "Ignore Unknown Fields",
-  "removeExistingInventoryWithSameLPN": "Remove Existing Inventory With Same LPN"
+  "removeExistingInventoryWithSameLPN": "Remove Existing Inventory With Same LPN",
+  "inWarehouseDate": "In Warehouse Date",
+  "wave.totalShortQuantity": "Total Short Quantity",
+  "inbound-receiving-configuration": "Inbound Receiving Configuration"
 }
