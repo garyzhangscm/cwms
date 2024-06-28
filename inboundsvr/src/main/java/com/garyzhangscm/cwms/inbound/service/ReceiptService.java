@@ -1020,15 +1020,27 @@ public class ReceiptService {
         }
 
         if (Strings.isNotBlank(receiptLine.getColor())) {
+            // we may need to automatically adjust the font size of the color
+            // so that the label can display all characters when it is too long
+
             lpnLabelContent.put("color", receiptLine.getColor().trim().replace(" ", "\\\\&"));
+            lpnLabelContent.put("color_font_size", getLabelFontSize(
+                    receiptLine.getColor().trim().replace(" ", "\\\\&"), 10, 95, 3, 10));
+
             qrCode.append("color=").append(receiptLine.getColor()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getProductSize())) {
             lpnLabelContent.put("productSize", receiptLine.getProductSize());
+
+            lpnLabelContent.put("productSize_font_size", getLabelFontSize(
+                    receiptLine.getProductSize().trim(), 8, 85, 3, 10));
+
             qrCode.append("productSize=").append(receiptLine.getProductSize()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getStyle())) {
             lpnLabelContent.put("style", receiptLine.getStyle());
+            lpnLabelContent.put("style_font_size", getLabelFontSize(
+                    receiptLine.getStyle().trim(), 8, 105, 3, 10));
             qrCode.append("style=").append(receiptLine.getStyle()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
@@ -1123,6 +1135,28 @@ public class ReceiptService {
         }
         lpnLabelContent.put("barcode", qrCode.toString());
         return lpnLabelContent;
+
+    }
+
+    /**
+     * Get the font size for long string to be printed on the label
+     * when we need more than 4 lines to display the value, then we will shrink the size
+     * everytime we need more lines to display the string.
+     * @param value
+     * @param charactersPerLine
+     * @return
+     */
+    private int getLabelFontSize(String value, int charactersPerLine, int baseSize, int baseSizeLineCount, int step) {
+        if (Strings.isBlank(value)) {
+            return baseSize;
+        }
+        int lineNeeded = (int)Math.ceil(value.length() * 1.0 / charactersPerLine);
+        // if we don't need too many lines to display the value
+        if (lineNeeded <= baseSizeLineCount) {
+            return baseSize;
+        }
+        return baseSize - step * (lineNeeded - baseSizeLineCount);
+
 
     }
 
@@ -1608,7 +1642,9 @@ public class ReceiptService {
         return fileService.loadData(file, ReceiptLineCSVWrapper.class);
     }
 
-    public String saveReceivingInventoryData(Long warehouseId, File file, Boolean removeExistingInventory) throws IOException {
+    public String saveReceivingInventoryData(Long warehouseId, File file,
+                                             Boolean removeExistingInventoryWithSameLPN,
+                                             Boolean emptyLocation) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -1617,12 +1653,7 @@ public class ReceiptService {
         receivingInventoryFileUploadResult.put(fileUploadProgressKey, new ArrayList<>());
 
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
-/**
-        List<InventoryCSVWrapper> inventoryCSVWrappers =
-                fileService.loadData(file, InventoryCSVWrapper.class).stream().filter(
-                        inventoryCSVWrapper -> validateInventoryCSVWrapperForReceiving(inventoryCSVWrapper)
-                ).map(InventoryCSVWrapper::trim).collect(Collectors.toList());
-**/
+
         List<InventoryCSVWrapper> inventoryCSVWrappers = fileService.loadData(file, InventoryCSVWrapper.class);
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
 
@@ -1630,13 +1661,25 @@ public class ReceiptService {
         new Thread(() -> {
             int totalInventoryCount = inventoryCSVWrappers.size();
             int index = 0;
+
+            if (Boolean.TRUE.equals(removeExistingInventoryWithSameLPN)) {
+                logger.debug("we will remove existing inventory with same LPNs as the ones from the uploaded file");
+                removeInventoryByLpnForUploadReceivingInventory(fileUploadProgressKey, warehouseId, inventoryCSVWrappers);
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 15.0);
+            }
+            if (Boolean.TRUE.equals(emptyLocation)) {
+                logger.debug("we will empty locations as the ones from the uploaded file");
+                emptyLocationForUploadReceivingInventory(fileUploadProgressKey, warehouseId, inventoryCSVWrappers);
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0);
+            }
+
             for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
-                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index));
                 try {
                     // let's get the receipt and reciept line
                     // make sure all the necessary data exists
                     logger.debug("start to process inventory {}", inventoryCSVWrapper);
-                    if (Strings.isNotBlank(inventoryCSVWrapper.getLpn()) && !removeExistingInventory) {
+                    if (Strings.isNotBlank(inventoryCSVWrapper.getLpn())) {
                         // first make sure the LPN is a new LPN
                         // validateNewLPN will return the error message if the LPN is not a new LPN
                         String validateNewLPNResult = inventoryServiceRestemplateClient.validateNewLPN(warehouseId, inventoryCSVWrapper.getLpn());
@@ -1657,7 +1700,7 @@ public class ReceiptService {
 
                     Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
                             Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getItem());
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.2));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.2));
                     if (Objects.isNull(item)) {
                         // skip the item if the name is wrong
                         logger.debug("can't find item by name {}, skip current line",
@@ -1671,7 +1714,7 @@ public class ReceiptService {
                     logger.debug("got item {} by name {}", item.getId(), item.getName());
                     Receipt receipt = findByNumber(warehouseId,
                             Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getReceipt());
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.4));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.4));
 
                     if (Objects.isNull(receipt)) {
                         throw ReceiptOperationException.raiseException(
@@ -1694,7 +1737,7 @@ public class ReceiptService {
                                         + " with quantity " + inventoryCSVWrapper.getQuantity());
                     }
 
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.6));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.6));
 
                     logger.debug("we found the matched line, number is {}",
                             matchedReceiptLine.getNumber());
@@ -1709,21 +1752,17 @@ public class ReceiptService {
                                   + " for the inventory. " +
                                 "if receive into the receipt, make sure that the receipt is already check in");
                     }
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.75));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.75));
                     logger.debug("created inventory from the csv line, will start to receive against this inventory" +
                                     " ================           Inventory ================\nlpn： {} , qty: {}, location: {}",
                             inventory.getLpn(),
                             inventory.getQuantity(),
                             inventory.getLocation().getName());
-                    if (Boolean.TRUE.equals(removeExistingInventory)) {
 
-                        inventoryServiceRestemplateClient.removeInventoryAtLocation(inventory.getWarehouseId(), inventory.getLocationId());
-                        inventoryServiceRestemplateClient.re(inventory.getWarehouseId(), inventory.getLocationId());
-                    }
                     receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
                     // we complete this inventory
                     logger.debug("Inventory received, continue with next line");
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + (80.0 / totalInventoryCount) * (index + 1));
 
                     List<FileUploadResult> fileUploadResults = receivingInventoryFileUploadResult.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
@@ -1767,6 +1806,46 @@ public class ReceiptService {
 
 
     }
+
+    private void emptyLocationForUploadReceivingInventory(String fileUploadProgressKey,
+                                                          Long warehouseId, List<InventoryCSVWrapper> inventoryCSVWrappers) {
+        Set<String> locationNameSet =
+                inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> inventoryCSVWrapper.getLocation())
+                        .filter(name -> Strings.isNotBlank(name)).collect(Collectors.toSet());
+
+        logger.debug("We will empty {} locations when we upload the files", locationNameSet.size());
+        int index = 0;
+
+        for (String locationName : locationNameSet) {
+            inventoryServiceRestemplateClient.removeInventoryAtLocation(warehouseId, locationName);
+            logger.debug("# location {} is emptied", locationName);
+            receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 15.0 +  (5.0 / locationNameSet.size()) * (index));
+            index++;
+        }
+    }
+
+    /**
+     * Remove all LPNs in the uploaded File before we create the new inventory
+     * @param inventoryCSVWrappers
+     */
+    private void removeInventoryByLpnForUploadReceivingInventory(String fileUploadProgressKey,
+                                                                 Long warehouseId,
+                                                                 List<InventoryCSVWrapper> inventoryCSVWrappers) {
+
+        Set<String> lpnSet = inventoryCSVWrappers.stream()
+                .map(inventoryCSVWrapper -> inventoryCSVWrapper.getLpn())
+                .filter(lpn -> Strings.isNotBlank(lpn)).collect(Collectors.toSet());
+        logger.debug("We will remove {} LPNs when we upload the files", lpnSet.size());
+        int index = 0;
+        for (String lpn : lpnSet) {
+            inventoryServiceRestemplateClient.removeInventoryByLpn(warehouseId, lpn);
+            logger.debug("# lpn {} is removed", lpn);
+
+            receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0 +  (10.0 / lpnSet.size()) * (index));
+            index++;
+        }
+    }
+
 
     public ReceiptLine getBestMatchReceiptLineForReceiving(Receipt receipt, Item item, InventoryCSVWrapper inventoryCSVWrapper) {
 
