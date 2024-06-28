@@ -2307,5 +2307,8 @@
   "estimatePalletCountBySize": "按尺寸估算托盘数量",
   "estimatePalletCountByReceiptLineCubicMeter": "按入库单上的尺寸估算托盘数量",
   "ignoreUnknownFields": "忽略未知的字段",
-  "removeExistingInventoryWithSameLPN": "移除已经存在的LPN"
+  "removeExistingInventoryWithSameLPN": "移除已经存在的LPN",
+  "inWarehouseDate": "入库时间",
+  "wave.totalShortQuantity": "总缺货数量",
+  "inbound-receiving-configuration": "入库流程配置"
 }

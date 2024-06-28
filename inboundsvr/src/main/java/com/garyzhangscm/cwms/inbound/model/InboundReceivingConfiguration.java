@@ -90,6 +90,24 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
     @Column(name = "estimate_pallet_count_by_receipt_line_cubic_meter")
     private Boolean estimatePalletCountByReceiptLineCubicMeter;
 
+
+    // before which status do we allow the user to change the receipt
+    // if it is empty, then we are not allow the user to change the
+    // receipt once it is created
+    // we have different configuration for
+    // upload files
+    // integration
+    // manually change from web UI
+    @Column(name = "status_allow_receipt_change_when_upload_file")
+    @Enumerated(EnumType.STRING)
+    private ReceiptStatus statusAllowReceiptChangeWhenUploadFile;
+    @Column(name = "status_allow_receipt_change_from_integration")
+    @Enumerated(EnumType.STRING)
+    private ReceiptStatus statusAllowReceiptChangeFromIntegration;
+    @Column(name = "status_allow_receipt_change_from_web_ui")
+    @Enumerated(EnumType.STRING)
+    private ReceiptStatus statusAllowReceiptChangeFromWebUI;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -218,5 +236,29 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
 
     public void setEstimatePalletCountByReceiptLineCubicMeter(Boolean estimatePalletCountByReceiptLineCubicMeter) {
         this.estimatePalletCountByReceiptLineCubicMeter = estimatePalletCountByReceiptLineCubicMeter;
+    }
+
+    public ReceiptStatus getStatusAllowReceiptChangeWhenUploadFile() {
+        return statusAllowReceiptChangeWhenUploadFile;
+    }
+
+    public void setStatusAllowReceiptChangeWhenUploadFile(ReceiptStatus statusAllowReceiptChangeWhenUploadFile) {
+        this.statusAllowReceiptChangeWhenUploadFile = statusAllowReceiptChangeWhenUploadFile;
+    }
+
+    public ReceiptStatus getStatusAllowReceiptChangeFromIntegration() {
+        return statusAllowReceiptChangeFromIntegration;
+    }
+
+    public void setStatusAllowReceiptChangeFromIntegration(ReceiptStatus statusAllowReceiptChangeFromIntegration) {
+        this.statusAllowReceiptChangeFromIntegration = statusAllowReceiptChangeFromIntegration;
+    }
+
+    public ReceiptStatus getStatusAllowReceiptChangeFromWebUI() {
+        return statusAllowReceiptChangeFromWebUI;
+    }
+
+    public void setStatusAllowReceiptChangeFromWebUI(ReceiptStatus statusAllowReceiptChangeFromWebUI) {
+        this.statusAllowReceiptChangeFromWebUI = statusAllowReceiptChangeFromWebUI;
     }
 }

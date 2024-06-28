@@ -2054,17 +2054,28 @@ public class ReceiptService {
             inventory.setInventoryStatus(inventoryStatus);
         }
 
+        // in order to convert the date time, we may need to convert it to UTC by
+        // the warehouse's configuration(timezone) or local time zone if there's no
+        // timezone configured at the warehouse
+        WarehouseConfiguration warehouseConfiguration
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+        TimeZone timeZone = TimeZone.getDefault();
+        if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
+            timeZone = TimeZone.getTimeZone(warehouseConfiguration.getTimeZone());
+        }
         if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
-            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
-            if (Objects.nonNull(localDate)) {
-                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+            LocalDateTime localDateTime = LocalDateTime.parse(inventoryCSVWrapper.getFifoDate());
+            if (Objects.nonNull(localDateTime)) {
+                inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
             }
         }
 
         if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
-            ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
-            if (Objects.nonNull(zonedDateTime)) {
-                inventory.setInWarehouseDatetime(zonedDateTime);
+
+            LocalDateTime localDateTime = LocalDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            // ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            if (Objects.nonNull(localDateTime)) {
+                inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
             }
         }
 

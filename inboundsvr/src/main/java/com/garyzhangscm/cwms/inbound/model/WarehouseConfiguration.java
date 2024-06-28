@@ -32,6 +32,9 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
 
     private Boolean threePartyLogisticsFlag;
 
+
+    private String timeZone;
+
     public Long getId() {
         return id;
     }
@@ -56,4 +59,11 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
         this.threePartyLogisticsFlag = threePartyLogisticsFlag;
     }
 
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
 }

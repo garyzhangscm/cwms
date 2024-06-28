@@ -414,9 +414,7 @@ public class ReceiptController {
     public ResponseBodyWrapper uploadReceipts(Long companyId,
                                               Long warehouseId,
                                               @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
-                                            @RequestParam("file") MultipartFile file) throws IOException {
-
-
+                                              @RequestParam("file") MultipartFile file) {
 
         try {
             File localFile = uploadFileService.convertToCSVFile(
