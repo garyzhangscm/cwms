@@ -59,6 +59,24 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
     @Column(name = "max_pallet_height")
     private Double maxPalletHeight;
 
+
+    // before which status do we allow the user to change the order
+    // if it is empty, then we are not allow the user to change the
+    // order once it is created
+    // we have different configuration for
+    // upload files
+    // integration
+    // manually change from web UI
+    @Column(name = "status_allow_order_change_when_upload_file")
+    @Enumerated(EnumType.STRING)
+    private OrderStatus statusAllowOrderChangeWhenUploadFile;
+    @Column(name = "status_allow_order_change_from_integration")
+    @Enumerated(EnumType.STRING)
+    private OrderStatus statusAllowOrderChangeFromIntegration;
+    @Column(name = "status_allow_order_change_from_web_ui")
+    @Enumerated(EnumType.STRING)
+    private OrderStatus statusAllowOrderChangeFromWebUI;
+
     public Long getId() {
         return id;
     }
@@ -121,5 +139,29 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
 
     public void setMaxPalletHeight(Double maxPalletHeight) {
         this.maxPalletHeight = maxPalletHeight;
+    }
+
+    public OrderStatus getStatusAllowOrderChangeWhenUploadFile() {
+        return statusAllowOrderChangeWhenUploadFile;
+    }
+
+    public void setStatusAllowOrderChangeWhenUploadFile(OrderStatus statusAllowOrderChangeWhenUploadFile) {
+        this.statusAllowOrderChangeWhenUploadFile = statusAllowOrderChangeWhenUploadFile;
+    }
+
+    public OrderStatus getStatusAllowOrderChangeFromIntegration() {
+        return statusAllowOrderChangeFromIntegration;
+    }
+
+    public void setStatusAllowOrderChangeFromIntegration(OrderStatus statusAllowOrderChangeFromIntegration) {
+        this.statusAllowOrderChangeFromIntegration = statusAllowOrderChangeFromIntegration;
+    }
+
+    public OrderStatus getStatusAllowOrderChangeFromWebUI() {
+        return statusAllowOrderChangeFromWebUI;
+    }
+
+    public void setStatusAllowOrderChangeFromWebUI(OrderStatus statusAllowOrderChangeFromWebUI) {
+        this.statusAllowOrderChangeFromWebUI = statusAllowOrderChangeFromWebUI;
     }
 }

@@ -178,6 +178,17 @@ public class ItemPackageType implements Serializable {
         ).findFirst().orElse(null);
     }
 
+    public ItemUnitOfMeasure getPackItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getPackFlag())
+        ).findFirst().orElse(null);
+    }
+
+
     public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
         this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
     }

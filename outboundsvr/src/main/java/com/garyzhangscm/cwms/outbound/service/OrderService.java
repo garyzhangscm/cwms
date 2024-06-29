@@ -2654,6 +2654,7 @@ public class OrderService {
         new Thread(() -> {
             int totalCount = orderLineCSVWrappers.size();
             int index = 0;
+            Set<String> validatedOrderNumbers = new HashSet<>();
             for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
 
                 try {
@@ -2674,12 +2675,16 @@ public class OrderService {
                         order.setCreatedBy(username);
                         order = saveOrUpdate(order);
                     }
-                    else {
-                        logger.debug("change existing order, let's make sure we can change the order {}",
-                                orderLineCSVWrapper.getOrder());
-                        // make sure we can change the order
-                        validateOrderForModification(warehouseId, clientId, orderLineCSVWrapper.getOrder() );
+                    else if (!validatedOrderNumbers.contains(order.getNumber()) &&
+                            !validateOrderForModifyByUploadFile(order)) {
+                        // if we already have the receipt, and the system is setup to not change the receipt
+                        // of specific status
+                        throw OrderOperationException.raiseException("order with status " + order.getStatus() +
+                                " is not allowed to be changed when uploading file" );
+
                     }
+                    validatedOrderNumbers.add(order.getNumber());
+
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
                     logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
                             orderLineCSVWrapper.getLine(),
@@ -2730,6 +2735,24 @@ public class OrderService {
 
     }
 
+
+    boolean validateOrderForModifyByUploadFile(Order order) {
+        OutboundConfiguration outboundConfiguration =
+                outboundConfigurationService.findByWarehouse(order.getWarehouseId());
+
+        if (Objects.isNull(outboundConfiguration)) {
+            // there's nothing configured yet, let's allow change as long as the receipt has not
+            // been started yet
+            return order.getStatus().noLaterThan(OrderStatus.OPEN);
+        }
+        // if status is not setup, then it means we don't allow any override of receipt
+        // when upload the file
+        if (Objects.isNull(outboundConfiguration.getStatusAllowOrderChangeWhenUploadFile())) {
+            return false;
+        }
+        return order.getStatus().noLaterThan(outboundConfiguration.getStatusAllowOrderChangeWhenUploadFile());
+
+    }
     private void clearFileUploadMap() {
 
         if (fileUploadProgress.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
@@ -4610,5 +4633,13 @@ public class OrderService {
 
         }
         return true;
+    }
+
+    public void changeOrderStatusAfterShipment(Long orderId) {
+        Order order = findById(orderId);
+        if (order.getStatus().equals(OrderStatus.OPEN)) {
+            order.setStatus(OrderStatus.INPROCESS);
+        }
+        saveOrUpdate(order, false);
     }
 }

@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateCl
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.InboundQCConfiguration;
 import com.garyzhangscm.cwms.inbound.model.InboundReceivingConfiguration;
+import com.garyzhangscm.cwms.inbound.model.Receipt;
+import com.garyzhangscm.cwms.inbound.model.Warehouse;
 import com.garyzhangscm.cwms.inbound.repository.InboundQCConfigurationRepository;
 import com.garyzhangscm.cwms.inbound.repository.InboundReceivingConfigurationRepository;
 import org.slf4j.Logger;
@@ -207,6 +209,17 @@ public class InboundReceivingConfigurationService {
     }
 
 
+    public InboundReceivingConfiguration getBestMatchedInboundReceivingConfiguration(
+            Receipt receipt
+    ) {
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                receipt.getWarehouseId()
+        );
+
+        return getBestMatchedInboundReceivingConfiguration(receipt.getSupplierId(),
+                null, null, receipt.getWarehouseId(), warehouse.getCompanyId());
+
+    }
     public InboundReceivingConfiguration getBestMatchedInboundReceivingConfiguration(
                                                      Long supplierId,
                                                      Long itemFamilyId,

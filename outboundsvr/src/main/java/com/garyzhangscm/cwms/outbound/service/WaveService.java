@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -787,6 +788,9 @@ public class WaveService {
 
         // set data to be all picks
         List<Pick> picks = pickService.findByWave(wave);
+
+        // sort the pick so that we can group picks with same attribute from same location
+        // together for manual bulk pick
         Collections.sort(picks, (a, b) -> {
 
             String inventoryAttributeA = new StringBuilder()
@@ -819,7 +823,7 @@ public class WaveService {
 
         // whether we add an empty line between pick groups
         // pick groups are group of picks that can be bulk picked
-        boolean addEmptyLineBetweenPickGroup = true;
+        boolean addSummeryLineBetweenPickGroup = true;
 
         // map to save the case quantity of the inventory form the
         // location
@@ -827,13 +831,19 @@ public class WaveService {
         // value: case quantity of the inventory in the location. If the location is mixed
         //       of inventory with the item, then show MIXED
         Map<String, String> quantityPerCaseMap = new HashMap<>();
+        Map<String, String> quantityPerPackMap = new HashMap<>();
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
         // decimal format to format the case quantity in case of picking partial cases
-        DecimalFormat df = new DecimalFormat("0.00");
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         List<Pick> results = new ArrayList<>();
         String lastKey = "";
         // Setup display field
         for (Pick pick : picks) {
-
+            totalUnitQuantity += pick.getQuantity();
             // set the inventory attribute in one string
             StringBuilder inventoryAttribute = new StringBuilder()
                     .append(pick.getSourceLocationId()).append("-")
@@ -859,20 +869,34 @@ public class WaveService {
                 logger.debug("lastkey: {}, key: {}" ,
                         lastKey, key);
                 // we just started a new group
-                lastKey = key;
-                if (addEmptyLineBetweenPickGroup) {
+                Long totalQuantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+
+                if (addSummeryLineBetweenPickGroup) {
                     // everytime we started a new pick group, add a empty line
-                    Pick emptyPick = new Pick();
-                    emptyPick.setSourceLocation(new Location());
+                    Pick summeryPick = getSummeryPickDataForWavePickSheet(totalQuantity,
+                            quantityPerCaseMap.getOrDefault(lastKey, ""),
+                            quantityPerPackMap.getOrDefault(lastKey, ""),
+                            decimalFormat
+                            );
+
+                    results.add(summeryPick);
                     // emptyPick.setQuantity(0l);
-                    results.add(emptyPick);
+
+                    lastKey = key;
                 }
             }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            totalQuantityMap.put(key, quantity + pick.getQuantity());
+
 
             String quantityPerCase = quantityPerCaseMap.getOrDefault(key, "");
-            if (Strings.isBlank(quantityPerCase)) {
-                // get the case quantity from the inventory
-                quantityPerCase = getQuantityPerCaseForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+            String quantityPerPack = quantityPerPackMap.getOrDefault(key, "");
+
+            if (Strings.isBlank(quantityPerCase) || Strings.isBlank(quantityPerPack)) {
+                // get the case and pack quantity from the inventory
+
+                Pair<String, String> casePackQuantity
+                        = getQuantityPerCaseAndQuantityPerPackForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
                         pick.getColor(), pick.getProductSize(),
                         pick.getStyle(),
                         pick.getInventoryAttribute1(),
@@ -881,36 +905,140 @@ public class WaveService {
                         pick.getInventoryAttribute4(),
                         pick.getInventoryAttribute5());
 
+                quantityPerCase = casePackQuantity.getFirst();
+                quantityPerPack = casePackQuantity.getSecond();
+
             }
             quantityPerCaseMap.put(key, quantityPerCase);
+            quantityPerPackMap.put(key, quantityPerPack);
+
             pick.setQuantityPerCase(quantityPerCase);
+            pick.setQuantityPerPack(quantityPerPack);
+            logger.debug("key {}'s quantity per case: {}, quantity per pack: {}",
+                    key, quantityPerCase, quantityPerPack);
+            int quantityPerCaseNumber = 0;
+            int quantityPerPackNumber = 0;
             try {
 
-                int quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
+                quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
                 if (pick.getQuantity() % quantityPerCaseNumber == 0) {
 
                     pick.setCaseQuantity(String.valueOf(pick.getQuantity() / quantityPerCaseNumber));
                 } else {
 
-                    pick.setCaseQuantity(df.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
+                    pick.setCaseQuantity(decimalFormat.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
                 }
+                totalCaseQuantity += (pick.getQuantity() * 1.0 / quantityPerCaseNumber);
             } catch (NumberFormatException ex) {
                 // if we can't pass the quantityPerCase to number, it normally means the location is
                 // mixed of different case quantity , so we can't calculate how many cases we will need
                 // for the pick
                 pick.setCaseQuantity("");
             }
+            try {
 
+                quantityPerPackNumber = Integer.parseInt(quantityPerPack);
+                if (pick.getQuantity() % quantityPerPackNumber == 0) {
+
+                    pick.setPackQuantity(String.valueOf(pick.getQuantity() / quantityPerPackNumber));
+                } else {
+
+                    pick.setPackQuantity(decimalFormat.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerPack)));
+                }
+                logger.debug("pick {}'s pack quantity is setup to {}",
+                        pick.getNumber(), pick.getPackQuantity());
+
+            } catch (NumberFormatException ex) {
+                // if we can't pass the quantityPerPack to number, it normally means the location is
+                // mixed of different Pack quantity , so we can't calculate how many packs we will need
+                // for the pick
+                pick.setPackQuantity("");
+            }
+
+            if (quantityPerCaseNumber > 0 && quantityPerPackNumber > 0) {
+
+                if (quantityPerCaseNumber % quantityPerPackNumber == 0) {
+
+                    pick.setPackPerCase(String.valueOf(quantityPerCaseNumber / quantityPerPackNumber));
+                }
+                else {
+                    pick.setPackPerCase(decimalFormat.format(quantityPerCaseNumber * 1.0 / quantityPerPackNumber));
+                }
+            }
             results.add(pick);
 
 
         }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLineBetweenPickGroup) {
+
+            Long totalQuantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+
+            // everytime we started a new pick group, add a empty line
+            Pick summeryPick = getSummeryPickDataForWavePickSheet(totalQuantity,
+                    quantityPerCaseMap.getOrDefault(lastKey, ""),
+                    quantityPerPackMap.getOrDefault(lastKey, ""),
+                    decimalFormat
+            );
+
+            results.add(summeryPick);
+        }
 
 
         report.setData(results);
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
     }
 
-    private String getQuantityPerCaseForWavePickSheet(
+    /**
+     * Get the summeray of the picks from a list pick and fill in the report
+     * @param totalQuantity
+     * @param quantityPerCase
+     * @param quantityPerPack
+     * @return
+     */
+    private Pick getSummeryPickDataForWavePickSheet(Long totalQuantity, String quantityPerCase, String quantityPerPack,
+                                                    DecimalFormat decimalFormat) {
+
+        Pick summeryPick = new Pick();
+        summeryPick.setSourceLocation(new Location());
+        summeryPick.setQuantity(totalQuantity);
+        try {
+
+            int quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
+            if (totalQuantity % quantityPerCaseNumber == 0) {
+
+                summeryPick.setCaseQuantity(String.valueOf(totalQuantity / quantityPerCaseNumber));
+            } else {
+
+                summeryPick.setCaseQuantity(decimalFormat.format(totalQuantity * 1.0 / quantityPerCaseNumber));
+            }
+        } catch (NumberFormatException ex) {
+            // if we can't pass the quantityPerCase to number, it normally means the location is
+            // mixed of different case quantity , so we can't calculate how many cases we will need
+            // for the pick
+            summeryPick.setCaseQuantity("");
+        }
+        try {
+
+            int quantityPerPackNumber = Integer.parseInt(quantityPerPack);
+            if (totalQuantity % quantityPerPackNumber == 0) {
+
+                summeryPick.setPackQuantity(String.valueOf(totalQuantity / quantityPerPackNumber));
+            } else {
+
+                summeryPick.setPackQuantity(decimalFormat.format(totalQuantity * 1.0 / quantityPerPackNumber));
+            }
+        } catch (NumberFormatException ex) {
+            // if we can't pass the quantityPerCase to number, it normally means the location is
+            // mixed of different case quantity , so we can't calculate how many cases we will need
+            // for the pick
+            summeryPick.setPackQuantity("");
+        }
+        return summeryPick;
+    }
+
+    private Pair<String, String> getQuantityPerCaseAndQuantityPerPackForWavePickSheet(
             Long itemId, Long inventoryStatusId, Long sourceLocationId, String color, String productSize, String style,
             String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3, String inventoryAttribute4,
             String inventoryAttribute5) {
@@ -924,22 +1052,43 @@ public class WaveService {
                 itemId, sourceLocationId);
 
         if (inventoryList.isEmpty()) {
-            return "";
+            return Pair.of("", "");
         }
         Long caseQuantity = 0l;
+        Long packQuantity = 0l;
+
+        String caseQuantityString = "";
+        String packQuantityString = "";
+
         for (Inventory inventory : inventoryList) {
             logger.debug(inventory.toString());
 
-            if (Objects.nonNull(inventory.getItemPackageType()) &&
-                Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure())) {
-                if (caseQuantity.equals(0l)) {
-                    caseQuantity = inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+            if (Objects.nonNull(inventory.getItemPackageType())){
+                if (Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure())) {
+                    if (caseQuantity.equals(0l)) {
+                        caseQuantity = inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+                        caseQuantityString = String.valueOf(caseQuantity);
+                    } else if (!caseQuantity.equals(inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity())) {
+                        caseQuantityString = "MIXED";
+                    }
                 }
-                else if (!caseQuantity.equals(inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity())){
-                    return "MIXED";
+
+                if (Objects.nonNull(inventory.getItemPackageType().getPackItemUnitOfMeasure())) {
+                    logger.debug("item {} / {}, item package type {} / {}'s pack unit of measure is {}",
+                            inventory.getItem().getId(),
+                            inventory.getItem().getName(),
+                            inventory.getItemPackageType().getId(),
+                            inventory.getItemPackageType().getName(),
+                            inventory.getItemPackageType().getPackItemUnitOfMeasure().getId());
+                    if (packQuantity.equals(0l)) {
+                        packQuantity = inventory.getItemPackageType().getPackItemUnitOfMeasure().getQuantity();
+                        packQuantityString = String.valueOf(packQuantity);
+                    } else if (!packQuantity.equals(inventory.getItemPackageType().getPackItemUnitOfMeasure().getQuantity())) {
+                        packQuantityString = "MIXED";
+                    }
                 }
             }
         }
-        return String.valueOf(caseQuantity);
+        return Pair.of(caseQuantityString, packQuantityString);
     }
 }

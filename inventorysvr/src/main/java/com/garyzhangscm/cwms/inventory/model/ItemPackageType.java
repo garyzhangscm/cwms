@@ -282,6 +282,17 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
         ).findFirst().orElse(null);
     }
 
+    public ItemUnitOfMeasure getPackItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getPackFlag())
+        ).findFirst().orElse(null);
+    }
+
+
     public ItemUnitOfMeasure getDisplayItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
