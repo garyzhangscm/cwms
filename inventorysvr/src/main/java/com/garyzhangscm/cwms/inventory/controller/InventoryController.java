@@ -92,7 +92,7 @@ public class InventoryController {
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
-                                              ClientRestriction clientRestriction) {
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
 
 
@@ -105,12 +105,18 @@ public class InventoryController {
                 locationId, locationIds, locationGroupId, pickZoneId, receiptId,  receiptNumber,
                 customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, color, productSize, style,
-                attribute1, attribute2, attribute3, attribute4, attribute5,
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
                 includeDetails, maxLPNCount);
-
 
 
     }
@@ -150,15 +156,22 @@ public class InventoryController {
                                   @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                   @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                   @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
-                                 ClientRestriction clientRestriction) {
+                                 ClientRestriction clientRestriction) throws UnsupportedEncodingException {
         return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
                 itemPackageTypeName,  clientId, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptNumber ,
                 customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, color, productSize, style,
-                attribute1, attribute2, attribute3, attribute4, attribute5,
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null).size();
     }
 
@@ -322,7 +335,7 @@ public class InventoryController {
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
-                                              ClientRestriction clientRestriction) {
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
 
 
@@ -333,8 +346,14 @@ public class InventoryController {
                 customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn,
-                color, productSize, style,
-                attribute1, attribute2, attribute3, attribute4, attribute5,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction);
 
