@@ -77,6 +77,8 @@ public class ReceiptService {
     private IntegrationService integrationService;
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private InboundReceivingConfigurationService inboundReceivingConfigurationService;
 
     @Autowired
     private UserService userService;
@@ -90,6 +92,7 @@ public class ReceiptService {
 
     private Map<String, Double> receivingInventoryFileUploadProgress = new ConcurrentHashMap<>();
     private Map<String, List<FileUploadResult>> receivingInventoryFileUploadResult = new ConcurrentHashMap<>();
+
 
 
 
@@ -1585,6 +1588,13 @@ public class ReceiptService {
                         receipt.setCreatedBy(username);
                         receipt = saveOrUpdate(receipt);
                     }
+                    else if (!validateReceiptForModifyByUploadFile(receipt)) {
+                        // if we already have the receipt, and the system is setup to not change the receipt
+                        // of specific status
+                        throw ReceiptOperationException.raiseException("receipt with status " + receipt.getReceiptStatus() +
+                                " is not allowed to be changed when uploading file" );
+
+                    }
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index + 0.5));
                     logger.debug("start to create receipt line {} for item {}, quantity {}, for receipt {}",
                             receiptLineCSVWrapper.getLine(),
@@ -1632,6 +1642,24 @@ public class ReceiptService {
 
         }).start();
         return fileUploadProgressKey;
+
+    }
+
+    boolean validateReceiptForModifyByUploadFile(Receipt receipt) {
+        InboundReceivingConfiguration inboundReceivingConfiguration =
+                inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(
+                        receipt);
+        if (Objects.isNull(inboundReceivingConfiguration)) {
+            // there's nothing configured yet, let's allow change as long as the receipt has not
+            // been started yet
+            return receipt.getReceiptStatus().noLaterThan(ReceiptStatus.OPEN);
+        }
+        // if status is not setup, then it means we don't allow any override of receipt
+        // when upload the file
+        if (Objects.isNull(inboundReceivingConfiguration.getStatusAllowReceiptChangeWhenUploadFile())) {
+            return false;
+        }
+        return receipt.getReceiptStatus().noLaterThan(inboundReceivingConfiguration.getStatusAllowReceiptChangeWhenUploadFile());
 
     }
 

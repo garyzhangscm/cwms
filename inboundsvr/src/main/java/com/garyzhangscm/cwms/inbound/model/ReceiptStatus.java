@@ -19,8 +19,23 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 public enum ReceiptStatus {
-    OPEN,
-    CHECK_IN,
-    RECEIVING,
-    CLOSED
+    OPEN(0),
+    CHECK_IN(1),
+    RECEIVING(2),
+    CLOSED(3);
+
+
+    private int receivingStage;
+
+    private ReceiptStatus(int receivingStage) {
+        this.receivingStage = receivingStage;
+    }
+
+    public boolean isBefore(ReceiptStatus anotherReceiptStatus) {
+        return  receivingStage < anotherReceiptStatus.receivingStage;
+    }
+
+    public boolean noLaterThan(ReceiptStatus anotherReceiptStatus) {
+        return  receivingStage <= anotherReceiptStatus.receivingStage;
+    }
 }

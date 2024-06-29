@@ -398,7 +398,11 @@ public class ShipmentService {
         );
 
 
-        return createShipment(wave, shipmentNumber, order, plannableOrderLines);
+        Shipment shipment = createShipment(wave, shipmentNumber, order, plannableOrderLines);
+
+        orderService.changeOrderStatusAfterShipment(order.getId());
+
+        return shipment;
 
     }
 

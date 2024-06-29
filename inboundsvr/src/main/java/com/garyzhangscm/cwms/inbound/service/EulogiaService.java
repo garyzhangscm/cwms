@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.MissingInformationException;
+import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import org.apache.commons.lang.StringUtils;
@@ -134,6 +135,9 @@ public class EulogiaService {
 
             int totalCustomerPackingSlipLineCount = eulogiaCustomerPackingSlipCSVWrappers.size();
             int index = 0;
+            // we will validate receipt before we change the content. We will use
+            // the set to make sure we only need to validate the receipt once
+            Set<String> validatedReceiptNumber = new HashSet<>();
             // see if we need to create order
             for (EulogiaCustomerPackingSlipCSVWrapper eulogiaCustomerPackingSlipCSVWrapper : eulogiaCustomerPackingSlipCSVWrappers) {
                 try {
@@ -170,6 +174,16 @@ public class EulogiaService {
                         receipt.setCreatedBy(username);
                         receipt = receiptService.saveOrUpdate(receipt);
                     }
+                    else if (!validatedReceiptNumber.contains(receipt.getNumber()) &&
+                            !receiptService.validateReceiptForModifyByUploadFile(receipt)) {
+                        // if we already have the receipt, and the system is setup to not change the receipt
+                        // of specific status
+                        throw ReceiptOperationException.raiseException("receipt with status " + receipt.getReceiptStatus() +
+                                " is not allowed to be changed when uploading file" );
+
+                    }
+                    validatedReceiptNumber.add(receipt.getNumber());
+
                     customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 0.5));
 
                     logger.debug("start to create receipt line for item {}, carton quantity {}, for receipt {}",

@@ -88,6 +88,9 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "case_flag")
     private Boolean caseFlag = false;
 
+    @Column(name = "pack_flag")
+    private Boolean packFlag = false;
+
 
 
     @Column(name = "warehouse_id")
@@ -300,5 +303,13 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setDefaultForDisplay(Boolean defaultForDisplay) {
         this.defaultForDisplay = defaultForDisplay;
+    }
+
+    public Boolean getPackFlag() {
+        return packFlag;
+    }
+
+    public void setPackFlag(Boolean packFlag) {
+        this.packFlag = packFlag;
     }
 }
