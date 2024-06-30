@@ -479,7 +479,8 @@ public class EulogiaService {
         itemUnitOfMeasures.add(createUnitOfMeasureForUploadingCustomerPackingSlip(
                 companyId, warehouseId, unitOfMeasure.getId(),
                 1, 1.0, 1.0, 1.0, 1.0,
-                false, false, false, false, false
+                false, false, false, false, false,
+                false
         ));
 
         // pack
@@ -490,7 +491,8 @@ public class EulogiaService {
         itemUnitOfMeasures.add(createUnitOfMeasureForUploadingCustomerPackingSlip(
                 companyId, warehouseId, unitOfMeasure.getId(),
                 eulogiaCustomerPackingSlipCSVWrapper.getUnitPerPack(), 1.0, 1.0, 1.0, 1.0,
-                false, false, false, false, false
+                false, false, false, false,
+                false, true
         ));
 
         // carton
@@ -505,7 +507,8 @@ public class EulogiaService {
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonLength(),
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonWidth(),
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonHeight(),
-                true, true, false, true, true
+                true, true, false, true, true,
+                false
         ));
 
         // Pallet
@@ -520,7 +523,8 @@ public class EulogiaService {
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonLength() * 5,
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonWidth() * 2,
                 eulogiaCustomerPackingSlipCSVWrapper.getCartonHeight() * 3,
-                false, false, true, false, false
+                false, false, true, false,
+                false, false
         ));
 
         return itemUnitOfMeasures;
@@ -537,7 +541,8 @@ public class EulogiaService {
                                                                                  Boolean defaultForWorkOrderReceiving,
                                                                                  Boolean trackingLpn,
                                                                                  Boolean defaultForDisplay,
-                                                                                 Boolean caseFlag) {
+                                                                                 Boolean caseFlag,
+                                                                                 Boolean packFlag) {
         logger.debug("start to create new item unit of measure with");
         logger.debug("# unitOfMeasureId : {}", unitOfMeasureId);
         logger.debug("# quantity : {}", quantity);
@@ -550,6 +555,7 @@ public class EulogiaService {
         logger.debug("# trackingLpn : {}", trackingLpn);
         logger.debug("# defaultForDisplay : {}", defaultForDisplay);
         logger.debug("# caseFlag : {}", caseFlag);
+        logger.debug("# packFlag : {}", packFlag);
 
         ItemUnitOfMeasure itemUnitOfMeasure = new ItemUnitOfMeasure();
 
@@ -570,6 +576,7 @@ public class EulogiaService {
 
         itemUnitOfMeasure.setDefaultForDisplay(defaultForDisplay);
         itemUnitOfMeasure.setCaseFlag(caseFlag);
+        itemUnitOfMeasure.setPackFlag(packFlag);
 
         return itemUnitOfMeasure;
 

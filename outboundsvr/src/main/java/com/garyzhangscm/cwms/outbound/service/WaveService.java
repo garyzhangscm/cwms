@@ -1091,4 +1091,250 @@ public class WaveService {
         }
         return Pair.of(caseQuantityString, packQuantityString);
     }
+
+
+    public ReportHistory generateWavePackingSlip(Long waveId, String locale) {
+        return generateWavePackingSlip(findById(waveId), locale);
+    }
+    public ReportHistory generateWavePackingSlip(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWavePackingSlipParameters(
+                reportData, wave
+        );
+        setupWavePackingSlipData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the Packing Slip report with locale: {}",
+                locale);
+        logger.debug("####  Packing Slip Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PACKING_SLIP, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+
+    private void setupWavePackingSlipParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+
+    private List<Inventory> getStagedInventory(Wave wave) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByWave(wave).stream().filter(
+                pick -> pick.getPickedQuantity() > 0
+        ).collect(Collectors.toList());
+
+        if (picks.size() == 0) {
+            return new ArrayList<>();
+        }
+        List<Inventory> pickedInventories
+                = inventoryServiceRestemplateClient.getPickedInventory(wave.getWarehouseId(), picks);
+
+        // only return the picked inventory that is already in stage
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
+                .collect(Collectors.toList());
+
+
+    }
+    private void setupWavePackingSlipData(Report report, Wave wave) {
+        List<Inventory> stagedInventories = getStagedInventory(wave);
+        if (stagedInventories.isEmpty()) {
+            throw OrderOperationException.raiseException("There's nothing staged yet for wave " +
+                    wave.getNumber() + ", please pick and stage first");
+        }
+
+        List<Pick> picks = pickService.findByWave(wave);
+        // save the mapping between pick and order number so that we can show
+        // order number in the packing slip report
+        // KEY: pick id
+        // value: order number
+        Map<Long, String> pickOrderNumberMap = new HashMap<>();
+        picks.forEach(
+                pick -> pickOrderNumberMap.put(pick.getId(), pick.getOrderNumber())
+        );
+
+        // setup the order number so we can group and sum the quantity by order and attribute
+        for (Inventory inventory : stagedInventories) {
+            // setup the order number for display
+            if (Objects.nonNull(inventory.getPickId())) {
+                inventory.setOrderNumber(pickOrderNumberMap.getOrDefault(inventory.getPickId(), ""));
+            }
+        }
+
+        // group the inventory quantity by order and inventory attribute
+        Map<String, Inventory> groupedInventoryMap = new HashMap<>();
+        for (Inventory inventory : stagedInventories) {
+
+            String key = new StringBuilder()
+                    .append(Strings.isBlank(inventory.getOrderNumber()) ? "____" : inventory.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(inventory))
+                    .toString();
+            Inventory groupedInventory = groupedInventoryMap.getOrDefault(key, new Inventory());
+            groupedInventory.copyAttribute(inventory);
+            groupedInventory.setQuantity(groupedInventory.getQuantity() + inventory.getQuantity());
+            groupedInventory.setCaseQuantity(groupedInventory.getCaseQuantity() + inventory.getCaseQuantity());
+            groupedInventory.setPackQuantity(groupedInventory.getPackQuantity() + inventory.getPackQuantity());
+            groupedInventory.setOrderNumber(inventory.getOrderNumber());
+
+            groupedInventoryMap.put(key, groupedInventory);
+        }
+        List<Inventory> groupedInventoryList = new ArrayList<>(groupedInventoryMap.values());
+
+
+        // sort the pick so that we can group inventory
+        // picked   with same attribute
+        Collections.sort(groupedInventoryList, (a, b) -> {
+
+            String inventoryAttributeA = new StringBuilder()
+                    .append(Strings.isBlank(a.getOrderNumber()) ? "____" : a.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(a))
+                    .toString();
+
+            String inventoryAttributeB = new StringBuilder()
+                    .append(Strings.isBlank(b.getOrderNumber()) ? "____" : b.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(b))
+                    .toString();
+            return inventoryAttributeA.compareTo(inventoryAttributeB);
+        });
+        logger.debug("===== after sort, we have groupped inventory   =======");
+        for (Inventory inventory : groupedInventoryList) {
+            logger.debug("=> order = {}, po = {}, style = {}, color = {}, case quantity = {}",
+                    inventory.getOrderNumber(),
+                    inventory.getAttribute1(),
+                    inventory.getStyle(),
+                    inventory.getColor(),
+                    inventory.getCaseQuantity());
+
+
+        }
+
+
+        // whether we add an empty line between pick groups
+        // pick groups are group of picks that can be bulk picked
+        boolean addSummeryLineBetweenPickGroup = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+        Map<String, Double> totalCaseQuantityMap = new HashMap<>();
+        Map<String, Double> totalPackQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        double totalPackQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        List<Inventory> results = new ArrayList<>();
+        String lastKey = "";
+        // Setup display field
+        for (Inventory inventory : groupedInventoryList) {
+            totalUnitQuantity += inventory.getQuantity();
+            totalCaseQuantity += inventory.getCaseQuantity();
+            // setup the order number for display
+            if (Objects.nonNull(inventory.getPickId())) {
+                inventory.setOrderNumber(pickOrderNumberMap.getOrDefault(inventory.getPickId(), ""));
+            }
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = getInventoryAttributeKey(inventory);
+
+            // get the value of quantity per case by the inventory from
+            String key = inventoryAttribute.toString();
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+                Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+                Double packQuantity = totalPackQuantityMap.getOrDefault(lastKey, 0.0);
+
+                if (addSummeryLineBetweenPickGroup) {
+                    // everytime we started a new pick group, add a empty line
+                    Inventory summeryInventory = new Inventory();
+                    summeryInventory.setQuantity(quantity);
+                    summeryInventory.setCaseQuantity(caseQuantity);
+                    summeryInventory.setPackQuantity(packQuantity);
+                    summeryInventory.setItemPackageType(new ItemPackageType());
+
+                    results.add(summeryInventory);
+
+                    lastKey = key;
+                }
+            }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(key, 0.0);
+            Double packQuantity = totalPackQuantityMap.getOrDefault(key, 0.0);
+
+            totalQuantityMap.put(key, quantity + inventory.getQuantity());
+            totalCaseQuantityMap.put(key, caseQuantity + inventory.getCaseQuantity());
+            totalPackQuantityMap.put(key, packQuantity + inventory.getPackQuantity());
+
+            results.add(inventory);
+
+
+        }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLineBetweenPickGroup) {
+
+            Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+            Double packQuantity = totalPackQuantityMap.getOrDefault(lastKey, 0.0);
+
+            Inventory summeryInventory = new Inventory();
+            summeryInventory.setQuantity(quantity);
+            summeryInventory.setCaseQuantity(caseQuantity);
+            summeryInventory.setPackQuantity(packQuantity);
+            summeryInventory.setItemPackageType(new ItemPackageType());
+
+            results.add(summeryInventory);
+        }
+
+
+        report.setData(results);
+
+        // add statistics data as well
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
+    }
+
+
+    private StringBuilder getInventoryAttributeKey(Inventory inventory) {
+
+        return new StringBuilder()
+                .append(Strings.isBlank(inventory.getStyle()) ? "____" : inventory.getStyle()).append("-")
+                .append(Strings.isBlank(inventory.getColor()) ? "____" : inventory.getColor()).append("-")
+                .append(Strings.isBlank(inventory.getProductSize()) ? "____" : inventory.getProductSize()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute1()) ? "____" : inventory.getAttribute1()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute2()) ? "____" : inventory.getAttribute2()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute3()) ? "____" : inventory.getAttribute3()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute4()) ? "____" : inventory.getAttribute4()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute5()) ? "____" : inventory.getAttribute5()).append("-");
+    }
+
 }

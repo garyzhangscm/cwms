@@ -22,3 +22,4 @@ company,warehouse,type,description,fileName,orientation
 , ,TARGET_SHIPPING_CARTON_LABEL,Target Shipping Carton Label,target_shipping_carton_label.prn,PORTRAIT
 , ,PALLET_PICK_SUMMARY_LABEL,Pallet Pick Summary Label,pallet_pick_summary_label.prn,PORTRAIT
 , ,WAVE_PICK_SHEET_BY_LOCATION,Wave pick sheet grouped by location,wave_pick_sheet_by_location,LANDSCAPE
+, ,WAVE_PACKING_SLIP,Wave Packing Slip,wave_packing_slip,LANDSCAPE
