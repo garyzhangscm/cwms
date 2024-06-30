@@ -127,4 +127,13 @@ public class WaveController {
         return waveService.generateWavePickReport(id, locale);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/packing-slip", method = RequestMethod.POST)
+    public ReportHistory generateWavePackingSlip(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)  {
+
+        return waveService.generateWavePackingSlip(id, locale);
+    }
+
 }

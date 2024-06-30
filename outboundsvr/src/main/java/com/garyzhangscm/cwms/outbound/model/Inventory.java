@@ -19,9 +19,13 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import org.apache.logging.log4j.util.Strings;
+
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -31,7 +35,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private Long id;
 
-    private String lpn;
+    private String lpn = "";
 
     private Long locationId;
 
@@ -40,11 +44,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long receiptId;
     private Receipt receipt;
 
+    private String orderNumber;
+
     private Item item;
 
     private ItemPackageType itemPackageType;
 
-    private Long quantity;
+    private Long quantity = 0l;
 
     private Boolean virtual;
 
@@ -67,20 +73,34 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Warehouse warehouse;
 
 
-    private String color;
-    private String productSize;
-    private String style;
+    private String color = "";
+    private String productSize = "";
+    private String style = "";
 
-    private String attribute1;
-    private String attribute2;
-    private String attribute3;
-    private String attribute4;
-    private String attribute5;
+    private String attribute1 = "";
+    private String attribute2 = "";
+    private String attribute3 = "";
+    private String attribute4 = "";
+    private String attribute5 = "";
 
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+    private double caseQuantity = 0.0;
 
+    private double packQuantity = 0.0;
+
+
+    public void copyAttribute(Inventory anotherInvenotry) {
+        setColor(anotherInvenotry.getColor());
+        setProductSize(anotherInvenotry.getProductSize());
+        setStyle(anotherInvenotry.getStyle());
+        setAttribute1(anotherInvenotry.getAttribute1());
+        setAttribute2(anotherInvenotry.getAttribute2());
+        setAttribute3(anotherInvenotry.getAttribute3());
+        setAttribute4(anotherInvenotry.getAttribute4());
+        setAttribute5(anotherInvenotry.getAttribute5());
+    }
     public Long getId() {
         return id;
     }
@@ -190,7 +210,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public Double getSize() {
 
+        if (Objects.isNull(itemPackageType)) {
+            return 0.0;
+        }
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        if (Objects.isNull(stockItemUnitOfMeasure)) {
+            return 0.0;
+        }
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()
@@ -300,5 +326,76 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setReceipt(Receipt receipt) {
         this.receipt = receipt;
+    }
+
+    public long getQuantityPerCase() {
+        if (Objects.isNull(getItemPackageType()) ||
+                Objects.isNull(getItemPackageType().getCaseItemUnitOfMeasure())) {
+            return 0;
+        }
+        return getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+    }
+
+
+    public double getCaseQuantity() {
+        if (caseQuantity > 0) {
+            return caseQuantity;
+        }
+        long quantityPerCase = getQuantityPerCase();
+        if (quantityPerCase == 0) {
+            return 0;
+        }
+        return getQuantity() * 1.0 / quantityPerCase;
+    }
+    public long getQuantityPerPack() {
+        if (Objects.isNull(getItemPackageType()) ||
+                Objects.isNull(getItemPackageType().getPackItemUnitOfMeasure())) {
+            return 0;
+        }
+        return getItemPackageType().getPackItemUnitOfMeasure().getQuantity();
+    }
+
+    public String getOrderNumber() {
+        if (Strings.isNotBlank(orderNumber)) {
+            return  orderNumber;
+        }
+        if (Objects.nonNull(pick)) {
+            return pick.getOrderNumber();
+        }
+        return "";
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public double getPackQuantity() {
+        if (packQuantity > 0) {
+            return packQuantity;
+        }
+        long quantityPerPack= getQuantityPerPack();
+        if (quantityPerPack == 0) {
+            return 0;
+        }
+        return getQuantity() * 1.0 / quantityPerPack;
+    }
+
+    public long getPackPerCase() {
+
+        long quantityPerPack= getQuantityPerPack();
+        if (quantityPerPack == 0) {
+            return 0;
+        }
+        long quantityPerCase = getQuantityPerCase();
+        return quantityPerCase / quantityPerPack;
+
+    }
+
+    public void setCaseQuantity(double caseQuantity) {
+        this.caseQuantity = caseQuantity;
+    }
+
+    public void setPackQuantity(double packQuantity) {
+        this.packQuantity = packQuantity;
     }
 }

@@ -29,7 +29,8 @@ public enum ReportType {
     TARGET_PALLET_PICK_LABEL(true),
     COMBINED_LABELS(true),
     PALLET_PICK_SUMMARY_LABEL(true),
-    WAVE_PICK_SHEET_BY_LOCATION(false);
+    WAVE_PICK_SHEET_BY_LOCATION(false),
+    WAVE_PACKING_SLIP(false);
 
     private boolean isLabelFlag;
 
