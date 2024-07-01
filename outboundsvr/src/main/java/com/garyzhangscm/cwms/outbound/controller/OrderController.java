@@ -81,6 +81,32 @@ public class OrderController {
                 category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
                 clientRestriction);
     }
+    @ClientValidationEndpoint
+    @RequestMapping(value="/orders/count", method = RequestMethod.GET)
+    public Integer getOrderCount(@RequestParam Long warehouseId,
+                                     @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                     @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
+                                     @RequestParam(name="status", required = false, defaultValue = "") String status,
+                                     @RequestParam(name="category", required = false, defaultValue = "") String category,
+                                     @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
+                                     @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
+                                     @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                     @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
+                                     @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCompleteTime,
+                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCompleteTime,
+                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate,
+                                     @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
+                                     @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate specificCreatedDate,
+                                     @RequestParam(name = "poNumber", required = false, defaultValue = "") String poNumber,
+                                     ClientRestriction clientRestriction) {
+        logger.debug("Start to find order by number {}", number);
+        return orderService.findAll(warehouseId, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+                startCreatedTime, endCreatedTime, specificCreatedDate,
+                category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
+                clientRestriction).size();
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/orders", method = RequestMethod.POST)
@@ -332,9 +358,12 @@ public class OrderController {
                     @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
             }
     )
+
     public ResponseBodyWrapper uploadOrders(Long companyId, Long warehouseId,
                                             @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
-                                            @RequestParam("file") MultipartFile file) throws IOException {
+                                            @RequestParam(name = "createCustomer", defaultValue = "false", required = false) Boolean createCustomer,
+                                            @RequestParam(name = "modifyCustomer", defaultValue = "false", required = false) Boolean modifyCustomer,
+                                            @RequestParam("file") MultipartFile file)  {
 
 
         try {
@@ -342,7 +371,7 @@ public class OrderController {
             File localFile = uploadFileService.convertToCSVFile(
                     companyId, warehouseId, "orders", fileService.saveFile(file), ignoreUnknownFields);
 
-            String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile);
+            String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile,createCustomer, modifyCustomer);
             return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {

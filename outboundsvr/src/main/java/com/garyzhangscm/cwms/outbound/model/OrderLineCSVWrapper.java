@@ -41,6 +41,7 @@ public class OrderLineCSVWrapper {
     // if we want to create both order and order line
     // in one file
     private String shipToCustomer;
+    private String shipToCustomerDescription;
     private String billToCustomerSameAsShipToCustomer;
     private String billToCustomer;
 
@@ -495,5 +496,13 @@ public class OrderLineCSVWrapper {
 
     public void setStopSequence(Integer stopSequence) {
         this.stopSequence = stopSequence;
+    }
+
+    public String getShipToCustomerDescription() {
+        return shipToCustomerDescription;
+    }
+
+    public void setShipToCustomerDescription(String shipToCustomerDescription) {
+        this.shipToCustomerDescription = shipToCustomerDescription;
     }
 }

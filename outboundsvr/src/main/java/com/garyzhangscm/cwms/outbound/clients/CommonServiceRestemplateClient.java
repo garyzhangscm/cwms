@@ -583,4 +583,34 @@ public class CommonServiceRestemplateClient {
                 null
         );
     }
+
+    public Customer addCustomer(Long warehouseId, Customer customer) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/customers")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                Customer.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                customer
+        );
+    }
+
+    public Customer changeCustomer(Long warehouseId, Customer customer) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/common/customers/{id}")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                Customer.class,
+                builder.buildAndExpand(customer.getId()).toUriString(),
+                HttpMethod.PUT,
+                customer
+        );
+    }
 }
