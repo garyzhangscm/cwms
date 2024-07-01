@@ -184,7 +184,6 @@
   "modal.delete.content":"Sure to Delete? You can't restore the deleted record！",
   "page.warehouse.modal.edit.header.title":"Warehouse Maintenance",
   "page.warehouse.modal.delete.header.title":"Delete",
-  "modal.delete.header.title":"Delete",
   "page.warehouse.modal.delete.content":"Are you sure to remove all data of this warehouse, including all the transaction data",
   "page.location-group.modal.delete.header.title":"Delete",
   "page.location-group.modal.delete.content":"Sure to Delete? You can't restore the deleted record！",
@@ -2316,5 +2315,7 @@
   "removeExistingInventoryWithSameLPN": "Remove Existing Inventory With Same LPN",
   "inWarehouseDate": "In Warehouse Date",
   "wave.totalShortQuantity": "Total Short Quantity",
-  "inbound-receiving-configuration": "Inbound Receiving Configuration"
+  "inbound-receiving-configuration": "Inbound Receiving Configuration",
+  "createCustomerIfNotExists": "Create Customer if Not Exists",
+  "modifyCustomerIfExists": "Allow Modify Customer if Exists"
 }

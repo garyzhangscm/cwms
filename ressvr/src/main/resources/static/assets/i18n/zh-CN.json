@@ -2310,5 +2310,7 @@
   "removeExistingInventoryWithSameLPN": "移除已经存在的LPN",
   "inWarehouseDate": "入库时间",
   "wave.totalShortQuantity": "总缺货数量",
-  "inbound-receiving-configuration": "入库流程配置"
+  "inbound-receiving-configuration": "入库流程配置",
+  "createCustomerIfNotExists": "如果顾客不存在则创建",
+  "modifyCustomerIfExists": "允许修改存在的顾客信息"
 }

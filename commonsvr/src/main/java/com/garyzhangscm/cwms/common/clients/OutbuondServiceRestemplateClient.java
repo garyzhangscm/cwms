@@ -85,6 +85,23 @@ public class OutbuondServiceRestemplateClient {
 
 
 
+    public Integer getOrderCountForCustomer(Long warehouseId, Long customerId) {
+
+        UriComponentsBuilder builder =
+            UriComponentsBuilder.newInstance()
+                .scheme("http").host("zuulserver").port(5555)
+                .path("/api/outbound/orders/count")
+                .queryParam("warehouseId", warehouseId)
+                .queryParam("customerId", customerId);
+        return restTemplateProxy.exchange(
+                Integer.class,
+                builder.build(true).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
 
 
 

@@ -51,6 +51,10 @@ public class OrderFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
+                "shipToCustomerDescription", "Ship to Customer Description",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
                 "billToCustomerSameAsShipToCustomer", "Bill to Customer is the same as Ship to Customer",
                 String.class, 100, true
         ));

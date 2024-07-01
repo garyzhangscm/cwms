@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
@@ -921,7 +922,9 @@ public class OrderService {
     }
 **/
     public Order convertFromWrapper(Long warehouseId,
-                                     OrderLineCSVWrapper orderLineCSVWrapper) {
+                                    OrderLineCSVWrapper orderLineCSVWrapper,
+                                    Boolean createCustomer,
+                                    Boolean modifyCustomer) {
 
         Order order = new Order();
         order.setNumber(orderLineCSVWrapper.getOrder().trim());
@@ -967,6 +970,21 @@ public class OrderService {
             Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(),
                     warehouse.getId(), orderLineCSVWrapper.getShipToCustomer().trim());
 
+            // if we can't find the customer, see if we allow the user
+            // to create the customer on the fly
+            if (Objects.isNull(shipToCustomer)) {
+                if (Boolean.TRUE.equals(createCustomer)) {
+                    shipToCustomer = createCustomerWhenUploadingOrderFile(warehouse.getCompanyId(),
+                            warehouse.getId(), orderLineCSVWrapper);
+                }
+                else {
+                    throw OrderOperationException.raiseException("can't find customer with name " +
+                            orderLineCSVWrapper.getShipToCustomer().trim());
+                }
+            }
+            else if (Boolean.TRUE.equals(modifyCustomer)) {
+                shipToCustomer = modifyCustomerWhenUploadingOrderFile(shipToCustomer, orderLineCSVWrapper);
+            }
             order.setShipToCustomer(shipToCustomer);
             order.setShipToCustomerId(shipToCustomer.getId());
 
@@ -1033,6 +1051,74 @@ public class OrderService {
         }
 
         return order;
+    }
+
+
+    private Customer modifyCustomerWhenUploadingOrderFile(Customer customer,
+                                                          OrderLineCSVWrapper orderLineCSVWrapper) {
+        customer.setDescription(Strings.isBlank(orderLineCSVWrapper.getShipToCustomerDescription()) ?
+                "" : orderLineCSVWrapper.getShipToCustomerDescription().trim());
+
+
+        customer.setAddressCountry(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCountry()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCountry());
+        customer.setAddressState(Strings.isBlank(orderLineCSVWrapper.getShipToAddressState()) ?
+                "" : orderLineCSVWrapper.getShipToAddressState());
+        customer.setAddressCounty(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCounty()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCounty());
+        customer.setAddressCity(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCity()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCity());
+        customer.setAddressDistrict(Strings.isBlank(orderLineCSVWrapper.getShipToAddressDistrict()) ?
+                "" : orderLineCSVWrapper.getShipToAddressDistrict());
+        customer.setAddressLine1(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine1()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine1());
+        customer.setAddressLine2(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine2()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine2());
+        customer.setAddressPostcode(Strings.isBlank(orderLineCSVWrapper.getShipToAddressPostcode()) ?
+                "" : orderLineCSVWrapper.getShipToAddressPostcode());
+
+
+        return commonServiceRestemplateClient.changeCustomer(customer.getWarehouseId(), customer);
+
+    }
+    private Customer createCustomerWhenUploadingOrderFile(Long companyId,
+                                                          Long warehouseId,
+                                                          OrderLineCSVWrapper orderLineCSVWrapper) {
+
+        Customer customer = new Customer();
+
+        customer.setCompanyId(companyId);
+        customer.setWarehouseId(warehouseId);
+
+        customer.setListPickEnabledFlag(false);
+
+        customer.setName(orderLineCSVWrapper.getShipToCustomer().trim());
+        customer.setDescription(Strings.isBlank(orderLineCSVWrapper.getShipToCustomerDescription()) ?
+                "" : orderLineCSVWrapper.getShipToCustomerDescription().trim());
+
+        customer.setContactorFirstname("");
+        customer.setContactorLastname("");
+
+        customer.setAddressCountry(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCountry()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCountry());
+        customer.setAddressState(Strings.isBlank(orderLineCSVWrapper.getShipToAddressState()) ?
+                "" : orderLineCSVWrapper.getShipToAddressState());
+        customer.setAddressCounty(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCounty()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCounty());
+        customer.setAddressCity(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCity()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCity());
+        customer.setAddressDistrict(Strings.isBlank(orderLineCSVWrapper.getShipToAddressDistrict()) ?
+                "" : orderLineCSVWrapper.getShipToAddressDistrict());
+        customer.setAddressLine1(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine1()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine1());
+        customer.setAddressLine2(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine2()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine2());
+        customer.setAddressPostcode(Strings.isBlank(orderLineCSVWrapper.getShipToAddressPostcode()) ?
+                "" : orderLineCSVWrapper.getShipToAddressPostcode());
+
+        return commonServiceRestemplateClient.addCustomer(warehouseId, customer);
+
+
     }
 
     public String getNextOrderLineNumber(Long id) {
@@ -2635,7 +2721,9 @@ public class OrderService {
     }
 
     public String saveOrderData(Long warehouseId,
-                                     File localFile) throws IOException {
+                                File localFile,
+                                Boolean createCustomer,
+                                Boolean modifyCustomer) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -2671,7 +2759,8 @@ public class OrderService {
 
                         // we have to do it manually since the user name is only available in the main http session
                         // but we will create the receipt / receipt line in a separate transaction
-                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper, createCustomer,
+                                     modifyCustomer);
                         order.setCreatedBy(username);
                         order = saveOrUpdate(order);
                     }

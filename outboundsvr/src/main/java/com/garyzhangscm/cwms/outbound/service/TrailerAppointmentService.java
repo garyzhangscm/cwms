@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -552,7 +553,9 @@ public class TrailerAppointmentService {
         return fileService.loadData(file, OrderLineCSVWrapper.class);
     }
     public String saveShippingTrailerAppointmentData(Long warehouseId,
-                                File localFile) throws IOException {
+                                                     File localFile,
+                                                     Boolean createCustomer,
+                                                     Boolean modifyCustomer) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -611,7 +614,7 @@ public class TrailerAppointmentService {
 
                         // we have to do it manually since the user name is only available in the main http session
                         // but we will create the receipt / receipt line in a separate transaction
-                        order = orderService.convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order = orderService.convertFromWrapper(warehouseId, orderLineCSVWrapper, createCustomer, modifyCustomer);
                         order.setCreatedBy(username);
                         order = orderService.saveOrUpdate(order);
                     }

@@ -19,7 +19,9 @@
 package com.garyzhangscm.cwms.common.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.common.clients.OutbuondServiceRestemplateClient;
 import com.garyzhangscm.cwms.common.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.CustomerRepository;
@@ -50,6 +52,8 @@ public class CustomerService implements  TestDataInitiableService{
     private FileService fileService;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
+    @Autowired
+    private OutbuondServiceRestemplateClient outbuondServiceRestemplateClient;
 
     @Value("${fileupload.test-data.customers:customers}")
     String testDataFile;
@@ -161,16 +165,35 @@ public class CustomerService implements  TestDataInitiableService{
     }
 
     @Transactional
-    public void delete(String customerIds) {
+    public void removeCustomers(String customerIds) {
         // remove a list of suppliers based upon the id passed in
         if (!customerIds.isEmpty()) {
             long[] customerIdArray = Arrays.asList(customerIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
             for(long id : customerIdArray) {
-                delete(id);
+                removeCustomer(id);
             }
         }
 
     }
+
+    @Transactional
+    public void removeCustomer(Long id) {
+        Customer customer = findById(id);
+        validateCustomerForRemoval(customer, id);
+        delete(id);
+    }
+
+    private void validateCustomerForRemoval(Customer customer, Long id) {
+        // make sure there's no order tie to this customer
+
+        int orderCount = outbuondServiceRestemplateClient.getOrderCountForCustomer(
+                customer.getWarehouseId(), id);
+        if (orderCount > 0) {
+            throw RequestValidationFailException.raiseException("Can't remove the customer " +
+                    customer.getName() + " as there's order existing");
+        }
+    }
+
     public List<CustomerCSVWrapper> loadData(File file) throws IOException {
         CsvSchema schema = CsvSchema.builder().
                 addColumn("company").

@@ -100,7 +100,7 @@ public class CustomerController {
                     @CacheEvict(cacheNames = "OutboundService_Customer", allEntries = true),
             }
     )
-    public void deleteCustomers(@RequestParam(name = "customerIds", required = false, defaultValue = "") String customerIds) {
-        customerService.delete(customerIds);
+    public void removeCustomers(@RequestParam(name = "customerIds", required = false, defaultValue = "") String customerIds) {
+        customerService.removeCustomers(customerIds);
     }
 }
