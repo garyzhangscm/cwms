@@ -1134,6 +1134,9 @@ public class WaveService {
 
     }
 
+    public List<Inventory> getStagedInventory(Long id) {
+        return getStagedInventory(findById(id));
+    }
     private List<Inventory> getStagedInventory(Wave wave) {
 
         // set data to be all picks
