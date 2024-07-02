@@ -64,6 +64,8 @@ public class ReceiptService {
     private PurchaseOrderService purchaseOrderService;
 
     @Autowired
+    private ReceivingLPNLabelFontSizeService receivingLPNLabelFontSizeService;
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -938,8 +940,16 @@ public class ReceiptService {
             Report report, ReceiptLine receiptLine, String lpnNumber,
             Long lpnQuantity, Boolean ignoreInventoryQuantity) {
 
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
+
         Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                receiptLine, lpnNumber, lpnQuantity, ignoreInventoryQuantity
+                receiptLine, lpnNumber, lpnQuantity, ignoreInventoryQuantity,
+                colorFontSize, styleFontSize, productSizeFontSize
         );
         for(Map.Entry<String, Object> entry : lpnLabelContent.entrySet()) {
 
@@ -948,7 +958,10 @@ public class ReceiptService {
     }
 
     private Map<String, Object> getLPNDocumentContent(ReceiptLine receiptLine, String lpnNumber,
-                                                   Long inventoryQuantity, Boolean ignoreInventoryQuantity) {
+                                                   Long inventoryQuantity, Boolean ignoreInventoryQuantity,
+                                                      ReceivingLPNLabelFontSize colorFontSize,
+                                                      ReceivingLPNLabelFontSize styleFontSize,
+                                                      ReceivingLPNLabelFontSize productSizeFontSize) {
 
         // QC barcode
         StringBuilder qrCode = new StringBuilder();
@@ -1028,7 +1041,11 @@ public class ReceiptService {
 
             lpnLabelContent.put("color", receiptLine.getColor().trim().replace(" ", "\\\\&"));
             lpnLabelContent.put("color_font_size", getLabelFontSize(
-                    receiptLine.getColor().trim().replace(" ", "\\\\&"), 10, 95, 3, 10));
+                    receiptLine.getColor().trim().replace(" ", "\\\\&"),
+                    colorFontSize.getCharactersPerLine(),
+                    colorFontSize.getBaseSize(),
+                    colorFontSize.getBaseSizeLineCount(),
+                    colorFontSize.getStep()));
 
             qrCode.append("color=").append(receiptLine.getColor()).append(";");
         }
@@ -1036,14 +1053,22 @@ public class ReceiptService {
             lpnLabelContent.put("productSize", receiptLine.getProductSize());
 
             lpnLabelContent.put("productSize_font_size", getLabelFontSize(
-                    receiptLine.getProductSize().trim(), 8, 85, 3, 10));
+                    receiptLine.getProductSize().trim(),
+                    productSizeFontSize.getCharactersPerLine(),
+                    productSizeFontSize.getBaseSize(),
+                    productSizeFontSize.getBaseSizeLineCount(),
+                    productSizeFontSize.getStep()));
 
             qrCode.append("productSize=").append(receiptLine.getProductSize()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getStyle())) {
             lpnLabelContent.put("style", receiptLine.getStyle());
             lpnLabelContent.put("style_font_size", getLabelFontSize(
-                    receiptLine.getStyle().trim(), 8, 105, 3, 10));
+                    receiptLine.getStyle().trim(),
+                    styleFontSize.getCharactersPerLine(),
+                    styleFontSize.getBaseSize(),
+                    styleFontSize.getBaseSizeLineCount(),
+                    styleFontSize.getStep()));
             qrCode.append("style=").append(receiptLine.getStyle()).append(";");
         }
         if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
@@ -1154,10 +1179,14 @@ public class ReceiptService {
             return baseSize;
         }
         int lineNeeded = (int)Math.ceil(value.length() * 1.0 / charactersPerLine);
+        logger.debug("value: {}, charactersPerLine: {}, lineNeeded: {}",
+                value, charactersPerLine, lineNeeded);
+
         // if we don't need too many lines to display the value
         if (lineNeeded <= baseSizeLineCount) {
             return baseSize;
         }
+        logger.debug("label font size {}", (baseSize - step * (lineNeeded - baseSizeLineCount)));
         return baseSize - step * (lineNeeded - baseSizeLineCount);
 
 
@@ -1265,10 +1294,17 @@ public class ReceiptService {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
 
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
         lpnNumbers.forEach(
                 lpnNumber -> {
                     Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
+                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                            colorFontSize, styleFontSize, productSizeFontSize
                     );
                     lpnLabelContents.add(lpnLabelContent);
                 }
@@ -1283,6 +1319,13 @@ public class ReceiptService {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         int lpnNumbersStartIndex = 0;
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
 
         for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
 
@@ -1302,7 +1345,8 @@ public class ReceiptService {
                         Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
                                 receiptLine, lpnNumber,
                                 inventoryQuantity,
-                                ignoreInventoryQuantity
+                                ignoreInventoryQuantity,
+                                colorFontSize, styleFontSize, productSizeFontSize
                         );
                         lpnLabelContents.add(lpnLabelContent);
                     }
@@ -1322,12 +1366,20 @@ public class ReceiptService {
     private void setupReceiptLinePrePrintLPNDocumentData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
                                            Long inventoryQuantity, Boolean ignoreInventoryQuantity ) {
 
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
+
         List<ReceivingLPNReportData> receivingLPNReportData = new ArrayList<>();
         lpnNumbers.forEach(
                 lpnNumber -> {
 
                     Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
+                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                            colorFontSize, styleFontSize, productSizeFontSize
                     );
 
                         receivingLPNReportData.add(
@@ -1351,6 +1403,13 @@ public class ReceiptService {
 
         List<ReceivingLPNReportData> receivingLPNReportData = new ArrayList<>();
 
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
+
         int lpnNumbersStartIndex = 0;
 
         for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
@@ -1370,7 +1429,8 @@ public class ReceiptService {
                     lpnNumber -> {
 
                         Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                                receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
+                                receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                                colorFontSize, styleFontSize, productSizeFontSize
                         );
 
                         receivingLPNReportData.add(

@@ -136,4 +136,11 @@ public class WaveController {
         return waveService.generateWavePackingSlip(id, locale);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/staged-inventory", method = RequestMethod.GET)
+    public List<Inventory> getStagedInventory(
+            @PathVariable Long id)  {
+
+        return waveService.getStagedInventory(id);
+    }
 }
