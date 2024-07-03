@@ -393,7 +393,7 @@ public class OrderService {
     }
 
 
-    public List<Order> findWavableOrders(Long warehouseId, String orderNumber,
+    public List<Order> findWaveableOrdersCandidate(Long warehouseId, String orderNumber,
                                          Long clientId,
                                          String customerName, Long customerId,
                                          ZonedDateTime startCreatedTime,

@@ -37,6 +37,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -108,15 +109,18 @@ public class ShipmentService {
 
     public List<Shipment> findAll(Long warehouseId, String number, String orderNumber, Long stopId, Long trailerId,
                                   Boolean withoutStopOnly,
-                                  String shipmentStatusList) {
-        return findAll( warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly, shipmentStatusList, true);
+                                  String shipmentStatusList,
+                                  ClientRestriction clientRestriction) {
+        return findAll( warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly, shipmentStatusList, true,
+                clientRestriction);
     }
     public List<Shipment> findAll(Long warehouseId, String number,
                                   String orderNumber, Long stopId,
                                   Long trailerId,
                                   Boolean withoutStopOnly,
                                   String shipmentStatusList,
-                                  boolean includeDetails) {
+                                  boolean includeDetails,
+                                  ClientRestriction clientRestriction) {
         List<Shipment> shipments =  shipmentRepository.findAll(
                 (Root<Shipment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -167,12 +171,23 @@ public class ShipmentService {
 
                         CriteriaBuilder.In<ShipmentStatus> inShipmentStatus = criteriaBuilder.in(root.get("status"));
                         for(String shipmentStatus : shipmentStatusList.split(",")) {
-                            inShipmentStatus.value(ShipmentStatus.valueOf(shipmentStatus));
+                            inShipmentStatus.value(ShipmentStatus.valueOf(shipmentStatus.trim()));
                         }
                         predicates.add(criteriaBuilder.and(inShipmentStatus));
                     }
+
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                    root, criteriaBuilder);
+
+                    // Predicate[] p = new Predicate[predicates.size()];
+                    // return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
 
@@ -200,13 +215,18 @@ public class ShipmentService {
         return findByOrder(order, true);
     }
     public List<Shipment> findByOrder(Order order, boolean includeDetails) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null, includeDetails);
+        return findAll(order.getWarehouseId(), null,
+                order.getNumber(), null, null, null,
+                null, includeDetails, null);
     }
     public List<Shipment> findByStop(Long warehouseId, Long stopId) {
-        return findAll(warehouseId, null, null, stopId, null, null,null);
+        return findAll(warehouseId, null, null,
+                stopId, null, null,null,
+                null);
     }
     public List<Shipment> findByTrailer(Long warehouseId, Long trailerId) {
-        return findAll(warehouseId, null, null, null, trailerId, null,null);
+        return findAll(warehouseId, null, null, null,
+                trailerId, null,null, null);
     }
 
 
@@ -278,7 +298,9 @@ public class ShipmentService {
         validateShipmentForCancellation(shipment);
         logger.debug("shipment {} is ready for cancellation, let's cancel the shipment line first",
                 shipment.getNumber());
-        shipment.getShipmentLines().forEach(
+        shipment.getShipmentLines().stream().filter(
+                shipmentLine -> !shipmentLine.getStatus().equals(ShipmentLineStatus.CANCELLED)
+        ).forEach(
                 shipmentLine -> shipmentLineService.cancelShipmentLine(shipmentLine)
         );
 
@@ -1320,7 +1342,7 @@ public class ShipmentService {
                 ShipmentStatus.STAGED
                 ).stream().map(ShipmentStatus::name).collect(Collectors.joining(","));
         return findAll(warehouseId, number, orderNumber, null, null,
-                true, shipmentStatusList);
+                true, shipmentStatusList, null);
 
     }
 
@@ -1394,5 +1416,122 @@ public class ShipmentService {
         shipment.getShipmentLines().add(shipmentLine);
         save(shipment);
         return shipmentLine;
+    }
+
+    public List<Shipment> findWaveableShipmentsCandidate(
+            Long warehouseId, String orderNumber, Long clientId, String customerName, Long customerId,
+            ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime, LocalDate specificCreatedDate,
+            Boolean singleOrderLineOnly, Boolean singleOrderQuantityOnly, Boolean singleOrderCaseQuantityOnly,
+            ClientRestriction clientRestriction, int maxShipmentPerWave) {
+        String shipmentStatusList =
+                List.of(ShipmentStatus.PENDING.toString(), ShipmentStatus.INPROCESS.toString())
+                        .stream().collect(Collectors.joining(","));
+        List<Shipment> shipments = findAll(warehouseId, null,
+                null,  null,
+                null,
+                null,
+                shipmentStatusList,
+                false, clientRestriction);
+
+        if (shipments.size() > maxShipmentPerWave) {
+            shipments = shipments.subList(0, maxShipmentPerWave);
+        }
+
+        logger.debug("Get {} shipments for waving", shipments.size());
+
+        // skip the completed ones and any shipment that already have the wave attached
+        List<Shipment> waveableShipments =  shipments.stream()
+                .filter(
+                        shipment -> {
+                            if (Boolean.TRUE.equals(singleOrderLineOnly) && !isSingleLineShipment(shipment)) {
+                                logger.debug("Skip shipment {}. We will need to return single line shipment but the shipment has mutliple lines",
+                                        shipment.getNumber());
+                                return false;
+                            }
+                            if (Boolean.TRUE.equals(singleOrderQuantityOnly) && !isSingleUnitQuantityShipment(shipment)) {
+                                logger.debug("Skip shipment {}. We will need to return single quantity shipment but the order has lines with multiple quantity",
+                                        shipment.getNumber());
+                                return false;
+                            }
+                            if (Boolean.TRUE.equals(singleOrderCaseQuantityOnly) && !isSingleCaseQuantityShipment(shipment)) {
+                                logger.debug("Skip shipment {}. We will need to return single case quantity shipment but the shipment lines with multiple case quantity",
+                                        shipment.getNumber());
+                                return false;
+                            }
+                            return true;
+                        }
+                ).filter(
+                        shipment -> shipment.getShipmentLines().stream().anyMatch(
+                                shipmentLine -> Objects.isNull(shipmentLine.getWave())
+                        )
+                ).map(
+                        // remove the lines that doesn't have any open quantity
+                        shipment -> {
+                            Iterator<ShipmentLine> shipmentLineIterator = shipment.getShipmentLines().iterator();
+                            while(shipmentLineIterator.hasNext()) {
+                                ShipmentLine shipmentLine = shipmentLineIterator.next();
+                                if (Objects.nonNull(shipmentLine.getWave())) {
+                                    shipmentLineIterator.remove();
+                                }
+                            }
+                            return shipment;
+                        }
+                ).filter(
+                        shipment -> !shipment.getShipmentLines().isEmpty()
+                ).collect(Collectors.toList());
+
+        if (waveableShipments.size() > 0) {
+            loadAttribute(waveableShipments);
+        }
+        return waveableShipments;
+    }
+
+
+    public boolean isSingleLineShipment(Shipment shipment) {
+        return shipment.getShipmentLines().size() == 1;
+    }
+
+    /**
+     * Return true if the shipment has line(s) that only have quantity of 1
+     * @param shipment
+     * @return
+     */
+    public boolean isSingleUnitQuantityShipment(Shipment shipment) {
+        return shipment.getShipmentLines().size() > 0 &&
+                shipment.getShipmentLines().stream().noneMatch(
+                        shipmentLine -> shipmentLine.getQuantity() > 1
+                );
+    }
+
+    /**
+     * Return true if the shipment has line(s) that only have quantity of 1 case
+     * @param shipment
+     * @return
+     */
+    public boolean isSingleCaseQuantityShipment(Shipment shipment) {
+        return shipment.getShipmentLines().size() > 0 &&
+                shipment.getShipmentLines().stream().noneMatch(
+                        shipmentLine -> {
+                            OrderLine orderLine = shipmentLine.getOrderLine();
+
+                            if (Objects.isNull(orderLine.getItem())) {
+                                orderLine.setItem(
+                                        inventoryServiceRestemplateClient.getItemById(
+                                                orderLine.getItemId()
+                                        )
+                                );
+                            }
+                            if (Objects.isNull(orderLine.getItem()) ||
+                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType()) ||
+                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getCaseItemUnitOfMeasure())) {
+                                // return false if we can't get the item for one of the order line
+                                // so the item wil fail in the function isSingleCaseQuantityOrder
+                                return true;
+                            }
+                            return orderLine.getExpectedQuantity() !=
+                                    orderLine.getItem().getDefaultItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+
+                        }
+                );
     }
 }

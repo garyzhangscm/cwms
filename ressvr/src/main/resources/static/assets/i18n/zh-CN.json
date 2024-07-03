@@ -2312,5 +2312,6 @@
   "wave.totalShortQuantity": "总缺货数量",
   "inbound-receiving-configuration": "入库流程配置",
   "createCustomerIfNotExists": "如果顾客不存在则创建",
-  "modifyCustomerIfExists": "允许修改存在的顾客信息"
+  "modifyCustomerIfExists": "允许修改存在的顾客信息",
+  "WAVE-STATUS-CANCELLED": "已取消"
 }
