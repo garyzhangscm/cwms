@@ -51,8 +51,8 @@ public class WaveController {
     }
 
     @ClientValidationEndpoint
-    @RequestMapping(value="/waves/candidate", method = RequestMethod.GET)
-    public List<Order> findWaveCandidate(@RequestParam Long warehouseId,
+    @RequestMapping(value="/waves/candidate/orders", method = RequestMethod.GET)
+    public List<Order> findWaveableOrdersCandidate(@RequestParam Long warehouseId,
                                          @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                          @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                          @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
@@ -64,12 +64,34 @@ public class WaveController {
                                          @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
                                          @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
                                          ClientRestriction clientRestriction) {
-        return waveService.findWaveCandidate(warehouseId,
+        return waveService.findWaveableOrdersCandidate(warehouseId,
                 orderNumber,  clientId, customerName, customerId,
                 startCreatedTime,  endCreatedTime, specificCreatedDate,
                 singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
                 clientRestriction);
     }
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/waves/candidate/shipments", method = RequestMethod.GET)
+    public List<Shipment> findWaveableShipmentsCandidate(@RequestParam Long warehouseId,
+                                                  @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
+                                                  @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                                  @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
+                                                  @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
+                                                  @RequestParam(name="singleOrderLineOnly", required = false, defaultValue = "") Boolean singleOrderLineOnly,
+                                                  @RequestParam(name="singleOrderQuantityOnly", required = false, defaultValue = "") Boolean singleOrderQuantityOnly,
+                                                  @RequestParam(name="singleOrderCaseQuantityOnly", required = false, defaultValue = "") Boolean singleOrderCaseQuantityOnly,
+                                                  @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
+                                                  @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
+                                                  @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
+                                                  ClientRestriction clientRestriction) {
+        return waveService.findWaveableShipmentsCandidate(warehouseId,
+                orderNumber,  clientId, customerName, customerId,
+                startCreatedTime,  endCreatedTime, specificCreatedDate,
+                singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
+                clientRestriction);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/waves", method = RequestMethod.POST)

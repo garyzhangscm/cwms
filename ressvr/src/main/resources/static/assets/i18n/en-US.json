@@ -2317,5 +2317,6 @@
   "wave.totalShortQuantity": "Total Short Quantity",
   "inbound-receiving-configuration": "Inbound Receiving Configuration",
   "createCustomerIfNotExists": "Create Customer if Not Exists",
-  "modifyCustomerIfExists": "Allow Modify Customer if Exists"
+  "modifyCustomerIfExists": "Allow Modify Customer if Exists",
+  "WAVE-STATUS-CANCELLED": "Cancelled"
 }

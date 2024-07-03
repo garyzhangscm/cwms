@@ -458,7 +458,7 @@ public class WaveService {
         }
     }
 
-    public List<Order> findWaveCandidate(Long warehouseId, String orderNumber,
+    public List<Order> findWaveableOrdersCandidate(Long warehouseId, String orderNumber,
                                          Long clientId,
                                          String customerName, Long customerId,
                                          ZonedDateTime startCreatedTime,
@@ -470,7 +470,26 @@ public class WaveService {
                                          ClientRestriction clientRestriction
     ) {
 
-        return orderService.findWavableOrders(warehouseId, orderNumber, clientId,
+        return orderService.findWaveableOrdersCandidate(warehouseId, orderNumber, clientId,
+                customerName, customerId, startCreatedTime, endCreatedTime,
+                specificCreatedDate,
+                singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
+                clientRestriction, MAX_ORDER_PER_WAVE);
+    }
+
+    public List<Shipment> findWaveableShipmentsCandidate(Long warehouseId, String orderNumber,
+                                                  Long clientId,
+                                                  String customerName, Long customerId,
+                                                  ZonedDateTime startCreatedTime,
+                                                  ZonedDateTime endCreatedTime,
+                                                  LocalDate specificCreatedDate,
+                                                  Boolean singleOrderLineOnly,
+                                                  Boolean singleOrderQuantityOnly,
+                                                  Boolean singleOrderCaseQuantityOnly,
+                                                  ClientRestriction clientRestriction
+    ) {
+
+        return shipmentService.findWaveableShipmentsCandidate(warehouseId, orderNumber, clientId,
                 customerName, customerId, startCreatedTime, endCreatedTime,
                 specificCreatedDate,
                 singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
