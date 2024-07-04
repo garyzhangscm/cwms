@@ -2313,5 +2313,15 @@
   "inbound-receiving-configuration": "入库流程配置",
   "createCustomerIfNotExists": "如果顾客不存在则创建",
   "modifyCustomerIfExists": "允许修改存在的顾客信息",
-  "WAVE-STATUS-CANCELLED": "已取消"
+  "WAVE-STATUS-CANCELLED": "已取消",
+  "shipment-complete-staged": "拣货完成的发货单",
+  "shipment-not-complete-staged": "未完全完成的发货单",
+  "statusAllowOrderChangeWhenUploadFile": "在上传文件时,当订单处于什么状态前时,允许修改订单",
+  "statusAllowOrderChangeFromIntegration": "在接口导入订单时,当订单处于什么状态前时,允许修改订单",
+  "statusAllowOrderChangeFromWebUI": "在网页上,当订单处于什么状态前时,允许修改订单",
+  "completeOrderAndShipmentWhenCompleteWave": "当完成波次时，是否自动完成订单和发货单",
+  "ORDER-STATUS-ALLOCATING": "正在分配库存",
+  "ORDER-STATUS-INPROCESS": "正在作业",
+  "ORDER-STATUS-CANCELLED": "已经取消",
+  "complete-wave": "波次完成"
 }

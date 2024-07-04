@@ -80,6 +80,9 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     private Long inprocessQuantity;
 
 
+    @Transient
+    private Long stagedQuantity;
+
     @Column(name = "loaded_quantity")
     private Long loadedQuantity;
 
@@ -325,5 +328,13 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     public void setStageLocation(Location stageLocation) {
         this.stageLocation = stageLocation;
+    }
+
+    public Long getStagedQuantity() {
+        return stagedQuantity;
+    }
+
+    public void setStagedQuantity(Long stagedQuantity) {
+        this.stagedQuantity = stagedQuantity;
     }
 }

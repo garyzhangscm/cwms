@@ -1359,4 +1359,88 @@ public class WaveService {
                 .append(Strings.isBlank(inventory.getAttribute5()) ? "____" : inventory.getAttribute5()).append("-");
     }
 
+    public Wave completeWave(Long id) {
+        return completeWave(findById(id));
+    }
+    public Wave completeWave(Wave wave) {
+        validateWaveReadyForComplete(wave);
+        // check if we will need to automatically complete the shipment
+        // and orders that attached to this wave.
+        // in some simple scenario when there's no outbund truck, we allow
+        // the user to complete all orders and shipments in the wave
+        OutboundConfiguration outboundConfiguration =
+                outboundConfigurationService.findByWarehouse(wave.getWarehouseId());
+        if (Objects.nonNull(outboundConfiguration) &&
+            Boolean.TRUE.equals(outboundConfiguration.getCompleteOrderAndShipmentWhenCompleteWave())) {
+            completeOrderAndShipmentWhenCompleteWave(wave);
+        }
+        // after we complete the orders. let's complete the wave
+        wave.setStatus(WaveStatus.COMPLETED);
+        return save(wave);
+    }
+
+    private void completeOrderAndShipmentWhenCompleteWave(Wave wave) {
+
+        logger.debug("start to complete orders and shipment when we complete the wave {}",
+                wave.getNumber());
+        Set<Long> orderIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getOrderLine().getOrder().getId()
+        ).collect(Collectors.toSet());
+
+        // see if the order is ready for complete only if all the order
+        // lines are in the wave
+
+        Set<Long> validOrders = orderIds.stream().filter(
+                orderId -> orderLineAllInWave(orderId, wave)
+        ).collect(Collectors.toSet());
+
+
+        validOrders.forEach(
+                orderId -> {
+                    Order orderToBeComplete = orderService.findById(orderId);
+                    logger.debug("start to complete order {} when we complete the wave {}",
+                            orderToBeComplete.getNumber(), wave.getNumber());
+                    // complete order should complete the shipment that attached to it
+                    // TO-DO: when we have multiple shipment
+                    orderService.completeOrder(orderId, orderToBeComplete);
+                }
+        );
+    }
+
+    /**
+     * Check if we can complete the wave
+     * @param wave
+     */
+    private void validateWaveReadyForComplete(Wave wave) {
+        List<Pick> picks = pickService.findByWave(wave);
+        // make sure all the picks are done
+        if (picks.stream().anyMatch(pick -> pick.getQuantity() > pick.getPickedQuantity())) {
+            throw OrderOperationException.raiseException("can't complete wave " + wave.getNumber() +
+                    " as there's still open pick");
+        }
+        List<ShortAllocation> shortAllocations = shortAllocationService.findByWave(wave);
+        // make sure all the picks are done
+        if (!shortAllocations.isEmpty()) {
+            throw OrderOperationException.raiseException("can't complete wave " + wave.getNumber() +
+                    " as there's still short allocation");
+        }
+    }
+
+    private boolean orderLineAllInWave(Long orderId, Wave wave) {
+        Order order = orderService.findById(orderId);
+        for (OrderLine orderLine : order.getOrderLines()) {
+            boolean orderLineInWave = false;
+            for (ShipmentLine shipmentLine : wave.getShipmentLines()) {
+                if (orderLine.getId().equals(shipmentLine.getOrderLineId())) {
+                    orderLineInWave = true;
+                }
+            }
+            if (!orderLineInWave) {
+                logger.debug("Order {}, order line {} is not wave {}",
+                        order.getNumber(), orderLine.getNumber(), wave.getNumber());
+                return false;
+            }
+        }
+        return true;
+    }
 }
