@@ -645,4 +645,14 @@ public class ShortAllocationService {
         );
         return save(shortAllocation);
     }
+
+    public List<ShortAllocation> findByWave(Wave wave) {
+
+            return findAll(wave.getWarehouseId(), null,
+                    null, null,
+                    null, null,null,
+                    null, wave.getId(), null,
+                    null,
+                    true);
+    }
 }

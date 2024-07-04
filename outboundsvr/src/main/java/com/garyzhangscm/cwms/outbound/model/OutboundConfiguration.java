@@ -77,6 +77,10 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
     @Enumerated(EnumType.STRING)
     private OrderStatus statusAllowOrderChangeFromWebUI;
 
+
+    @Column(name = "complete_order_and_shipment_when_complete_wave")
+    private Boolean completeOrderAndShipmentWhenCompleteWave;
+
     public Long getId() {
         return id;
     }
@@ -163,5 +167,13 @@ public class OutboundConfiguration extends AuditibleEntity<String> implements Se
 
     public void setStatusAllowOrderChangeFromWebUI(OrderStatus statusAllowOrderChangeFromWebUI) {
         this.statusAllowOrderChangeFromWebUI = statusAllowOrderChangeFromWebUI;
+    }
+
+    public Boolean getCompleteOrderAndShipmentWhenCompleteWave() {
+        return completeOrderAndShipmentWhenCompleteWave;
+    }
+
+    public void setCompleteOrderAndShipmentWhenCompleteWave(Boolean completeOrderAndShipmentWhenCompleteWave) {
+        this.completeOrderAndShipmentWhenCompleteWave = completeOrderAndShipmentWhenCompleteWave;
     }
 }

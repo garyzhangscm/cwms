@@ -138,6 +138,12 @@ public class WaveController {
         return ResponseBodyWrapper.success("WAVE " + id + " is cancelled");
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/complete", method = RequestMethod.POST)
+    public Wave completeWave(@PathVariable Long id) {
+        return waveService.completeWave(id);
+    }
+
 
 
     @BillableEndpoint

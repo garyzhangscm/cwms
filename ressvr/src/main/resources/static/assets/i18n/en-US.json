@@ -2318,5 +2318,15 @@
   "inbound-receiving-configuration": "Inbound Receiving Configuration",
   "createCustomerIfNotExists": "Create Customer if Not Exists",
   "modifyCustomerIfExists": "Allow Modify Customer if Exists",
-  "WAVE-STATUS-CANCELLED": "Cancelled"
+  "WAVE-STATUS-CANCELLED": "Cancelled",
+  "shipment-complete-staged": "Completely Staged Shipment",
+  "shipment-not-complete-staged": "Not Completely Staged Shipment",
+  "statusAllowOrderChangeWhenUploadFile": "Status that allow changing order when upload file",
+  "statusAllowOrderChangeFromIntegration": "Status that allow changing order from integration",
+  "statusAllowOrderChangeFromWebUI": "Status that allow changing order from web UI",
+  "completeOrderAndShipmentWhenCompleteWave": "Complete the orders and shipments when complete wave",
+  "ORDER-STATUS-ALLOCATING": "Allocating",
+  "ORDER-STATUS-INPROCESS": "Inprocess",
+  "ORDER-STATUS-CANCELLED": "Cancelled",
+  "complete-wave": "Complete Wave"
 }
