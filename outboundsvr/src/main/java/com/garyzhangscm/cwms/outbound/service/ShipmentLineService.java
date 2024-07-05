@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
@@ -443,6 +444,26 @@ public class ShipmentLineService {
         save(shipmentLine);
 
 
+
+    }
+
+    /**
+     * Deassign shipment line from the wave
+     * @param wave
+     * @param shipmentLineId
+     */
+    public ShipmentLine deassignShipmentLineFromWave(Wave wave, Long shipmentLineId) {
+        ShipmentLine shipmentLine = findById(shipmentLineId);
+        if (Objects.nonNull(shipmentLine.getWave()) &&
+                !shipmentLine.getWave().getId().equals(wave.getId())) {
+            throw OrderOperationException.raiseException("Can't deassign shipment  " +
+                    shipmentLine.getShipmentNumber() + " / line " + shipmentLine.getNumber() +
+                    " from wave " + wave.getNumber() + " as it belongs to another wave " +
+                    shipmentLine.getWave().getNumber());
+        }
+        shipmentLine.setWave(null);
+
+        return save(shipmentLine);
 
     }
 }

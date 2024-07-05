@@ -18,17 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
-import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import com.garyzhangscm.cwms.outbound.service.WaveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -170,5 +167,14 @@ public class WaveController {
             @PathVariable Long id)  {
 
         return waveService.getStagedInventory(id);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/deassign-shipment-line", method = RequestMethod.POST)
+    public Wave deassignShipmentLine(
+            @PathVariable Long id,
+            @RequestParam Long shipmentLineId)  {
+
+        return waveService.deassignShipmentLine(id, shipmentLineId);
     }
 }
