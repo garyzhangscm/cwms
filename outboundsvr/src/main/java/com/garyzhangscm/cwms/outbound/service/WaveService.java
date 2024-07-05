@@ -1443,4 +1443,22 @@ public class WaveService {
         }
         return true;
     }
+
+    public Wave deassignShipmentLine(Long id, Long shipmentLineId) {
+        return deassignShipmentLine(findById(id), shipmentLineId);
+    }
+
+    /**
+     * Deassign a shipment from the wave
+     * @param wave
+     * @param shipmentLineId
+     * @return
+     */
+    public Wave deassignShipmentLine(Wave wave, Long shipmentLineId) {
+
+        shipmentLineService.deassignShipmentLineFromWave(wave, shipmentLineId);
+
+        return findById(wave.getId());
+
+    }
 }
