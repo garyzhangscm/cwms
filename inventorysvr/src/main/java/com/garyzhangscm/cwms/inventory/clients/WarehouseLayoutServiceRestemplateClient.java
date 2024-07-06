@@ -172,6 +172,27 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "InventoryService_Location", unless="#result == null")
+    public List<Location> getLocationsByName(Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+    }
+
+
     @Cacheable(cacheNames = "InventoryService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name)   {
 

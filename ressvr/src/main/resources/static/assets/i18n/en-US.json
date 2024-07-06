@@ -2328,5 +2328,6 @@
   "ORDER-STATUS-ALLOCATING": "Allocating",
   "ORDER-STATUS-INPROCESS": "Inprocess",
   "ORDER-STATUS-CANCELLED": "Cancelled",
-  "complete-wave": "Complete Wave"
+  "complete-wave": "Complete Wave",
+  "menu.mobile.outbound.pick-by-wave": "Pick By Wave"
 }

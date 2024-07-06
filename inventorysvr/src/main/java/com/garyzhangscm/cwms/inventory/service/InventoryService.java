@@ -327,20 +327,42 @@ public class InventoryService {
                     }
                     else if (StringUtils.isNotBlank(locationName) &&
                             Objects.nonNull(warehouseId)) {
+
                         logger.debug("Will get inventory from location {} / {}",
                                 warehouseId, locationName);
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+                        if (locationName.contains("*")) {
 
-                        if (location != null) {
-                            logger.debug(">> location id: {}",
-                                    location.getId());
-                            predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationsByName(warehouseId, locationName);
+
+                            if (locations.isEmpty()) {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                            else {
+
+                                CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                                for(Long id : locations.stream().map(location -> location.getId()).collect(Collectors.toSet())) {
+                                    inLocationIds.value(id);
+                                }
+                                predicates.add(criteriaBuilder.and(inLocationIds));
+                            }
                         }
                         else {
-                            // since the user passed in a wrong location, we will add a
-                            // wrong id into the query so it won't return anything
-                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+
+                            if (location != null) {
+                                logger.debug(">> location id: {}",
+                                        location.getId());
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            }
+                            else {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
                         }
+
                     }
 
                     if (StringUtils.isNotBlank(locationIds)) {

@@ -2148,11 +2148,12 @@ public class ReceiptService {
         WarehouseConfiguration warehouseConfiguration
                 = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
         TimeZone timeZone = TimeZone.getDefault();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
             timeZone = TimeZone.getTimeZone(warehouseConfiguration.getTimeZone());
         }
         if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
-            LocalDateTime localDateTime = LocalDateTime.parse(inventoryCSVWrapper.getFifoDate());
+            LocalDateTime localDateTime = LocalDate.parse(inventoryCSVWrapper.getFifoDate(), formatter).atStartOfDay();
             if (Objects.nonNull(localDateTime)) {
                 inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
             }
@@ -2160,7 +2161,7 @@ public class ReceiptService {
 
         if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
 
-            LocalDateTime localDateTime = LocalDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            LocalDateTime localDateTime = LocalDate.parse(inventoryCSVWrapper.getInWarehouseDatetime(), formatter).atStartOfDay();
             // ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
             if (Objects.nonNull(localDateTime)) {
                 inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
