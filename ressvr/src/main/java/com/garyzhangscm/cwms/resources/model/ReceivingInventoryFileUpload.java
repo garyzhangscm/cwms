@@ -99,8 +99,8 @@ public class ReceivingInventoryFileUpload extends FileUploadType {
                 String.class, 200, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "inWarehouseDatetime", "In Warehouse Date Time",
-                ZonedDateTime.class, 100, true
+                "inWarehouseDatetime", "In Warehouse Date Time(MM/dd/yyyy)",
+                String.class, 100, true
         ));
 
     }
