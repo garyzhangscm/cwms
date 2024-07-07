@@ -153,7 +153,7 @@ public class ReceiptController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.POST)
+    @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.PUT)
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
@@ -163,6 +163,20 @@ public class ReceiptController {
     public ReceiptLine addReceiptLine(@PathVariable Long id,
                                       @RequestBody ReceiptLine receiptLine) {
         return receiptLineService.addReceiptLine(id, receiptLine);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
+    public ReceiptLine changeReceiptLine(@PathVariable Long receiptId,
+                                         @PathVariable Long receiptLineId,
+                                      @RequestBody ReceiptLine receiptLine) {
+        return receiptLineService.changeReceiptLine(receiptId, receiptLineId, receiptLine);
     }
 
     /**

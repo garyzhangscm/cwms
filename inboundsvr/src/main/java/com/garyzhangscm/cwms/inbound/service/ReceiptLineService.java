@@ -748,4 +748,57 @@ public class ReceiptLineService {
         return (receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity()) > 0 ?
                 receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity() : 0;
     }
+
+    public ReceiptLine changeReceiptLine(Long receiptId, Long receiptLineId, ReceiptLine receiptLine) {
+        ReceiptLine exisitingReceiptLine = findById(receiptLineId);
+        // we will only allow the user to change the
+        if (Objects.nonNull(receiptLine.getCubicMeter())) {
+            exisitingReceiptLine.setCubicMeter(receiptLine.getCubicMeter());
+        }
+        if (Objects.nonNull(receiptLine.getExpectedQuantity())) {
+            exisitingReceiptLine.setExpectedQuantity(receiptLine.getExpectedQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getOverReceivingPercent())) {
+            exisitingReceiptLine.setOverReceivingPercent(receiptLine.getOverReceivingPercent());
+        }
+        if (Objects.nonNull(receiptLine.getOverReceivingQuantity())) {
+            exisitingReceiptLine.setOverReceivingQuantity(receiptLine.getOverReceivingQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getQcQuantity())) {
+            exisitingReceiptLine.setQcQuantity(receiptLine.getQcQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getQcPercentage())) {
+            exisitingReceiptLine.setQcPercentage(receiptLine.getQcPercentage());
+        }
+        if (Objects.nonNull(receiptLine.getColor())) {
+            exisitingReceiptLine.setColor(receiptLine.getColor());
+        }
+        if (Objects.nonNull(receiptLine.getStyle())) {
+            exisitingReceiptLine.setStyle(receiptLine.getStyle());
+        }
+        if (Objects.nonNull(receiptLine.getProductSize())) {
+            exisitingReceiptLine.setProductSize(receiptLine.getProductSize());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute1())) {
+            exisitingReceiptLine.setInventoryAttribute1(receiptLine.getInventoryAttribute1());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute2())) {
+            exisitingReceiptLine.setInventoryAttribute2(receiptLine.getInventoryAttribute2());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute3())) {
+            exisitingReceiptLine.setInventoryAttribute3(receiptLine.getInventoryAttribute3());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute4())) {
+            exisitingReceiptLine.setInventoryAttribute4(receiptLine.getInventoryAttribute4());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute5())) {
+            exisitingReceiptLine.setInventoryAttribute5(receiptLine.getInventoryAttribute5());
+        }
+
+        if (Objects.nonNull(receiptLine.getInventoryStatusId())) {
+            exisitingReceiptLine.setInventoryStatusId(receiptLine.getInventoryStatusId());
+        }
+
+        return saveOrUpdate(exisitingReceiptLine);
+    }
 }
