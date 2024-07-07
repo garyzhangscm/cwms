@@ -118,10 +118,11 @@ public class ReceiptService {
                                  ZonedDateTime checkInStartTime,
                                  ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate, Long purchaseOrderId,
+                                 String ids,
                                  ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
                 clientId, clientName,
-                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true, clientRestriction);
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, ids, true, clientRestriction);
     }
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
@@ -131,6 +132,7 @@ public class ReceiptService {
                                  ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate,
                                  Long purchaseOrderId,
+                                 String ids,
                                  boolean loadDetails, ClientRestriction clientRestriction) {
 
 
@@ -141,6 +143,16 @@ public class ReceiptService {
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
+
+                        for(String id : ids.split(",")) {
+                            inIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inIds));
+                    }
                     if (StringUtils.isNotBlank(number)) {
 
                         if (number.contains("*")) {
@@ -1508,7 +1520,7 @@ public class ReceiptService {
         }
         return findAll(warehouseId, null, null, supplierId,
                 supplierName, null, null, null,
-                null, null, null, false, null).size();
+                null, null, null, null,false, null).size();
     }
 
     /**
@@ -2454,5 +2466,57 @@ public class ReceiptService {
             }
         }
 
+    }
+
+    public List<Inventory> findInventoryByReceipts(Long warehouseId, String receiptIds) {
+
+
+        List<Inventory> receivedInventory =  inventoryServiceRestemplateClient
+                .findInventoryByReceipts(warehouseId, receiptIds);
+
+        receivedInventory.sort((inventory1, inventory2) -> {
+                    if (inventory1.getReceiptId().equals(inventory2.getReceiptId())) {
+                        inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn());
+                    }
+                    return inventory1.getReceiptId().compareTo(inventory2.getReceiptId());
+                }
+        );
+        // we may want to setup the receipt number and receipt line numbers
+        // for the inventory as well
+
+        List<Receipt> receipts =  findAll(warehouseId, null, null, null,
+                null, null, null, null,
+                null, null, null, receiptIds,false, null);
+        // convert the list into map to increase the performance
+        // key: receipt id
+        // value: receipt number
+        Map<Long, String> receiptMap = new HashMap<>();
+        // key: receipt line id
+        // value: receipt line number
+        Map<Long, String> receiptLineMap = new HashMap<>();
+        for (Receipt receipt : receipts) {
+            receiptMap.put(receipt.getId(), receipt.getNumber());
+            for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+                receiptLineMap.put(receiptLine.getId(), receiptLine.getNumber());
+            }
+        }
+        for (Inventory inventory : receivedInventory) {
+            if (Objects.nonNull(inventory.getReceiptId())) {
+                inventory.setReceiptNumber(
+                        receiptMap.getOrDefault(
+                                inventory.getReceiptId(), ""
+                        )
+                );
+            }
+            if (Objects.nonNull(inventory.getReceiptLineId())) {
+                inventory.setReceiptLineNumber(
+                        receiptLineMap.getOrDefault(
+                                inventory.getReceiptLineId(), ""
+                        )
+                );
+            }
+        }
+
+        return receivedInventory;
     }
 }

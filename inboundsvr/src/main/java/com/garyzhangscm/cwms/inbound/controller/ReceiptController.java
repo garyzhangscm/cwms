@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -73,12 +74,13 @@ public class ReceiptController {
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
                                          @RequestParam(name = "checkInDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
+                                         @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                          ClientRestriction clientRestriction) {
         return receiptService.findAll(warehouseId, number, receiptStatusList,
                 supplierId, supplierName,
                 clientId, clientName,
-                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, loadDetails, clientRestriction);
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, ids, loadDetails, clientRestriction);
     }
 
 
@@ -270,6 +272,15 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/{id}/inventories", method = RequestMethod.GET)
     public List<Inventory> findInventoryByReceipt(@PathVariable Long id){
         return receiptService.findInventoryByReceipt(id);
+    }
+
+    @RequestMapping(value="/receipts/inventories", method = RequestMethod.GET)
+    public List<Inventory> findInventoryByReceipts(@RequestParam Long warehouseId,
+                                                   @RequestParam String receiptIds){
+        if (Strings.isBlank(receiptIds)) {
+            return new ArrayList<>();
+        }
+        return receiptService.findInventoryByReceipts(warehouseId, receiptIds);
     }
 
 

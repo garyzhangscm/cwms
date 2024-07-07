@@ -405,6 +405,26 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    public List<Inventory> findInventoryByReceipts(
+            Long warehouseId, String receiptIds) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/inventories")
+                        .queryParam("receiptIds", receiptIds)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+    }
+
     public List<Inventory> findInventoryByCustomerReturnOrder(
             Long warehouseId, Long customerReturnOrderId,
             String inventoryIds,
