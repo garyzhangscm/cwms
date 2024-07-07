@@ -68,7 +68,9 @@ public class Inventory implements Serializable {
     private Location location;
 
     private Long receiptId;
+    private String receiptNumber;
     private Long receiptLineId;
+    private String receiptLineNumber;
 
     private List<InventoryMovement> inventoryMovements;
 
@@ -377,5 +379,19 @@ public class Inventory implements Serializable {
         this.inWarehouseDatetime = inWarehouseDatetime;
     }
 
+    public String getReceiptNumber() {
+        return receiptNumber;
+    }
 
+    public void setReceiptNumber(String receiptNumber) {
+        this.receiptNumber = receiptNumber;
+    }
+
+    public String getReceiptLineNumber() {
+        return receiptLineNumber;
+    }
+
+    public void setReceiptLineNumber(String receiptLineNumber) {
+        this.receiptLineNumber = receiptLineNumber;
+    }
 }

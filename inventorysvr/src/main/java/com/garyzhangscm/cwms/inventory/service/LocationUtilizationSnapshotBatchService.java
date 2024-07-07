@@ -696,7 +696,7 @@ public class LocationUtilizationSnapshotBatchService {
                             locationIds,
                             null,
                             null,
-                            null,
+                            null,null,
                             null,
                             null,
                             null,

@@ -170,6 +170,7 @@ public class InventoryService {
                                    Long locationGroupId,
                                    Long pickZoneId,
                                    String receiptId,
+                                   String receiptIds,
                                    String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
@@ -193,7 +194,7 @@ public class InventoryService {
         return findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, pickZoneId,
-                receiptId, receiptNumber,
+                receiptId, receiptIds, receiptNumber,
                 customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
@@ -219,6 +220,7 @@ public class InventoryService {
                                    Long locationGroupId,
                                    Long pickZoneId,
                                    String receiptId,
+                                   String receiptIds,
                                    String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
@@ -383,6 +385,14 @@ public class InventoryService {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 
                     }
+                    if (StringUtils.isNotBlank(receiptIds)) {
+                        CriteriaBuilder.In<Long> inReceiptIds = criteriaBuilder.in(root.get("receiptId"));
+                        for(String id : receiptIds.split(",")) {
+                            inReceiptIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptIds));
+                    }
+
                     if (Strings.isNotBlank(receiptNumber)) {
                         Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
                                 warehouseId,
@@ -738,6 +748,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null);
     }
 
@@ -999,6 +1010,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, null, includeDetails,
                 null);
     }
@@ -1034,6 +1046,7 @@ public class InventoryService {
                 null,
                 null,
                 locationGroupId,
+                null,
                 null,
                 null,
                 null,
@@ -2865,6 +2878,7 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2926,6 +2940,7 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
                     lpn,
                     null,
                     null,
@@ -2963,6 +2978,7 @@ public class InventoryService {
                         null,
                         null,
                         inboundLocationId,
+                        null,
                         null,
                         null,
                         null,
@@ -3491,6 +3507,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, null,
                 null,
                 null,
@@ -3595,6 +3612,7 @@ public class InventoryService {
                                     Long locationGroupId,
                                      Long pickZoneId,
                                     String receiptId,
+                                     String receiptIds,
                                      String receiptNumber,
                                     String customerReturnOrderId,
                                     Long workOrderId,
@@ -3612,7 +3630,7 @@ public class InventoryService {
         List<Inventory> inventories = findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, pickZoneId,
-                receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
+                receiptId, receiptIds, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
                 attribute1, attribute2, attribute3, attribute4, attribute5,
@@ -4234,6 +4252,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
                 null, includeDetails,
                 null);
     }
@@ -4579,7 +4598,7 @@ public class InventoryService {
                         inventoryStatusId, null,
                         locationId, null, null,
                         null,
-                        null, null, null, null,
+                        null, null, null, null, null,
                         null, null, null,
                         lpn, null, null, null,
                         null,
@@ -4613,6 +4632,7 @@ public class InventoryService {
                         null, null, null, null,
                         null, null, null,
                         null, null, null, null,
+                        null,
                         null,
                         null,
                         null,
@@ -4770,7 +4790,7 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null,
+                null, null,
                 null,
                 null,
                 null,

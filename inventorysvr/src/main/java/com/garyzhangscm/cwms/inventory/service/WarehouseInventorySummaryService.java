@@ -68,7 +68,7 @@ public class WarehouseInventorySummaryService {
                 null,
                 null,
                 null,
-                null,
+                null,null,
                 null,
                 null,
                 null,

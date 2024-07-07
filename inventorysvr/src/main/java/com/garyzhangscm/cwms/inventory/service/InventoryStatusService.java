@@ -218,7 +218,7 @@ public class InventoryStatusService implements TestDataInitiableService{
         if (!inventoryService.findAll(warehouseId,
                 null, null, null, null, null,
                 null, null, inventoryStatus.getId(), null, null,
-                null, null, null, null, null,
+                null, null, null, null, null,null,
                 null, null, null, null,null,null,null,
                 null,null,null,null,null,
                 null, null, null, null,false, null,
