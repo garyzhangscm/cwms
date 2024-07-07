@@ -51,6 +51,7 @@ Inbound-receipt,add-receipt,Add Receipt
 Inbound-receipt,upload-receipt,Upload Receipt
 Inbound-receipt,upload-receiving-inventory,Upload Receiving Inventory
 Inbound-receipt,upload-putaway-inventory,Upload Put Away Inventory
+Inbound-receipt,modify-receipt-line,Add or Modify Receipt Line
 Inventory-Inventory,adjust-inventory-quantity,Adjust Inventory Quantity
 Inventory-Inventory,change-inventory-attribute,Change Inventory Attribute
 Inventory-Inventory,move-inventory,Move Inventory
