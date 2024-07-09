@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +58,8 @@ public class ReceiptLineService {
     private ReceiptService receiptService;
     @Autowired
     private InboundQCConfigurationService inboundQCConfigurationService;
+    @Autowired
+    private InboundReceivingConfigurationService inboundReceivingConfigurationService;
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -356,9 +359,24 @@ public class ReceiptLineService {
 
         Receipt receipt = receiptService.findById(receiptId);
         ReceiptLine receiptLine = findById(receiptLineId);
+
+        // setup the in warehouse date for the inventory, if not setup yet
+        // we will use the check in time as the inventory's in warehouse date
+        // if setup by policy. Otherwise, we will leave it blank and let the
+        // inventory service handle it
+        if (Objects.isNull(inventory.getInWarehouseDatetime())) {
+
+            InboundReceivingConfiguration inboundReceivingConfiguration =
+                    inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(receipt);
+            if (Objects.nonNull(inboundReceivingConfiguration) &&
+                    Boolean.TRUE.equals(inboundReceivingConfiguration.getUseReceiptCheckInTimeAsInWarehouseDateTime()))
+            inventory.setInWarehouseDatetime(receipt.getCheckInTime());
+        }
+
         return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation);
 
     }
+
     @Transactional
     public Inventory receive(Receipt receipt,
                              ReceiptLine receiptLine,

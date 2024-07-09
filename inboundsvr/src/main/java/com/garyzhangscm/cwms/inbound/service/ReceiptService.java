@@ -2176,7 +2176,7 @@ public class ReceiptService {
             LocalDateTime localDateTime = LocalDate.parse(inventoryCSVWrapper.getInWarehouseDatetime(), formatter).atStartOfDay();
             // ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
             if (Objects.nonNull(localDateTime)) {
-                inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
+                inventory.setInWarehouseDatetime(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
             }
         }
 

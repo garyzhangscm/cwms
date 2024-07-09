@@ -2324,5 +2324,6 @@
   "ORDER-STATUS-INPROCESS": "正在作业",
   "ORDER-STATUS-CANCELLED": "已经取消",
   "complete-wave": "波次完成",
-  "menu.mobile.outbound.pick-by-wave": "按波次拣货"
+  "menu.mobile.outbound.pick-by-wave": "按波次拣货",
+  "picked-inventory-summary": "已拣库存汇总"
 }

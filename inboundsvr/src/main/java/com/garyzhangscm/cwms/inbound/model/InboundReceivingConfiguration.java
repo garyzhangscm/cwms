@@ -108,6 +108,9 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
     @Enumerated(EnumType.STRING)
     private ReceiptStatus statusAllowReceiptChangeFromWebUI;
 
+    @Column(name = "use_receipt_check_in_time_as_in_warehouse_datetime")
+    private Boolean useReceiptCheckInTimeAsInWarehouseDateTime;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -244,6 +247,14 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
 
     public void setStatusAllowReceiptChangeWhenUploadFile(ReceiptStatus statusAllowReceiptChangeWhenUploadFile) {
         this.statusAllowReceiptChangeWhenUploadFile = statusAllowReceiptChangeWhenUploadFile;
+    }
+
+    public Boolean getUseReceiptCheckInTimeAsInWarehouseDateTime() {
+        return useReceiptCheckInTimeAsInWarehouseDateTime;
+    }
+
+    public void setUseReceiptCheckInTimeAsInWarehouseDateTime(Boolean useReceiptCheckInTimeAsInWarehouseDateTime) {
+        this.useReceiptCheckInTimeAsInWarehouseDateTime = useReceiptCheckInTimeAsInWarehouseDateTime;
     }
 
     public ReceiptStatus getStatusAllowReceiptChangeFromIntegration() {
