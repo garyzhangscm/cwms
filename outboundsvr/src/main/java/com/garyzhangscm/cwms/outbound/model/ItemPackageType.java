@@ -71,6 +71,12 @@ public class ItemPackageType implements Serializable {
         return Objects.hash(id, name, item);
     }
 
+    public ItemUnitOfMeasure getCaseUnitOfMeasure() {
+        return getItemUnitOfMeasures().stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
+    }
+
     public Long getId() {
         return id;
     }
