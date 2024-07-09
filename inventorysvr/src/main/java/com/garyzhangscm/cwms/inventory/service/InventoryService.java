@@ -1089,7 +1089,7 @@ public class InventoryService {
                 inventory.setInWarehouseDatetime(inventory.getLastModifiedTime());
             }
             else {
-                inventory.setInWarehouseDatetime(currentLocalDateTime.atZone(ZoneOffset.UTC));
+                inventory.setInWarehouseDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
             }
         }
 
