@@ -3138,7 +3138,11 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         // clear all shipment line assignment
         order.getOrderLines().forEach(
-                orderLine -> orderLine.setShipmentLines(new ArrayList<>())
+                orderLine -> {
+                    orderLine.setShipmentLines(new ArrayList<>());
+                    orderLine.setOpenQuantity(orderLine.getExpectedQuantity());
+                    orderLine.setInprocessQuantity(0l);
+                }
         );
 
 
