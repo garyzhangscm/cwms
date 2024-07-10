@@ -1461,4 +1461,11 @@ public class WaveService {
         return findById(wave.getId());
 
     }
+
+    public void removeWave(Long id) {
+        // cancel the wave and then remove it from the system
+        cancelWave(id);
+
+        delete(id);
+    }
 }

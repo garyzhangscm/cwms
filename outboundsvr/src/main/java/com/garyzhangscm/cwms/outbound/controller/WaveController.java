@@ -124,8 +124,16 @@ public class WaveController {
 
     @BillableEndpoint
     @RequestMapping(value="/waves", method = RequestMethod.DELETE)
-    public void removeWaves(@RequestParam(name = "wave_ids", required = false, defaultValue = "") String waveIds) {
+    public ResponseBodyWrapper<String> removeWaves(@RequestParam(name = "wave_ids", required = false, defaultValue = "") String waveIds) {
         waveService.delete(waveIds);
+        return ResponseBodyWrapper.success("WAVEs with ids " + waveIds + " are removed");
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}", method = RequestMethod.DELETE)
+    public ResponseBodyWrapper<String> removeWave(@PathVariable Long id) {
+        waveService.removeWave(id);
+        return ResponseBodyWrapper.success("WAVE " + id + " is removed");
     }
 
     @BillableEndpoint
