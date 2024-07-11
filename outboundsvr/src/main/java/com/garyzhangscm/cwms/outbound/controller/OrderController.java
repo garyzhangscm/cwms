@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -58,6 +60,7 @@ public class OrderController {
     @ClientValidationEndpoint
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
+                                     @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
                                      @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                      @RequestParam(name="status", required = false, defaultValue = "") String status,
@@ -76,7 +79,7 @@ public class OrderController {
                                      @RequestParam(name = "poNumber", required = false, defaultValue = "") String poNumber,
                                      ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+        return orderService.findAll(warehouseId, ids, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
                 clientRestriction);
@@ -84,6 +87,7 @@ public class OrderController {
     @ClientValidationEndpoint
     @RequestMapping(value="/orders/count", method = RequestMethod.GET)
     public Integer getOrderCount(@RequestParam Long warehouseId,
+                                 @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
                                      @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                      @RequestParam(name="status", required = false, defaultValue = "") String status,
@@ -102,7 +106,7 @@ public class OrderController {
                                      @RequestParam(name = "poNumber", required = false, defaultValue = "") String poNumber,
                                      ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+        return orderService.findAll(warehouseId, ids, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
                 clientRestriction).size();
@@ -634,5 +638,21 @@ public class OrderController {
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return orderService.getPickableQuantityForManualPick(id, lpn, pickWholeLPN);
     }
+
+    @RequestMapping(value="/orders/picked-inventories", method = RequestMethod.GET)
+    public List<Inventory> getPickedInventoriesByOrderIds(@PathVariable  Long warehouseId,
+                                                 @RequestParam String orderIds) {
+        return orderService.getPickedInventoriesByOrderIds(warehouseId, orderIds);
+    }
+
+    @RequestMapping(value="/orders/picked-inventory-summary", method = RequestMethod.GET)
+    public List<Inventory> getPickedInventorySummaryByOrderIds(@RequestParam  Long warehouseId,
+                                                          @RequestParam String orderIds) {
+        if (Strings.isBlank(orderIds)) {
+            return new ArrayList<>();
+        }
+        return orderService.getPickedInventorySummaryByOrderIds(warehouseId, orderIds);
+    }
+
 
 }

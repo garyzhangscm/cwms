@@ -19,10 +19,14 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +40,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long id;
 
     private String lpn = "";
+
+    private Long clientId;
+    private Client client;
 
     private Long locationId;
 
@@ -83,6 +90,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private String attribute4 = "";
     private String attribute5 = "";
 
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime inWarehouseDatetime;
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
@@ -134,6 +145,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         if (location.getId() != null) {
             setLocationId(location.getId());
         }
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public Item getItem() {
@@ -222,6 +241,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
                 * stockItemUnitOfMeasure.getLength()
                 * stockItemUnitOfMeasure.getWidth()
                 * stockItemUnitOfMeasure.getHeight();
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 
     public Boolean getVirtual() {
@@ -389,6 +416,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         long quantityPerCase = getQuantityPerCase();
         return quantityPerCase / quantityPerPack;
 
+    }
+
+    public ZonedDateTime getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(ZonedDateTime inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
     }
 
     public void setCaseQuantity(double caseQuantity) {

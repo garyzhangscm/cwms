@@ -121,7 +121,8 @@ public class PickService {
     }
 
 
-    public List<Pick> findAll(Long warehouseId, Long clientId, String number, Long orderId, String orderNumber,
+    public List<Pick> findAll(Long warehouseId, Long clientId, String number,
+                              Long orderId, String orderIds, String orderNumber,
                               Long shipmentId, Long waveId,
                               Long  listId, Long cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
@@ -164,6 +165,18 @@ public class PickService {
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
 
+                    }
+                    if (Strings.isNotBlank(orderIds)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+
+
+                        CriteriaBuilder.In<Long> inOrderIds = criteriaBuilder.in(joinOrder.get("id"));
+                        for(String id : orderIds.split(",")) {
+                            inOrderIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderIds));
                     }
                     if (Strings.isNotBlank(orderNumber)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
@@ -340,7 +353,9 @@ public class PickService {
         return picks;
     }
 
-    public List<Pick> findAll(Long warehouseId, Long clientId, String number, Long orderId, String orderNumber, Long shipmentId,Long waveId,
+    public List<Pick> findAll(Long warehouseId, Long clientId, String number,
+                              Long orderId, String orderIds, String orderNumber,
+                              Long shipmentId,Long waveId,
                               Long  listId, Long  cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
@@ -357,7 +372,8 @@ public class PickService {
                               Boolean includeCompletedPick,
                               Boolean includeCancelledPick,
                               ClientRestriction clientRestriction) {
-        return findAll(warehouseId, clientId,  number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
+        return findAll(warehouseId, clientId,  number, orderId, orderIds,
+                orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
@@ -376,14 +392,27 @@ public class PickService {
     }
 
     public List<Pick> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, null, order.getId(), null, null,
+        return findAll(order.getWarehouseId(), null, null, order.getId(), null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
     }
 
+    public List<Pick> findByOrders(Long warehouseId, String orderIds) {
+        return findAll(warehouseId, null, null, null, orderIds, null, null,
+                null, null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null, null, null, null, null, null, null, null, null);
+
+    }
+    public List<Pick> findByOrders(Long warehouseId, List<Order> orders) {
+
+        String orderIds =  orders.stream().map(Order::getId).map(String::valueOf).collect(Collectors.joining(","));
+        return findByOrders(warehouseId, orderIds);
+    }
+
     public List<Pick> findByShipment(Shipment shipment) {
-        return findAll(shipment.getWarehouseId(),null, null, null, null, shipment.getId(),
+        return findAll(shipment.getWarehouseId(),null, null, null, null, null, shipment.getId(),
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
@@ -394,28 +423,28 @@ public class PickService {
                         map(WorkOrderLine::getId).
                         map(Object::toString).
                         collect( Collectors.joining( "," ) );
-        return findAll(workOrder.getWarehouseId(), null, null, null, null,  null,
+        return findAll(workOrder.getWarehouseId(), null, null, null,null, null,  null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, workOrderLineIds, null,null, null, null, null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
-        return findAll(wave.getWarehouseId(), null, null, null, null, null,
+        return findAll(wave.getWarehouseId(), null, null, null, null,null, null,
                 wave.getId(), null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
     }
     public List<Pick> findByPickList(PickList pickList) {
 
-        return findAll(pickList.getWarehouseId(), null, null, null, null,  null,
+        return findAll(pickList.getWarehouseId(), null, null, null, null,null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
-        return findAll(cartonization.getWarehouseId(), null, null, null, null, null,
+        return findAll(cartonization.getWarehouseId(), null, null, null, null,null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
@@ -2111,7 +2140,7 @@ public class PickService {
                                        boolean exactMatch,
                                    ClientRestriction clientRestriction) {
         List<Pick> picks = findAll(
-                warehouseId, clientId, null, null, null,
+                warehouseId, clientId, null, null, null,null,
                 null, null,
                 null, null,  null,
                 itemId, null, null,
@@ -2343,7 +2372,8 @@ public class PickService {
 
 
     public ReportHistory generatePickReport(Long warehouseId, String ids, String locale) throws JsonProcessingException {
-        List<Pick> picks = findAll(warehouseId, null,  null, null, null, null, null, null, null, ids,
+        List<Pick> picks = findAll(warehouseId, null,  null, null, null,
+                null, null, null, null, null, ids,
                 null, null, null,
                 null, null, null, null, null,
                 null, null, null, null,
@@ -2512,7 +2542,7 @@ public class PickService {
 
     public Integer getPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null,null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, clientRestriction, false);
@@ -2524,6 +2554,7 @@ public class PickService {
     public Integer getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
                 findAll(warehouseId, null, null, null, null, null,
+                        null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,true, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
@@ -2533,7 +2564,7 @@ public class PickService {
     }
     public Long getCompletedPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
@@ -2543,7 +2574,7 @@ public class PickService {
     }
     public Map<String, Integer[]> getPickCountByLocationGroup(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);

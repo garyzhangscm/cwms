@@ -40,10 +40,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -126,6 +123,7 @@ public class OrderService {
 
 
     public List<Order> findAll(Long warehouseId,
+                               String ids,
                                String number,
                                String numbers,
                                String status,
@@ -150,6 +148,15 @@ public class OrderService {
                     criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inOrderIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : ids.split(",")) {
+                            inOrderIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderIds));
+                    }
 
                     if (StringUtils.isNotBlank(number)) {
                         if (number.contains("*")) {
@@ -325,7 +332,7 @@ public class OrderService {
 
     }
 
-    public List<Order> findAll(Long warehouseId, String number, String numbers, String status,
+    public List<Order> findAll(Long warehouseId, String ids, String number, String numbers, String status,
                                ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
                                LocalDate specificCompleteDate,
                                ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
@@ -334,7 +341,7 @@ public class OrderService {
                                Long clientId,
                               Long trailerAppointmentId, String poNumber,
                               ClientRestriction clientRestriction) {
-        return findAll(warehouseId, number, numbers, status,
+        return findAll(warehouseId, ids, number, numbers, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category, customerName, customerId,
@@ -406,7 +413,7 @@ public class OrderService {
                                          int orderNumberCap) {
 
         List<Order> orders = findAll(warehouseId,
-                orderNumber, null, OrderStatus.OPEN.toString(),
+                orderNumber, null, null, OrderStatus.OPEN.toString(),
                 null,
                 null,
                 null,
@@ -2968,7 +2975,7 @@ public class OrderService {
                                                      String status,
                                                      ClientRestriction clientRestriction) {
 
-        List<Order> orders = findAll(warehouseId, number, numbers,
+        List<Order> orders = findAll(warehouseId, null, number, numbers,
                 status, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
@@ -3245,7 +3252,7 @@ public class OrderService {
     public Integer getOpenOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, OrderStatus.OPEN.toString(),
+                null, null, null, OrderStatus.OPEN.toString(),
                 null,
                 null,
                 null,
@@ -3263,10 +3270,29 @@ public class OrderService {
         return orders.size();
     }
 
+    public List<Order> findByOrderIds(Long warehouseId, String orderIds) {
+
+        return findAll(warehouseId,
+                orderIds, null, null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true, null);
+    }
+
     public Integer getTodayOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, null,
+                null, null, null, null,
                 null,
                 null,
                 null,
@@ -3286,7 +3312,7 @@ public class OrderService {
     public Integer getTodayCompletedOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, OrderStatus.COMPLETE.toString(),
+                null, null, null, OrderStatus.COMPLETE.toString(),
                 null,
                 null,
                 null,
@@ -4734,5 +4760,123 @@ public class OrderService {
             order.setStatus(OrderStatus.INPROCESS);
         }
         saveOrUpdate(order, false);
+    }
+
+    public List<Inventory> getPickedInventoriesByOrderIds(Long warehouseId, String orderIds) {
+
+        return getPickedInventoriesByOrderIds(warehouseId,
+                pickService.findByOrders(warehouseId, orderIds));
+
+    }
+
+    public List<Inventory> getPickedInventoriesByOrderIds(Long warehouseId, List<Pick> picks) {
+
+        List<Inventory> pickedInventories = new ArrayList<>();
+
+        if (picks.size() > 0) {
+            pickedInventories
+                    = inventoryServiceRestemplateClient.getPickedInventory(
+                    warehouseId, picks,
+                    true
+            );
+        }
+        return pickedInventories;
+    }
+
+
+    public List<Inventory> getPickedInventorySummaryByOrderIds(Long warehouseId, String orderIds) {
+        List<Pick> picks =
+                pickService.findByOrders(warehouseId, orderIds);
+        List<Inventory> pickedInventories = getPickedInventoriesByOrderIds(warehouseId, picks);
+        // we will save the mapping between the pick and the order number so that
+        // we will be able to get the order number from the pick
+        // key: pick id
+        // value: order number
+
+        Map<Long, String> pickOrderNumberMap = new HashMap<>();
+        for (Pick pick : picks) {
+            pickOrderNumberMap.put(pick.getId(), pick.getOrderNumber());
+        }
+
+        logger.debug("Got {} picked inventory from order id list {}",
+                pickedInventories.size(),
+                orderIds);
+
+
+
+        // group by inventory attribute
+        // client
+        // order number
+        // item
+        // color
+        // product size
+        // style
+        // case quantity
+        // in warehouse date(date)
+
+        // we will use the warehouse's timezone and convert the
+        // in warehouse date into the date
+        WarehouseConfiguration warehouseConfiguration
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+
+        TimeZone timeZone = TimeZone.getDefault();
+        if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
+            timeZone = TimeZone.getTimeZone(warehouseConfiguration.getTimeZone());
+        }
+
+        // key: group of the inventory attribute
+        // value: inventory with total quantity
+        Map<String, Inventory> inventoryMap = new HashMap<>();
+        for (Inventory pickedInventory : pickedInventories) {
+            String orderNumber = Strings.isBlank(pickedInventory.getOrderNumber()) ?
+                    pickOrderNumberMap.getOrDefault(pickedInventory.getPickId(), "") : pickedInventory.getOrderNumber();
+
+            String key = new StringBuilder()
+                    .append(Objects.isNull(pickedInventory.getClientId()) ? "----" : pickedInventory.getClientId()).append("_")
+                    .append(Strings.isBlank(orderNumber) ? "----" : orderNumber).append("_")
+                    .append(Objects.isNull(pickedInventory.getItem()) ? "----" : pickedInventory.getItem().getId()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getColor()) ? "----" : pickedInventory.getColor()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getProductSize()) ? "----" : pickedInventory.getProductSize()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getStyle()) ? "----" : pickedInventory.getStyle()).append("_")
+                    .append(Objects.isNull(pickedInventory.getItemPackageType().getCaseItemUnitOfMeasure()) ? "----" : pickedInventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity()).append("_")
+                    .append(Objects.isNull(pickedInventory.getInWarehouseDatetime()) ? "----" :
+                            pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate()).append("_")
+                    .toString();
+            // logger.debug("Key for lpn {} is {}",
+            //         pickedInventory.getLpn(), key);
+            // logger.debug("> outbound : {}", pickedInventory.getOrderNumber());
+            // logger.debug("in warehouse date: {}",
+            //         pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate().atStartOfDay().atZone(timeZone.toZoneId()));
+
+
+            Inventory inventory = inventoryMap.get(key);
+            if (Objects.isNull(inventory)) {
+                inventory = new Inventory();
+                inventory.setClientId(pickedInventory.getClientId());
+                inventory.setClient(pickedInventory.getClient());
+                inventory.setOrderNumber(orderNumber);
+                inventory.setItem(pickedInventory.getItem());
+                inventory.setItemPackageType(pickedInventory.getItemPackageType());
+                inventory.setColor(pickedInventory.getColor());
+                inventory.setProductSize(pickedInventory.getProductSize());
+                inventory.setStyle(pickedInventory.getStyle());
+                if (Objects.nonNull(pickedInventory.getInWarehouseDatetime())) {
+
+                    inventory.setInWarehouseDatetime(
+                            pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate().atStartOfDay().atZone(timeZone.toZoneId())
+                    );
+                }
+                inventory.setQuantity(0l);
+            }
+            inventory.setQuantity(inventory.getQuantity() + pickedInventory.getQuantity());
+            inventoryMap.put(key, inventory);
+        }
+        logger.debug("group   picked inventory into {} summary from order id list {}",
+                inventoryMap.size(),
+                orderIds);
+
+        return new ArrayList<>(inventoryMap.values());
+
+
     }
 }
