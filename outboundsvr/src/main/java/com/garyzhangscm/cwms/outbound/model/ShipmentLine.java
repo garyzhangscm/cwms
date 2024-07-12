@@ -218,7 +218,13 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     }
 
     public Long getOrderLineId() {
-        return orderLineId;
+        if (Objects.nonNull(orderLineId)) {
+            return orderLineId;
+        }
+        if (Objects.nonNull(getOrderLine())) {
+            return getOrderLine().getId();
+        }
+        return null;
     }
 
     public void setOrderLineId(Long orderLineId) {

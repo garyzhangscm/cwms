@@ -43,10 +43,7 @@ import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -257,7 +254,17 @@ public class ShippingStageAreaConfigurationService implements TestDataInitiableS
                 reserveCode = pick.getShipmentLine().getShipmentNumber();
                 break;
             case BY_WAVE:
-                reserveCode = pick.getShipmentLine().getWave().getNumber();
+                // if the configuration is setup to reserve the locations by wave but for some reason
+                // the shipment is not group into wave, then we will still use the
+                // shipment number to reserve the location
+                if (Objects.isNull(pick.getShipmentLine().getWave())) {
+                    reserveCode = pick.getShipmentLine().getShipmentNumber();
+
+                }
+                else {
+
+                    reserveCode = pick.getShipmentLine().getWave().getNumber();
+                }
                 break;
         }
         logger.debug(" will reserve ship stage with code: {}", reserveCode);
