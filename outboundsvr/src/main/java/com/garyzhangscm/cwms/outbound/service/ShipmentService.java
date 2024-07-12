@@ -1427,7 +1427,7 @@ public class ShipmentService {
                 List.of(ShipmentStatus.PENDING.toString(), ShipmentStatus.INPROCESS.toString())
                         .stream().collect(Collectors.joining(","));
         List<Shipment> shipments = findAll(warehouseId, null,
-                null,  null,
+                orderNumber,  null,
                 null,
                 null,
                 shipmentStatusList,

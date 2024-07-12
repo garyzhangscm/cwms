@@ -1386,6 +1386,8 @@ public class WaveService {
         Set<Long> orderIds = wave.getShipmentLines().stream().map(
                 shipmentLine -> shipmentLine.getOrderLine().getOrder().getId()
         ).collect(Collectors.toSet());
+        logger.debug("Found {} orders in the wave {}, we will only complete the order if all the lines are in the wave",
+                orderIds.size(), wave.getNumber());
 
         // see if the order is ready for complete only if all the order
         // lines are in the wave
@@ -1393,6 +1395,8 @@ public class WaveService {
         Set<Long> validOrders = orderIds.stream().filter(
                 orderId -> orderLineAllInWave(orderId, wave)
         ).collect(Collectors.toSet());
+        logger.debug("Found {} orders in the wave {}, that all lines are in this wave",
+                validOrders.size(), wave.getNumber());
 
 
         validOrders.forEach(
@@ -1430,8 +1434,17 @@ public class WaveService {
         Order order = orderService.findById(orderId);
         for (OrderLine orderLine : order.getOrderLines()) {
             boolean orderLineInWave = false;
+            logger.debug("start to check if the order line {} / {} is in the wave {}",
+                    order.getNumber(), orderLine.getNumber(), wave.getNumber());
+
             for (ShipmentLine shipmentLine : wave.getShipmentLines()) {
+                logger.debug("check if the existing shipment line {} / {} 's order line id {} matches with this line 's id {}",
+                        shipmentLine.getShipmentNumber(),
+                        shipmentLine.getNumber(),
+                        shipmentLine.getOrderLineId(),
+                        orderLine.getId());
                 if (orderLine.getId().equals(shipmentLine.getOrderLineId())) {
+                    logger.debug("!!! Match found!");
                     orderLineInWave = true;
                 }
             }
