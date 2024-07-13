@@ -1479,6 +1479,7 @@ public class WaveService {
         // cancel the wave and then remove it from the system
         cancelWave(id);
 
-        delete(id);
+
+        delete(findById(id, false));
     }
 }

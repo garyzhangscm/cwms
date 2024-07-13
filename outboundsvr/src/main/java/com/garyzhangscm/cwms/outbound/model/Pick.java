@@ -167,6 +167,10 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     @Column(name = "acknowledged_username")
     private String acknowledgedUsername;
 
+    // the user that current working on this pick
+    @Column(name = "acknowledged_rf_code")
+    private String acknowledgedRFCode;
+
     @Column(name = "unit_of_measure_id")
     private Long unitOfMeasureId;
 
@@ -960,6 +964,14 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setCaseQuantity(String caseQuantity) {
         this.caseQuantity = caseQuantity;
+    }
+
+    public String getAcknowledgedRFCode() {
+        return acknowledgedRFCode;
+    }
+
+    public void setAcknowledgedRFCode(String acknowledgedRFCode) {
+        this.acknowledgedRFCode = acknowledgedRFCode;
     }
 
     public String getQuantityPerPack() {
