@@ -2757,9 +2757,10 @@ public class PickService {
         // make sure the pick is either no one is acknowledged yet,
         // or already acknowledged by the same user with same rf device
 
-        return (Strings.isBlank(pick.getAcknowledgedUsername()) ||
-                pick.getAcknowledgedUsername().equalsIgnoreCase(username)) &&
-                (Strings.isBlank(pick.getAcknowledgedRFCode()) ||
-                        pick.getAcknowledgedRFCode().equalsIgnoreCase(rfCode)) ;
+        return (pick.getQuantity() > pick.getPickedQuantity()) &&
+                    (Strings.isBlank(pick.getAcknowledgedUsername()) ||
+                    pick.getAcknowledgedUsername().equalsIgnoreCase(username)) &&
+                    (Strings.isBlank(pick.getAcknowledgedRFCode()) ||
+                            pick.getAcknowledgedRFCode().equalsIgnoreCase(rfCode)) ;
     }
 }
