@@ -412,8 +412,9 @@ public class OrderService {
                                          ClientRestriction clientRestriction,
                                          int orderNumberCap) {
 
+
         List<Order> orders = findAll(warehouseId,
-                orderNumber, null, null, OrderStatus.OPEN.toString(),
+                null, orderNumber, null, OrderStatus.OPEN.toString(),
                 null,
                 null,
                 null,
@@ -2752,6 +2753,7 @@ public class OrderService {
             Set<String> validatedOrderNumbers = new HashSet<>();
             for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
 
+                orderLineCSVWrapper.trim();
                 try {
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
                     Client client = Strings.isNotBlank(orderLineCSVWrapper.getClient()) ?

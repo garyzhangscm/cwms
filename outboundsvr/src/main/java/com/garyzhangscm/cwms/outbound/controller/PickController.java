@@ -241,9 +241,10 @@ public class PickController {
     @RequestMapping(value="/pick/{id}/acknowledge", method = RequestMethod.POST)
     public Pick acknowledgePick(
             @PathVariable Long id,
-            @RequestParam Long warehouseId) {
+            @RequestParam Long warehouseId,
+            @RequestParam String rfCode) {
 
-        return pickService.acknowledgePick(warehouseId, id);
+        return pickService.acknowledgePick(warehouseId, id, rfCode);
     }
     @BillableEndpoint
     @RequestMapping(value="/pick/{id}/unacknowledge", method = RequestMethod.POST)
@@ -293,8 +294,9 @@ public class PickController {
     @RequestMapping(value="/pick/{id}/acknowledgeable-by-current-user", method = RequestMethod.POST)
     public Boolean isPickAcknowledgeableByCurrentUser(
             @PathVariable Long id,
-            @RequestParam Long warehouseId) {
+            @RequestParam Long warehouseId,
+            @RequestParam String rfCode) {
 
-        return pickService.isPickAcknowledgeableByCurrentUser(warehouseId, id);
+        return pickService.isPickAcknowledgeableByCurrentUser(warehouseId, id, rfCode);
     }
 }

@@ -1297,7 +1297,7 @@ public class PickService {
                     pick, shipmentLine.getOrderLine().getOrder().getStageLocationGroupId());
         }
 
-        logger.debug("OK, we find the ship stage configuration: {}", shippingStageAreaConfiguration.getSequence());
+        logger.debug("OK, we find the ship stage configuration: {}", shippingStageAreaConfiguration);
 
         Location stagingLocation = shippingStageAreaConfigurationService.reserveShippingStageLocation(shippingStageAreaConfiguration, pick);
 
@@ -2519,15 +2519,16 @@ public class PickService {
 
     }
 
-    public Pick acknowledgePick(Long warehouseId, Long id) {
+    public Pick acknowledgePick(Long warehouseId, Long id, String rfCode) {
         Pick pick = findById(id);
         String currentUserName = userService.getCurrentUserName();
-        if (Strings.isNotBlank(pick.getAcknowledgedUsername()) &&
-                !pick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName)) {
+        if (!isPickAcknowledgeableByUser(id, currentUserName, rfCode)) {
             throw PickingException.raiseException("pick  " + pick.getNumber() +
-                    " is already acknowledged by " + pick.getAcknowledgedUsername());
+                    " is already acknowledged by " + pick.getAcknowledgedUsername() +
+                    " by  " + pick.getAcknowledgedRFCode());
         }
         pick.setAcknowledgedUsername(currentUserName);
+        pick.setAcknowledgedRFCode(rfCode);
 
         return saveOrUpdate(pick);
 
@@ -2535,6 +2536,7 @@ public class PickService {
     public Pick unacknowledgePick(Long warehouseId, Long id) {
         Pick pick = findById(id);
         pick.setAcknowledgedUsername(null);
+        pick.setAcknowledgedRFCode(null);
 
         return saveOrUpdate(pick);
 
@@ -2740,11 +2742,24 @@ public class PickService {
 
     }
 
-    public Boolean isPickAcknowledgeableByCurrentUser(Long warehouseId, Long id) {
+    public Boolean isPickAcknowledgeableByCurrentUser(Long warehouseId, Long id, String rfCode) {
+
+        String currentUserName = userService.getCurrentUserName();
+        // make sure the pick is either no one is acknowledged yet,
+        // or already acknowledged by the same user with same rf device
+
+        return isPickAcknowledgeableByUser(id, currentUserName, rfCode);
+    }
+
+    public Boolean isPickAcknowledgeableByUser(Long id, String username,  String rfCode) {
 
         Pick pick = findById(id);
-        String currentUserName = userService.getCurrentUserName();
-        return Strings.isBlank(pick.getAcknowledgedUsername()) ||
-                pick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName);
+        // make sure the pick is either no one is acknowledged yet,
+        // or already acknowledged by the same user with same rf device
+
+        return (Strings.isBlank(pick.getAcknowledgedUsername()) ||
+                pick.getAcknowledgedUsername().equalsIgnoreCase(username)) &&
+                (Strings.isBlank(pick.getAcknowledgedRFCode()) ||
+                        pick.getAcknowledgedRFCode().equalsIgnoreCase(rfCode)) ;
     }
 }
