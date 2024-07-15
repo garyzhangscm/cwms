@@ -61,11 +61,17 @@ public class RFService {
 
 
 
-
     public RF findById(Long id) {
+        return findById(id, true);
+    }
+
+    public RF findById(Long id, boolean loadDetails) {
         RF rf =  rfRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("rf not found by id: " + id));
-        loadAttribute(rf);
+        if (loadDetails) {
+
+            loadAttribute(rf);
+        }
 
         return  rf;
     }
@@ -121,8 +127,6 @@ public class RFService {
                 rf.getRfCode()
         );
 
-
-
         rf = rfRepository.save(rf);
         loadAttribute(rf);
 
@@ -145,8 +149,9 @@ public class RFService {
     }
     private void loadAttribute(RF rf) {
 
-        if (Objects.nonNull(rf.getCurrentLocationId()) &&
-                ( Strings.isBlank(rf.getCurrentLocationName()) || Objects.isNull(rf.getCurrentLocation()))) {
+        if (Objects.nonNull(rf.getCurrentLocationId()) ) {
+            logger.debug("start to load location for rf {}, with location id {}",
+                    rf.getRfCode(), rf.getCurrentLocationId());
             rf.setCurrentLocation(layoutServiceRestemplateClient.getLocationById(rf.getCurrentLocationId()));
             rf.setCurrentLocationName(rf.getCurrentLocation().getName());
         }
@@ -190,7 +195,7 @@ public class RFService {
     }
 
     public RF changeLocation(Long id, Long locationId) {
-        RF rf = findById(id);
+        RF rf = findById(id, false);
         rf.setCurrentLocationId(locationId);
 
         return saveOrUpdate(rf);

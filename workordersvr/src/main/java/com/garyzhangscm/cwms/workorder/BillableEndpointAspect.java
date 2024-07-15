@@ -38,7 +38,9 @@ public class BillableEndpointAspect {
     @Before(value = "@annotation(com.garyzhangscm.cwms.workorder.model.BillableEndpoint)")
     public void handle(JoinPoint joinPoint) throws Exception {
 
-        createBillableRequest(httpServletRequest);
+        // Disable the billable request for now. We will do nothing
+        // createBillableRequest(httpServletRequest);
+        logger.debug("We will disable the billable request handler at this moment");
 
     }
 
