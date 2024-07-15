@@ -2334,5 +2334,6 @@
   "REPORT-TYPE-WAVE_PICK_SHEET_BY_LOCATION": "Wave Pick Sheet By Location",
   "REPORT-TYPE-WAVE_PACKING_SLIP": "Wave Packing Slip",
   "includeCompletedWave": "Include Completed Wave",
-  "includeCancelledWave": "Include Cancelled Wave"
+  "includeCancelledWave": "Include Cancelled Wave",
+  "autoDepositForLpnWithSameDestination": "Auto Deposit For LPN With Same Destination"
 }

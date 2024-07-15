@@ -2329,5 +2329,6 @@
   "REPORT-TYPE-WAVE_PICK_SHEET_BY_LOCATION": "波次拣货单",
   "REPORT-TYPE-WAVE_PACKING_SLIP": "波次装箱单",
   "includeCompletedWave": "包含已完成的波次",
-  "includeCancelledWave": "包含已取消的波次"
+  "includeCancelledWave": "包含已取消的波次",
+  "autoDepositForLpnWithSameDestination": "自动放置相同目标库位的位置"
 }

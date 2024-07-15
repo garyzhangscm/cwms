@@ -8,7 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class KafkaSender {
@@ -27,13 +31,30 @@ public class KafkaSender {
 
         logger.debug("====> Start to send to kafka: {} / {}"
                      ,topic, message);
-        kafkaTemplate.send(topic, message);
+        try {
+            kafkaTemplate.send(topic, message);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("Error when send kafka message");
+            logger.debug("error: {}", ex.getMessage());
+        }
+
+        // kafkaTemplate.send(topic, message);
     }
     public void send(String topic, String key, String message) {
 
         logger.debug("====> Start to send to kafka: {} / {} / {}"
                 ,topic, key, message);
-        kafkaTemplate.send(topic, key, message);
+
+        try {
+            kafkaTemplate.send(topic, key, message);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            logger.debug("Error when send kafka message");
+            logger.debug("error: {}", ex.getMessage());
+        }
     }
 
 

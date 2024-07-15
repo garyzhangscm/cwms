@@ -69,6 +69,12 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "list_pick_batch_picking")
     private Boolean listPickBatchPicking = true;
 
+    // auto deposit all LPNs in the deposit
+    // page, when the LPNs has the same destination
+    // as the current LPN that is being deposit
+    @Column(name = "auto_deposit_for_lpn_with_same_destination")
+    private Boolean autoDepositForLpnWithSameDestination = false;
+
     @Column(name = "printer_name")
     private String printerName;
 
@@ -134,5 +140,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setPrinterName(String printerName) {
         this.printerName = printerName;
+    }
+
+    public Boolean getAutoDepositForLpnWithSameDestination() {
+        return autoDepositForLpnWithSameDestination;
+    }
+
+    public void setAutoDepositForLpnWithSameDestination(Boolean autoDepositForLpnWithSameDestination) {
+        this.autoDepositForLpnWithSameDestination = autoDepositForLpnWithSameDestination;
     }
 }
