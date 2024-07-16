@@ -91,7 +91,7 @@ public class WaveController {
 
 
     @BillableEndpoint
-    @RequestMapping(value="/waves", method = RequestMethod.POST)
+    @RequestMapping(value="/waves", method = RequestMethod.PUT)
     public Wave addWave(@RequestBody Wave wave) {
         return waveService.save(wave);
     }
@@ -99,9 +99,10 @@ public class WaveController {
     @BillableEndpoint
     @RequestMapping(value="/waves/plan", method = RequestMethod.POST)
     public Wave planWave(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
+                         @RequestParam(name="comment", required = false, defaultValue = "") String comment,
                          @RequestParam Long warehouseId,
                          @RequestBody List<Long> orderLineIds) {
-        return waveService.planWave(warehouseId, waveNumber, orderLineIds);
+        return waveService.planWave(warehouseId, waveNumber, orderLineIds, comment);
     }
 
     @BillableEndpoint
@@ -117,9 +118,17 @@ public class WaveController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/waves/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value="/waves/{id}", method = RequestMethod.POST)
     public Wave changeWave(@RequestBody Wave wave){
-        return waveService.save(wave);
+        return waveService.changeWave(wave);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/change-comment", method = RequestMethod.POST)
+    public Wave changeWaveComment(@PathVariable Long id,
+                                  @RequestParam  String comment,
+                                  @RequestParam Long warehouseId){
+        return waveService.changeWaveComment(id, comment);
     }
 
     @BillableEndpoint
@@ -184,5 +193,20 @@ public class WaveController {
             @RequestParam Long shipmentLineId)  {
 
         return waveService.deassignShipmentLine(id, shipmentLineId);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/change-load-number", method = RequestMethod.POST)
+    public Wave changeWaveLoadNumber(@PathVariable Long id,
+                                  @RequestParam  String loadNumber,
+                                  @RequestParam Long warehouseId){
+        return waveService.changeWaveLoadNumber(id, loadNumber);
+    }
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/change-bol-number", method = RequestMethod.POST)
+    public Wave changeWaveBillOfLadingNumber(@PathVariable Long id,
+                                     @RequestParam  String billOfLadingNumber,
+                                     @RequestParam Long warehouseId){
+        return waveService.changeWaveBillOfLadingNumber(id, billOfLadingNumber);
     }
 }

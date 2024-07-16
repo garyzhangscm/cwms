@@ -241,6 +241,10 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     public String getShipmentNumber() {return Objects.nonNull(shipment) ? shipment.getNumber() : "";}
 
+    public String getShipmentLoadNumber() {return Objects.nonNull(shipment) ? shipment.getLoadNumber() : "";}
+
+    public String getShipmentBillOfLadingNumber() {return Objects.nonNull(shipment) ? shipment.getBillOfLadingNumber() : "";}
+
     public Long getOpenQuantity() {
         return openQuantity;
     }

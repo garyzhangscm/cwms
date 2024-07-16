@@ -1537,4 +1537,17 @@ public class ShipmentService {
                         }
                 );
     }
+
+    public Shipment changeLoadNumber(Long shipmentId, String loadNumber) {
+        Shipment shipment = findById(shipmentId, false);
+        shipment.setLoadNumber(loadNumber);
+
+        return save(shipment);
+    }
+    public Shipment changeBillOfLadingNumber(Long shipmentId, String billOfLadingNumber) {
+        Shipment shipment = findById(shipmentId, false);
+        shipment.setBillOfLadingNumber(billOfLadingNumber);
+
+        return save(shipment);
+    }
 }

@@ -1982,19 +1982,119 @@ public class ReceiptService {
 
         if (!receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) ||
                 !item.getId().equals(receiptLine.getItemId())) {
+            logger.debug("Receipt line {} / {} doesn't match with inventory's item {} as the line's item id is {} " +
+                            " while the inventory's item id is {}",
+                    receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                    inventoryCSVWrapper.getItem(),
+                    receiptLine.getItemId(), item.getId());
             return 0;
         }
         // if the receipt line has item package type, make sure it matches
-        if (Objects.nonNull(receiptLine.getItemPackageType()) &&
-                !receiptLine.getItemPackageType().getName().equalsIgnoreCase(inventoryCSVWrapper.getItemPackageType())) {
-            return 0;
-        }
-        else {
-            // the receipt line doesn't have restriction on the item package type
-            score += 1;
+        if (Objects.nonNull(receiptLine.getItemPackageType())) {
+            if (!receiptLine.getItemPackageType().getName().equalsIgnoreCase(inventoryCSVWrapper.getItemPackageType())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's item package type {} as the line's item package type is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getItemPackageType(),
+                        receiptLine.getItemPackageType().getName());
+                return 0;
+            } else {
+                // the receipt line doesn't have restriction on the item package type
+                score += 1;
+            }
         }
 
+        // make sure the inventory and receipt line matches with any required attribute
+        if (Strings.isNotBlank(receiptLine.getColor())) {
+            if (!receiptLine.getColor().equalsIgnoreCase(inventoryCSVWrapper.getColor())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's color {} as the line's color is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getColor(),
+                        receiptLine.getColor());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
 
+        if (Strings.isNotBlank(receiptLine.getStyle())) {
+            if (!receiptLine.getStyle().equalsIgnoreCase(inventoryCSVWrapper.getStyle())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's style {} as the line's style is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getStyle(),
+                        receiptLine.getStyle());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+        if (Strings.isNotBlank(receiptLine.getProductSize())) {
+            if (!receiptLine.getProductSize().equalsIgnoreCase(inventoryCSVWrapper.getProductSize())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's product size {} as the line's product size is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getProductSize(),
+                        receiptLine.getProductSize());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
+            if (!receiptLine.getInventoryAttribute1().equalsIgnoreCase(inventoryCSVWrapper.getAttribute1())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 1 {} as the line's attribute 1  is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute1(),
+                        receiptLine.getInventoryAttribute1());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute2())) {
+            if (!receiptLine.getInventoryAttribute2().equalsIgnoreCase(inventoryCSVWrapper.getAttribute2())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 2 {} as the line's attribute 2  is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute2(),
+                        receiptLine.getInventoryAttribute2());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute3())) {
+            if (!receiptLine.getInventoryAttribute3().equalsIgnoreCase(inventoryCSVWrapper.getAttribute3())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 3 {} as the line's attribute 3 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute3(),
+                        receiptLine.getInventoryAttribute3());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute4())) {
+            if (!receiptLine.getInventoryAttribute4().equalsIgnoreCase(inventoryCSVWrapper.getAttribute4())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 4 {} as the line's attribute 4 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute4(),
+                        receiptLine.getInventoryAttribute4());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute5())) {
+            if (!receiptLine.getInventoryAttribute5().equalsIgnoreCase(inventoryCSVWrapper.getAttribute5())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 5 {} as the line's attribute 5 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute5(),
+                        receiptLine.getInventoryAttribute5());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
 
 
         return score;

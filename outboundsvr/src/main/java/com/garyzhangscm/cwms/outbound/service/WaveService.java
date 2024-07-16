@@ -374,7 +374,7 @@ public class WaveService {
 
     // Plan a list of order lines into a wave
     @Transactional
-    public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds) {
+    public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds, String comment) {
 
         if (StringUtils.isBlank(waveNumber)) {
             waveNumber = getNextWaveNumber(warehouseId);
@@ -386,6 +386,7 @@ public class WaveService {
         if (Objects.isNull(wave)) {
             wave = new Wave();
             wave.setNumber(waveNumber);
+            wave.setComment(comment);
             wave.setStatus(WaveStatus.PLANED);
             wave.setWarehouseId(warehouseId);
             wave = save(wave);
@@ -1482,4 +1483,51 @@ public class WaveService {
 
         delete(findById(id, false));
     }
+
+    public Wave changeWave(Wave wave) {
+        // we will only allow the user to change the comment of the wave
+        Wave existingWave = findById(wave.getId());
+        existingWave.setComment(wave.getComment());
+        return saveOrUpdate(wave);
+    }
+
+    public Wave changeWaveComment(Long id, String comment) {
+        Wave wave = findById(id);
+        wave.setComment(comment);
+        return saveOrUpdate(wave);
+    }
+
+    /**
+     * change the load number for all shipment in the wave
+     */
+    public Wave changeWaveLoadNumber(Long id, String loadNumber) {
+
+        Wave wave = findById(id, false);
+        Set<Long> shipmentIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getShipment().getId()
+        ).collect(Collectors.toSet());
+
+        shipmentIds.forEach(
+                shipmentId -> shipmentService.changeLoadNumber(shipmentId, loadNumber)
+        );
+
+        return findById(id);
+    }
+    /**
+     * change the BOL number for all shipment in the wave
+     */
+    public Wave changeWaveBillOfLadingNumber(Long id, String billOfLadingNumber) {
+
+        Wave wave = findById(id, false);
+        Set<Long> shipmentIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getShipment().getId()
+        ).collect(Collectors.toSet());
+
+        shipmentIds.forEach(
+                shipmentId -> shipmentService.changeBillOfLadingNumber(shipmentId, billOfLadingNumber)
+        );
+
+        return findById(id);
+    }
+
 }
