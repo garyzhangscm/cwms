@@ -51,6 +51,8 @@ public class Wave  extends AuditibleEntity<String> implements Serializable {
     @Enumerated(EnumType.STRING)
     private WaveStatus status;
 
+    @Column(name = "comment")
+    private String comment;
 
     @OneToMany(
         mappedBy = "wave",
@@ -123,5 +125,13 @@ public class Wave  extends AuditibleEntity<String> implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
