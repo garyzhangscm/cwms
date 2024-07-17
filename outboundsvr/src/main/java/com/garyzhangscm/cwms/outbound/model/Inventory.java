@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.logging.log4j.util.Strings;
 
+import javax.persistence.Column;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -52,6 +53,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Receipt receipt;
 
     private String orderNumber;
+
+    // shipping related field.
+    // for report purpose
+    private String waveNumber;
+    private String waveComment;
+    private String shipmentLoadNumber;
+    private String shipmentBillOfLadingNumber;;
 
     private Item item;
 
@@ -291,6 +299,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         this.inventoryMovements = inventoryMovements;
     }
 
+    public String getWaveNumber() {
+        return waveNumber;
+    }
+
+    public void setWaveNumber(String waveNumber) {
+        this.waveNumber = waveNumber;
+    }
+
     public Long getWarehouseId() {
         return warehouseId;
     }
@@ -432,5 +448,29 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setPackQuantity(double packQuantity) {
         this.packQuantity = packQuantity;
+    }
+
+    public String getWaveComment() {
+        return waveComment;
+    }
+
+    public void setWaveComment(String waveComment) {
+        this.waveComment = waveComment;
+    }
+
+    public String getShipmentLoadNumber() {
+        return shipmentLoadNumber;
+    }
+
+    public void setShipmentLoadNumber(String shipmentLoadNumber) {
+        this.shipmentLoadNumber = shipmentLoadNumber;
+    }
+
+    public String getShipmentBillOfLadingNumber() {
+        return shipmentBillOfLadingNumber;
+    }
+
+    public void setShipmentBillOfLadingNumber(String shipmentBillOfLadingNumber) {
+        this.shipmentBillOfLadingNumber = shipmentBillOfLadingNumber;
     }
 }

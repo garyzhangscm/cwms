@@ -4789,7 +4789,48 @@ public class OrderService {
     public List<Inventory> getPickedInventorySummaryByOrderIds(Long warehouseId, String orderIds) {
         List<Pick> picks =
                 pickService.findByOrders(warehouseId, orderIds);
+        // save the pick in a map so that we can get the pick information
+        // later on
+        // we will need the pick information to get the related shipping information like
+        // wave, BOL and load number
+        Map<Long, Pick> pickMap = new HashMap<>();
+        picks.forEach(
+                pick -> pickMap.put(pick.getId(), pick)
+        );
+
         List<Inventory> pickedInventories = getPickedInventoriesByOrderIds(warehouseId, picks);
+        // setup the shipping related field for the inventory
+        for (Inventory pickedInventory :
+                pickedInventories.stream().filter(
+                        inventory -> Objects.nonNull(inventory.getPickId())).collect(Collectors.toList())) {
+
+            ShipmentLine shipmentLine = Objects.nonNull(pickedInventory.getPick()) &&
+                    Objects.nonNull(pickedInventory.getPick().getShipmentLine()) ?
+                    pickedInventory.getPick().getShipmentLine() :
+                    pickMap.get(pickedInventory.getPickId()).getShipmentLine();
+
+
+            pickedInventory.setWaveNumber(
+                    Objects.isNull(shipmentLine.getWave()) ? "" : shipmentLine.getWave().getNumber()
+            );
+            pickedInventory.setWaveComment(
+                    Objects.isNull(shipmentLine.getWave()) ? "" : shipmentLine.getWave().getComment()
+            );
+            pickedInventory.setShipmentLoadNumber(
+                    shipmentLine.getShipmentLoadNumber()
+            );
+            pickedInventory.setShipmentBillOfLadingNumber(
+                    shipmentLine.getShipmentBillOfLadingNumber()
+            );
+
+            logger.debug("LPN {}'s shipping information is setup to ",
+                    pickedInventory.getLpn());
+            logger.debug("wave number = {}, wave comment = {}, shipment load number = {}, shipment BOL Number = {}",
+                    pickedInventory.getWaveNumber(),
+                    pickedInventory.getWaveComment(),
+                    pickedInventory.getShipmentLoadNumber(),
+                    pickedInventory.getShipmentBillOfLadingNumber());
+        }
         // we will save the mapping between the pick and the order number so that
         // we will be able to get the order number from the pick
         // key: pick id
@@ -4803,8 +4844,6 @@ public class OrderService {
         logger.debug("Got {} picked inventory from order id list {}",
                 pickedInventories.size(),
                 orderIds);
-
-
 
         // group by inventory attribute
         // client
@@ -4836,6 +4875,10 @@ public class OrderService {
             String key = new StringBuilder()
                     .append(Objects.isNull(pickedInventory.getClientId()) ? "----" : pickedInventory.getClientId()).append("_")
                     .append(Strings.isBlank(orderNumber) ? "----" : orderNumber).append("_")
+                    .append(Strings.isBlank(pickedInventory.getWaveNumber()) ? "----" : pickedInventory.getWaveNumber()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getWaveComment()) ? "----" : pickedInventory.getWaveComment()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getShipmentLoadNumber()) ? "----" : pickedInventory.getShipmentLoadNumber()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getShipmentBillOfLadingNumber()) ? "----" : pickedInventory.getShipmentBillOfLadingNumber()).append("_")
                     .append(Objects.isNull(pickedInventory.getItem()) ? "----" : pickedInventory.getItem().getId()).append("_")
                     .append(Strings.isBlank(pickedInventory.getColor()) ? "----" : pickedInventory.getColor()).append("_")
                     .append(Strings.isBlank(pickedInventory.getProductSize()) ? "----" : pickedInventory.getProductSize()).append("_")
@@ -4857,6 +4900,10 @@ public class OrderService {
                 inventory.setClientId(pickedInventory.getClientId());
                 inventory.setClient(pickedInventory.getClient());
                 inventory.setOrderNumber(orderNumber);
+                inventory.setWaveNumber(pickedInventory.getWaveNumber());
+                inventory.setWaveComment(pickedInventory.getWaveComment());
+                inventory.setShipmentLoadNumber(pickedInventory.getShipmentLoadNumber());
+                inventory.setShipmentBillOfLadingNumber(pickedInventory.getShipmentBillOfLadingNumber());
                 inventory.setItem(pickedInventory.getItem());
                 inventory.setItemPackageType(pickedInventory.getItemPackageType());
                 inventory.setColor(pickedInventory.getColor());
