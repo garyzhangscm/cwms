@@ -2335,5 +2335,7 @@
   "REPORT-TYPE-WAVE_PACKING_SLIP": "Wave Packing Slip",
   "includeCompletedWave": "Include Completed Wave",
   "includeCancelledWave": "Include Cancelled Wave",
-  "autoDepositForLpnWithSameDestination": "Auto Deposit For LPN With Same Destination"
+  "autoDepositForLpnWithSameDestination": "Auto Deposit For LPN With Same Destination",
+  "loadNumber": "Load Number",
+  "billOfLadingNumber": "Bill Of Lading Number"
 }

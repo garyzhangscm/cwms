@@ -2330,5 +2330,7 @@
   "REPORT-TYPE-WAVE_PACKING_SLIP": "波次装箱单",
   "includeCompletedWave": "包含已完成的波次",
   "includeCancelledWave": "包含已取消的波次",
-  "autoDepositForLpnWithSameDestination": "自动放置相同目标库位的位置"
+  "autoDepositForLpnWithSameDestination": "自动放置相同目标库位的位置",
+  "loadNumber": "装车单号",
+  "billOfLadingNumber": "提单号"
 }
