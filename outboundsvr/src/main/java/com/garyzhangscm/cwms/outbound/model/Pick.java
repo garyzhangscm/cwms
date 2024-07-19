@@ -18,10 +18,13 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.service.UnitService;
 import org.apache.logging.log4j.util.Strings;
@@ -31,6 +34,7 @@ import org.springframework.data.util.Pair;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -226,6 +230,18 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     private String packQuantity = "";
     @Transient
     private String packPerCase = "";
+
+
+    @Column(name = "picked_time")
+    //@LastModifiedDate
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime pickedTime;
+
+    @Column(name = "picked_by_username")
+    private String pickedByUsername;
+
 
     /**
      * Note: the size will be in the format of the base unit
@@ -996,5 +1012,21 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
 
     public void setPackPerCase(String packPerCase) {
         this.packPerCase = packPerCase;
+    }
+
+    public ZonedDateTime getPickedTime() {
+        return pickedTime;
+    }
+
+    public void setPickedTime(ZonedDateTime pickedTime) {
+        this.pickedTime = pickedTime;
+    }
+
+    public String getPickedByUsername() {
+        return pickedByUsername;
+    }
+
+    public void setPickedByUsername(String pickedByUsername) {
+        this.pickedByUsername = pickedByUsername;
     }
 }

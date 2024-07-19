@@ -40,10 +40,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Objects;
 
@@ -74,7 +72,7 @@ public class ItemController {
                                    @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyItem,
                                    @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificItem,
                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
-                                   ClientRestriction clientRestriction) {
+                                   ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -88,6 +86,15 @@ public class ItemController {
                     warehouseLayoutServiceRestemplateClient
                             .getWarehouseById(warehouseId).getCompanyId();
         }
+
+        logger.debug("Start to find item by ");
+        logger.debug("#  name: {}", Strings.isBlank(name) ? "N/A" : name);
+        logger.debug("#  decoded name: {}", Strings.isBlank(name) ? "N/A" :
+                new String(name.getBytes("ISO8859-1"), "utf-8"));
+        logger.debug("#  description: {}", Strings.isBlank(description) ? "N/A" : description);
+        logger.debug("#  clientIds: {}", Strings.isBlank(clientIds) ? "N/A" : clientIds);
+        logger.debug("#  itemFamilyIds {}", Strings.isBlank(itemFamilyIds) ? "N/A" : itemFamilyIds);
+        logger.debug("#  itemIdList: {}", Strings.isBlank(itemIdList) ? "N/A" : itemIdList);
 
         return itemService.findAll(companyId, warehouseId, name, quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
                 warehouseSpecificItem, description,  loadDetails, clientRestriction);
