@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.*;
 import com.garyzhangscm.cwms.outbound.exception.*;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -31,15 +30,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 
 @Service
@@ -106,6 +107,10 @@ public class PickService {
     private PickReleaseService pickReleaseService;
     @Autowired
     private UnitService unitService;
+
+    // syncronized key for picks to make sure
+    // picks from same location and same item will be executed syncronized
+    private Interner<String> pickKeyPool = Interners.newWeakInterner();
 
     public Pick findById(Long id, boolean loadDetails) {
         Pick pick = pickRepository.findById(id)
@@ -1568,7 +1573,7 @@ public class PickService {
         String key =  pick.getSourceLocationId() + "-" + pick.getItemId();
 
 
-        synchronized (key) {
+        synchronized (pickKeyPool.intern(key)) {
             List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
             logger.debug(" Get {} valid inventory for pick {}",
                     pickableInventories.size(), pick.getNumber());
@@ -1744,6 +1749,8 @@ public class PickService {
         logger.debug(" change the picked quantity from {} to {}",
                 pick.getPickedQuantity(), (pick.getPickedQuantity() + quantityToBePicked));
         pick.setPickedQuantity(pick.getPickedQuantity() + quantityToBePicked);
+        pick.setPickedTime(ZonedDateTime.now());
+        pick.setPickedByUsername(userService.getCurrentUserName());
         saveOrUpdate(pick);
 
         // Let's update the list if the pick belongs to any list
@@ -1775,6 +1782,83 @@ public class PickService {
                     inventory.getInventoryStatus().getName(), pick.getInventoryStatus().getName());
             return false;
         }
+
+
+        // make sure the inventory attribute matches
+        if (Objects.nonNull(pick.getItemPackageTypeId()) &&
+                 !pick.getItemPackageTypeId().equals(inventory.getItemPackageType().getId())) {
+            logger.debug("Inventory's Item package type doesn't match with Pick. \n " +
+                            ">> Inventory's Item package type: {} \n " +
+                            ">> Pick's Item package type: {}",
+                    inventory.getItemPackageType().getId(), pick.getItemPackageTypeId());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getColor()) &&
+                !pick.getColor().equalsIgnoreCase(inventory.getColor())) {
+            logger.debug("Inventory's color doesn't match with Pick. \n " +
+                            ">> Inventory's color: {} \n " +
+                            ">> Pick's color: {}",
+                    inventory.getColor(), pick.getColor());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getStyle()) &&
+                !pick.getStyle().equalsIgnoreCase(inventory.getStyle())) {
+            logger.debug("Inventory's style doesn't match with Pick. \n " +
+                            ">> Inventory's style: {} \n " +
+                            ">> Pick's style: {}",
+                    inventory.getStyle(), pick.getStyle());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getProductSize()) &&
+                !pick.getProductSize().equalsIgnoreCase(inventory.getProductSize())) {
+            logger.debug("Inventory's product size doesn't match with Pick. \n " +
+                            ">> Inventory's product size: {} \n " +
+                            ">> Pick's product size: {}",
+                    inventory.getProductSize(), pick.getProductSize());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute1()) &&
+                !pick.getInventoryAttribute1().equalsIgnoreCase(inventory.getAttribute1())) {
+            logger.debug("Inventory's attribute 1 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 1: {} \n " +
+                            ">> Pick's attribute 1: {}",
+                    inventory.getAttribute1(), pick.getInventoryAttribute1());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute2()) &&
+                !pick.getInventoryAttribute2().equalsIgnoreCase(inventory.getAttribute2())) {
+            logger.debug("Inventory's attribute 2 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 2: {} \n " +
+                            ">> Pick's attribute 2: {}",
+                    inventory.getAttribute2(), pick.getInventoryAttribute2());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute3()) &&
+                !pick.getInventoryAttribute3().equalsIgnoreCase(inventory.getAttribute3())) {
+            logger.debug("Inventory's attribute 3 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 3: {} \n " +
+                            ">> Pick's attribute 3: {}",
+                    inventory.getAttribute3(), pick.getInventoryAttribute3());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute4()) &&
+                !pick.getInventoryAttribute4().equalsIgnoreCase(inventory.getAttribute4())) {
+            logger.debug("Inventory's attribute 4 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 4: {} \n " +
+                            ">> Pick's attribute 4: {}",
+                    inventory.getAttribute4(), pick.getInventoryAttribute4());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute5()) &&
+                !pick.getInventoryAttribute5().equalsIgnoreCase(inventory.getAttribute5())) {
+            logger.debug("Inventory's attribute 5 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 5: {} \n " +
+                            ">> Pick's attribute 5: {}",
+                    inventory.getAttribute5(), pick.getInventoryAttribute5());
+            return false;
+        }
+
+
         return true;
     }
 
