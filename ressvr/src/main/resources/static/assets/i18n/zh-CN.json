@@ -2332,5 +2332,7 @@
   "includeCancelledWave": "包含已取消的波次",
   "autoDepositForLpnWithSameDestination": "自动放置相同目标库位的位置",
   "loadNumber": "装车单号",
-  "billOfLadingNumber": "提单号"
+  "billOfLadingNumber": "提单号",
+  "order.completedTime": "订单完成时间",
+  "change-order-completed-time": "修改订单完成时间"
 }

@@ -67,7 +67,7 @@ public class InboundServiceRestemplateClient {
     public Receipt getReceiptByNumber(Long warehouseId, String receiptNumber) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulservice")
+                        .scheme("http").host("zuulserver").port(5555)
                         .path("/api/inbound/receipts")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", receiptNumber);

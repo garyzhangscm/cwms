@@ -2337,5 +2337,7 @@
   "includeCancelledWave": "Include Cancelled Wave",
   "autoDepositForLpnWithSameDestination": "Auto Deposit For LPN With Same Destination",
   "loadNumber": "Load Number",
-  "billOfLadingNumber": "Bill Of Lading Number"
+  "billOfLadingNumber": "Bill Of Lading Number",
+  "order.completedTime": "Order Completed Time",
+  "change-order-completed-time": "Change Order Completed Time"
 }
