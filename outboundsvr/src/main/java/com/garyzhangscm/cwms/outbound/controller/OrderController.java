@@ -627,7 +627,6 @@ public class OrderController {
     }
 
 
-    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/get-manual-pick-quantity", method = RequestMethod.GET)
     public Long getPickableQuantityForManualPick(@PathVariable  Long id,
                                                  @RequestParam String lpn,
@@ -653,6 +652,15 @@ public class OrderController {
         }
         return orderService.getPickedInventorySummaryByOrderIds(warehouseId, orderIds);
     }
+
+    @RequestMapping(value="/orders/{id}/change-completed-time", method = RequestMethod.POST)
+    public Order changeCompletedTime(@PathVariable  Long id,
+                                     @RequestParam Long warehouseId,
+                                     @RequestParam(name = "completedTime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime completedTime) {
+
+        return orderService.changeCompletedTime(id, completedTime);
+    }
+
 
 
 }

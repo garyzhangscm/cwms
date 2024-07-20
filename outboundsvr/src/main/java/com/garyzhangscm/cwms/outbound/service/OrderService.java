@@ -4928,4 +4928,10 @@ public class OrderService {
 
 
     }
+
+    public Order changeCompletedTime(Long id, ZonedDateTime completedTime) {
+        Order order = findById(id);
+        order.setCompleteTime(completedTime);
+        return saveOrUpdate(order);
+    }
 }

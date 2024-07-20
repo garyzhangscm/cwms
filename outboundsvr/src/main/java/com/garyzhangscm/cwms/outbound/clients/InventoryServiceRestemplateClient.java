@@ -102,8 +102,8 @@ public class InventoryServiceRestemplateClient {
                     UriComponentsBuilder.newInstance()
                             .scheme("http").host("zuulserver").port(5555)
                             .path("/api/inventory/items")
-                            // .queryParam("name", URLEncoder.encode(name, "UTF-8"))
-                            .queryParam("name", name)
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            // .queryParam("name", name)
                             .queryParam("warehouseId", warehouseId);
 
             logger.debug("start to query item with name {}",
@@ -125,8 +125,8 @@ public class InventoryServiceRestemplateClient {
 **/
             List<Item> items = restTemplateProxy.exchangeList(
                     Item.class,
-                    // builder.build(true).toUriString(),
-                    builder.build().toUriString(),
+                    builder.build(true).toUriString(),
+                    // builder.build().toUriString(),
                     HttpMethod.GET,
                     null
             );

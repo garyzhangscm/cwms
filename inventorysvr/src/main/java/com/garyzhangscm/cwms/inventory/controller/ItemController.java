@@ -42,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -90,13 +91,15 @@ public class ItemController {
         logger.debug("Start to find item by ");
         logger.debug("#  name: {}", Strings.isBlank(name) ? "N/A" : name);
         logger.debug("#  decoded name: {}", Strings.isBlank(name) ? "N/A" :
-                new String(name.getBytes("ISO8859-1"), "utf-8"));
+                        URLDecoder.decode(name, StandardCharsets.UTF_8.name()));
         logger.debug("#  description: {}", Strings.isBlank(description) ? "N/A" : description);
         logger.debug("#  clientIds: {}", Strings.isBlank(clientIds) ? "N/A" : clientIds);
         logger.debug("#  itemFamilyIds {}", Strings.isBlank(itemFamilyIds) ? "N/A" : itemFamilyIds);
         logger.debug("#  itemIdList: {}", Strings.isBlank(itemIdList) ? "N/A" : itemIdList);
 
-        return itemService.findAll(companyId, warehouseId, name, quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
+        return itemService.findAll(companyId, warehouseId,
+                URLDecoder.decode(name, StandardCharsets.UTF_8.name()),
+                quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
                 warehouseSpecificItem, description,  loadDetails, clientRestriction);
     }
 
