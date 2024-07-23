@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.AlertType;
+import com.garyzhangscm.cwms.resources.model.User;
 import com.garyzhangscm.cwms.resources.model.WebPageTableColumnConfiguration;
 import com.garyzhangscm.cwms.resources.repository.WebPageTableColumnConfigurationRepository;
 import org.apache.logging.log4j.util.Strings;
@@ -29,10 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -70,19 +68,21 @@ public class WebPageTableColumnConfigurationService {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("companyId"), companyId));
-                    predicates.add(criteriaBuilder.equal(root.get("userId"), finalUserId));
+
+                    Join<WebPageTableColumnConfiguration, User> joinUser = root.join("user", JoinType.INNER);
+                    predicates.add(criteriaBuilder.equal(joinUser.get("id"), finalUserId));
 
                     if (Strings.isNotBlank(webPageName)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("webPageName"), AlertType.valueOf(webPageName)));
+                        predicates.add(criteriaBuilder.equal(root.get("webPageName"), webPageName));
                     }
                     if (Strings.isNotBlank(tableName)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("tableName"), AlertType.valueOf(tableName)));
+                        predicates.add(criteriaBuilder.equal(root.get("tableName"), tableName));
                     }
                     if (Strings.isNotBlank(columnName)) {
 
-                        predicates.add(criteriaBuilder.equal(root.get("columnName"), AlertType.valueOf(columnName)));
+                        predicates.add(criteriaBuilder.equal(root.get("columnName"), columnName));
                     }
 
 
