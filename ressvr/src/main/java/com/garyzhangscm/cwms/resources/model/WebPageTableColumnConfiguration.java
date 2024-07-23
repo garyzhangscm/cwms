@@ -32,8 +32,8 @@ public class WebPageTableColumnConfiguration extends AuditibleEntity<String> {
 
     @Column(name = "column_name")
     private String columnName;
-    @Column(name = "column_description")
-    private String columnDescription;
+    @Column(name = "column_display")
+    private String columnDisplay;
     @Column(name = "column_width")
     private Integer columnWidth;
     @Column(name = "column_sequence")
@@ -115,11 +115,11 @@ public class WebPageTableColumnConfiguration extends AuditibleEntity<String> {
         this.display = display;
     }
 
-    public String getColumnDescription() {
-        return columnDescription;
+    public String getColumnDisplay() {
+        return columnDisplay;
     }
 
-    public void setColumnDescription(String columnDescription) {
-        this.columnDescription = columnDescription;
+    public void setColumnDisplay(String columnDisplay) {
+        this.columnDisplay = columnDisplay;
     }
 }
