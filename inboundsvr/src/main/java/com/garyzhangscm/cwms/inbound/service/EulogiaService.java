@@ -333,6 +333,7 @@ public class EulogiaService {
         }
 
         receiptLine.setExpectedQuantity(eulogiaCustomerPackingSlipCSVWrapper.getCartonQuantity() * caseItemUnitOfMeasure.getQuantity());
+        receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
 
         InventoryStatus inventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(
                 warehouseId

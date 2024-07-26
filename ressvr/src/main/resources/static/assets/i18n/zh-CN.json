@@ -2335,5 +2335,7 @@
   "billOfLadingNumber": "提单号",
   "order.completedTime": "订单完成时间",
   "change-order-completed-time": "修改订单完成时间",
-  "tableColumnConfiguration": "列维护"
+  "tableColumnConfiguration": "列维护",
+  "receipt.line.arrivedQuantity": "到达数量",
+  "arrivedQuantity": "达到数量"
 }

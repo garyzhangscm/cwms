@@ -291,6 +291,7 @@ public class ReceiptLineService {
                         .findFirst().orElse(1);
             }
             receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity() * unitOfMeasureQuantity);
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
         }
 
         InventoryStatus inventoryStatus;
@@ -333,6 +334,10 @@ public class ReceiptLineService {
         receiptLine.setWarehouseId(receipt.getWarehouseId());
         if (receiptLine.getItemId() == null && receiptLine.getItem() != null) {
             receiptLine.setItemId(receiptLine.getItem().getId());
+        }
+        // default the arrived quantity to the expected quantity
+        if (Objects.isNull(receiptLine.getArrivedQuantity())) {
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
         }
         return saveOrUpdate(receiptLine);
     }
@@ -775,6 +780,9 @@ public class ReceiptLineService {
         }
         if (Objects.nonNull(receiptLine.getExpectedQuantity())) {
             exisitingReceiptLine.setExpectedQuantity(receiptLine.getExpectedQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getArrivedQuantity())) {
+            exisitingReceiptLine.setArrivedQuantity(receiptLine.getArrivedQuantity());
         }
         if (Objects.nonNull(receiptLine.getOverReceivingPercent())) {
             exisitingReceiptLine.setOverReceivingPercent(receiptLine.getOverReceivingPercent());

@@ -871,6 +871,7 @@ public class ReceiptService {
                         receiptLine.setNumber(receiptLineSequence.toString());
                         receiptLineSequence.getAndIncrement();
                         receiptLine.setExpectedQuantity(quantity);
+                        receiptLine.setArrivedQuantity(quantity);
                         // over receive is normally disallowed for warehouse transfer order
                         receiptLine.setOverReceivingQuantity(0L);
                         receiptLine.setOverReceivingPercent(0.0);
@@ -1558,6 +1559,7 @@ public class ReceiptService {
             receiptLine.setWarehouseId(purchaseOrderLine.getWarehouseId());
             receiptLine.setItemId(purchaseOrderLine.getItemId());
             receiptLine.setExpectedQuantity(receiptQuantity);
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
             receiptLine.setPurchaseOrderLine(purchaseOrderLine);
             receipt.addReceiptLines(receiptLine);
 
