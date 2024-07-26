@@ -931,6 +931,8 @@ public class InventoryService {
                 return false;
             }
         }
+        logger.debug("==== inventory {} / {} matches with the criteria  ====",
+                inventory.getId(), inventory.getLpn());
         return true;
     }
 

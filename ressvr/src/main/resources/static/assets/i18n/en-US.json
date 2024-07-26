@@ -2340,5 +2340,7 @@
   "billOfLadingNumber": "Bill Of Lading Number",
   "order.completedTime": "Order Completed Time",
   "change-order-completed-time": "Change Order Completed Time",
-  "tableColumnConfiguration": "Table Column Configuration"
+  "tableColumnConfiguration": "Table Column Configuration",
+  "receipt.line.arrivedQuantity": "Arrived Quantity",
+  "arrivedQuantity": "Arrived Quantity"
 }

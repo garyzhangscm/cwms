@@ -71,6 +71,8 @@ public class ReceiptLine extends AuditibleEntity<String>{
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
 
+    @Column(name = "arrived_quantity")
+    private Long arrivedQuantity;
 
     @Column(name = "received_quantity")
     private Long receivedQuantity = 0L;
@@ -248,6 +250,14 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public Long getArrivedQuantity() {
+        return arrivedQuantity;
+    }
+
+    public void setArrivedQuantity(Long arrivedQuantity) {
+        this.arrivedQuantity = arrivedQuantity;
     }
 
     public Double getCubicMeter() {

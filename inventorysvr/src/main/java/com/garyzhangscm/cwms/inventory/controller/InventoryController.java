@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
@@ -499,11 +500,23 @@ public class InventoryController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
     public Inventory moveInventory(@PathVariable long id,
+                                   @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
                                    @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
                                    @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
                                    @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
-                                   @RequestBody Location location) {
+                                   @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
+                                   @RequestBody(required = false) Location location) {
 
+
+
+        if (Objects.isNull(location)) {
+            if (Strings.isNotBlank(destinationLocationName) && Objects.nonNull(warehouseId)) {
+                location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
+            }
+            else {
+                throw MissingInformationException.raiseException("either location or location name need to be present in the request");
+            }
+        }
 
         return inventoryService.moveInventory(id, location , pickId, immediateMove, destinationLpn);
     }
@@ -521,17 +534,26 @@ public class InventoryController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/move")
     public List<Inventory> moveInventory(@RequestParam Long warehouseId,
-                                   @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
-                                   @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
-                                   @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
-                                   @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
-                                   @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
-                                   @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                   @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                   @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
-                                   @RequestParam(name="unitOfMeasureName", required = false, defaultValue = "") String unitOfMeasureName,
+                                       @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
+                                       @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                       @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
+                                       @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
+                                       @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
+                                       @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                       @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                       @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
+                                       @RequestParam(name="unitOfMeasureName", required = false, defaultValue = "") String unitOfMeasureName,
+                                         @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
                                    @RequestBody Location location) {
 
+        if (Objects.isNull(location)) {
+            if (Strings.isNotBlank(destinationLocationName)) {
+                location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
+            }
+            else {
+                throw MissingInformationException.raiseException("either location or location name need to be present in the request");
+            }
+        }
 
         // if the inventory id is passed in, then we will only move the specific inventory
         if (Objects.nonNull(inventoryId)) {
