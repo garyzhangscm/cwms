@@ -133,6 +133,12 @@ public class WebPageTableColumnConfigurationService {
 
 
     public WebPageTableColumnConfiguration addWebPageTableColumnConfiguration(WebPageTableColumnConfiguration webPageTableColumnConfiguration) {
+        if (Objects.isNull(webPageTableColumnConfiguration.getUser())) {
+            // get the current user
+            webPageTableColumnConfiguration.setUser(userService.getCurrentUser(
+                    webPageTableColumnConfiguration.getCompanyId()
+            ));
+        }
         return saveOrUpdate(webPageTableColumnConfiguration);
 
     }
