@@ -32,15 +32,15 @@ public class WebPageTableColumnConfiguration extends AuditibleEntity<String> {
 
     @Column(name = "column_name")
     private String columnName;
-    @Column(name = "column_display")
-    private String columnDisplay;
+    @Column(name = "column_display_text")
+    private String columnDisplayText;
     @Column(name = "column_width")
     private Integer columnWidth;
     @Column(name = "column_sequence")
     private Integer columnSequence;
 
-    @Column(name = "display")
-    private Boolean display;
+    @Column(name = "display_flag")
+    private Boolean displayFlag;
 
 
     public Long getId() {
@@ -107,19 +107,19 @@ public class WebPageTableColumnConfiguration extends AuditibleEntity<String> {
         this.columnSequence = columnSequence;
     }
 
-    public Boolean getDisplay() {
-        return display;
+    public String getColumnDisplayText() {
+        return columnDisplayText;
     }
 
-    public void setDisplay(Boolean display) {
-        this.display = display;
+    public void setColumnDisplayText(String columnDisplayText) {
+        this.columnDisplayText = columnDisplayText;
     }
 
-    public String getColumnDisplay() {
-        return columnDisplay;
+    public Boolean getDisplayFlag() {
+        return displayFlag;
     }
 
-    public void setColumnDisplay(String columnDisplay) {
-        this.columnDisplay = columnDisplay;
+    public void setDisplayFlag(Boolean displayFlag) {
+        this.displayFlag = displayFlag;
     }
 }
