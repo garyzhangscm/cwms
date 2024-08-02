@@ -38,7 +38,6 @@ import java.util.Objects;
 @JsonIgnoreProperties({"hibernateLazyInitializer"})
 public class Item extends AuditibleEntity<String> implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,6 +59,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @ManyToOne
     @JoinColumn(name="item_family_id")
     private ItemFamily itemFamily;
+
+    @OneToMany(
+            mappedBy = "item",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<ItemBarcode> itemBarcodes = new ArrayList<>();
 
     @OneToMany(
         mappedBy = "item",
@@ -517,9 +524,18 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         this.abcCategory = abcCategory;
     }
 
+    public List<ItemBarcode> getItemBarcodes() {
+        return itemBarcodes;
+    }
+
+    public void setItemBarcodes(List<ItemBarcode> itemBarcodes) {
+        this.itemBarcodes = itemBarcodes;
+    }
+
     public Velocity getVelocity() {
         return velocity;
     }
+
 
     public void setVelocity(Velocity velocity) {
         this.velocity = velocity;
