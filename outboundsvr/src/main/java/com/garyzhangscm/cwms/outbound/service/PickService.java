@@ -669,7 +669,8 @@ public class PickService {
 
     public List<Pick> cancelPicks(String pickIds,
                                   boolean errorLocation,
-                                  boolean generateCycleCount) {
+                                  boolean generateCycleCount,
+                                  boolean reallocate) {
 
         List<Pick> picks = new ArrayList<>();
 

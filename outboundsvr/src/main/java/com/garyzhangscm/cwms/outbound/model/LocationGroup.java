@@ -44,6 +44,8 @@ public class LocationGroup {
     private Boolean trackingVolume;
     private Boolean consolidateLpn;
 
+    private Boolean allowOutboundSort;
+
     private LocationGroupType locationGroupType;
 
     @Override
@@ -127,6 +129,14 @@ public class LocationGroup {
 
     public void setLocationGroupType(LocationGroupType locationGroupType) {
         this.locationGroupType = locationGroupType;
+    }
+
+    public Boolean getAllowOutboundSort() {
+        return allowOutboundSort;
+    }
+
+    public void setAllowOutboundSort(Boolean allowOutboundSort) {
+        this.allowOutboundSort = allowOutboundSort;
     }
 
     public Boolean getTrackingVolume() {

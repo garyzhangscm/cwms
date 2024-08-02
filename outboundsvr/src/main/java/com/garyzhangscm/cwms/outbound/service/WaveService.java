@@ -1159,6 +1159,23 @@ public class WaveService {
     }
     private List<Inventory> getStagedInventory(Wave wave) {
 
+        List<Inventory> pickedInventories =
+                getPickedInventory(wave);
+
+        // only return the picked inventory that is already in stage
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
+                .collect(Collectors.toList());
+
+
+    }
+    public List<Inventory> getPickedInventory(Wave wave) {
+
+        return getPickedInventory(wave, null);
+
+    }
+    public List<Inventory> getPickedInventory(Wave wave, Long locationId) {
+
         // set data to be all picks
         List<Pick> picks = pickService.findByWave(wave).stream().filter(
                 pick -> pick.getPickedQuantity() > 0
@@ -1167,14 +1184,7 @@ public class WaveService {
         if (picks.size() == 0) {
             return new ArrayList<>();
         }
-        List<Inventory> pickedInventories
-                = inventoryServiceRestemplateClient.getPickedInventory(wave.getWarehouseId(), picks);
-
-        // only return the picked inventory that is already in stage
-        return pickedInventories.stream()
-                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
-                .collect(Collectors.toList());
-
+        return inventoryServiceRestemplateClient.getPickedInventory(wave.getWarehouseId(), picks, null, locationId);
 
     }
     private void setupWavePackingSlipData(Report report, Wave wave) {
@@ -1530,4 +1540,43 @@ public class WaveService {
         return findById(id);
     }
 
+    /**
+     * Get all the sortation locations for the wave
+     * it will list all the locations that in the movement path of the picked inventory
+     * of the wave, then find locations that allow sortation
+     * @param id
+     * @return
+     */
+    public List<Location> getSortationLocations(Long id) {
+        Wave wave = findById(id, false);
+        List<Pick> picks = pickService.findByWave(wave);
+        // get all the locations from
+        // 1. pick's destination
+        // 2. pick's movement
+        Set<Long> locationIdSet = new HashSet<>();
+        picks.forEach(
+                pick -> {
+                    locationIdSet.add(pick.getDestinationLocationId());
+                    if (Objects.nonNull(pick.getPickMovements())) {
+                        pick.getPickMovements().forEach(
+                                pickMovement -> locationIdSet.add(pickMovement.getLocationId())
+                        );
+                    }
+                }
+        );
+        if (locationIdSet.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // get all the locations by id
+        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                wave.getWarehouseId(), locationIdSet.stream().map(String::valueOf).collect(Collectors.joining(","))
+        );
+
+        // only return the locations in a group that allow outbound sortation
+        return locations.stream().filter(location -> Boolean.TRUE.equals(location.getLocationGroup().getAllowOutboundSort()))
+                .collect(Collectors.toList());
+
+
+    }
 }

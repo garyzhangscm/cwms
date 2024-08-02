@@ -121,10 +121,12 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks", method = RequestMethod.DELETE)
-    public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds,
+    public List<Pick> cancelPicks(@RequestParam Long warehouseId,
+                                  @RequestParam(name = "pickIds") String pickIds,
                                   @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                                  @RequestParam(name = "reallocate", required = false, defaultValue = "false") Boolean reallocate,
                                   @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount) {
-        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount);
+        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount, reallocate);
     }
 
 

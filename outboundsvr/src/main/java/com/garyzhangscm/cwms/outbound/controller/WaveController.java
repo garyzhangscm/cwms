@@ -209,4 +209,10 @@ public class WaveController {
                                      @RequestParam Long warehouseId){
         return waveService.changeWaveBillOfLadingNumber(id, billOfLadingNumber);
     }
+
+    @RequestMapping(value="/waves/{id}/get-sortation-locations", method = RequestMethod.POST)
+    public List<Location> getSortationLocations(@PathVariable Long id,
+                                             @RequestParam Long warehouseId){
+        return waveService.getSortationLocations(id);
+    }
 }
