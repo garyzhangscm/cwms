@@ -106,11 +106,21 @@ public class LocationService {
                                   Boolean includeDisabledLocation,
                                   Boolean emptyReservedCodeOnly,
                                   String code,
-                                  String locationStatus) {
+                                  String locationStatus,
+                                  String ids) {
 
         List<Location> locations = locationRepository.findAll(
             (Root<Location> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<Predicate>();
+
+                if (Strings.isNotBlank(ids)) {
+                    CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("id"));
+                    for(String id : ids.split(",")) {
+                        inLocationIds.value(Long.parseLong(id));
+                    }
+                    predicates.add(criteriaBuilder.and(inLocationIds));
+                }
+
                 if (StringUtils.isNotBlank(locationGroupTypeIds)) {
                     logger.debug("Will filter the location by group type id {}", locationGroupTypeIds);
 
@@ -775,6 +785,7 @@ public class LocationService {
                 null,
                 null,
                 null,
+                null,
                 null);
 
     }
@@ -853,6 +864,7 @@ public class LocationService {
                 null,
                 null,
                 reservedCode,
+                null,
                 null,
                 null,
                 null,
@@ -975,6 +987,7 @@ public class LocationService {
                         null,
                          true,   // note: we will need to include empty location as the location may not be actual empty
                         // if the location's volume is not tracked
+                        null,
                         null,
                         null,
                         null,

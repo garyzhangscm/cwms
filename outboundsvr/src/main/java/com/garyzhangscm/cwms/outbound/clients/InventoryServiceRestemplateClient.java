@@ -506,6 +506,11 @@ public class InventoryServiceRestemplateClient {
     }
 
     public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks, Boolean includeVirturalInventory) {
+
+        return getPickedInventory(warehouseId, picks, includeVirturalInventory, null);
+    }
+    public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks, Boolean includeVirturalInventory,
+                                              Long locationId) {
         // Convert a list of picks into a list of pick ids and join them into a single string with comma
         // Then we can call the inventory service endpoint to get all the picked inventory with those picks
         String pickIds =  picks.stream().map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
@@ -518,6 +523,9 @@ public class InventoryServiceRestemplateClient {
                         .queryParam("warehouseId", warehouseId);
         if (Objects.nonNull(includeVirturalInventory)) {
             builder = builder.queryParam("includeVirturalInventory", includeVirturalInventory);
+        }
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
         }
 /**
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper

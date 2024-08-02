@@ -63,6 +63,10 @@ public class LocationGroup extends AuditibleEntity<String>{
     @Column(name = "allow_empty_location")
     private Boolean allowEmptyLocation = false;
 
+    // allow outbound sorting
+    @Column(name = "allow_outbound_sort")
+    private Boolean allowOutboundSort;
+
     // Whether we tracking location's utilization
     // in this location group
     @Column(name = "tracking_location_utilization")
@@ -170,6 +174,14 @@ public class LocationGroup extends AuditibleEntity<String>{
 
     public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public Boolean getAllowOutboundSort() {
+        return allowOutboundSort;
+    }
+
+    public void setAllowOutboundSort(Boolean allowOutboundSort) {
+        this.allowOutboundSort = allowOutboundSort;
     }
 
     public Warehouse getWarehouse() {

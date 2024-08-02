@@ -126,6 +126,7 @@ public class LocationController {
 
     @RequestMapping(method=RequestMethod.GET, value="/location-ids")
     public List<Long> findLocationIds(@RequestParam Long warehouseId,
+                                      @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
                                       @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
@@ -151,11 +152,12 @@ public class LocationController {
                 locationGroupTypeIds, locationGroupIds, pickZoneIds, name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus).stream()
+                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus, ids).stream()
                 .map(Location::getId).collect(Collectors.toList());
     }
     @RequestMapping(method=RequestMethod.GET, value="/locations")
     public List<Location> findLocations(@RequestParam Long warehouseId,
+                                        @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
                                         @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
@@ -180,6 +182,7 @@ public class LocationController {
         StringBuilder params = new StringBuilder()
                 .append("Start to find location with params:")
                 .append("\nwarehouseId: ").append(warehouseId)
+                .append("\nids: ").append(ids)
                 .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
                 .append("\nlocationGroupIds: ").append(locationGroupIds)
                 .append("\npickZoneIds: ").append(pickZoneIds)
@@ -206,7 +209,7 @@ public class LocationController {
                 name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus);
+                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus, ids);
 
         logger.debug(">> Find {} locations", locations.size());
         if (locations.size() == 0) {
