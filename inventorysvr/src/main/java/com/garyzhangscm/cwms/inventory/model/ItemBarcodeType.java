@@ -19,13 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.garyzhangscm.cwms.inventory.service.ItemService;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.persistence.*;
 import java.io.Serializable;
 

@@ -32,7 +32,7 @@ public class ItemBarcodeTypeController {
     @Autowired
     ItemBarcodeTypeService itemBarcodeTypeService;
 
-    @RequestMapping(value="/unit-of-measures", method = RequestMethod.GET)
+    @RequestMapping(value="/item-barcode-types", method = RequestMethod.GET)
     public List<ItemBarcodeType> findAllItemBarcodeTypes(@RequestParam Long warehouseId,
                                                          @RequestParam(required = false, name = "name", defaultValue = "") String name) {
 
@@ -40,36 +40,25 @@ public class ItemBarcodeTypeController {
     }
 
 
-    @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.GET)
+    @RequestMapping(value="/item-barcode-types/{id}", method = RequestMethod.GET)
     public ItemBarcodeType findItemBarcodeType(@PathVariable Long id) {
         return itemBarcodeTypeService.findById(id);
     }
 
 
 
-    @RequestMapping(value="/unit-of-measures", method = RequestMethod.POST)
+    @RequestMapping(value="/item-barcode-types", method = RequestMethod.POST)
     public ItemBarcodeType addItemBarcodeType(@RequestBody ItemBarcodeType itemBarcodeType) {
         return itemBarcodeTypeService.addItemBarcodeType(itemBarcodeType);
     }
 
-    @RequestMapping(value="/unit-of-measures/{id}", method = RequestMethod.PUT)
-    @Caching(
-            evict = {
-                    @CacheEvict(cacheNames = "AdminService_UnitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "IntegrationService_UnitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "InventoryService_UnitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "InboundService_UnitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "OutboundService_UnitOfMeasure", allEntries = true),
-                    @CacheEvict(cacheNames = "WorkOrderService_UnitOfMeasure", allEntries = true),
-            }
-    )
-
+    @RequestMapping(value="/item-barcode-types/{id}", method = RequestMethod.PUT)
     public ItemBarcodeType changeItemBarcodeType(@PathVariable Long id, @RequestBody ItemBarcodeType itemBarcodeType) {
 
         return itemBarcodeTypeService.changeItemBarcodeType(itemBarcodeType);
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/unit-of-measures/{id}")
+    @RequestMapping(method=RequestMethod.DELETE, value="/item-barcode-types/{id}")
     public void removeItemBarcodeType(@PathVariable Long id) {
         itemBarcodeTypeService.delete(id);
     }

@@ -34,6 +34,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Inventory Aging Snapshot",menu.main.inventory.inventory-aging-snapshot,/inventory/inventory-aging-snapshot,19,Main-Menu-Inventory,Inventory-Aging-Snapshot,,true,false
 "Inventory Status",menu.main.inventory.status,/inventory/status,20,Main-Menu-Inventory,Inventory-Status,,true,false
 "Lock",menu.main.inventory.lock,/inventory/lock,21,Main-Menu-Inventory,Inventory-Lock,,true,false
+"Item Barcode Type",menu.main.inventory.item-barcode-type,/inventory/item-barcode-type,22,Main-Menu-Inventory,Inventory-ItemBarcodeType,,true,false
 "QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
 "QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
 "QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false
