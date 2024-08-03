@@ -344,9 +344,6 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         return quickbookListId;
     }
 
-    public static Logger getLogger() {
-        return logger;
-    }
 
     public boolean isTrackingInventoryAttribute1Flag() {
         return trackingInventoryAttribute1Flag;

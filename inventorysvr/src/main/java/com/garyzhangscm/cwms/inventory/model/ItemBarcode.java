@@ -46,11 +46,16 @@ public class ItemBarcode extends AuditibleEntity<String> implements Serializable
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "item_id")
     private Item item;
 
+    @Column(name = "code")
+    private String code;
 
 
     @ManyToOne
@@ -63,6 +68,14 @@ public class ItemBarcode extends AuditibleEntity<String> implements Serializable
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public Item getItem() {
@@ -79,5 +92,13 @@ public class ItemBarcode extends AuditibleEntity<String> implements Serializable
 
     public void setItemBarcodeType(ItemBarcodeType itemBarcodeType) {
         this.itemBarcodeType = itemBarcodeType;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }
