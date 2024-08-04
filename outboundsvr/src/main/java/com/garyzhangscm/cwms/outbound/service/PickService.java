@@ -440,6 +440,15 @@ public class PickService {
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
     }
+    public List<Pick> findByWave(Wave wave, boolean loadDetails) {
+
+        return findAll(wave.getWarehouseId(), null, null, null, null,null, null,
+                wave.getId(), null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null,
+                null, null, null,null, null, null,
+                null, null, loadDetails);
+    }
     public List<Pick> findByPickList(PickList pickList) {
 
         return findAll(pickList.getWarehouseId(), null, null, null, null,null,  null,

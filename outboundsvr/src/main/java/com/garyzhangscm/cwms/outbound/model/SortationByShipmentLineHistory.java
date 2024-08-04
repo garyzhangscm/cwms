@@ -31,21 +31,12 @@ public class SortationByShipmentLineHistory extends AuditibleEntity<String> {
     @Column(name = "sorted_username")
     private String sortedUsername;
 
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public SortationByShipmentLine getSortationByOrderLine() {
-        return sortationByShipmentLine;
-    }
-
-    public void setSortationByOrderLine(SortationByShipmentLine sortationByShipmentLine) {
-        this.sortationByShipmentLine = sortationByShipmentLine;
     }
 
     public SortationByShipmentLine getSortationByShipmentLine() {
@@ -56,20 +47,20 @@ public class SortationByShipmentLineHistory extends AuditibleEntity<String> {
         this.sortationByShipmentLine = sortationByShipmentLine;
     }
 
-    public Integer getSortedQuantity() {
-        return sortedQuantity;
-    }
-
-    public void setSortedQuantity(Integer sortedQuantity) {
-        this.sortedQuantity = sortedQuantity;
-    }
-
     public String getBarcode() {
         return barcode;
     }
 
     public void setBarcode(String barcode) {
         this.barcode = barcode;
+    }
+
+    public Integer getSortedQuantity() {
+        return sortedQuantity;
+    }
+
+    public void setSortedQuantity(Integer sortedQuantity) {
+        this.sortedQuantity = sortedQuantity;
     }
 
     public String getSortedUsername() {

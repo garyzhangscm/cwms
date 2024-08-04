@@ -68,6 +68,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Outbound Configuration",menu.main.outbound.outbound-configuration,/outbound/outbound-configuration,17,Main-Menu-Outbound,Outbound-OutboundConfiguration,,true,false
 "Pick Confirm Strategy",menu.main.outbound.pick-confirm-strategy,/outbound/pick-confirm-strategy,18,Main-Menu-Outbound,Outbound-PickConfirmStrategy,,true,false
 "Hualei Configuration",menu.main.outbound.hualei-configuration,/outbound/hualei-configuration,19,Main-Menu-Outbound,Outbound-HualeiConfiguration,,true,false
+"Sortation",menu.main.outbound.sortation,/outbound/sortation,20,Main-Menu-Outbound,Outbound-Sortation,,true,false
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
 "Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false

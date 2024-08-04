@@ -26,5 +26,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SortationByShipmentRepository extends JpaRepository<SortationByShipment, Long>, JpaSpecificationExecutor<SortationByShipment> {
- 
+
 }

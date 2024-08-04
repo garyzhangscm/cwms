@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.SortationByShipmentLineHistoryRepository;
@@ -94,6 +95,8 @@ public class SortationService {
             return sortation;
         }
 
+        logger.debug("We can't find existing sortation by wave {}, let's create a new one for the wave",
+                waveNumber);
         return createSortationByWave(warehouseId, waveNumber, locationId);
 
     }
@@ -106,9 +109,10 @@ public class SortationService {
      */
     private Sortation createSortationByWave(Long warehouseId, String waveNumber, Long locationId) {
         // let's get all the locations that contains the picked in wave and already arrived at the location
-        Wave wave = waveService.findByNumber(warehouseId, waveNumber);
+        Wave wave = waveService.findByNumber(warehouseId, waveNumber, false);
 
-        List<Pick> picks = pickService.findByWave(wave).stream().filter(
+        logger.debug("Let's find the picks for the wave {}", wave.getNumber());
+        List<Pick> picks = pickService.findByWave(wave, false).stream().filter(
                         pick -> pick.getPickedQuantity() > 0
                 ).collect(Collectors.toList());
 
@@ -116,8 +120,14 @@ public class SortationService {
             throw ShippingException.raiseException("can't sort the wave " + waveNumber +
                     " as there's no pick for the wave");
         }
+        logger.debug("Found {} picks for this wave {}, let's find all picked inventory",
+                picks.size(), wave.getNumber());
 
-        List<Inventory> inventories = inventoryServiceRestemplateClient.getPickedInventory(wave.getWarehouseId(), picks, null, locationId);
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getPickedInventory(
+                wave.getWarehouseId(), picks, null, locationId, false);
+
+        logger.debug("Got {} picked inventory for this wave {}",
+                inventories.size(), wave.getNumber());
         // key: pick id
         // value: total quantity arrived at location
         Map<Long, Long> arrivedQuantityByPick = new HashMap<>();
@@ -128,6 +138,7 @@ public class SortationService {
                 }
         );
 
+        logger.debug("start to create new sortation for this wave");
         Sortation sortation = new Sortation();
         sortation.setWarehouseId(warehouseId);
         sortation.setNumber(getNextSortationNumber(warehouseId));
@@ -139,12 +150,14 @@ public class SortationService {
 
         Set<Shipment> shipments = picks.stream().map(pick -> pick.getShipmentLine().getShipment()).collect(Collectors.toSet());
 
+        logger.debug("found {} shipment in the wave {}", shipments.size(), wave.getNumber());
         shipments.forEach(
                 shipment -> {
                     SortationByShipment sortationByShipment = new SortationByShipment();
                     sortationByShipment.setSortation(sortation);
                     sortationByShipment.setShipment(shipment);
 
+                    logger.debug("## create one record for each line in shipment {}", shipment.getNumber());
                     shipment.getShipmentLines().forEach(
                             shipmentLine -> {
                                 SortationByShipmentLine sortationByShipmentLine = new SortationByShipmentLine();
@@ -160,12 +173,14 @@ public class SortationService {
                                                 pick -> arrivedQuantityByPick.getOrDefault(pick.getId(), 0l)).
                                                 mapToLong(Long::longValue).sum()
                                 );
+                                sortationByShipmentLine.setSortedQuantity(0l);
                                 sortationByShipment.addSortationByShipmentLine(sortationByShipmentLine);
                             }
                     );
                     sortation.addSortationByShipment(sortationByShipment);
                 }
         );
+        logger.debug("Done, save the sortation result");
 
         return saveOrUpdate(sortation);
 
@@ -202,5 +217,26 @@ public class SortationService {
 
         throw ShippingException.raiseException("can't find valid item with id " + itemId + " from sortation request" +
                 number + "  for wave " + sortation.getWave().getNumber());
+    }
+
+    public SortationByShipment getSortationByShipment(Long id) {
+        return sortationByShipmentRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("sortation by shipment not found by id: " + id));
+    }
+
+
+    public SortationByShipmentLine processShipmentLineSortationById(Long id, Long quantity) {
+        SortationByShipmentLine sortationByShipmentLine =
+                sortationByShipmentLineRepository.findById(id)
+                        .orElseThrow(() -> ResourceNotFoundException.raiseException(
+                                "sortation by shipment line not found by id: " + id));
+
+        if (sortationByShipmentLine.getSortedQuantity() + quantity > sortationByShipmentLine.getArrivedQuantity()) {
+            throw ShippingException.raiseException("can't complete current sort as it extends the arrived quantity");
+        }
+
+        sortationByShipmentLine.setSortedQuantity(sortationByShipmentLine.getSortedQuantity() + quantity);
+
+        return sortationByShipmentLineRepository.save(sortationByShipmentLine);
     }
 }

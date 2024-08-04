@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "sortation_by_shipment_line")
@@ -34,6 +35,7 @@ public class SortationByShipmentLine extends AuditibleEntity<String> {
 
     // sort by shipment line
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="shipment_line_id")
     private ShipmentLine shipmentLine;
 
@@ -50,6 +52,15 @@ public class SortationByShipmentLine extends AuditibleEntity<String> {
     public Long getShipmentId() {
         return getSortationByShipment().getShipment().getId();
     }
+
+    public Long getItemId() {
+        return getShipmentLine().getOrderLine().getItemId();
+    }
+    public String getItemName() {
+        return Objects.isNull(getShipmentLine().getOrderLine().getItem()) ?
+                "" : getShipmentLine().getOrderLine().getItem().getName();
+    }
+
     public Long getId() {
         return id;
     }
@@ -65,15 +76,6 @@ public class SortationByShipmentLine extends AuditibleEntity<String> {
     public void setSortationByOrderLineHistories(List<SortationByShipmentLineHistory> sortationByOrderLineHistories) {
         this.sortationByOrderLineHistories = sortationByOrderLineHistories;
     }
-
-    public SortationByShipment getSortationByOrder() {
-        return sortationByShipment;
-    }
-
-    public void setSortationByOrder(SortationByShipment sortationByShipment) {
-        this.sortationByShipment = sortationByShipment;
-    }
-
 
     public SortationByShipment getSortationByShipment() {
         return sortationByShipment;
@@ -91,20 +93,20 @@ public class SortationByShipmentLine extends AuditibleEntity<String> {
         this.shipmentLine = shipmentLine;
     }
 
-    public Long getArrivedQuantity() {
-        return arrivedQuantity;
-    }
-
-    public void setArrivedQuantity(Long arrivedQuantity) {
-        this.arrivedQuantity = arrivedQuantity;
-    }
-
     public Long getExpectedQuantity() {
         return expectedQuantity;
     }
 
     public void setExpectedQuantity(Long expectedQuantity) {
         this.expectedQuantity = expectedQuantity;
+    }
+
+    public Long getArrivedQuantity() {
+        return arrivedQuantity;
+    }
+
+    public void setArrivedQuantity(Long arrivedQuantity) {
+        this.arrivedQuantity = arrivedQuantity;
     }
 
     public Long getSortedQuantity() {

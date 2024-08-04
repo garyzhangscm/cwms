@@ -2344,5 +2344,12 @@
   "receipt.line.arrivedQuantity": "Arrived Quantity",
   "arrivedQuantity": "Arrived Quantity",
   "item-barcode-type": "Item Barcode Type",
-  "menu.main.inventory.item-barcode-type":  "Item Barcode Type"
+  "menu.main.inventory.item-barcode-type":  "Item Barcode Type",
+  "item-barcode": "Item Code",
+  "menu.main.outbound.sortation": "Sortation",
+  "sortation": "Sortation",
+  "outbound.sortation": "Sortation",
+  "location-group.allowOutboundSort": "Allow outbound sortation",
+  "sortedQuantity": "Sorted Quantity",
+  "sortedAll": "Sorted All"
 }

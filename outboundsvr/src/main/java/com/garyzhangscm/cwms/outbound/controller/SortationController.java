@@ -45,5 +45,17 @@ public class SortationController {
         return sortationService.processWaveSortationByItem(warehouseId, number, itemId, quantity);
     }
 
+    @RequestMapping(value="/sortation/by-shipment/{id}", method = RequestMethod.GET)
+    public SortationByShipment getSortationByShipment(@PathVariable Long id,
+                                                      @RequestParam Long warehouseId) {
+        return sortationService.getSortationByShipment(id);
+    }
+
+    @RequestMapping(value="/sortation/by-shipment-line/{id}", method = RequestMethod.POST)
+    public SortationByShipmentLine processShipmentLineSortationById(@PathVariable Long id,
+                                                                @RequestParam Long warehouseId,
+                                                                @RequestParam(name = "quantity", required = false, defaultValue = "1") Long quantity) {
+        return sortationService.processShipmentLineSortationById(id, quantity);
+    }
 
 }
