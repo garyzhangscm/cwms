@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "sortation_by_shipment")
@@ -26,6 +27,7 @@ public class SortationByShipment extends AuditibleEntity<String> {
 
     // sort by shipment
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="shipment_id")
     private Shipment shipment;
 
@@ -38,6 +40,16 @@ public class SortationByShipment extends AuditibleEntity<String> {
     )
     private List<SortationByShipmentLine> sortationByShipmentLines = new ArrayList<>();
 
+    public Long getShipmentId() {
+        return getShipment().getId();
+    }
+    public Set<String> getOrderNumbers() {
+        return getShipment().getOrderNumbers();
+    }
+
+    public void addSortationByShipmentLine(SortationByShipmentLine sortationByShipmentLine) {
+        sortationByShipmentLines.add(sortationByShipmentLine);
+    }
     public Long getId() {
         return id;
     }
@@ -68,17 +80,5 @@ public class SortationByShipment extends AuditibleEntity<String> {
 
     public void setSortationByShipmentLines(List<SortationByShipmentLine> sortationByShipmentLines) {
         this.sortationByShipmentLines = sortationByShipmentLines;
-    }
-
-    public List<SortationByShipmentLine> getSortationByOrderLines() {
-        return sortationByShipmentLines;
-    }
-
-    public void setSortationByOrderLines(List<SortationByShipmentLine> sortationByShipmentLines) {
-        this.sortationByShipmentLines = sortationByShipmentLines;
-    }
-
-    public void addSortationByShipmentLine(SortationByShipmentLine sortationByShipmentLine) {
-        sortationByShipmentLines.add(sortationByShipmentLine);
     }
 }

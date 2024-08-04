@@ -64,7 +64,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
             mappedBy = "item",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<ItemBarcode> itemBarcodes = new ArrayList<>();
 

@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.persistence.*;
@@ -24,10 +25,12 @@ public class Sortation  extends AuditibleEntity<String> {
     private String number;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="wave_id")
     private Wave wave;
 
     @Transient
+    @JsonIgnore
     private Location location;
 
     @Column(name = "location_id")
@@ -41,6 +44,9 @@ public class Sortation  extends AuditibleEntity<String> {
     )
     List<SortationByShipment> sortationByShipments = new ArrayList<>();
 
+    public void addSortationByShipment(SortationByShipment sortationByShipment){
+        sortationByShipments.add(sortationByShipment);
+    }
     public Long getId() {
         return id;
     }
@@ -95,9 +101,5 @@ public class Sortation  extends AuditibleEntity<String> {
 
     public void setSortationByShipments(List<SortationByShipment> sortationByShipments) {
         this.sortationByShipments = sortationByShipments;
-    }
-
-    public void addSortationByShipment(SortationByShipment sortationByShipment) {
-        sortationByShipments.add(sortationByShipment);
     }
 }

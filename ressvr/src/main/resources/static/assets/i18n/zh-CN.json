@@ -2339,5 +2339,12 @@
   "receipt.line.arrivedQuantity": "到达数量",
   "arrivedQuantity": "达到数量",
   "item-barcode-type": "商品代码类型",
-  "menu.main.inventory.item-barcode-type":  "商品代码类型"
+  "menu.main.inventory.item-barcode-type":  "商品代码类型",
+  "item-barcode": "商品代码",
+  "menu.main.outbound.sortation": "播种",
+  "outbound.sortation": "播种",
+  "sortation": "Sortation",
+  "location-group.allowOutboundSort": "播种库位组",
+  "sortedQuantity": "已播种数量",
+  "sortedAll": "全部播种"
 }

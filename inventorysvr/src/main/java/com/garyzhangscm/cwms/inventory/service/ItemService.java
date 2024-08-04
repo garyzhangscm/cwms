@@ -91,6 +91,8 @@ public class ItemService {
     private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
 
     @Autowired
+    private ItemBarcodeService itemBarcodeService;
+    @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
     @Autowired
     private UserService userService;
@@ -1605,4 +1607,19 @@ public class ItemService {
 
     }
 
+    /**
+     * Add item barcode to the item
+     * @param id
+     * @param warehouseId
+     * @param itemBarcode
+     * @return
+     */
+    public ItemBarcode addItemBarcode(Long id, Long warehouseId, ItemBarcode itemBarcode) {
+        itemBarcode.setWarehouseId(warehouseId);
+
+        Item item = findById(id, false);
+        itemBarcode.setItem(item);
+
+        return itemBarcodeService.save(itemBarcode);
+    }
 }

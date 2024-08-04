@@ -368,4 +368,14 @@ public class ItemController {
 
         return itemService.getLastItemFromSiloLocation(warehouseId, locationName, loadDetails);
     }
+
+    @RequestMapping(method=RequestMethod.POST, value="/items/{id}/add-item-barcode")
+    public ItemBarcode addItemBarcode(
+            Long warehouseId,
+            @PathVariable Long id,
+            @RequestBody ItemBarcode itemBarcode)   {
+
+
+        return itemService.addItemBarcode(id, warehouseId, itemBarcode);
+    }
 }

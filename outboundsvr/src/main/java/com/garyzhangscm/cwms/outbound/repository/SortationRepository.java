@@ -28,9 +28,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SortationRepository extends JpaRepository<Sortation, Long>, JpaSpecificationExecutor<Sortation> {
 
-    @Query("select s from sortation s where s.warehouseId = :warehouseId " +
+    @Query("select s from Sortation s where s.warehouseId = :warehouseId " +
             " and s.wave.number = :waveNumber and s.locationId = :locationId" )
     Sortation findByWarehouseAndWave(Long warehouseId, String waveNumber, Long locationId);
 
     Sortation findByWarehouseIdAndNumber(Long warehouseId, String number);
+
 }
