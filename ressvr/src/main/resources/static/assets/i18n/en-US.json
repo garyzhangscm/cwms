@@ -2356,5 +2356,6 @@
   "statusAllowReceiptChangeFromIntegration": "Status that allow changing receipt during integration",
   "statusAllowReceiptChangeFromWebUI": "Status that allow changing receipt from web UI",
   "useReceiptCheckInTimeAsInWarehouseDateTime": "Use receipt's check in time as the inventory's in warehouse time",
-  "validateOverReceivingAgainstArrivedQuantity": "Validate over receiving against the arrived quantity"
+  "validateOverReceivingAgainstArrivedQuantity": "Validate over receiving against the arrived quantity",
+  "cubicMeter": "Cubic Meter"
 }
