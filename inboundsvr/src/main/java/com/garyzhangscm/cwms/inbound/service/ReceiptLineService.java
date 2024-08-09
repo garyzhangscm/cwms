@@ -365,20 +365,22 @@ public class ReceiptLineService {
         Receipt receipt = receiptService.findById(receiptId);
         ReceiptLine receiptLine = findById(receiptLineId);
 
+        InboundReceivingConfiguration inboundReceivingConfiguration =
+                inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(receipt);
+
         // setup the in warehouse date for the inventory, if not setup yet
         // we will use the check in time as the inventory's in warehouse date
         // if setup by policy. Otherwise, we will leave it blank and let the
         // inventory service handle it
         if (Objects.isNull(inventory.getInWarehouseDatetime())) {
 
-            InboundReceivingConfiguration inboundReceivingConfiguration =
-                    inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(receipt);
             if (Objects.nonNull(inboundReceivingConfiguration) &&
                     Boolean.TRUE.equals(inboundReceivingConfiguration.getUseReceiptCheckInTimeAsInWarehouseDateTime()))
             inventory.setInWarehouseDatetime(receipt.getCheckInTime());
         }
 
-        return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation);
+        return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation,
+                inboundReceivingConfiguration.getValidateOverReceivingAgainstArrivedQuantity());
 
     }
 
@@ -387,7 +389,8 @@ public class ReceiptLineService {
                              ReceiptLine receiptLine,
                              Inventory inventory,
                              Boolean receiveToStage,
-                             String stageLocationName){
+                             String stageLocationName,
+                             Boolean validateOverReceivingAgainstArrivedQuantity){
         // Receive inventory and save it on the receipt
 
         // If the inventory has location passed in, we will directly receive the inventory into
@@ -398,7 +401,7 @@ public class ReceiptLineService {
         // Validate if we can receive the inventory
         // 1. over receiving?
         // 3. unexpected item number?
-        validateReceiving(receipt, receiptLine, inventory);
+        validateReceiving(receipt, receiptLine, inventory, validateOverReceivingAgainstArrivedQuantity);
         boolean qcRequired = checkQCRequired(receipt, receiptLine, inventory);
         logger.debug("inventory {} received from receipt line {} / {} needs QC? {}",
                 inventory.getLpn(), receipt.getNumber(), receiptLine.getNumber(),
@@ -576,7 +579,8 @@ public class ReceiptLineService {
     // validate whether we can receive inventory against this receipt line
     // 1. over receiving?
     // 3. unexpected item number?
-    private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
+    private void validateReceiving(Receipt receipt, ReceiptLine receiptLine,
+                                   Inventory inventory, Boolean validateOverReceivingAgainstArrivedQuantity) {
         // make sure the receipt is already checked in
         if (receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
             throw ReceiptOperationException.raiseException("Please check in the receipt before you can receive");
@@ -593,21 +597,26 @@ public class ReceiptLineService {
         // check how many more we can receive against this receipt line
         Long maxOverReceivingQuantityAllowedByQuantity = 0L;
         Long maxOverReceivingQuantityAllowedByPercentage = 0L;
+        Long expectedReceivingQuantity =
+                Boolean.TRUE.equals(validateOverReceivingAgainstArrivedQuantity) ?
+                        receiptLine.getArrivedQuantity() : receiptLine.getExpectedQuantity();
 
         if (receiptLine.getOverReceivingQuantity() > 0) {
             maxOverReceivingQuantityAllowedByQuantity = receiptLine.getOverReceivingQuantity();
         }
 
+
+
         if (receiptLine.getOverReceivingPercent() > 0) {
             maxOverReceivingQuantityAllowedByPercentage =
-                    (long) (receiptLine.getExpectedQuantity() * receiptLine.getOverReceivingPercent() / 100);
+                    (long) (expectedReceivingQuantity * receiptLine.getOverReceivingPercent() / 100);
         }
         Long maxOverReceivingQuantityAllowed = Math.max(
                 maxOverReceivingQuantityAllowedByQuantity, maxOverReceivingQuantityAllowedByPercentage);
 
         // See should we receive this inventory, will the quantity maximum the total quantity allowed
         if (receiptLine.getReceivedQuantity() + inventory.getQuantity() >
-                receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed) {
+                expectedReceivingQuantity + maxOverReceivingQuantityAllowed) {
             if (maxOverReceivingQuantityAllowed == 0) {
                 // over receiving is not allowed in this receipt line
                 throw ReceiptOperationException.raiseException("Over receiving is not allowed");

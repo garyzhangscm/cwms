@@ -851,7 +851,7 @@ public class BulkPickService {
         // if we will need to generate the cycle count, then we will generate one
         // cycle count no matter how many picks in this bulk
         for (Pick pick : bulkPick.getPicks()) {
-            pickService.cancelPick(pick, false, false);
+            pickService.cancelPick(pick, false, false, false, false);
         }
 
         if (errorLocation) {
@@ -1180,7 +1180,7 @@ public class BulkPickService {
                 bulkPick.getColor(), bulkPick.getProductSize(), bulkPick.getStyle(),
                 bulkPick.getInventoryAttribute1(), bulkPick.getInventoryAttribute2(),
                 bulkPick.getInventoryAttribute3(), bulkPick.getInventoryAttribute4(),
-                bulkPick.getInventoryAttribute5(), null);
+                bulkPick.getInventoryAttribute5(), null, null);
 
         Report reportData = new Report();
         setupBulkPickReportParameters(

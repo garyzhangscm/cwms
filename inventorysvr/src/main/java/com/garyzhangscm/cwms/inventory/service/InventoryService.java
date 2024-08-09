@@ -760,7 +760,7 @@ public class InventoryService {
                                                    boolean includeDetails) {
         return findPickableInventories(itemId, inventoryStatusId, null, null,
                 null, null, null, null,null,null,null,null,
-                null, lpnLimit, includeDetails);
+                null, null, lpnLimit, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -775,11 +775,12 @@ public class InventoryService {
                                                    String attribute4,
                                                    String attribute5,
                                                    String receiptNumber,
+                                                   String skipLocationIds,
                                                    int lpnLimit) {
         return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
                 color, productSize, style,
                 attribute1, attribute2, attribute3, attribute4, attribute5,
-                receiptNumber, lpnLimit, true);
+                receiptNumber,  skipLocationIds, lpnLimit, true);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -794,6 +795,7 @@ public class InventoryService {
                                                    String attribute4,
                                                    String attribute5,
                                                    String receiptNumber,
+                                                   String skipLocationIds,
                                                    int lpnLimit,
                                                    boolean includeDetails) {
         /**
@@ -814,9 +816,38 @@ public class InventoryService {
         logger.debug("We have found {} available inventory, Let's get all the pickable inventory from it",
                 availableInventories.size());
 
+        Set<Long> skipLocationIdSet = new HashSet<>();
+        if (Strings.isNotBlank(skipLocationIds)) {
+            for (String skipLocationId : skipLocationIds.split(",")) {
+                skipLocationIdSet.add(Long.parseLong(skipLocationId));
+            }
+        }
+        logger.debug("We will skip the locations : {}", skipLocationIdSet);
+
+        Set<Long> finalSkipLocationIdSet = skipLocationIdSet;
+
         List<Inventory>  pickableInventories
                 =  availableInventories
                         .stream()
+                .filter(inventory -> {
+                    if (finalSkipLocationIdSet.isEmpty()) {
+                        logger.debug("No need to skip the inventory {} as there's no requirement on the skip location",
+                                inventory.getLpn());
+                        return true;
+                    }
+                    else if (finalSkipLocationIdSet.contains(inventory.getLocationId())) {
+                        logger.debug("we will need to skip inventory {} as its in a location {} that is marked as skip ({})",
+                                inventory.getLpn(),
+                                inventory.getLocationId(),
+                                finalSkipLocationIdSet);
+                        return false;
+                    }
+                    logger.debug("we don't need to skip inventory {} as its in a location {} that NOT is marked as skip ({})",
+                            inventory.getLpn(),
+                            inventory.getLocationId(),
+                            finalSkipLocationIdSet);
+                    return true;
+                })
                 .filter(this::isInventoryPickable)
                 .map(inventory -> {
                     // setup the location so we can filter the inventory by pickable location only

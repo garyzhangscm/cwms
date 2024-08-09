@@ -36,10 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -249,21 +246,35 @@ public class ShipmentLineService {
 
     @Transactional
     public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine) {
+
+        return allocateShipmentLine(shipmentLine, new HashSet<>());
+    }
+
+    /**
+     * Allocate the shipment,
+     * skip locations: skip locations
+     * @param shipmentLine
+     * @param skipLocations
+     * @return
+     */
+    public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine,
+                                                 Set<Long> skipLocations) {
         logger.debug("Start to allocate shipment line: {} / {}", shipmentLine.getId(), shipmentLine.getNumber());
+        logger.debug("skip locations: {} ", skipLocations);
         if (!isAllocatable(shipmentLine) || shipmentLine.getOpenQuantity() <= 0) {
             logger.debug("Shipment line is not allocatable! is allocatable? {}, open quantity? {}",
-                            isAllocatable(shipmentLine), shipmentLine.getOpenQuantity());
+                    isAllocatable(shipmentLine), shipmentLine.getOpenQuantity());
             return new AllocationResult();
         }
 
         // AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
         loadAttribute(shipmentLine);
 
-        AllocationResult allocationResult = allocationService.allocate(shipmentLine);
+        AllocationResult allocationResult = allocationService.allocate(shipmentLine, skipLocations);
 
         OrderActivity orderActivity =
                 orderActivityService.createOrderActivity(shipmentLine.getWarehouseId(),
-                shipmentLine, OrderActivityType.SHIPMENT_ALLOCATION);
+                        shipmentLine, OrderActivityType.SHIPMENT_ALLOCATION);
         // Move the open quantity into the in process quantity and start allocation
         logger.debug("Allocation Step 1: Move quantity {} from open quantity to in process quantity",
                 shipmentLine.getOpenQuantity());

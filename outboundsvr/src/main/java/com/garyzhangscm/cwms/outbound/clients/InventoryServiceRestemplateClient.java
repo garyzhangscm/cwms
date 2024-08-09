@@ -271,11 +271,12 @@ public class InventoryServiceRestemplateClient {
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
                                                 String inventoryAttribute5,
-                                                String allocateByReceiptNumber)  {
+                                                String allocateByReceiptNumber,
+                                                String skipLocationIds)  {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
                 color, productSize, style, inventoryAttribute1,
                 inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
-                inventoryAttribute5, allocateByReceiptNumber);
+                inventoryAttribute5, allocateByReceiptNumber, skipLocationIds);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
                                                 Long locationId, String lpn,
@@ -286,7 +287,8 @@ public class InventoryServiceRestemplateClient {
                                                 String inventoryAttribute3,
                                                 String inventoryAttribute4,
                                                 String inventoryAttribute5,
-                                                String allocateByReceiptNumber)  {
+                                                String allocateByReceiptNumber,
+                                                String skipLocationIds)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
@@ -301,6 +303,10 @@ public class InventoryServiceRestemplateClient {
         }
         if (Strings.isNotBlank(lpn)) {
             builder = builder.queryParam("lpn", lpn);
+        }
+        if (Strings.isNotBlank(skipLocationIds)) {
+            builder = builder.queryParam("skipLocationIds", skipLocationIds);
+
         }
         try {
             if (Strings.isNotBlank(color)) {

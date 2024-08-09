@@ -13,7 +13,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -42,11 +44,14 @@ public class AllocationService {
      * Allocate the shipment line
      * @param shipmentLine shipment line to be allocated
      */
-    public AllocationResult allocate(ShipmentLine shipmentLine){
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     Set<Long> skipLocations){
         // Allocate the shipment with the allocation strategyp type specified in the order line
-        logger.debug("start to allocate shipment line: {} / {}",
-                shipmentLine.getShipmentNumber(), shipmentLine.getNumber());
-        return allocate(shipmentLine, shipmentLine.getOrderLine().getAllocationStrategyType());
+        logger.debug("start to allocate shipment line: {} / {}, with skip locations {}",
+                shipmentLine.getShipmentNumber(), shipmentLine.getNumber(),
+                skipLocations);
+        return allocate(shipmentLine, shipmentLine.getOrderLine().getAllocationStrategyType(),
+                skipLocations);
     }
 
     /**
@@ -54,8 +59,10 @@ public class AllocationService {
      * @param shipmentLine shipment line to be allocated
      * @param allocationStrategyType user specified allocation stratetyp type
      */
-    public AllocationResult allocate(ShipmentLine shipmentLine, AllocationStrategyType allocationStrategyType){
-        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine);
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     AllocationStrategyType allocationStrategyType,
+                                     Set<Long> skipLocations){
+        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine, skipLocations);
 
 
         // save the allocate request to Kafka so that we will allocate later

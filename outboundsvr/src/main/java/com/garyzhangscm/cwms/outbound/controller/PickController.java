@@ -105,15 +105,17 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
-    public Pick cancelPick(@PathVariable Long id,
+    public List<Pick> cancelPick(@PathVariable Long id,
                            @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                           @RequestParam(name = "reallocate", required = false, defaultValue = "false") Boolean reallocate,
+                           @RequestParam(name = "skipOriginalLocation", required = false, defaultValue = "true") Boolean skipOriginalLocation,
                            @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
-        return pickService.cancelPick(id, errorLocation, generateCycleCount);
+        return pickService.cancelPick(id, errorLocation, generateCycleCount, reallocate, skipOriginalLocation);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}/unpick", method = RequestMethod.POST)
-    public Pick unpick(@PathVariable Long id,
+    public List<Pick> unpick(@PathVariable Long id,
                        @RequestParam Long unpickQuantity){
         return pickService.unpick(id, unpickQuantity);
     }
@@ -125,8 +127,9 @@ public class PickController {
                                   @RequestParam(name = "pickIds") String pickIds,
                                   @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
                                   @RequestParam(name = "reallocate", required = false, defaultValue = "false") Boolean reallocate,
+                                  @RequestParam(name = "skipOriginalLocation", required = false, defaultValue = "true") Boolean skipOriginalLocation,
                                   @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount) {
-        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount, reallocate);
+        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount, reallocate,skipOriginalLocation);
     }
 
 

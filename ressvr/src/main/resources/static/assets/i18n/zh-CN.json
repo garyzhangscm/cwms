@@ -2346,5 +2346,10 @@
   "sortation": "Sortation",
   "location-group.allowOutboundSort": "播种库位组",
   "sortedQuantity": "已播种数量",
-  "sortedAll": "全部播种"
+  "sortedAll": "全部播种",
+  "statusAllowReceiptChangeWhenUploadFile": "当上传文件时，允许修改入库单的当前入库单状态",
+  "statusAllowReceiptChangeFromIntegration": "当通过接口修改入库单时，允许修改入库单的当前入库单状态",
+  "statusAllowReceiptChangeFromWebUI": "当用网页修改入库单时，允许修改入库单的当前入库单状态",
+  "useReceiptCheckInTimeAsInWarehouseDateTime": "使用入库单的到库时间，作为收入库存的到库时间",
+  "validateOverReceivingAgainstArrivedQuantity": "使用到库数量来验证超收"
 }

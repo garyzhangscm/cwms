@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Column;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class AllocationRequest {
 
@@ -56,6 +53,9 @@ public class AllocationRequest {
 
     private String allocateByReceiptNumber;
 
+    // if the allocation needs to skip certain locations
+    private Set<Long> skipLocations = new HashSet<>();
+
 
     // will be setup if the allocation request is a
     // manual allocation for a specific LPN
@@ -81,6 +81,11 @@ public class AllocationRequest {
     }
 
     public AllocationRequest(ShipmentLine shipmentLine) {
+        this(shipmentLine, new HashSet<>());
+    }
+
+    public AllocationRequest(ShipmentLine shipmentLine,
+                             Set<Long> skipLocations) {
         this.item = shipmentLine.getOrderLine().getItem();
         this.warehouse = shipmentLine.getWarehouse();
         this.shipmentLines = Collections.singletonList(shipmentLine);
@@ -101,8 +106,8 @@ public class AllocationRequest {
         this.inventoryAttribute5 = shipmentLine.getOrderLine().getInventoryAttribute5();
 
         this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
+        this.skipLocations = skipLocations;
     }
-
 
     public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine, Item item,
                              ProductionLineAssignment productionLineAssignment,
@@ -354,5 +359,13 @@ public class AllocationRequest {
 
     public void setInventoryAttribute5(String inventoryAttribute5) {
         this.inventoryAttribute5 = inventoryAttribute5;
+    }
+
+    public Set<Long> getSkipLocations() {
+        return skipLocations;
+    }
+
+    public void setSkipLocations(Set<Long> skipLocations) {
+        this.skipLocations = skipLocations;
     }
 }

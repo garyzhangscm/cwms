@@ -2351,5 +2351,10 @@
   "outbound.sortation": "Sortation",
   "location-group.allowOutboundSort": "Allow outbound sortation",
   "sortedQuantity": "Sorted Quantity",
-  "sortedAll": "Sorted All"
+  "sortedAll": "Sorted All",
+  "statusAllowReceiptChangeWhenUploadFile": "Status that allow changing receipt during upload files",
+  "statusAllowReceiptChangeFromIntegration": "Status that allow changing receipt during integration",
+  "statusAllowReceiptChangeFromWebUI": "Status that allow changing receipt from web UI",
+  "useReceiptCheckInTimeAsInWarehouseDateTime": "Use receipt's check in time as the inventory's in warehouse time",
+  "validateOverReceivingAgainstArrivedQuantity": "Validate over receiving against the arrived quantity"
 }

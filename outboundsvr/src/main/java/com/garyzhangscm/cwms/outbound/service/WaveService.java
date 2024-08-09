@@ -305,7 +305,7 @@ public class WaveService {
                 shipmentLine -> {
                     List<Long> pickIds = shipmentLine.getPicks().stream().map(pick -> pick.getId()).collect(Collectors.toList());
                     pickIds.forEach(
-                            pickId -> pickService.cancelPick(pickId, false, false)
+                            pickId -> pickService.cancelPick(pickId, false, false, false, false)
                     );
                     logger.debug("picks for the shipment line {} / {} has been cancelled",
                             shipmentLine.getShipment().getNumber(),
@@ -1067,7 +1067,7 @@ public class WaveService {
                 itemId, inventoryStatusId, sourceLocationId, color, productSize, style,
                 inventoryAttribute1, inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
                 inventoryAttribute5,
-                "");
+                "", null);
         logger.debug("Get a list of pickable inventory for printing wave pick sheet with item id {} and location id {}",
                 itemId, sourceLocationId);
 
