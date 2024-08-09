@@ -111,6 +111,10 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
     @Column(name = "use_receipt_check_in_time_as_in_warehouse_datetime")
     private Boolean useReceiptCheckInTimeAsInWarehouseDateTime;
 
+
+    @Column(name = "validate_over_receiving_against_arrived_quantity")
+    private Boolean validateOverReceivingAgainstArrivedQuantity;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -271,5 +275,13 @@ public class InboundReceivingConfiguration extends AuditibleEntity<String>{
 
     public void setStatusAllowReceiptChangeFromWebUI(ReceiptStatus statusAllowReceiptChangeFromWebUI) {
         this.statusAllowReceiptChangeFromWebUI = statusAllowReceiptChangeFromWebUI;
+    }
+
+    public Boolean getValidateOverReceivingAgainstArrivedQuantity() {
+        return validateOverReceivingAgainstArrivedQuantity;
+    }
+
+    public void setValidateOverReceivingAgainstArrivedQuantity(Boolean validateOverReceivingAgainstArrivedQuantity) {
+        this.validateOverReceivingAgainstArrivedQuantity = validateOverReceivingAgainstArrivedQuantity;
     }
 }

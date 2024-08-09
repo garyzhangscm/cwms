@@ -679,15 +679,17 @@ public class PickService {
     public List<Pick> cancelPicks(String pickIds,
                                   boolean errorLocation,
                                   boolean generateCycleCount,
-                                  boolean reallocate) {
+                                  boolean reallocate,
+                                  boolean skipOriginalLocation) {
 
         List<Pick> picks = new ArrayList<>();
 
         Arrays.stream(pickIds.split(",")).forEach(
                 pickIdString -> {
                     Long pickId = Long.parseLong(pickIdString);
-                    picks.add(findById(pickId));
-                    cancelPick(pickId, errorLocation, generateCycleCount);
+                    // picks.add(findById(pickId));
+                    picks.addAll(cancelPick(pickId, errorLocation, generateCycleCount, reallocate,
+                            skipOriginalLocation));
                 }
         );
 
@@ -695,18 +697,26 @@ public class PickService {
 
     }
 
-    public Pick cancelPick(Long id, boolean errorLocation, boolean generateCycleCount) {
-        return cancelPick(findById(id), errorLocation, generateCycleCount);
+    public List<Pick> cancelPick(Long id, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation) {
+        return cancelPick(findById(id), errorLocation, generateCycleCount, reallocate,
+                skipOriginalLocation);
     }
 
     @Transactional
-    public Pick cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount) {
+    public List<Pick> cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation) {
         return cancelPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
-                errorLocation, generateCycleCount);
+                errorLocation, generateCycleCount, reallocate,
+                skipOriginalLocation);
 
     }
     @Transactional
-    public Pick cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount) {
+    public List<Pick> cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation) {
         logger.debug("start to cancel pick {}", pick.getNumber());
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
             throw PickingException.raiseException("Can't cancel pick that is already completed!");
@@ -714,7 +724,7 @@ public class PickService {
 
         // we have nothing left to cancel
         if (cancelledQuantity == 0) {
-            return pick;
+            return new ArrayList<>();
         }
 
         // return the open quantity back to the shipment line
@@ -725,22 +735,6 @@ public class PickService {
         OrderActivity orderActivity = orderActivityService.createOrderActivity(
                 pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CALCELLATION
         );
-        if (pick.getShipmentLine() != null) {
-            ShipmentLine newShipmentLine = shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
-            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
-        }
-        else if (pick.getShortAllocation() != null) {
-            ShortAllocation newShortAllocation =
-                    shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
-            orderActivity.setQuantityByNewShortAllocation(newShortAllocation);
-        }
-        else if (pick.getWorkOrderLineId() != null) {
-            workOrderServiceRestemplateClient.registerPickCancelled(
-                    pick.getWorkOrderLineId(),
-                    cancelledQuantity,
-                    pick.getDestinationLocationId());
-        }
-
         // If this is a pick that allocates a whole LPN, release the LPN
         if (Objects.nonNull(pick.getLpn())) {
 
@@ -775,8 +769,12 @@ public class PickService {
         orderActivity.setQuantityByNewPick(pick);
         orderActivityService.sendOrderActivity(orderActivity);
 
+        pick = saveOrUpdate(pick);
+
+
         logger.debug("after we cancelled the quantity {}, there's still {} quantity left",
                 cancelledQuantity, pick.getQuantity());
+
         if (pick.getQuantity() == 0) {
             // There's nothing left on the picks, let's remove it.
             // We can find the history in the cancelled pick table
@@ -790,12 +788,38 @@ public class PickService {
                         pick.getWorkTaskId()
                 );
             }
+        }
 
-            return pick;
+        // return the new picks in case of reallocate
+        List<Pick> newPicks = new ArrayList<>();
+
+        // reflect the quantity on shipment / work order/ short allocation about the cancelled pick
+        if (pick.getShipmentLine() != null) {
+            ShipmentLine newShipmentLine = shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
+            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
+            if (reallocate) {
+                Set<Long> skipLocationIDs = new HashSet<>();
+                if (skipOriginalLocation) {
+                    skipLocationIDs.add(pick.getSourceLocationId());
+                }
+                AllocationResult allocationResult =
+                        shipmentLineService.allocateShipmentLine(newShipmentLine, skipLocationIDs);
+                newPicks.addAll(allocationResult.getPicks());
+            }
         }
-        else {
-            return saveOrUpdate(pick);
+        else if (pick.getShortAllocation() != null) {
+            ShortAllocation newShortAllocation =
+                    shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
+            orderActivity.setQuantityByNewShortAllocation(newShortAllocation);
         }
+        else if (pick.getWorkOrderLineId() != null) {
+            workOrderServiceRestemplateClient.registerPickCancelled(
+                    pick.getWorkOrderLineId(),
+                    cancelledQuantity,
+                    pick.getDestinationLocationId());
+        }
+
+        return newPicks;
 
     }
 
@@ -1880,7 +1904,7 @@ public class PickService {
      * @return pick that being cancelled
      */
     //
-    public Pick unpick(Long id, Long unpickedQuantity) {
+    public List<Pick> unpick(Long id, Long unpickedQuantity) {
         return unpick(findById(id), unpickedQuantity);
     }
 
@@ -1894,9 +1918,9 @@ public class PickService {
      * @param unpickedQuantity: quantity of the inventory being unpicked
      * @return pick that being cancelled
      */
-    public Pick unpick(Pick pick, Long unpickedQuantity) {
+    public List<Pick> unpick(Pick pick, Long unpickedQuantity) {
         // Cancel the pick with unpicked quantity
-        return cancelPick(pick, unpickedQuantity, false, false);
+        return cancelPick(pick, unpickedQuantity, false, false, false, false);
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
@@ -2587,7 +2611,7 @@ public class PickService {
                                         pick.getInventoryAttribute3(),
                                         pick.getInventoryAttribute4(),
                                         pick.getInventoryAttribute5(),
-                                        null)
+                                        null, null)
                             );
                     pickableInventoryMap.putIfAbsent(key, pickableInventory);
 

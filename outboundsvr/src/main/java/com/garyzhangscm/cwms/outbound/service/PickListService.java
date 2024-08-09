@@ -794,7 +794,7 @@ public class PickListService {
         PickList pickList = findById(id);
         // let's cancel all the picks in this list
         for (Pick pick : pickList.getPicks()) {
-            pickService.cancelPick(pick, false, false);
+            pickService.cancelPick(pick, false, false, false, false);
         }
 
         // if there's already a work task released for this pick list, then
@@ -995,7 +995,7 @@ public class PickListService {
                                     pick.getInventoryAttribute3(),
                                     pick.getInventoryAttribute4(),
                                     pick.getInventoryAttribute5(),
-                                    null)
+                                    null, null)
                     );
                     pickableInventoryMap.putIfAbsent(key, pickableInventory);
 

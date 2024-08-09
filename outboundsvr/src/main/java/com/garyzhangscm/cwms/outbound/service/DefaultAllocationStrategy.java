@@ -78,6 +78,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 Strings.isBlank(allocationRequest.getInventoryAttribute4()) ? "N/A" : allocationRequest.getInventoryAttribute4(),
                 Strings.isBlank(allocationRequest.getInventoryAttribute5()) ? "N/A" : allocationRequest.getInventoryAttribute5()
                 );
+        logger.debug("Will skip locations : {}",
+                allocationRequest.getSkipLocations());
 
 
         List<Pick> existingPicks =
@@ -88,6 +90,10 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // the existing pick and existing inventory
         existingPicks = existingPicks.stream().filter(
                 pick -> isPickMatchWithAllocationRequest(pick, allocationRequest)
+        ).filter(
+                // make sure the pick is not from the location that we would like to skip
+                pick -> allocationRequest.getSkipLocations().isEmpty() ||
+                        !allocationRequest.getSkipLocations().contains(pick.getSourceLocationId())
         ).collect(Collectors.toList());
 
         // Let's get all the pickable inventory and existing picks to the trace file
@@ -127,7 +133,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getInventoryAttribute3(),
                 allocationRequest.getInventoryAttribute4(),
                 allocationRequest.getInventoryAttribute5(),
-                allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getAllocateByReceiptNumber(),
+                String.join(",", allocationRequest.getSkipLocations().stream().map(String::valueOf).collect(Collectors.toSet())));
 
         // for manual pick, we will filter out the inventory to specific LPN
         if (Boolean.TRUE.equals(allocationRequest.isManualAllocation()) &&

@@ -197,6 +197,7 @@ public class InventoryController {
                                                    @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                                    @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
+                                                   @RequestParam(name = "skipLocationIds", defaultValue = "", required = false) String skipLocationIds,
                                                    @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) throws UnsupportedEncodingException {
                                                  //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
 
@@ -224,6 +225,9 @@ public class InventoryController {
 
         logger.debug("receiptNumber = {}", Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
         logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        logger.debug("skipLocationIds = {}", Objects.isNull(skipLocationIds) ? "N/A" : skipLocationIds);
+
+
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
         List<Inventory> pickableInventory = inventoryService.findPickableInventories(
                 itemId, inventoryStatusId, locationId, lpn,
@@ -235,7 +239,7 @@ public class InventoryController {
                 URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
-                receiptNumber, lpnLimit);
+                receiptNumber, skipLocationIds, lpnLimit);
         logger.debug("return {} pickable inventory with criteria ",
                 pickableInventory.size());
         logger.debug("=========   Pickable   Inventory   ===============");
