@@ -376,6 +376,13 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             // of picks
             List<Pick> existingPicksByInventorySummary = getExistingPicksByInventorySummary(inventorySummary, existingPicks);
 
+            logger.debug("We have {} existing picks against the location {}",
+                    existingPicksByInventorySummary.size(),
+                    inventorySummary.getLocation().getName());
+            existingPicksByInventorySummary.forEach(
+                    pick -> logger.debug(">> pick: {}, quantity: {}, picked quantity: {}",
+                            pick.getNumber(), pick.getQuantity(), pick.getPickedQuantity())
+            );
             // pickByQuantityPicksTotalOpenQuantity will return all open quantity that allocated
             // by NON LPN picks
             // if we are working on a manual picking process, then we will ignore the existing picks
@@ -386,9 +393,14 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             long pickByQuantityPicksTotalOpenQuantity =
                     Boolean.TRUE.equals(allocationRequest.isManualAllocation()) ?
                             0 : pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
+            logger.debug("Total open quantity still need to be picked: {}", pickByQuantityPicksTotalOpenQuantity);
             long totalInventoryQuantity =
                     inventorySummary.getInventories().values().stream().flatMap(List::stream).mapToLong(Inventory::getQuantity).sum();
+            logger.debug("total inventory quantity: {}", totalInventoryQuantity);
             long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
+
+            logger.debug("We still have {} left that can be picked in the location {}",
+                    availableInventoryQuantity, inventorySummary.getLocation());
 
             long allocatibleQuantity = getAllocatiableQuantityByUnitOfMeasure(
                     (availableInventoryQuantity - pickByQuantityPicksTotalOpenQuantity),
@@ -903,12 +915,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             stringBuilder.append("location group:").append(inventorySummary.getLocation().getLocationGroup().getName()).append("\n")
                     .append("Location: ").append(inventorySummary.getLocation().getName()).append("\n")
-                    .append("Item: ").append(inventorySummary.getItem().getName())
-                    .append("Color: ").append(inventorySummary.getColor())
-                    .append("Product Size: ").append(inventorySummary.getProductSize())
-                    .append("Style: ").append(inventorySummary.getStyle())
-                    .append("allocate by receipt number: ").append(inventorySummary.getAllocateByReceiptNumber())
-                    .append(", Total Quantity: ").append(inventorySummary.getQuantity())
+                    .append("Item: ").append(inventorySummary.getItem().getName()).append(";")
+                    .append("Color: ").append(inventorySummary.getColor()).append(";")
+                    .append("Product Size: ").append(inventorySummary.getProductSize()).append(";")
+                    .append("Style: ").append(inventorySummary.getStyle()).append(";")
+                    .append("allocate by receipt number: ").append(inventorySummary.getAllocateByReceiptNumber()).append(";")
+                    .append(", Total Quantity: ").append(inventorySummary.getQuantity()).append(";")
                     .append(", inventory: \n");
             Iterator<Map.Entry<String, List<Inventory>>> lpnIterator = inventorySummary.getInventories().entrySet().iterator();
             int index = 1;
@@ -1067,18 +1079,24 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      * @return
      */
     private long getAvailableInventoryQuantity(InventorySummary inventorySummary) {
+        logger.debug("start to get invenotry quantity available for allocation from " +
+                " invenotry summary of location {}", inventorySummary.getLocation().getName());
         return inventorySummary.getInventories().entrySet().stream()
                 .filter(entry -> {
                     List<Inventory> inventories = entry.getValue();
                     if(inventories.stream().anyMatch(inventory -> Objects.nonNull(inventory.getAllocatedByPickId()))) {
                         // the LPN is allocated, let's ignore this as it is not valid
+                        logger.debug("inventory in LPN {} has record that already allocated by certain pick, skip the whole LPN",
+                               entry.getKey() );
                         return false;
                     }
                     return true;
                 }).mapToLong(entry -> {
                     // return the total quantity of this LPN
                     List<Inventory> inventories = entry.getValue();
-                    return inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+                    Long quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+                    logger.debug("# quantity from LPN {} is {}", entry.getKey(), quantity);
+                    return quantity;
                 }).sum();
     }
 
