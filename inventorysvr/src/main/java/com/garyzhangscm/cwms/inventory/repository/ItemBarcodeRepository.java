@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.inventory.repository;
 import com.garyzhangscm.cwms.inventory.model.ItemBarcode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -28,4 +29,9 @@ import org.springframework.stereotype.Repository;
 public interface ItemBarcodeRepository extends JpaRepository<ItemBarcode, Long>, JpaSpecificationExecutor<ItemBarcode> {
 
 
+    @Query( "select ib from ItemBarcode ib " +
+            "  where ib.warehouseId = :warehouseId " +
+            "    and ib.item.id = :itemId " +
+            "    and ib.code = :code")
+    ItemBarcode findByCode(Long warehouseId, Long itemId, String code);
 }

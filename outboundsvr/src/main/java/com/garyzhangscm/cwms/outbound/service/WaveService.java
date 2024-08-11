@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
 import org.apache.commons.lang.StringUtils;
@@ -374,7 +375,7 @@ public class WaveService {
 
     // Plan a list of order lines into a wave
     @Transactional
-    public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds, String comment) {
+    public Wave planWaveByOrderLines(Long warehouseId, String waveNumber, List<Long> orderLineIds, String comment) {
 
         if (StringUtils.isBlank(waveNumber)) {
             waveNumber = getNextWaveNumber(warehouseId);
@@ -405,6 +406,46 @@ public class WaveService {
         logger.debug(">> The wave has {} shipment lines", wave.getShipmentLines().size());
 
         return wave;
+
+    }
+
+    @Transactional
+    public Wave planWaveByShipmentLines(Long warehouseId, String waveNumber, List<Long> shipmentLineIds, String comment) {
+
+        if (StringUtils.isBlank(waveNumber)) {
+            waveNumber = getNextWaveNumber(warehouseId);
+            logger.debug(">> wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
+        }
+
+        logger.debug(">> Start to plan {} shipment lines into wave # {}", shipmentLineIds.size(), waveNumber);
+        Wave wave = findByNumber(warehouseId, waveNumber);
+        if (Objects.isNull(wave)) {
+            wave = new Wave();
+            wave.setNumber(waveNumber);
+            wave.setComment(comment);
+            wave.setStatus(WaveStatus.PLANED);
+            wave.setWarehouseId(warehouseId);
+            wave = save(wave);
+        }
+        List<ShipmentLine> shipmentLines = shipmentLineService.findByShipmentLineIds(warehouseId,
+                shipmentLineIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+        // make sure non of the shipment has been planned into any wave yet
+        for(ShipmentLine shipmentLine : shipmentLines) {
+            if (Objects.nonNull(shipmentLine.getWave()) &&
+                    !shipmentLine.getWave().getNumber().equals(waveNumber)) {
+                throw ShippingException.raiseException("shipment line " + shipmentLine.getShipment() +
+                        " / " + shipmentLine.getNumber() + " already planned into wave " +
+                        shipmentLine.getWave().getNumber() + ", can't plan it into another wave " + waveNumber);
+            }
+        }
+        for(ShipmentLine shipmentLine : shipmentLines) {
+            shipmentLineService.planShipmentLineIntoWave(shipmentLine, wave);
+        }
+
+
+        // refresh the wave with new shipment lines
+        return findById(wave.getId());
 
     }
 
@@ -1579,4 +1620,5 @@ public class WaveService {
 
 
     }
+
 }

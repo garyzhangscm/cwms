@@ -29,6 +29,7 @@ Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory
 Util-File-Upload,itemUnitOfMeasure,Item Unit of Measure
+Util-File-Upload,item-barcodes,Item Barcode
 Util-File-Upload,locations,Warehouse Locations
 Util-File-Upload,orders,Order
 Util-File-Upload,parcel-packages,Parcel Package
