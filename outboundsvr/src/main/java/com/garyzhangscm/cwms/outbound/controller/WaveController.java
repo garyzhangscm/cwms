@@ -97,12 +97,21 @@ public class WaveController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/waves/plan", method = RequestMethod.POST)
-    public Wave planWave(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
+    @RequestMapping(value="/waves/plan/by-order-lines", method = RequestMethod.POST)
+    public Wave planWaveByOrderLines(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
                          @RequestParam(name="comment", required = false, defaultValue = "") String comment,
                          @RequestParam Long warehouseId,
                          @RequestBody List<Long> orderLineIds) {
-        return waveService.planWave(warehouseId, waveNumber, orderLineIds, comment);
+        return waveService.planWaveByOrderLines(warehouseId, waveNumber, orderLineIds, comment);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/waves/plan/by-shipment-lines", method = RequestMethod.POST)
+    public Wave planWaveByShipmentLines(@RequestParam(name="waveNumber", required = false, defaultValue = "") String waveNumber,
+                         @RequestParam(name="comment", required = false, defaultValue = "") String comment,
+                         @RequestParam Long warehouseId,
+                         @RequestBody List<Long> shipmentLineIds) {
+        return waveService.planWaveByShipmentLines(warehouseId, waveNumber, shipmentLineIds, comment);
     }
 
     @BillableEndpoint

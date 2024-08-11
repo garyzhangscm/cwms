@@ -18,17 +18,28 @@
 
 package com.garyzhangscm.cwms.inventory.controller;
 
+import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inventory.model.FileUploadResult;
 import com.garyzhangscm.cwms.inventory.model.ItemBarcode;
+import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemBarcodeService;
+import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
 public class ItemBarcodeController {
     @Autowired
     ItemBarcodeService itemBarcodeService;
+    @Autowired
+    FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @RequestMapping(value="/item-barcodes", method = RequestMethod.GET)
     public List<ItemBarcode> findAllItemBarcodes(@RequestParam Long warehouseId,
@@ -60,5 +71,43 @@ public class ItemBarcodeController {
     @RequestMapping(method=RequestMethod.DELETE, value="/item-barcodes/{id}")
     public void removeItemBarcode(@PathVariable Long id) {
         itemBarcodeService.delete(id);
+    }
+
+
+    @RequestMapping(method=RequestMethod.DELETE, value="/item-barcodes/upload")
+    public ResponseBodyWrapper uploadItemBarcodes(Long companyId, Long warehouseId,
+                                           @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
+                                           @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        try {
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "item-barcodes", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = itemBarcodeService.uploadItemBarcodeData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
+        }
+        catch (Exception ex) {
+            return new ResponseBodyWrapper(-1, ex.getMessage(), "");
+        }
+
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/item-barcodes/upload/progress")
+    public ResponseBodyWrapper getFileUploadProgress(Long warehouseId,
+                                                     String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",itemBarcodeService.getFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/item-barcodes/upload/result")
+    public List<FileUploadResult> getFileUploadResult(Long warehouseId,
+                                                      String key) throws IOException {
+
+
+        return itemBarcodeService.getFileUploadResult(warehouseId, key);
     }
 }

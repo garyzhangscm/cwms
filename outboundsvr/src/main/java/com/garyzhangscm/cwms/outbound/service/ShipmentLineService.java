@@ -81,15 +81,17 @@ public class ShipmentLineService {
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                       String orderNumber, Long orderLineId,
                                       Long orderId, Long waveId,
-                                      String orderLineIds) {
+                                      String orderLineIds,
+                                      String shipmentLineIds) {
         return findAll(warehouseId, number,
-                orderNumber, orderLineId, orderId, waveId, orderLineIds, true);
+                orderNumber, orderLineId, orderId, waveId, orderLineIds, shipmentLineIds, true);
     }
 
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                        String orderNumber, Long orderLineId,
                                       Long orderId, Long waveId,
                                       String orderLineIds,
+                                      String shipmentLineIds,
                                       boolean loadDetails) {
         List<ShipmentLine> shipmentLines =  shipmentLineRepository.findAll(
                 (Root<ShipmentLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -136,6 +138,16 @@ public class ShipmentLineService {
                         predicates.add(criteriaBuilder.and(inOrderLineIds));
 
                     }
+                    if (Strings.isNotBlank(shipmentLineIds)) {
+
+
+                        CriteriaBuilder.In<Long> inShipmentLineIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : shipmentLineIds.split(",")) {
+                            inShipmentLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inShipmentLineIds));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -158,19 +170,23 @@ public class ShipmentLineService {
         }
     }
     public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
-        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null, null);
+        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null, null, null);
     }
     public List<ShipmentLine> findByOrderLineId(Long warehouseId, Long orderLineId) {
-        return findAll(warehouseId, null, null, orderLineId, null, null, null);
+        return findAll(warehouseId, null, null, orderLineId, null, null, null, null);
     }
     public List<ShipmentLine> findByOrderLineIds(Long warehouseId, String orderLineIds) {
-        return findAll(warehouseId, null, null, null, null, null, orderLineIds);
+        return findAll(warehouseId, null, null, null, null, null, orderLineIds, null);
     }
+    public List<ShipmentLine> findByShipmentLineIds(Long warehouseId, String shipmentLineIds) {
+        return findAll(warehouseId, null, null, null, null, null, null, shipmentLineIds);
+    }
+
 
 
 
     public List<ShipmentLine> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null);
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null, null);
     }
 
     public ShipmentLine save(ShipmentLine shipmentLine) {
@@ -476,5 +492,10 @@ public class ShipmentLineService {
 
         return save(shipmentLine);
 
+    }
+
+    public ShipmentLine planShipmentLineIntoWave(ShipmentLine shipmentLine, Wave wave) {
+        shipmentLine.setWave(wave);
+        return save(shipmentLine);
     }
 }
