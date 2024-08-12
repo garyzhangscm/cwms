@@ -18,12 +18,15 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
+import com.garyzhangscm.cwms.outbound.model.Inventory;
 import com.garyzhangscm.cwms.outbound.model.Sortation;
 import com.garyzhangscm.cwms.outbound.model.SortationByShipment;
 import com.garyzhangscm.cwms.outbound.model.SortationByShipmentLine;
 import com.garyzhangscm.cwms.outbound.service.SortationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class SortationController {
@@ -36,6 +39,27 @@ public class SortationController {
                                               @RequestParam Long locationId) {
         return sortationService.getByWaveNumber(warehouseId, waveNumber, locationId);
     }
+
+    /**
+     * Find matched inventory by item. When the user scan in item from web, we will need to check
+     * if there's multiple inventory matched with the item and if there's different attribute
+     * * If there's only single inventory attribute, then we will choose any shipment line
+     *   to sort
+     * * if there're multiple inventory attribute, then we will ask the user to choose the inventory
+     *   attribute so that we can find the correct shipment line to sort
+     * @param warehouseId
+     * @param waveNumber
+     * @param itemId
+     * @return
+     */
+    @RequestMapping(value="/sortation/by-wave/picked-inventory-by-item", method = RequestMethod.POST)
+    public List<Inventory> findPickedInventoryByItem(@RequestParam Long warehouseId,
+                                                     @RequestParam String waveNumber,
+                                                     @RequestParam Long itemId,
+                                                     @RequestParam Long locationId) {
+        return sortationService.findPickedInventoryByItem(warehouseId, waveNumber, itemId, locationId);
+    }
+
 
     @RequestMapping(value="/sortation/by-wave/by-item", method = RequestMethod.POST)
     public SortationByShipmentLine processWaveSortationByItem(@RequestParam Long warehouseId,

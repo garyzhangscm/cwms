@@ -239,4 +239,13 @@ public class SortationService {
 
         return sortationByShipmentLineRepository.save(sortationByShipmentLine);
     }
+
+    public List<Inventory> findPickedInventoryByItem(Long warehouseId, String waveNumber,
+                                                     Long itemId,
+                                                     Long locationId) {
+        Wave wave = waveService.findByNumber(warehouseId, waveNumber, false);
+        return waveService.getPickedInventory(wave, locationId).stream().filter(
+                inventory -> inventory.getItem().getId().equals(itemId)
+        ).collect(Collectors.toList());
+    }
 }
