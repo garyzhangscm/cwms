@@ -41,6 +41,7 @@ public class FileUploadType {
         fileUploadTypes.add(new BillOfMaterialFileUpload());
         fileUploadTypes.add(new ItemFileUpload());
         fileUploadTypes.add(new ItemUnitOfMeasureFileUpload());
+        fileUploadTypes.add(new ItemBarcodeFileUpload());
         fileUploadTypes.add(new InventoryFileUpload());
         fileUploadTypes.add(new OrderFileUpload());
         fileUploadTypes.add(new ParcelPackageFileUpload());
