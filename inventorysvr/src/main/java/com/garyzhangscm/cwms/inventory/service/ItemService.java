@@ -53,6 +53,8 @@ public class ItemService {
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
+    private ItemBarcodeService itemBarcodeService;
+    @Autowired
     ItemFamilyService itemFamilyService;
     @Autowired
     ItemPackageTypeService itemPackageTypeService;
@@ -90,8 +92,6 @@ public class ItemService {
     @Autowired
     private LocationUtilizationSnapshotService locationUtilizationSnapshotService;
 
-    @Autowired
-    private ItemBarcodeService itemBarcodeService;
     @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
     @Autowired
@@ -1621,5 +1621,30 @@ public class ItemService {
         itemBarcode.setItem(item);
 
         return itemBarcodeService.save(itemBarcode);
+    }
+
+    /**
+     * Find item by barcode
+     * barcode can be an item name or item barcode
+     * @param companyId
+     * @param warehouseId
+     * @param barcode
+     * @param loadDetails
+     * @param clientRestriction
+     * @return
+     */
+    public List<Item> findByBarcode(Long companyId, Long warehouseId, String barcode, Boolean loadDetails, ClientRestriction clientRestriction) {
+        List<Item> items = findAll(companyId,
+                warehouseId, barcode, null,
+                null,null,null,null,null,null,
+          loadDetails, clientRestriction);
+
+        items.addAll(
+                itemBarcodeService.findAll(warehouseId, null, null, barcode).stream().map(
+                        itemBarcode -> itemBarcode.getItem()
+                ).collect(Collectors.toSet())
+        );
+
+        return items;
     }
 }

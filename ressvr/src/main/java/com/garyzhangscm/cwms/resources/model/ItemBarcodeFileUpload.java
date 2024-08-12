@@ -4,7 +4,7 @@ public class ItemBarcodeFileUpload extends FileUploadType {
 
     public ItemBarcodeFileUpload(){
         super("item-barcodes", "Item Barcode",
-                "inventory/items/upload",
+                "inventory/item-barcodes/upload",
                 "resource/assets/file-templates/item-barcodes.csv",
                 "inventory/item-barcodes/upload/progress",
                 "inventory/item-barcodes/upload/result");

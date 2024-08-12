@@ -44,9 +44,10 @@ public class ItemBarcodeController {
     @RequestMapping(value="/item-barcodes", method = RequestMethod.GET)
     public List<ItemBarcode> findAllItemBarcodes(@RequestParam Long warehouseId,
                                                  @RequestParam(required = false, name = "itemId", defaultValue = "") Long itemId,
-                                                 @RequestParam(required = false, name = "itemName", defaultValue = "") String itemName) {
+                                                 @RequestParam(required = false, name = "itemName", defaultValue = "") String itemName,
+                                                 @RequestParam(required = false, name = "barcode", defaultValue = "") String barcode) {
 
-        return itemBarcodeService.findAll( warehouseId, itemId, itemName);
+        return itemBarcodeService.findAll( warehouseId, itemId, itemName, barcode);
     }
 
 
@@ -74,7 +75,7 @@ public class ItemBarcodeController {
     }
 
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/item-barcodes/upload")
+    @RequestMapping(method=RequestMethod.POST, value="/item-barcodes/upload")
     public ResponseBodyWrapper uploadItemBarcodes(Long companyId, Long warehouseId,
                                            @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                            @RequestParam("file") MultipartFile file) throws IOException {

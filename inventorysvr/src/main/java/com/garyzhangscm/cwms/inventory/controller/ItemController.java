@@ -103,6 +103,17 @@ public class ItemController {
                 warehouseSpecificItem, description,  loadDetails, clientRestriction);
     }
 
+    @ClientValidationEndpoint
+    @RequestMapping(value="/items-query/by-barcode", method = RequestMethod.GET)
+    public List<Item> findByBarcode(@RequestParam Long companyId,
+                                    @RequestParam Long warehouseId,
+                                    @RequestParam String barcode,
+                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                    ClientRestriction clientRestriction) {
+
+        return itemService.findByBarcode(companyId, warehouseId, barcode, loadDetails, clientRestriction);
+
+    }
 
     @ClientValidationEndpoint
     @RequestMapping(value="/items-query/by-keyword", method = RequestMethod.GET)

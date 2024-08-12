@@ -73,7 +73,8 @@ public class ItemBarcodeService {
 
     public List<ItemBarcode> findAll(Long warehouseId,
                                      Long itemId,
-                                     String itemName) {
+                                     String itemName,
+                                     String barcode) {
         return itemBarcodeRepository.findAll(
                 (Root<ItemBarcode> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -90,13 +91,17 @@ public class ItemBarcodeService {
                             predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
                         }
                     }
+                    if (Strings.isNotBlank(barcode)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("code"), barcode));
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
 
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.DESC, "name")
+                Sort.by(Sort.Direction.DESC, "item")
         );
 
     }
