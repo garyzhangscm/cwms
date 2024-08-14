@@ -47,6 +47,9 @@ public class Item implements Serializable {
 
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
 
+    private List<ItemBarcode> itemBarcodes = new ArrayList<>();
+
+
     private ItemPackageType defaultItemPackageType;
 
     private double unitCost;
@@ -125,6 +128,14 @@ public class Item implements Serializable {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public List<ItemBarcode> getItemBarcodes() {
+        return itemBarcodes;
+    }
+
+    public void setItemBarcodes(List<ItemBarcode> itemBarcodes) {
+        this.itemBarcodes = itemBarcodes;
     }
 
     public ItemFamily getItemFamily() {

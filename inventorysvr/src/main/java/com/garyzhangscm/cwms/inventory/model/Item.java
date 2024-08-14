@@ -62,8 +62,8 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     @OneToMany(
             mappedBy = "item",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
+            //cascade = CascadeType.ALL,
+            //orphanRemoval = true,
             fetch = FetchType.LAZY
     )
     private List<ItemBarcode> itemBarcodes = new ArrayList<>();
