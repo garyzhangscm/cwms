@@ -18,6 +18,6 @@ RUN cat /usr/local/www.mysilotrackcloud.com.crt >> /etc/pki/tls/certs/ca-bundle.
 
 RUN mkdir -p /usr/local/service
 
-ADD target/workorderserver-v1.50.jar /usr/local/service/
+ADD target/workorderserver-v1.51.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/workorderserver-v1.50.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/workorderserver-v1.51.jar"]
