@@ -304,4 +304,26 @@ public class PickController {
 
         return pickService.isPickAcknowledgeableByCurrentUser(warehouseId, id, rfCode);
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/picks/open-pick/count")
+    @ClientValidationEndpoint
+    public Long getOpenPickCount(Long warehouseId,
+                                    ClientRestriction clientRestriction) {
+
+
+        return pickService.getOpenPickCount(
+                warehouseId, clientRestriction);
+
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/picks/completed-pick/count")
+    @ClientValidationEndpoint
+    public Long getCompletedPickCount(Long warehouseId,
+                                    ClientRestriction clientRestriction) {
+
+
+        return pickService.getCompletedPickCount(
+                warehouseId, clientRestriction);
+
+    }
 }
