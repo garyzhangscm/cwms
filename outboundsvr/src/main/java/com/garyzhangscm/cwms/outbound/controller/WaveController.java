@@ -22,6 +22,7 @@ import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.WaveService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class WaveController {
 
     @RequestMapping(value="/waves", method = RequestMethod.GET)
     public List<Wave> findAllWaves(@RequestParam Long warehouseId,
+                                   @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
                                    @RequestParam(name="waveStatus", required = false, defaultValue = "") String waveStatus,
                                    @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
@@ -44,7 +46,7 @@ public class WaveController {
                                    @RequestParam(name = "includeCompletedWave", required = false, defaultValue = "false") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Boolean includeCompletedWave,
                                    @RequestParam(name = "includeCancelledWave", required = false, defaultValue = "false") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Boolean includeCancelledWave,
                                    @RequestParam(name = "loadAttribute", required = false, defaultValue = "false") Boolean loadAttribute) {
-        return waveService.findAll(warehouseId, number, waveStatus, startTime, endTime, date, includeCompletedWave, includeCancelledWave, loadAttribute);
+        return waveService.findAll(warehouseId, number, waveStatus, startTime, endTime, date, includeCompletedWave, includeCancelledWave, ids, loadAttribute);
     }
 
     @ClientValidationEndpoint
@@ -224,4 +226,12 @@ public class WaveController {
                                              @RequestParam Long warehouseId){
         return waveService.getSortationLocations(id);
     }
+
+
+    @RequestMapping(value="/waves/get-staged-inventory/quantity", method = RequestMethod.GET)
+    public List<Pair<Long, Long>> getStagedInventoryQuantity(@RequestParam String waveIds,
+                                                @RequestParam Long warehouseId){
+        return waveService.getStagedInventoryQuantity(warehouseId, waveIds);
+    }
+
 }

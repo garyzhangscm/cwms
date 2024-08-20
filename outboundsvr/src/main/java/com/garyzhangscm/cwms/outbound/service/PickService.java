@@ -2671,7 +2671,7 @@ public class PickService {
 
     }
 
-    public Integer getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+    public Long getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
                 findAll(warehouseId, null, null, null, null, null,
                         null,
@@ -2679,7 +2679,9 @@ public class PickService {
                         null, null,  null,true, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
 
-        return picks.size();
+        return picks.stream().filter(
+                pick -> !pick.getStatus().equals(PickStatus.CANCELLED) && !pick.getStatus().equals(PickStatus.COMPLETED)
+        ).filter(pick -> pick.getPickedQuantity() < pick.getQuantity()).count();
 
     }
     public Long getCompletedPickCount(Long warehouseId, ClientRestriction clientRestriction) {
@@ -2689,7 +2691,9 @@ public class PickService {
                         null, null,  null,null, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
 
-        return picks.stream().filter(pick -> pick.getPickedQuantity() >= pick.getQuantity()).count();
+        return picks.stream().filter(
+                pick -> !pick.getStatus().equals(PickStatus.CANCELLED) && !pick.getStatus().equals(PickStatus.COMPLETED)
+        ).filter(pick -> pick.getPickedQuantity() >= pick.getQuantity()).count();
 
     }
     public Map<String, Integer[]> getPickCountByLocationGroup(Long warehouseId, ClientRestriction clientRestriction) {

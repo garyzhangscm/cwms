@@ -116,10 +116,11 @@ public class WaveService {
                               ZonedDateTime endTime,
                               LocalDate date,
                               Boolean includeCompletedWave,
-                              Boolean includeCancelledWave) {
+                              Boolean includeCancelledWave,
+                              String ids ) {
         return findAll(warehouseId, number, waveStatus,
                 startTime, endTime, date, includeCompletedWave,
-                includeCancelledWave,
+                includeCancelledWave, ids,
                 true);
     }
 
@@ -131,6 +132,7 @@ public class WaveService {
                               LocalDate date,
                               Boolean includeCompletedWave,
                               Boolean includeCancelledWave,
+                              String ids,
                               boolean loadAttribute) {
         List<Wave> waves
             = waveRepository.findAll(
@@ -139,6 +141,14 @@ public class WaveService {
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inWaveIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : ids.split(",")) {
+                            inWaveIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inWaveIds));
+                    }
                     if (Strings.isNotBlank(number)) {
                         if (number.contains("*")) {
 
@@ -1621,4 +1631,22 @@ public class WaveService {
 
     }
 
+    public List<Pair<Long, Long>> getStagedInventoryQuantity(Long warehouseId, String waveIds) {
+        List<Pair<Long, Long>> result = new ArrayList<>();
+        if (Strings.isBlank(waveIds)) {
+            return result;
+        }
+        List<Wave> waves = findAll(warehouseId, null, null, null, null, null, 
+                true, true, waveIds, false);
+
+        for (Wave wave : waves) {
+            Long stagedQuantity = getStagedInventory(wave).stream().map(Inventory::getQuantity)
+                    .mapToLong(Long::longValue).sum();
+            result.add(
+                    Pair.of(wave.getId(), stagedQuantity)
+            );
+
+        }
+        return result;
+    }
 }
