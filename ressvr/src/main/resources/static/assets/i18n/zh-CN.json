@@ -2352,5 +2352,6 @@
   "statusAllowReceiptChangeFromWebUI": "当用网页修改入库单时，允许修改入库单的当前入库单状态",
   "useReceiptCheckInTimeAsInWarehouseDateTime": "使用入库单的到库时间，作为收入库存的到库时间",
   "validateOverReceivingAgainstArrivedQuantity": "使用到库数量来验证超收",
-  "cubicMeter": "平方米"
+  "cubicMeter": "平方米",
+  "receivingTransaction": "收货记录"
 }

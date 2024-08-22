@@ -52,7 +52,7 @@ public class ReceiptLine extends AuditibleEntity<String>{
             mappedBy = "receiptLine",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<ReceiptLineBillableActivity> receiptLineBillableActivities = new ArrayList<>();
 

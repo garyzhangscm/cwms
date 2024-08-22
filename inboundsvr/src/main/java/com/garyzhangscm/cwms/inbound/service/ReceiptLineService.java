@@ -53,6 +53,10 @@ public class ReceiptLineService {
 
     @Autowired
     private ReceiptLineRepository receiptLineRepository;
+    @Autowired
+    private ReceivingTransactionService receivingTransactionService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ReceiptService receiptService;
@@ -344,22 +348,23 @@ public class ReceiptLineService {
 
     @Transactional
     public List<Inventory> receive(Long receiptId, Long receiptLineId,
-                             List<Inventory> inventoryList){
+                             List<Inventory> inventoryList, String rfCode){
 
 
         return inventoryList.stream().map(
-                inventory -> receive(receiptId, receiptLineId, inventory)).collect(Collectors.toList());
+                inventory -> receive(receiptId, receiptLineId, inventory, rfCode)).collect(Collectors.toList());
     }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
-                             Inventory inventory) {
-        return receive(receiptId, receiptLineId, inventory, false, "");
+                             Inventory inventory, String rfCode) {
+        return receive(receiptId, receiptLineId, inventory, false, "", rfCode);
     }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
                              Inventory inventory,
                              Boolean receiveToStage,
-                             String stageLocation) {
+                             String stageLocation,
+                             String rfCode) {
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
@@ -368,6 +373,8 @@ public class ReceiptLineService {
         InboundReceivingConfiguration inboundReceivingConfiguration =
                 inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(receipt);
 
+        Boolean validateOverReceivingAgainstArrivedQuantity = Objects.isNull(inboundReceivingConfiguration) ?
+                false : inboundReceivingConfiguration.getValidateOverReceivingAgainstArrivedQuantity();
         // setup the in warehouse date for the inventory, if not setup yet
         // we will use the check in time as the inventory's in warehouse date
         // if setup by policy. Otherwise, we will leave it blank and let the
@@ -380,7 +387,7 @@ public class ReceiptLineService {
         }
 
         return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation,
-                inboundReceivingConfiguration.getValidateOverReceivingAgainstArrivedQuantity());
+                validateOverReceivingAgainstArrivedQuantity, rfCode);
 
     }
 
@@ -390,7 +397,8 @@ public class ReceiptLineService {
                              Inventory inventory,
                              Boolean receiveToStage,
                              String stageLocationName,
-                             Boolean validateOverReceivingAgainstArrivedQuantity){
+                             Boolean validateOverReceivingAgainstArrivedQuantity,
+                             String rfCode){
         // Receive inventory and save it on the receipt
 
         // If the inventory has location passed in, we will directly receive the inventory into
@@ -467,7 +475,7 @@ public class ReceiptLineService {
                     receiptLine.getQcQuantityRequested() +  inventory.getQuantity()
             );
         }
-        save(receiptLine);
+        receiptLine = save(receiptLine);
         receipt.setReceiptStatus(ReceiptStatus.RECEIVING);
         receiptService.saveOrUpdate(receipt);
 
@@ -488,6 +496,8 @@ public class ReceiptLineService {
         if (Boolean.TRUE.equals(receiveToStage)) {
             newInventory = moveReceivedInventoryToStage(newInventory, stageLocationName);
         }
+        receivingTransactionService.createReceivingTransaction(receiptLine, newInventory,
+                userService.getCurrentUserName(), rfCode);
         return newInventory;
     }
 

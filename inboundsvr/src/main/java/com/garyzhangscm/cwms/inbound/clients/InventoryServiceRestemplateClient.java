@@ -74,6 +74,7 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    @Cacheable(cacheNames = "InboundService_ItemPackageType", unless="#result == null")
     public ItemPackageType getItemPackageTypeById(Long id) {
 
 

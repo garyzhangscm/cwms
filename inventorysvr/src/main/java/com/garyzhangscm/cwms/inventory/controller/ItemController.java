@@ -142,6 +142,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item deleteItem(@PathVariable Long id) {
@@ -159,6 +160,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item uploadItemImages(@PathVariable Long id,
@@ -179,6 +181,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item uploadItemWorkOrderSOP(@PathVariable Long id,
@@ -199,6 +202,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
@@ -222,6 +226,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
@@ -308,6 +313,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public ResponseBodyWrapper uploadItems(Long companyId, Long warehouseId,
@@ -362,6 +368,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public ResponseBodyWrapper processItemOverride(@RequestParam Long warehouseId,

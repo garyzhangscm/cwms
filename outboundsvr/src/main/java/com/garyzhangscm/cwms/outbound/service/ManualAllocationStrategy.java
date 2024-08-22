@@ -89,7 +89,7 @@ public class ManualAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getInventoryAttribute3(),
                 allocationRequest.getInventoryAttribute4(),
                 allocationRequest.getInventoryAttribute5(),
-                allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getAllocateByReceiptNumber(), null);
 
         logger.debug("We have {} pickable inventory of this item, location specified? {}",
                 pickableInventory.size(),
