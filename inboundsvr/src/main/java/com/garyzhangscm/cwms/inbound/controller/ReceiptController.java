@@ -197,6 +197,7 @@ public class ReceiptController {
     public Inventory receive(@PathVariable Long receiptId,
                                @PathVariable Long receiptLineId,
                                @RequestBody Inventory inventory,
+                             @RequestParam(name = "rfCode", defaultValue = "", required = false) String rfCode,
                              @RequestParam(name = "receiveToStage", defaultValue = "false", required = false) Boolean receiveToStage,
                              @RequestParam(name = "stageLocation", defaultValue = "", required = false) String stageLocation) {
         logger.debug("start to receive with attribute:");
@@ -208,7 +209,7 @@ public class ReceiptController {
         logger.debug("Attribute 3: {}", Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3());
         logger.debug("Attribute 4: {}", Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4());
         logger.debug("Attribute 5: {}", Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5());
-            return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation);
+            return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation, rfCode);
     }
 
 
@@ -251,8 +252,9 @@ public class ReceiptController {
     )
     public List<Inventory> receive(@PathVariable Long receiptId,
                              @PathVariable Long receiptLineId,
-                             @RequestBody List<Inventory> inventoryList) {
-        return receiptLineService.receive(receiptId, receiptLineId, inventoryList);
+                             @RequestBody List<Inventory> inventoryList,
+                                   @RequestParam(name = "rfCode", defaultValue = "", required = false) String rfCode) {
+        return receiptLineService.receive(receiptId, receiptLineId, inventoryList, rfCode);
     }
 
     @BillableEndpoint

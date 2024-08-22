@@ -18,19 +18,10 @@
 
 package com.garyzhangscm.cwms.inbound.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -50,11 +41,13 @@ public class ReceivingTransaction extends AuditibleEntity<String>{
 
     @ManyToOne
     @JoinColumn(name = "receipt_id")
+    @JsonIgnore
     private Receipt receipt;
 
 
     @ManyToOne
     @JoinColumn(name = "receipt_line_id")
+    @JsonIgnore
     private ReceiptLine receiptLine;
 
 
@@ -70,6 +63,9 @@ public class ReceivingTransaction extends AuditibleEntity<String>{
     @Column(name = "item_id")
     private Long itemId;
 
+    @Transient
+    private Item item;
+
     @Column(name = "quantity")
     private Long quantity;
 
@@ -78,6 +74,67 @@ public class ReceivingTransaction extends AuditibleEntity<String>{
     @Column(name = "rf_code")
     private String rfCode;
 
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
+
+    @Column(name="item_package_type_id")
+    private Long itemPackageTypeId;
+    @Transient
+    private ItemPackageType itemPackageType;
+
+    @Column(name="inventory_attribute_1")
+    private String inventoryAttribute1;
+    @Column(name="inventory_attribute_2")
+    private String inventoryAttribute2;
+    @Column(name="inventory_attribute_3")
+    private String inventoryAttribute3;
+    @Column(name="inventory_attribute_4")
+    private String inventoryAttribute4;
+    @Column(name="inventory_attribute_5")
+    private String inventoryAttribute5;
+
+    @Column(name="inventory_status_id")
+    private Long inventoryStatusId;
+
+
+    @Transient
+    private InventoryStatus inventoryStatus;
+
+    public ReceivingTransaction(){}
+    public ReceivingTransaction(ReceiptLine receiptLine, Inventory inventory,
+                                ReceivingTransactionType type,
+                                String username,
+                                String rfCode){
+        setWarehouseId(receiptLine.getWarehouseId());
+        setReceipt(receiptLine.getReceipt());
+        setReceiptLine(receiptLine);
+        setType(type);
+        setLpn(inventory.getLpn());
+        setItemId(inventory.getItem().getId());
+        setQuantity(inventory.getQuantity());
+        setUsername(username);
+        setRfCode(rfCode);
+
+        setColor(inventory.getColor());
+        setStyle(inventory.getStyle());
+        setProductSize(inventory.getProductSize());
+        setItemPackageTypeId(inventory.getItemPackageType().getId());
+
+        setInventoryAttribute1(inventory.getAttribute1());
+        setInventoryAttribute2(inventory.getAttribute2());
+        setInventoryAttribute3(inventory.getAttribute3());
+        setInventoryAttribute4(inventory.getAttribute4());
+        setInventoryAttribute5(inventory.getAttribute5());
+
+        setInventoryStatusId(inventory.getInventoryStatus().getId());
+    }
     public Long getId() {
         return id;
     }
@@ -156,5 +213,109 @@ public class ReceivingTransaction extends AuditibleEntity<String>{
 
     public void setRfCode(String rfCode) {
         this.rfCode = rfCode;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
     }
 }

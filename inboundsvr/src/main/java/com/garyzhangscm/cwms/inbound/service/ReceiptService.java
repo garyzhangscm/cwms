@@ -1861,7 +1861,7 @@ public class ReceiptService {
                             inventory.getQuantity(),
                             inventory.getLocation().getName());
 
-                    receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
+                    receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory, "");
                     // we complete this inventory
                     logger.debug("Inventory received, continue with next line");
                     receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + (80.0 / totalInventoryCount) * (index + 1));
