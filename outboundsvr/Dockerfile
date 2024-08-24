@@ -9,4 +9,4 @@ RUN mkdir -p /usr/local/service
 
 ADD target/outboundserver-v1.52.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/outboundserver-v1.52.jar"]
+ENTRYPOINT ["java","-Xms512m",-jar","/usr/local/service/outboundserver-v1.52.jar"]
