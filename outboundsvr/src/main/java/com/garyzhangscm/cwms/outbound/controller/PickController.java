@@ -72,7 +72,7 @@ public class PickController {
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                    ClientRestriction clientRestriction) {
 
-        logger.debug("Start to find pick by: {}", listId);
+        logger.debug("Start to find pick by  listId: {}", listId);
         if (StringUtils.isNotBlank(containerId)) {
             return pickService.getPicksByContainer(warehouseId, clientId, containerId);
         }
