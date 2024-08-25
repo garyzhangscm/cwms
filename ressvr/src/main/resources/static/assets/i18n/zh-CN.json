@@ -2358,5 +2358,9 @@
   "customReport": "自定义报表",
   "runAtCompanyLevel": "在公司级别运行",
   "displayText": "显示文字",
-  "execute": "运行"
+  "execute": "运行",
+  "companyIdFieldName": "Company ID 字段名",
+  "warehouseIdFieldName": "Warehouse ID 字段名",
+  "groupBy": "按字段组合 ",
+  "sortBy": "按字段排序 "
 }

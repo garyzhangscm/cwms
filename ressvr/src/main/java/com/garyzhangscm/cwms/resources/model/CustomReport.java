@@ -47,8 +47,22 @@ public class CustomReport extends AuditibleEntity<String>  {
     @Column(name = "run_at_company_level")
     private Boolean runAtCompanyLevel;
 
+
+    @Column(name = "company_id_field_name")
+    private String companyIdFieldName;
+
+
+    @Column(name = "warehouse_id_field_name")
+    private String warehouseIdFieldName;
+
     @Column(name = "query")
     private String query;
+
+    @Column(name = "group_by")
+    private String groupBy;
+
+    @Column(name = "sort_by")
+    private String sortBy;
 
 
     @OneToMany(
@@ -99,6 +113,22 @@ public class CustomReport extends AuditibleEntity<String>  {
         this.runAtCompanyLevel = runAtCompanyLevel;
     }
 
+    public String getCompanyIdFieldName() {
+        return companyIdFieldName;
+    }
+
+    public void setCompanyIdFieldName(String companyIdFieldName) {
+        this.companyIdFieldName = companyIdFieldName;
+    }
+
+    public String getWarehouseIdFieldName() {
+        return warehouseIdFieldName;
+    }
+
+    public void setWarehouseIdFieldName(String warehouseIdFieldName) {
+        this.warehouseIdFieldName = warehouseIdFieldName;
+    }
+
     public String getQuery() {
         return query;
     }
@@ -113,5 +143,21 @@ public class CustomReport extends AuditibleEntity<String>  {
 
     public void setCustomReportParameters(List<CustomReportParameter> customReportParameters) {
         this.customReportParameters = customReportParameters;
+    }
+
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
     }
 }

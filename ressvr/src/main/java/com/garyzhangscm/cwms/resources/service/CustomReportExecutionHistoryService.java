@@ -48,8 +48,9 @@ public class CustomReportExecutionHistoryService {
 
 
     public List<CustomReportExecutionHistory> findAll(Long companyId,
-                                                        Long warehouseId,
+                                                      Long warehouseId,
                                                       Long customReportId,
+                                                      String customReportExecutionHistoryIDs,
                                                       Boolean includeExpiredExecutionHistory) {
 
         return customReportExecutionHistoryRepository.findAll(
@@ -67,6 +68,13 @@ public class CustomReportExecutionHistoryService {
                         predicates.add(criteriaBuilder.equal(joinCustomReport.get("id"), customReportId));
 
                     }
+                    if (Strings.isNotBlank(customReportExecutionHistoryIDs)){
+                        CriteriaBuilder.In<Long> inCustomReportExecutionHistoryIDs = criteriaBuilder.in(root.get("id"));
+                        for(String id : customReportExecutionHistoryIDs.split(",")) {
+                            inCustomReportExecutionHistoryIDs.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inCustomReportExecutionHistoryIDs));
+                    }
                     // by default, only return the not expired history
                     if (Objects.isNull(includeExpiredExecutionHistory)) {
                         predicates.add(criteriaBuilder.equal(root.get("resultFileExpired"), false));
@@ -83,7 +91,7 @@ public class CustomReportExecutionHistoryService {
     public List<CustomReportExecutionHistory> findByCustomReport(Long companyId,
                                                       Long warehouseId,
                                                       Long customReportId) {
-        return findAll(companyId, warehouseId, customReportId, null);
+        return findAll(companyId, warehouseId, customReportId, null, null);
     }
 
 
@@ -109,12 +117,19 @@ public class CustomReportExecutionHistoryService {
     @Scheduled(fixedDelay = 60000)
     public void removeExpiredFiles(){
 
+        logger.debug("start to remove expired export file every minutes, " +
+                "while the file should be expired in 1 hour after it is crated");
+
         List<CustomReportExecutionHistory> expiredCustomReportExecutionHistories =
-            customReportExecutionHistoryRepository.findByLessThanEqualResultFileExpiredTime(ZonedDateTime.now());
+            customReportExecutionHistoryRepository.findByResultFileExpiredTimeLessThanEqual(ZonedDateTime.now());
 
 
         expiredCustomReportExecutionHistories.forEach(
                 expiredCustomReportExecutionHistory -> {
+                    logger.debug("file {} from execution id {} of name {} is expired, we will remove it",
+                            expiredCustomReportExecutionHistory.getResultFile(),
+                            expiredCustomReportExecutionHistory.getId(),
+                            expiredCustomReportExecutionHistory.getCustomReport().getName());
                     removeExpiredCustomReportExecutionHistoryFile(expiredCustomReportExecutionHistory.getResultFile());
                     expiredCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.EXPIRED);
                     save(expiredCustomReportExecutionHistory);
@@ -131,4 +146,11 @@ public class CustomReportExecutionHistoryService {
         resultFile.deleteOnExit();
     }
 
+    public File getCustomReportResultFile(Long id) {
+
+        CustomReportExecutionHistory customReportExecutionHistory
+                = findById(id);
+
+        return new File(customReportExecutionHistory.getResultFile());
+    }
 }

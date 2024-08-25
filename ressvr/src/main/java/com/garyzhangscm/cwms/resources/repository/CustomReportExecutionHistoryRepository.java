@@ -29,5 +29,5 @@ import java.util.List;
 @Repository
 public interface CustomReportExecutionHistoryRepository extends JpaRepository<CustomReportExecutionHistory, Long>, JpaSpecificationExecutor<CustomReportExecutionHistory> {
 
-    List<CustomReportExecutionHistory> findByLessThanEqualResultFileExpiredTime(ZonedDateTime zonedDateTime);
+    List<CustomReportExecutionHistory> findByResultFileExpiredTimeLessThanEqual(ZonedDateTime zonedDateTime);
 }

@@ -57,7 +57,7 @@ public class CustomReportExecutionHistory extends AuditibleEntity<String>  {
     private CustomReportExecutionStatus status;
 
     @Column(name = "custom_report_execute_percent")
-    private Integer CustomReportExecutionPercent = 0;
+    private Integer customReportExecutionPercent = 0;
 
     @Column(name = "result")
     private Boolean result = true;
@@ -69,6 +69,7 @@ public class CustomReportExecutionHistory extends AuditibleEntity<String>  {
     @Column(name = "error_message")
     private String errorMessage;
 
+    @JsonIgnore
     @Column(name = "result_file")
     private String resultFile;
 
@@ -162,11 +163,11 @@ public class CustomReportExecutionHistory extends AuditibleEntity<String>  {
     }
 
     public Integer getCustomReportExecutionPercent() {
-        return CustomReportExecutionPercent;
+        return customReportExecutionPercent;
     }
 
     public void setCustomReportExecutionPercent(Integer customReportExecutionPercent) {
-        CustomReportExecutionPercent = customReportExecutionPercent;
+        this.customReportExecutionPercent = customReportExecutionPercent;
     }
 
     public void setQuery(String query) {
