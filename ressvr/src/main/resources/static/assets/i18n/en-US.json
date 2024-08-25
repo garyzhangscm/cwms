@@ -2363,5 +2363,9 @@
   "customReport": "Custom Report",
   "runAtCompanyLevel": "Run At Company Level",
   "displayText": "Display Text",
-  "execute": "Execute"
+  "execute": "Execute",
+  "companyIdFieldName": "Company ID Field Name",
+  "warehouseIdFieldName": "Warehouse ID Field Name",
+  "groupBy": "Group by ",
+  "sortBy": "Sort by "
 }

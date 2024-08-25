@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.exception.MissingInformationException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.CustomReportRepository;
@@ -27,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -53,6 +56,9 @@ public class CustomReportService {
     private static final Logger logger = LoggerFactory.getLogger(CustomReportService.class);
     @Autowired
     private CustomReportRepository customReportRepository;
+
+    @Autowired
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Autowired
     private CustomReportExecutionHistoryService customReportExecutionHistoryService;
@@ -165,6 +171,7 @@ public class CustomReportService {
                                                         Long companyId,
                                                         Long warehouseId,
                                                         CustomReport customReport) {
+        Map<String, String> paramMap = new HashMap<>();
 
         StringBuilder queryString = new StringBuilder()
                 .append(customReport.getQuery()).append(" where 1 = 1");
@@ -172,7 +179,33 @@ public class CustomReportService {
         StringBuilder actualQueryString = new StringBuilder()
                 .append(customReport.getQuery()).append(" where 1 = 1");
 
-        Map<String, String> validParameters = new HashMap<>();
+        if (Strings.isNotBlank(customReport.getCompanyIdFieldName())) {
+            queryString.append(" and ").append(customReport.getCompanyIdFieldName())
+                    .append(" = ").append(companyId);
+            paramMap.put(customReport.getCompanyIdFieldName(), companyId.toString());
+            actualQueryString.append(" and ").append(customReport.getCompanyIdFieldName())
+                    .append(" = ").append(companyId);
+        }
+
+        if (Boolean.TRUE.equals(customReport.getRunAtCompanyLevel())) {
+            // raise error message if the custom is setup to run at the company level but
+            // there's no company id field name setup
+            if (Strings.isBlank(customReport.getCompanyIdFieldName())) {
+                throw MissingInformationException.raiseException("the report is setup to run at the " +
+                        " company level but there's no company ID field configured");
+            }
+        }
+        else if (Strings.isNotBlank(customReport.getWarehouseIdFieldName())) {
+
+            queryString.append(" and ").append(customReport.getWarehouseIdFieldName())
+                    .append(" = ").append(warehouseId);
+            paramMap.put(customReport.getWarehouseIdFieldName(), warehouseId.toString());
+            actualQueryString.append(" and ").append(customReport.getWarehouseIdFieldName())
+                    .append(" = ").append(warehouseId);
+        }
+
+
+        //Map<String, String> validParameters = new HashMap<>();
 
         customReport.getCustomReportParameters().stream().filter(
                 customReportParameter -> Strings.isNotBlank(customReportParameter.getName()) &&
@@ -181,17 +214,28 @@ public class CustomReportService {
                 .forEach(
                         customReportParameter -> {
                             queryString.append(" and ").append(customReportParameter.getName())
-                                    .append(" = ")
+                                   .append(" = ")
                                     .append(" :").append(customReportParameter.getName());
+
+                            paramMap.put(customReportParameter.getName(), customReportParameter.getValue());
 
                             actualQueryString.append(" and ").append(customReportParameter.getName())
                                     .append(" = '").append(customReportParameter.getValue()).append("'");
 
-                            validParameters.put(customReportParameter.getName(),
-                                    customReportParameter.getValue());
+                            //validParameters.put(customReportParameter.getName(),
+                            //        customReportParameter.getValue());
                         }
                 );
 
+
+        if (Strings.isNotBlank(customReport.getGroupBy())) {
+            queryString.append(" group by ").append(customReport.getGroupBy());
+            actualQueryString.append(" group by ").append(customReport.getGroupBy());
+        }
+        if (Strings.isNotBlank(customReport.getSortBy())) {
+            queryString.append(" order  by ").append(customReport.getSortBy());
+            actualQueryString.append(" order  by ").append(customReport.getSortBy());
+        }
 
         CustomReportExecutionHistory customReportExecutionHistory =
                 new CustomReportExecutionHistory(customReport, companyId, warehouseId,
@@ -205,6 +249,10 @@ public class CustomReportService {
 
         new Thread(() ->{
 
+            // delay to make sure the CustomReportExecutionHistory is already
+            // saved to the database so that we can make sure
+            // the one in the new thread is working on the same CustomReportExecutionHistory
+            // as the one in the main thread
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
@@ -227,25 +275,30 @@ public class CustomReportService {
                 logger.debug("execution history  {} saved",
                         existingCustomReportExecutionHistory.getId());
 
-                Query query = entityManager.createNativeQuery(queryString.toString());
+                //Query query = entityManager.createNativeQuery(queryString.toString(), Tuple.class);
 
 
-                for (Map.Entry<String, String> parameter : validParameters.entrySet()) {
-                    query.setParameter(parameter.getKey(), parameter.getValue());
-                }
+                //for (Map.Entry<String, String> parameter : validParameters.entrySet()) {
+                //    query.setParameter(parameter.getKey(), parameter.getValue());
+                //}
+                logger.debug("start to get result from query \n{}",
+                        actualQueryString.toString());
 
-                List<Tuple> results = query.getResultList();
+                // List<Map<String, Object>> results = jdbcTemplate.queryForList(actualQueryString.toString(), paramMap);
+                SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(queryString.toString(), paramMap);
+                displaySqlRowSet(sqlRowSet);
+
+                // List<Tuple> results = query.getResultList();
                 logger.debug("Get {} result from the query: \n{}",
-                        results.size(), queryString.toString());
+                        sqlRowSet.getRow(), actualQueryString.toString());
 
-                displayNativeQueryResult(results);
-                if (results.size() == 0) {
+                if (sqlRowSet.getRow() == 0) {
                     throw new Exception("No result found");
                 }
 
 
                 existingCustomReportExecutionHistory.setCustomReportExecutionPercent(20);
-                existingCustomReportExecutionHistory.setResultRowCount(results.size());
+                existingCustomReportExecutionHistory.setResultRowCount(sqlRowSet.getRow());
                 existingCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.EXPORT_RESULT);
                 existingCustomReportExecutionHistory =
                         customReportExecutionHistoryService.save(existingCustomReportExecutionHistory);
@@ -255,7 +308,7 @@ public class CustomReportService {
 
                     String filePath = exportReportData(customReportResultFolder, companyId, warehouseId,
                             customReport.getName(), existingCustomReportExecutionHistory.getId(),
-                            results);
+                            sqlRowSet);
 
                     existingCustomReportExecutionHistory.setCustomReportExecutionPercent(100);
                     existingCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.COMPLETE);
@@ -287,6 +340,43 @@ public class CustomReportService {
 
     }
 
+    private void displaySqlRowSet(SqlRowSet sqlRowSet) {
+
+        logger.debug("start to display SqlRowSet");
+        logger.debug("=========    Columns   ========");
+        String[] columnNames = sqlRowSet.getMetaData().getColumnNames();
+        logger.debug(String.join(",", columnNames));
+
+        while(sqlRowSet.next()) {
+            List<String> cells = new ArrayList<>();
+            for (String columnName : columnNames) {
+                cells.add(sqlRowSet.getString(columnName));
+            }
+            logger.debug(String.join(",", cells));
+
+        }
+
+    }
+
+    private void displayNativeQueryResult(List<Map<String, Object>> results) {
+        logger.debug("start to display the result with size {}", results.size());
+
+        for (Map<String, Object> row : results) {
+
+            List<String> columnNames = new ArrayList<>();
+            List<String> values = new ArrayList<>();
+            row.entrySet().forEach(
+                    column -> {
+                        columnNames.add(column.getKey());
+                        values.add(column.getValue().toString());
+                    }
+            );
+            logger.debug(String.join(",", columnNames));
+            logger.debug(String.join(",", values));
+        }
+    }
+
+    /**
     private void displayNativeQueryResult(List<Tuple> results) {
         for (Tuple row : results) {
 
@@ -296,6 +386,7 @@ public class CustomReportService {
             for (TupleElement<?> element : elements ) {
                 columnNames += element.getAlias() + ",";
             }
+            logger.debug("=================   Column Name   =======================");
             logger.debug(columnNames);
 
             String cellValues = "";
@@ -305,14 +396,15 @@ public class CustomReportService {
             logger.debug(cellValues);
         }
     }
+     **/
 
 
     public String exportReportData(String customReportResultFolder,
-                                 Long companyId,
-                                 Long warehouseId,
-                                 String customReportName,
-                                 Long customReportExcutionHistoryId,
-                                 List<Tuple> results) throws FileNotFoundException {
+                                   Long companyId,
+                                   Long warehouseId,
+                                   String customReportName,
+                                   Long customReportExcutionHistoryId,
+                                   SqlRowSet sqlRowSet) throws FileNotFoundException {
 
         String fileName = companyId + "_" + warehouseId + "_" + customReportName +
                 "_" + customReportExcutionHistoryId + "_" + System.currentTimeMillis() + ".csv";
@@ -326,31 +418,24 @@ public class CustomReportService {
             resultFile.getParentFile().mkdirs();
         }
 
-        StringBuilder csvFileContent = new StringBuilder();
 
         logger.debug("start to write custom report into {} !",
                 filePath.toString());
 
-        // get the column header
-        List<String> columnNames = new ArrayList<>();
-
-        List<TupleElement<?>> elements = results.get(0).getElements();
-        for (TupleElement<?> element : elements ) {
-            columnNames.add(element.getAlias());
-        }
 
         try (PrintWriter pw = new PrintWriter(resultFile)) {
             // write the header
+            String[] columnNames = sqlRowSet.getMetaData().getColumnNames();
             pw.println(String.join(",", columnNames));
 
             // append each row
-            for (Tuple row : results) {
-
-                StringBuilder cellValues = new StringBuilder();
-                for (Object cell : row.toArray()) {
-                    cellValues.append(cell.toString());
+            while(sqlRowSet.next()) {
+                List<String> cells = new ArrayList<>();
+                for (String columnName : columnNames) {
+                    cells.add(sqlRowSet.getString(columnName));
                 }
-                pw.println(String.join(",", cellValues));
+                pw.println(String.join(",", cells));
+
             }
 
         }
