@@ -19,18 +19,19 @@
 package com.garyzhangscm.cwms.resources.service;
 
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.resources.model.CustomReport;
-import com.garyzhangscm.cwms.resources.model.CustomReportExecutionHistory;
-import com.garyzhangscm.cwms.resources.model.Role;
-import com.garyzhangscm.cwms.resources.model.User;
+import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.CustomReportExecutionHistoryRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import java.io.File;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -100,4 +101,34 @@ public class CustomReportExecutionHistoryService {
         return saveAndFlush(CustomReportExecutionHistory);
 
     }
+
+
+    /**
+     * Refresh every minutes to remove expired files
+     */
+    @Scheduled(fixedDelay = 60000)
+    public void removeExpiredFiles(){
+
+        List<CustomReportExecutionHistory> expiredCustomReportExecutionHistories =
+            customReportExecutionHistoryRepository.findByLessThanEqualResultFileExpiredTime(ZonedDateTime.now());
+
+
+        expiredCustomReportExecutionHistories.forEach(
+                expiredCustomReportExecutionHistory -> {
+                    removeExpiredCustomReportExecutionHistoryFile(expiredCustomReportExecutionHistory.getResultFile());
+                    expiredCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.EXPIRED);
+                    save(expiredCustomReportExecutionHistory);
+
+                }
+        );
+
+    }
+
+    private void removeExpiredCustomReportExecutionHistoryFile(String resultFilePath) {
+
+        File resultFile = new File(resultFilePath);
+        // remove the file if it already exists
+        resultFile.deleteOnExit();
+    }
+
 }

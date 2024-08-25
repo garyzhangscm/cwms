@@ -23,7 +23,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
+import java.util.List;
+
 @Repository
 public interface CustomReportExecutionHistoryRepository extends JpaRepository<CustomReportExecutionHistory, Long>, JpaSpecificationExecutor<CustomReportExecutionHistory> {
 
+    List<CustomReportExecutionHistory> findByLessThanEqualResultFileExpiredTime(ZonedDateTime zonedDateTime);
 }

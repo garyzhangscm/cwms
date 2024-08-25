@@ -5,5 +5,6 @@ public enum CustomReportExecutionStatus {
     RUNNING,
     EXPORT_RESULT,
     COMPLETE,
-    FAIL
+    FAIL,
+    EXPIRED
 }
