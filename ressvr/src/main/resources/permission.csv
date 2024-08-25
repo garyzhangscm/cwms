@@ -94,3 +94,4 @@ Outbound-Wave,confirm-multiple-pick,Confirm Pick
 Outbound-Wave,allocate-short-allocation,Allocate Short Allocation
 Outbound-Wave,create-work-order,Create Work Order
 Outbound-Wave,cancel-short-allocation,Cancel Short Allocation
+Util-CustomReport,execute-custom-report,Execute Custom Report
