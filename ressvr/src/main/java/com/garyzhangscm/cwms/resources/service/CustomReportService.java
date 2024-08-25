@@ -25,16 +25,26 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,6 +61,10 @@ public class CustomReportService {
 
     @Autowired
     private EntityManager entityManager;
+
+
+    @Value("${customReport.result.folder:}")
+    private String customReportResultFolder;
 
 
     public CustomReport findById(Long id) {
@@ -214,21 +228,21 @@ public class CustomReportService {
                         existingCustomReportExecutionHistory.getId());
 
                 Query query = entityManager.createNativeQuery(queryString.toString());
+
+
                 for (Map.Entry<String, String> parameter : validParameters.entrySet()) {
                     query.setParameter(parameter.getKey(), parameter.getValue());
                 }
 
-                List<Object[]> results = query.getResultList();
-
-
+                List<Tuple> results = query.getResultList();
                 logger.debug("Get {} result from the query: \n{}",
                         results.size(), queryString.toString());
-                for (Object[] row : results) {
-                    for (Object cell : row) {
-                        logger.debug(cell.toString() + ",");
-                    }
-                    logger.debug("\n");
+
+                displayNativeQueryResult(results);
+                if (results.size() == 0) {
+                    throw new Exception("No result found");
                 }
+
 
                 existingCustomReportExecutionHistory.setCustomReportExecutionPercent(20);
                 existingCustomReportExecutionHistory.setResultRowCount(results.size());
@@ -237,11 +251,23 @@ public class CustomReportService {
                         customReportExecutionHistoryService.save(existingCustomReportExecutionHistory);
 
                 // save to the file
-                exportReportData(results);
+                if (Strings.isNotBlank(customReportResultFolder)) {
 
-                existingCustomReportExecutionHistory.setCustomReportExecutionPercent(100);
-                existingCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.COMPLETE);
-                customReportExecutionHistoryService.save(existingCustomReportExecutionHistory);
+                    String filePath = exportReportData(customReportResultFolder, companyId, warehouseId,
+                            customReport.getName(), existingCustomReportExecutionHistory.getId(),
+                            results);
+
+                    existingCustomReportExecutionHistory.setCustomReportExecutionPercent(100);
+                    existingCustomReportExecutionHistory.setStatus(CustomReportExecutionStatus.COMPLETE);
+                    existingCustomReportExecutionHistory.setResultFile(filePath);
+                    existingCustomReportExecutionHistory.setResultFileExpired(false);
+                    // expired in 1 hour
+                    existingCustomReportExecutionHistory.setResultFileExpiredTime(ZonedDateTime.now().plusHours(1));
+                    customReportExecutionHistoryService.save(existingCustomReportExecutionHistory);
+                }
+                else {
+                    throw new Exception("result folder is not setup");
+                }
 
             }
             catch (Exception ex) {
@@ -255,15 +281,83 @@ public class CustomReportService {
 
             }
 
-
-
-
-
         }).start();
 
         return customReportExecutionHistory;
 
     }
 
-    public void exportReportData(List<Object[]> results) {}
+    private void displayNativeQueryResult(List<Tuple> results) {
+        for (Tuple row : results) {
+
+            String columnNames = "";
+            // Get Column Names
+            List<TupleElement<?>> elements = row.getElements();
+            for (TupleElement<?> element : elements ) {
+                columnNames += element.getAlias() + ",";
+            }
+            logger.debug(columnNames);
+
+            String cellValues = "";
+            for (Object cell : row.toArray()) {
+                cellValues += cell.toString() + ",";
+            }
+            logger.debug(cellValues);
+        }
+    }
+
+
+    public String exportReportData(String customReportResultFolder,
+                                 Long companyId,
+                                 Long warehouseId,
+                                 String customReportName,
+                                 Long customReportExcutionHistoryId,
+                                 List<Tuple> results) throws FileNotFoundException {
+
+        String fileName = companyId + "_" + warehouseId + "_" + customReportName +
+                "_" + customReportExcutionHistoryId + "_" + System.currentTimeMillis() + ".csv";
+        Path filePath = Paths.get(customReportResultFolder, fileName);
+
+        File resultFile = filePath.toFile();
+
+        // remove the file if it already exists
+        resultFile.deleteOnExit();
+        if (!resultFile.getParentFile().exists()) {
+            resultFile.getParentFile().mkdirs();
+        }
+
+        StringBuilder csvFileContent = new StringBuilder();
+
+        logger.debug("start to write custom report into {} !",
+                filePath.toString());
+
+        // get the column header
+        List<String> columnNames = new ArrayList<>();
+
+        List<TupleElement<?>> elements = results.get(0).getElements();
+        for (TupleElement<?> element : elements ) {
+            columnNames.add(element.getAlias());
+        }
+
+        try (PrintWriter pw = new PrintWriter(resultFile)) {
+            // write the header
+            pw.println(String.join(",", columnNames));
+
+            // append each row
+            for (Tuple row : results) {
+
+                StringBuilder cellValues = new StringBuilder();
+                for (Object cell : row.toArray()) {
+                    cellValues.append(cell.toString());
+                }
+                pw.println(String.join(",", cellValues));
+            }
+
+        }
+
+        return filePath.toString();
+
+
+
+    }
 }
