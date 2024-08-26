@@ -286,15 +286,18 @@ public class CustomReportService {
 
                 // List<Map<String, Object>> results = jdbcTemplate.queryForList(actualQueryString.toString(), paramMap);
                 SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(queryString.toString(), paramMap);
-                displaySqlRowSet(sqlRowSet);
+                if (!sqlRowSet.next()) {
+                    throw new Exception("No result found");
+                }
+                // reset cursor back to the first row
+                sqlRowSet.beforeFirst();
+
+                int rowCount = displaySqlRowSet(sqlRowSet);
 
                 // List<Tuple> results = query.getResultList();
                 logger.debug("Get {} result from the query: \n{}",
-                        sqlRowSet.getRow(), actualQueryString.toString());
+                        rowCount, actualQueryString);
 
-                if (sqlRowSet.getRow() == 0) {
-                    throw new Exception("No result found");
-                }
 
 
                 existingCustomReportExecutionHistory.setCustomReportExecutionPercent(20);
@@ -340,7 +343,9 @@ public class CustomReportService {
 
     }
 
-    private void displaySqlRowSet(SqlRowSet sqlRowSet) {
+    private int displaySqlRowSet(SqlRowSet sqlRowSet) {
+
+        int rowCount = 0;
 
         logger.debug("start to display SqlRowSet");
         logger.debug("=========    Columns   ========");
@@ -353,8 +358,14 @@ public class CustomReportService {
                 cells.add(sqlRowSet.getString(columnName));
             }
             logger.debug(String.join(",", cells));
+            rowCount++;
 
         }
+
+        // reset cursor to the first row
+        sqlRowSet.beforeFirst();
+
+        return rowCount;
 
     }
 
