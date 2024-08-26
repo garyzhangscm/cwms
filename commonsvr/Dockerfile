@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/commonserver-v1.52.jar /usr/local/service/
+ADD target/commonserver-v1.53.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/commonserver-v1.52.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/commonserver-v1.53.jar"]
