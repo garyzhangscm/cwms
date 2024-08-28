@@ -2367,5 +2367,8 @@
   "companyIdFieldName": "Company ID Field Name",
   "warehouseIdFieldName": "Warehouse ID Field Name",
   "groupBy": "Group by ",
-  "sortBy": "Sort by "
+  "sortBy": "Sort by ",
+  "inventory-activity": "Inventory Activity",
+  "copyLocation": "Copy Location",
+  "copy": "Copy"
 }

@@ -651,5 +651,19 @@ public class LocationController {
         return locationService.validateLocation(warehouseId, locationName);
     }
 
+    @RequestMapping(value = "/locations/copy", method = RequestMethod.GET)
+    public Boolean copyLocations(Long warehouseId,
+                                Long locationId, // copy from location
+                                String startNumber,
+                                @RequestParam(name = "endNumber", required = false, defaultValue = "") String endNumber,
+                                @RequestParam(name = "prefix", required = false, defaultValue = "") String prefix,
+                                @RequestParam(name = "postfix", required = false, defaultValue = "") String postfix) {
+        // return ApplicationInformation.getApplicationInformation();
+        locationService.copyLocations(warehouseId, locationId,
+                startNumber, endNumber, prefix, postfix);
+
+        return true;
+    }
+
 
 }
