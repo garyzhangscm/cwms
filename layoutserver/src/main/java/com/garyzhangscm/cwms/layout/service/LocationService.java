@@ -22,6 +22,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.LocationOperationException;
+import com.garyzhangscm.cwms.layout.exception.MissingInformationException;
+import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.*;
 import com.garyzhangscm.cwms.layout.repository.LocationRepository;
@@ -278,7 +280,7 @@ public class LocationService {
         String policyKey = "LOCATION-" + locationType;
         logger.debug("Start to find policy by key: {}", policyKey);
         Policy policy = commonServiceRestemplateClient.getPolicyByKey(warehouseId, policyKey);
-        return findByName(policy.getValue(), warehouseId);
+        return findByName(warehouseId, policy.getValue());
     }
 
     public List<Location> findByLocationGroup(Long locationGroupId) {
@@ -301,9 +303,12 @@ public class LocationService {
         }
     }
 
-    public Location findByName(String name, Long warehouseId){
+    public Location findByName(Long warehouseId, String name){
         logger.debug("Start to find by name {} /  {}", warehouseId, name);
         return locationRepository.findByName(warehouseId, name);
+    }
+    public boolean locationExists(Long warehouseId, String name){
+        return Objects.nonNull(findByName(warehouseId, name));
     }
 
     public Location save(Location location) {
@@ -312,8 +317,8 @@ public class LocationService {
         return locationRepository.save(location);
     }
     public Location saveOrUpdate(Location location) {
-        if (findByName(location.getName(), location.getWarehouse().getId()) != null) {
-            location.setId(findByName(location.getName(), location.getWarehouse().getId()).getId());
+        if (findByName(location.getWarehouse().getId(), location.getName()) != null) {
+            location.setId(findByName(location.getWarehouse().getId(), location.getName()).getId());
         }
         return save(location);
     }
@@ -632,7 +637,7 @@ public class LocationService {
 
     public Location createShippedInventoryLocation(Long warehouseId, String locationName) {
 
-        Location location = findByName(locationName, warehouseId);
+        Location location = findByName(warehouseId, locationName);
         if (Objects.nonNull(location)) {
             return location;
         }
@@ -721,8 +726,8 @@ public class LocationService {
         // from the same container at the same time, which may cause
         // multiple threads try to get or create containers at the same time
         synchronized (this) {
-            if (Objects.nonNull(findByName(containerName, warehouseId))) {
-                return findByName(containerName, warehouseId);
+            if (Objects.nonNull(findByName(warehouseId, containerName))) {
+                return findByName(warehouseId, containerName);
             }
 
             // The location for the container is not created yet, let's
@@ -792,7 +797,7 @@ public class LocationService {
 
     public Location getShippedParcelLocation(Long warehouseId, String carrierName, String serviceLevelName) {
         String locationName = carrierName + "-" + serviceLevelName;
-        Optional<Location> locationOptional = Optional.ofNullable(findByName(locationName, warehouseId));
+        Optional<Location> locationOptional = Optional.ofNullable(findByName(warehouseId, locationName));
         return locationOptional.orElse(createShippedParcelLocation(warehouseId, locationName));
 
 
@@ -875,7 +880,7 @@ public class LocationService {
         // see if we already hava the location
         logger.debug("will add RF location {} / {}",
                 warehouseId, rfCode);
-        Location location = findByName(rfCode, warehouseId);
+        Location location = findByName(warehouseId, rfCode);
         if (Objects.nonNull(location)) {
             logger.debug("RF location {} already exists",
                     location.getName());
@@ -902,7 +907,7 @@ public class LocationService {
     public Location removeRFLocation(Long warehouseId, String rfCode) {
         logger.debug("will add RF location {} / {}",
                 warehouseId, rfCode);
-        Location location = findByName(rfCode, warehouseId);
+        Location location = findByName(warehouseId, rfCode);
         if (Objects.nonNull(location)) {
             logger.debug("RF location {} already exists, will remove it",
                     location.getName());
@@ -929,7 +934,7 @@ public class LocationService {
         // see if we already hava the location
         logger.debug("will add customer return order stage location {} / {}",
                 warehouseId, name);
-        Location location = findByName(name, warehouseId);
+        Location location = findByName(warehouseId, name);
         if (Objects.nonNull(location)) {
             logger.debug("customer return order stage location {} already exists",
                     location.getName());
@@ -1152,7 +1157,7 @@ public class LocationService {
     }
 
     public Location getOrCreateProductionLineLocation(Long warehouseId, String locationName, Location location) {
-        Location existingLocation = findByName(locationName, warehouseId);
+        Location existingLocation = findByName(warehouseId, locationName);
         if (Objects.nonNull(existingLocation)) {
             return existingLocation;
         }
@@ -1216,7 +1221,7 @@ public class LocationService {
     }
 
     public Location getOrCreateProductionLineInboundLocation(Long warehouseId, String locationName, Location location) {
-        Location existingLocation = findByName(locationName, warehouseId);
+        Location existingLocation = findByName(warehouseId, locationName);
         if (Objects.nonNull(existingLocation)) {
             return existingLocation;
         }
@@ -1238,7 +1243,7 @@ public class LocationService {
     }
 
     public Location getOrCreateProductionLineOutboundLocation(Long warehouseId, String locationName, Location location) {
-        Location existingLocation = findByName(locationName, warehouseId);
+        Location existingLocation = findByName(warehouseId, locationName);
         if (Objects.nonNull(existingLocation)) {
             return existingLocation;
         }
@@ -1274,6 +1279,78 @@ public class LocationService {
     }
 
     public Boolean validateLocation(Long warehouseId, String locationName) {
-        return Objects.nonNull(findByName(locationName, warehouseId));
+        return Objects.nonNull(findByName(warehouseId, locationName));
     }
+
+    public void copyLocations(Long warehouseId, Long locationId,
+                                String startNumberString, String endNumberString, String prefix, String postfix) {
+
+        int startNumber = 0;
+        int numberOfLocations = 0;
+        int numberLength = 0;  // location number may have leading 0
+
+        // start to generate names for the new locations
+        // start number and end number can contains leading 0's
+        if(Strings.isBlank(startNumberString)) {
+            throw MissingInformationException.raiseException("Start number is not passed in. Fail to " +
+                    " copy locations");
+        }
+        else {
+            try {
+                startNumber = Integer.parseInt(startNumberString);
+                numberLength = startNumberString.length();
+                numberOfLocations = 1;
+            }
+            catch (Exception ex) {
+
+                throw MissingInformationException.raiseException("Start number " + startNumberString + " is not in the right format. " +
+                        "It only allow numbers with or without leading 0s. Fail to  copy locations");
+            }
+        }
+        if (Strings.isNotBlank(endNumberString)) {
+            // if the user specify the end number, then we will create
+            // locations from start number until end number, Both start number
+            // and end numbers are included
+
+            try {
+                int endNumber = Integer.parseInt(endNumberString);
+                if (endNumber < startNumber) {
+                    throw RequestValidationFailException.raiseException("end number " + endNumberString +
+                            " is smaller than the start end " + startNumberString + ", fail to copy location");
+                }
+                numberLength = Math.max(endNumberString.length(), startNumberString.length());
+
+                numberOfLocations = endNumber - startNumber + 1;
+            }
+            catch (NumberFormatException ex) {
+
+                throw MissingInformationException.raiseException("End number " + endNumberString + " is not in the right format. " +
+                        "It only allow numbers with or without leading 0s. Fail to  copy locations");
+            }
+            catch (Exception ex) {
+
+                throw MissingInformationException.raiseException(" Fail to  copy locations due to error " + ex.getMessage());
+            }
+        }
+
+        Location location = findById(locationId);
+
+        for (int i = startNumber; i < startNumber + numberOfLocations; i++) {
+            String locationName = (Strings.isBlank(prefix) ? "" : prefix) +
+                    String.format("%0" + numberLength + "d", i) +
+                    (Strings.isBlank(postfix) ? "" : postfix);
+            // only continue if the location doesn't exist yet
+            if (!locationExists(warehouseId, locationName)) {
+
+                saveOrUpdate(copyLocation(location, locationName));
+            }
+        }
+
+
+    }
+
+    public Location copyLocation(Location copyFromLocation, String newLocationName) {
+        return copyFromLocation.copy(newLocationName);
+    }
+
 }

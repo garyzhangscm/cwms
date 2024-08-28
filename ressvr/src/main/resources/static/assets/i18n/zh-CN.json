@@ -2362,5 +2362,8 @@
   "companyIdFieldName": "Company ID 字段名",
   "warehouseIdFieldName": "Warehouse ID 字段名",
   "groupBy": "按字段组合 ",
-  "sortBy": "按字段排序 "
+  "sortBy": "按字段排序 ",
+  "inventory-activity": "库存活动",
+  "copyLocation": "复制库位",
+  "copy": "复制"
 }
