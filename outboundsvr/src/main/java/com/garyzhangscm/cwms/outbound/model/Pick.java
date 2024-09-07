@@ -967,12 +967,14 @@ public class Pick  extends AuditibleEntity<String> implements Serializable {
     }
 
     public String getQuantityPerCase() {
-        return quantityPerCase;
+       return quantityPerCase;
+
     }
 
     public void setQuantityPerCase(String quantityPerCase) {
         this.quantityPerCase = quantityPerCase;
     }
+
 
     public String getCaseQuantity() {
         return caseQuantity;

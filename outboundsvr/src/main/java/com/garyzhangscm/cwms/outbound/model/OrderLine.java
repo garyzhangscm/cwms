@@ -199,6 +199,14 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Transient
     private Client client;
 
+    // for report purpose
+    @Transient
+    private Long quantity;
+    @Transient
+    private Long quantityPerCase;
+    @Transient
+    private Double caseQuantity;
+
     @Override
     public String toString() {
         try {
@@ -576,5 +584,40 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public long getQuantity() {
+        if(Objects.nonNull(quantity)) {
+            return quantity;
+        }
+
+        long quantity = 0;
+        if (Objects.isNull(getShipmentLines()) || getShipmentLines().isEmpty()) {
+            return 0;
+        }
+        for (ShipmentLine shipmentLine : shipmentLines) {
+            quantity += shipmentLine.getPicks().stream().mapToLong(Pick::getQuantity).sum();
+        }
+        return quantity;
+    }
+
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+
+    public long getQuantityPerCase() {
+        return quantityPerCase;
+    }
+
+    public void setQuantityPerCase(Long quantityPerCase) {
+        this.quantityPerCase = quantityPerCase;
+    }
+
+    public Double getCaseQuantity() {
+        return caseQuantity;
+    }
+
+    public void setCaseQuantity(Double caseQuantity) {
+        this.caseQuantity = caseQuantity;
     }
 }

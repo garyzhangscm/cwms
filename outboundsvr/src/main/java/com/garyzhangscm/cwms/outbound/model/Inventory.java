@@ -84,6 +84,8 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private Long warehouseId;
 
+    private Long quantityPerCase;
+
 
     private Warehouse warehouse;
 
@@ -372,11 +374,17 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     }
 
     public long getQuantityPerCase() {
+        if (Objects.nonNull(quantityPerCase)) {
+            return quantityPerCase;
+        }
         if (Objects.isNull(getItemPackageType()) ||
                 Objects.isNull(getItemPackageType().getCaseItemUnitOfMeasure())) {
             return 0;
         }
         return getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+    }
+    public void setQuantityPerCase(Long quantityPerCase) {
+        this.quantityPerCase = quantityPerCase;
     }
 
 

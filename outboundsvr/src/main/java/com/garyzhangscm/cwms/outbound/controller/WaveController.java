@@ -189,6 +189,22 @@ public class WaveController {
         return waveService.generateWavePackingSlip(id, locale);
     }
 
+    /**
+     * Pre print packing list before inventory is picked. We will use order's
+     * information to print the packing list
+     * @param id
+     * @param locale
+     * @return
+     */
+    @BillableEndpoint
+    @RequestMapping(value="/waves/{id}/pre-print-packing-slip", method = RequestMethod.POST)
+    public ReportHistory generatePrePrintWavePackingSlip(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale)  {
+
+        return waveService.generatePrePrintWavePackingSlip(id, locale);
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/waves/{id}/staged-inventory", method = RequestMethod.GET)
     public List<Inventory> getStagedInventory(
