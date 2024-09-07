@@ -138,6 +138,11 @@ public class EulogiaService {
             // we will validate receipt before we change the content. We will use
             // the set to make sure we only need to validate the receipt once
             Set<String> validatedReceiptNumber = new HashSet<>();
+
+            // a map worked as a cache to save the receipt
+            // key: receipt number
+            // value: receipt
+            Map<String, Receipt> receiptMap = new HashMap<>();
             // see if we need to create order
             for (EulogiaCustomerPackingSlipCSVWrapper eulogiaCustomerPackingSlipCSVWrapper : eulogiaCustomerPackingSlipCSVWrappers) {
                 try {
@@ -160,9 +165,12 @@ public class EulogiaService {
                     customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 0.25));
 
 
-                    Receipt receipt = receiptService.findByNumber(warehouseId,
-                            Objects.isNull(client) ? null : client.getId(),
-                            eulogiaCustomerPackingSlipCSVWrapper.getReceipt());
+
+                    Receipt receipt = receiptMap.getOrDefault(
+                            eulogiaCustomerPackingSlipCSVWrapper.getReceipt(),
+                                receiptService.findByNumber(warehouseId,
+                                Objects.isNull(client) ? null : client.getId(),
+                                eulogiaCustomerPackingSlipCSVWrapper.getReceipt()));
 
                     if (Objects.isNull(receipt)) {
                         logger.debug("receipt {} is not created yet, let's create the order on the fly ", eulogiaCustomerPackingSlipCSVWrapper.getReceipt());
@@ -183,6 +191,7 @@ public class EulogiaService {
 
                     }
                     validatedReceiptNumber.add(receipt.getNumber());
+                    receiptMap.putIfAbsent(receipt.getNumber(), receipt);
 
                     customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 0.5));
 

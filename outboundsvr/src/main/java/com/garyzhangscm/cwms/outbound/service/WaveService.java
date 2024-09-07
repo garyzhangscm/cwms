@@ -1193,8 +1193,47 @@ public class WaveService {
         return reportHistory;
     }
 
+    public ReportHistory generatePrePrintWavePackingSlip(Long waveId, String locale) {
+        return generatePrePrintWavePackingSlip(findById(waveId), locale);
+    }
+    public ReportHistory generatePrePrintWavePackingSlip(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupPrePrintWavePackingSlipParameters(
+                reportData, wave
+        );
+        setupPrePrintWavePackingSlipData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the Packing Slip report with locale: {}",
+                locale);
+        logger.debug("####  Packing Slip Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PACKING_SLIP, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
 
     private void setupWavePackingSlipParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+    private void setupPrePrintWavePackingSlipParameters(
             Report report, Wave wave) {
 
         // set the parameters to be the meta data of
@@ -1278,6 +1317,14 @@ public class WaveService {
             groupedInventory.setPackQuantity(groupedInventory.getPackQuantity() + inventory.getPackQuantity());
             groupedInventory.setOrderNumber(inventory.getOrderNumber());
 
+            // if the groupped inventory's quantity per case is empty
+            // or is smaller than the currnet inventory, then reset it with current inventory's quantity per case
+            if (Objects.nonNull(inventory.getQuantityPerCase()) &&
+                    (Objects.isNull(groupedInventory.getQuantityPerCase()) ||
+                            groupedInventory.getQuantityPerCase() < inventory.getQuantityPerCase())) {
+                groupedInventory.setQuantityPerCase(inventory.getQuantityPerCase());
+            }
+
             groupedInventoryMap.put(key, groupedInventory);
         }
         List<Inventory> groupedInventoryList = new ArrayList<>(groupedInventoryMap.values());
@@ -1325,7 +1372,6 @@ public class WaveService {
         Map<String, Double> totalPackQuantityMap = new HashMap<>();
 
         double totalCaseQuantity = 0.0;
-        double totalPackQuantity = 0.0;
         long totalUnitQuantity = 0l;
 
         // decimal format to format the case quantity in case of picking partial cases
@@ -1334,6 +1380,7 @@ public class WaveService {
         String lastKey = "";
         // Setup display field
         for (Inventory inventory : groupedInventoryList) {
+            // total unit quantity and case quantity for all inventory
             totalUnitQuantity += inventory.getQuantity();
             totalCaseQuantity += inventory.getCaseQuantity();
             // setup the order number for display
@@ -1408,6 +1455,137 @@ public class WaveService {
     }
 
 
+    private void setupPrePrintWavePackingSlipData(Report report, Wave wave) {
+
+
+        // get the orders into a set that sorted by inventory attribute
+        Set<OrderLine> orderLines = new TreeSet<>(
+                Comparator.comparing(this::getInventoryAttributeKey)
+        );
+        for (ShipmentLine shipmentLine : wave.getShipmentLines()) {
+            orderLines.add(shipmentLine.getOrderLine());
+        }
+        // get the biggest unit per carton for each item
+        // that is required by order line
+        // key: item id
+        // value: unit per case
+        Map<Long, Long> itemUnitPerCaseMap = new HashMap<>();
+        for (OrderLine orderLine : orderLines) {
+            if (itemUnitPerCaseMap.containsKey(orderLine.getItemId())) {
+                continue;
+            }
+
+            Item item = Objects.isNull(orderLine.getItem()) ?
+                    inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()) :
+                    orderLine.getItem();
+
+            Long unitPerCase = item.getItemPackageTypes().stream().mapToLong(
+                    itemPackageType -> Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure()) ?
+                            1 : itemPackageType.getCaseItemUnitOfMeasure().getQuantity()
+            ).max().orElse(1);
+            itemUnitPerCaseMap.put(orderLine.getItemId(), unitPerCase);
+        }
+
+
+        // whether we add an empty line between order lines
+
+        boolean addSummeryLine = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+        Map<String, Double> totalCaseQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        List<OrderLine> results = new ArrayList<>();
+        String lastKey = "";
+        // Setup display field
+        for (OrderLine orderLine : orderLines) {
+
+            // setup the field needed for report purpose
+
+            orderLine.setQuantity(orderLine.getExpectedQuantity());
+            orderLine.setQuantityPerCase(itemUnitPerCaseMap.getOrDefault(
+                    orderLine.getItemId(), 1l
+            ));
+            orderLine.setCaseQuantity(
+                    orderLine.getQuantity() * 1.0 / orderLine.getQuantityPerCase()
+            );
+
+
+
+            // total unit quantity and case quantity for all inventory
+            totalUnitQuantity += orderLine.getQuantity();
+            totalCaseQuantity += orderLine.getCaseQuantity();
+
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = getInventoryAttributeKey(orderLine);
+
+            // get the value of quantity per case by the inventory from
+            String key = inventoryAttribute.toString();
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+                Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+
+                if (addSummeryLine) {
+                    // everytime we started a new pick group, add a empty line
+                    OrderLine summeryOrderLine = new OrderLine();
+                    summeryOrderLine.setQuantity(quantity);
+                    summeryOrderLine.setCaseQuantity(caseQuantity);
+
+                    results.add(summeryOrderLine);
+
+                    lastKey = key;
+                }
+            }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(key, 0.0);
+
+            totalQuantityMap.put(key, quantity + orderLine.getQuantity());
+            totalCaseQuantityMap.put(key, caseQuantity + orderLine.getCaseQuantity());
+
+            results.add(orderLine);
+
+
+        }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLine) {
+
+            Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+
+            OrderLine summeryOrderLine = new OrderLine();
+            summeryOrderLine.setQuantity(quantity);
+            summeryOrderLine.setCaseQuantity(caseQuantity);
+
+            results.add(summeryOrderLine);
+
+        }
+
+
+        report.setData(results);
+
+        // add statistics data as well
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
+    }
+
+
     private StringBuilder getInventoryAttributeKey(Inventory inventory) {
 
         return new StringBuilder()
@@ -1419,6 +1597,18 @@ public class WaveService {
                 .append(Strings.isBlank(inventory.getAttribute3()) ? "____" : inventory.getAttribute3()).append("-")
                 .append(Strings.isBlank(inventory.getAttribute4()) ? "____" : inventory.getAttribute4()).append("-")
                 .append(Strings.isBlank(inventory.getAttribute5()) ? "____" : inventory.getAttribute5()).append("-");
+    }
+    private StringBuilder getInventoryAttributeKey(OrderLine orderline) {
+
+        return new StringBuilder()
+                .append(Strings.isBlank(orderline.getStyle()) ? "____" : orderline.getStyle()).append("-")
+                .append(Strings.isBlank(orderline.getColor()) ? "____" : orderline.getColor()).append("-")
+                .append(Strings.isBlank(orderline.getProductSize()) ? "____" : orderline.getProductSize()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute1()) ? "____" : orderline.getInventoryAttribute1()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute2()) ? "____" : orderline.getInventoryAttribute2()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute3()) ? "____" : orderline.getInventoryAttribute3()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute4()) ? "____" : orderline.getInventoryAttribute4()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute5()) ? "____" : orderline.getInventoryAttribute5()).append("-");
     }
 
     public Wave completeWave(Long id) {
@@ -1438,6 +1628,11 @@ public class WaveService {
         }
         // after we complete the orders. let's complete the wave
         wave.setStatus(WaveStatus.COMPLETED);
+
+        // release the reserved ship stage locations
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(wave.getWarehouseId(), wave);
+
         return save(wave);
     }
 

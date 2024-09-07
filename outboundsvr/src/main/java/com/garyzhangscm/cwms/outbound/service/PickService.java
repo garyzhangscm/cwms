@@ -2672,6 +2672,7 @@ public class PickService {
     }
 
     public Long getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+
         List<Pick> picks =
                 findAll(warehouseId, null, null, null, null, null,
                         null,

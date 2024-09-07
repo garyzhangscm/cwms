@@ -733,6 +733,12 @@ public class WarehouseLayoutServiceRestemplateClient {
 
     }
 
+    public List<Location> releaseLocations(Long warehouseId, Wave wave) {
+        return unreserveLocation(warehouseId, null, wave.getNumber(),null);
+
+    }
+
+
     public List<Location> unreserveLocation(Long warehouseId, Long locationId) {
         return unreserveLocation(warehouseId, locationId, "",null);
 
