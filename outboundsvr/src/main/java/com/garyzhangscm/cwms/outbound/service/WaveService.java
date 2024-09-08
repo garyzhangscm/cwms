@@ -1211,7 +1211,7 @@ public class WaveService {
         logger.debug("will call resource service to print the Packing Slip report with locale: {}",
                 locale);
         logger.debug("####  Packing Slip Report   Data  ######");
-        logger.debug(reportData.toString());
+        // logger.debug(reportData.toString());
         ReportHistory reportHistory =
                 resourceServiceRestemplateClient.generateReport(
                         warehouseId, ReportType.WAVE_PACKING_SLIP, reportData, locale
@@ -1497,6 +1497,7 @@ public class WaveService {
         // value: case quantity of the inventory in the location. If the location is mixed
         //       of inventory with the item, then show MIXED
         Map<String, Long> totalQuantityMap = new HashMap<>();
+        Map<String, Long> quantityPerCaseMap = new HashMap<>();
         Map<String, Double> totalCaseQuantityMap = new HashMap<>();
 
         double totalCaseQuantity = 0.0;
@@ -1530,6 +1531,9 @@ public class WaveService {
 
             // get the value of quantity per case by the inventory from
             String key = inventoryAttribute.toString();
+
+            quantityPerCaseMap.put(key, orderLine.getQuantityPerCase());
+
             // used to check if we just start with a new pick group. If so, we may want to
             // add a empty line between different pick groups so that to make the picker clear
             if (Strings.isBlank(lastKey)) {
@@ -1547,6 +1551,10 @@ public class WaveService {
                     OrderLine summeryOrderLine = new OrderLine();
                     summeryOrderLine.setQuantity(quantity);
                     summeryOrderLine.setCaseQuantity(caseQuantity);
+                    summeryOrderLine.setQuantityPerCase(
+                            quantityPerCaseMap.getOrDefault(lastKey, 1l)
+                    );
+
 
                     results.add(summeryOrderLine);
 
@@ -1573,6 +1581,9 @@ public class WaveService {
             summeryOrderLine.setQuantity(quantity);
             summeryOrderLine.setCaseQuantity(caseQuantity);
 
+            summeryOrderLine.setQuantityPerCase(
+                    quantityPerCaseMap.getOrDefault(lastKey, 1l)
+            );
             results.add(summeryOrderLine);
 
         }

@@ -2365,5 +2365,6 @@
   "sortBy": "按字段排序 ",
   "inventory-activity": "库存活动",
   "copyLocation": "复制库位",
-  "copy": "复制"
+  "copy": "复制",
+  "order-summary": "订单汇总"
 }

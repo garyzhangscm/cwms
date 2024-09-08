@@ -565,7 +565,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     }
 
     public Long getClientId() {
-        if (Objects.isNull(clientId)) {
+        if (Objects.isNull(clientId) && Objects.nonNull(order)) {
             return order.getClientId();
         }
         return clientId;
@@ -576,7 +576,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     }
 
     public Client getClient() {
-        if (Objects.isNull(client)) {
+        if (Objects.isNull(client) && Objects.nonNull(order)) {
             return order.getClient();
         }
         return client;

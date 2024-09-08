@@ -2370,5 +2370,6 @@
   "sortBy": "Sort by ",
   "inventory-activity": "Inventory Activity",
   "copyLocation": "Copy Location",
-  "copy": "Copy"
+  "copy": "Copy",
+  "order-summary": "Order Summary"
 }
