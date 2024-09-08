@@ -157,7 +157,7 @@
 				<textElement textAlignment="Center">
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{totalUnits}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="555" y="0" width="95" height="40" uuid="2c29a4f4-7bbc-44e1-bca4-f9c005c14dd4">
@@ -168,7 +168,7 @@
 				<textElement textAlignment="Center">
 					<font fontName="SimSun"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{quantityPerCase}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{unitsPerCarton}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
@@ -200,21 +200,21 @@
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 			</rectangle>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="110" height="40" uuid="a83a6777-bba0-4d19-83cc-7ebc588bc4d9">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="90ab2008-0a75-412b-97b0-88e7a2e64667"/>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{orderNumber}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="110" y="0" width="160" height="40" uuid="0ea8f6e1-2fe1-4c64-a703-5013285b3d1b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d2a98be8-c4cd-40fd-b3bb-1ee03b7b7997"/>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{style}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="270" y="0" width="190" height="40" uuid="6c3b646a-9deb-4359-8522-39a688e0eb84">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1631d20-3ea9-43bb-9b24-326c201ffdca"/>
 				</reportElement>
