@@ -201,10 +201,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     // for report purpose
     @Transient
+    @JsonIgnore
     private Long quantity;
     @Transient
+    @JsonIgnore
     private Long quantityPerCase;
     @Transient
+    @JsonIgnore
     private Double caseQuantity;
 
     @Override
