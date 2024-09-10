@@ -385,7 +385,7 @@ public class WorkOrderProduceTransactionService  {
             else {
                 WorkOrder workOrder = workOrderService.findByNumber(
                         workOrderProduceTransaction.getWarehouseId(),
-                        workOrderProduceTransaction.getWorkOrderNumber()
+                        workOrderProduceTransaction.getWorkOrderNumber(), false
                 );
                 if (Objects.isNull(workOrder)) {
 

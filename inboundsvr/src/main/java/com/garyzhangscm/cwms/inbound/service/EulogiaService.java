@@ -191,7 +191,6 @@ public class EulogiaService {
 
                     }
                     validatedReceiptNumber.add(receipt.getNumber());
-                    receiptMap.putIfAbsent(receipt.getNumber(), receipt);
 
                     customerPackingSlipFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCustomerPackingSlipLineCount) * (index + 0.5));
 
@@ -200,11 +199,12 @@ public class EulogiaService {
                             eulogiaCustomerPackingSlipCSVWrapper.getCartonQuantity(),
                             eulogiaCustomerPackingSlipCSVWrapper.getReceipt());
 
-                    receiptLineService.saveOrUpdate(
+                    ReceiptLine receiptLine = receiptLineService.saveOrUpdate(
                             getReceiptLineFromCustomerPackingSlipCSVWrapper(warehouseId,
                                 receipt, item, eulogiaCustomerPackingSlipCSVWrapper));
 
-
+                    receipt.addReceiptLines(receiptLine);
+                    receiptMap.put(receipt.getNumber(), receipt);
 
                     List<FileUploadResult> fileUploadResults = customerPackingSlipFileUploadResult.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
