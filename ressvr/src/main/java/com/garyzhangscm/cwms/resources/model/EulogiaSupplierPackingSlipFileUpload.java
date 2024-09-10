@@ -20,7 +20,7 @@ public class EulogiaSupplierPackingSlipFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                  "client", "Client name(3PL)",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
