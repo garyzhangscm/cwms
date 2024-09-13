@@ -482,7 +482,7 @@
   "client.description":"Description",
   "contactor.firstname":"First Name",
   "contactor.lastname":"Last Name",
-  "client":"Client（3pl）",
+  "client":"Client(3pl)",
   "supplier":"Supplier",
   "customer": "Customer",
   "unit-cost":"Unit Cost",
