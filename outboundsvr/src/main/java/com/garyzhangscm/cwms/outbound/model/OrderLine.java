@@ -201,13 +201,10 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     // for report purpose
     @Transient
-    @JsonIgnore
     private Long quantity;
     @Transient
-    @JsonIgnore
     private Long quantityPerCase;
     @Transient
-    @JsonIgnore
     private Double caseQuantity;
 
     @Override
@@ -609,7 +606,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     }
 
     public long getQuantityPerCase() {
-        return quantityPerCase;
+        return Objects.isNull(quantityPerCase) ? 0l : quantityPerCase;
     }
 
     public void setQuantityPerCase(Long quantityPerCase) {
@@ -617,7 +614,7 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     }
 
     public Double getCaseQuantity() {
-        return caseQuantity;
+        return Objects.isNull(caseQuantity) ? 0.0 : caseQuantity;
     }
 
     public void setCaseQuantity(Double caseQuantity) {
