@@ -12,76 +12,76 @@ NEW TAG:
 // > docker buildx imagetools inspect alpine
 
 ==========================               APP             ============================
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-adminserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-auth:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-commonserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inboundserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-integrationserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inventoryserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-layoutserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-outboundserver:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.54 --push .
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-adminserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-auth:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-commonserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inboundserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-integrationserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inventoryserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-layoutserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-outboundserver:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.55 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.55 --push .
 
 
 ==========================               Others             ============================
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-dblink:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-dblink:v1.55 --push .
 
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.55 --push .
 
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.55 --push .
 
 
 =====================       Batch build from CWMS ============================
 cd adminsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-adminserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-adminserver:v1.55 --push .
 cd ..
 
 cd authsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-auth:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-auth:v1.55 --push .
 cd ..
 
 cd commonsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-commonserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-commonserver:v1.55 --push .
 cd ..
 
 cd inboundsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inboundserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inboundserver:v1.55 --push .
 cd ..
 
 cd integrationsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-integrationserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-integrationserver:v1.55 --push .
 cd ..
 
 cd inventorysvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inventoryserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-inventoryserver:v1.55 --push .
 cd ..
 
 cd layoutserver
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-layoutserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-layoutserver:v1.55 --push .
 cd ..
 
 cd outboundsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-outboundserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-outboundserver:v1.55 --push .
 cd ..
 
 cd ressvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-ressvr:v1.55 --push .
 cd ..
 
 cd workordersvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.55 --push .
 cd ..
 
 cd zuulsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.55 --push .
 cd ..
 
 cd dblink
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-dblink:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-dblink:v1.55 --push .
 cd ..
 
 cd QuickBook
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.54 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.55 --push .
 cd ..
 
