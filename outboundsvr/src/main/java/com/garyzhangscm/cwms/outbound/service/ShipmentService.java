@@ -56,6 +56,9 @@ public class ShipmentService {
     private ShipmentLineService shipmentLineService;
     @Autowired
     private OrderActivityService orderActivityService;
+
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
     @Autowired
     private AllocationTransactionHistoryService allocationTransactionHistoryService;
     @Autowired
@@ -177,15 +180,10 @@ public class ShipmentService {
                         predicates.add(criteriaBuilder.and(inShipmentStatus));
                     }
 
-                    Predicate[] p = new Predicate[predicates.size()];
-
-                    // special handling for 3pl
-                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
-
-                    return Objects.isNull(clientRestriction) ?
-                            predicate :
-                            clientRestriction.addClientRestriction(predicate,
-                                    root, criteriaBuilder);
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
 
                     // Predicate[] p = new Predicate[predicates.size()];
                     // return criteriaBuilder.and(predicates.toArray(p));

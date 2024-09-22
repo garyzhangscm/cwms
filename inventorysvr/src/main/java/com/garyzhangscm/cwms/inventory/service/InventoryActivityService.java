@@ -62,6 +62,8 @@ public class InventoryActivityService{
     private UserService userService;
 
     @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
+    @Autowired
     private HttpSession httpSession;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -272,15 +274,10 @@ public class InventoryActivityService{
 
                     }
 
-                    Predicate[] p = new Predicate[predicates.size()];
-
-                    // special handling for 3pl
-                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
-
-                    return Objects.isNull(clientRestriction) ?
-                            predicate :
-                            clientRestriction.addClientRestriction(predicate,
-                                    root, criteriaBuilder);
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
 
 
                 }

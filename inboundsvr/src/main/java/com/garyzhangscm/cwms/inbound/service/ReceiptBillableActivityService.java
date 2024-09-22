@@ -18,20 +18,15 @@
 
 package com.garyzhangscm.cwms.inbound.service;
 
-import com.garyzhangscm.cwms.inbound.clients.KafkaSender;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptBillableActivityRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +45,8 @@ public class ReceiptBillableActivityService {
 
     @Autowired
     private ReceiptService receiptService;
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
 
 
     public List<ReceiptBillableActivity> findAll(Long warehouseId,
@@ -80,7 +77,11 @@ public class ReceiptBillableActivityService {
 
                         predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
-
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -127,6 +128,7 @@ public class ReceiptBillableActivityService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
+ **/
 
                 }
         );

@@ -19,12 +19,14 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,8 @@ public class BillOfMaterialService implements TestDataInitiableService {
     private WorkOrderInstructionTemplateService workOrderInstructionTemplateService;
     @Autowired
     private BillOfMaterialByProductService billOfMaterialByProductService;
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -84,7 +88,10 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
 
 
-    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName, boolean genericMatch, boolean loadDetails) {
+    public List<BillOfMaterial> findAll(Long warehouseId, String number,
+                                        String numbers,
+                                        String itemName, boolean genericMatch, boolean loadDetails,
+                                        ClientRestriction clientRestriction) {
         List<BillOfMaterial> billOfMaterials =  billOfMaterialRepository.findAll(
                 (Root<BillOfMaterial> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -102,6 +109,15 @@ public class BillOfMaterialService implements TestDataInitiableService {
                         }
 
                     }
+                    if (!StringUtils.isBlank(numbers)) {
+
+                        CriteriaBuilder.In<String> inNumbers = criteriaBuilder.in(root.get("number"));
+                        for(String bomNumber : numbers.split(",")) {
+                            inNumbers.value(bomNumber);
+                        }
+                        predicates.add(criteriaBuilder.and(inNumbers));
+
+                    }
                     if (!StringUtils.isBlank(itemName)) {
                         Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
                         if (item != null) {
@@ -113,7 +129,16 @@ public class BillOfMaterialService implements TestDataInitiableService {
                         }
                     }
                     Predicate[] p = new Predicate[predicates.size()];
-                    return criteriaBuilder.and(predicates.toArray(p));
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    // return addClientRestriction(predicate, clientRestriction,
+                    //        root, criteriaBuilder);
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                    root, criteriaBuilder);
                 }
                 ,
                 Sort.by(Sort.Direction.ASC, "number")
@@ -126,23 +151,34 @@ public class BillOfMaterialService implements TestDataInitiableService {
         return billOfMaterials;
     }
 
-    public List<BillOfMaterial> findAll(Long warehouseId, String number, String itemName,
-                                        boolean genericMatch) {
-        return findAll(warehouseId, number, itemName, genericMatch, true);
+    public List<BillOfMaterial> findAll(Long warehouseId, String number,
+                                        String numbers,String itemName,
+                                        boolean genericMatch,
+                                        ClientRestriction clientRestriction) {
+        return findAll(warehouseId, number, numbers,  itemName, genericMatch, true, clientRestriction);
     }
 
 
-    public BillOfMaterial findByNumber(Long warehouseId, String number, boolean loadDetails) {
-        BillOfMaterial billOfMaterial = billOfMaterialRepository.findByWarehouseIdAndNumber(warehouseId, number);
+    public BillOfMaterial findByNumber(Long warehouseId, Long clientId, String number, boolean loadDetails) {
+
+        BillOfMaterial billOfMaterial =
+                Objects.isNull(clientId) ?
+                        billOfMaterialRepository.findByWarehouseIdAndNumber(warehouseId, number) :
+                        billOfMaterialRepository.findByWarehouseIdAndClientIdAndNumber(warehouseId, clientId, number);
+
         if (billOfMaterial != null && loadDetails) {
             loadAttribute(billOfMaterial);
         }
         return billOfMaterial;
     }
 
-    public BillOfMaterial findByNumber(Long warehouseId, String number) {
-        return findByNumber(warehouseId, number, true);
+    public BillOfMaterial findByNumber(Long warehouseId, Long clientId, String number) {
+        return findByNumber(warehouseId, clientId, number, true);
     }
+    public BillOfMaterial findByNumber(Long warehouseId, String number) {
+        return findByNumber(warehouseId, null, number);
+    }
+
 
 
     public void loadAttribute(List<BillOfMaterial> billOfMaterials) {
@@ -243,10 +279,30 @@ public class BillOfMaterialService implements TestDataInitiableService {
         logger.debug("warehouse is null? {}", (warehouse == null));
         billOfMaterial.setWarehouseId(warehouse.getId());
         logger.debug("Start to get item: {}", billOfMaterialCSVWrapper.getItem());
-        billOfMaterial.setItemId(
-                inventoryServiceRestemplateClient.getItemByName(
-                        warehouse.getId(), billOfMaterialCSVWrapper.getItem()).getId()
-        );
+
+        Client client = null;
+        if (Strings.isNotBlank(billOfMaterialCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),billOfMaterialCSVWrapper.getClient());
+            if (Objects.isNull(client)) {
+                throw ResourceNotFoundException.raiseException("Can not create Bill Of Measure due to not able to " +
+                        " find client with name " + billOfMaterialCSVWrapper.getClient());
+            }
+            billOfMaterial.setClientId(client.getId());
+        }
+
+        Item item = inventoryServiceRestemplateClient.getItemByName(
+                warehouse.getId(), Objects.isNull(client) ? null : client.getId(),
+                billOfMaterialCSVWrapper.getItem());
+
+
+        // raise error if we still can't find the item here
+        if (Objects.isNull(item)) {
+            throw ResourceNotFoundException.raiseException("Can not create Bill Of Measure due to " +
+                    " not able to find item with name " + billOfMaterialCSVWrapper.getItem());
+        }
+
+        billOfMaterial.setItemId( item.getId());
 
         return billOfMaterial;
     }
@@ -280,7 +336,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
         logger.debug("start to find bill of material by warehouse / item {}, {}",
                 workOrder.getWarehouseId(), workOrder.getItem().getName());
         List<BillOfMaterial> billOfMaterials =
-                findAll(workOrder.getWarehouseId(), "", workOrder.getItem().getName(), false);
+                findAll(workOrder.getWarehouseId(), "", "", workOrder.getItem().getName(), false, null);
 
         BillOfMaterial matchedBillOfMaterial = billOfMaterials.stream()
                 .filter(billOfMaterial -> match(billOfMaterial, workOrder)).findFirst().orElse(null);
@@ -295,7 +351,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
     }
     public List<BillOfMaterial>  findMatchedBillOfMaterialByItemName(Long warehouseId,
                                                                String itemName) {
-        return findAll(warehouseId, "", itemName, true);
+        return findAll(warehouseId, "","",  itemName, true, null);
 
     }
     /**
@@ -494,9 +550,9 @@ public class BillOfMaterialService implements TestDataInitiableService {
      * @param number
      * @return
      */
-    public String validateNewBOMNumber(Long warehouseId, String number) {
+    public String validateNewBOMNumber(Long warehouseId, Long clientId, String number) {
         BillOfMaterial billOfMaterial =
-                findByNumber(warehouseId, number, false);
+                findByNumber(warehouseId, clientId, number, false);
 
         return Objects.isNull(billOfMaterial) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
 

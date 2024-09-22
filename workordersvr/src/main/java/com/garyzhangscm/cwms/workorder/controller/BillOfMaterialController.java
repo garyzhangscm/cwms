@@ -20,10 +20,7 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
-import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
-import com.garyzhangscm.cwms.workorder.model.FileUploadResult;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialLineService;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.FileService;
@@ -48,12 +45,16 @@ public class BillOfMaterialController {
     private UploadFileService uploadFileService;
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.GET)
     public List<BillOfMaterial> findAllBillOfMaterials(@RequestParam Long warehouseId,
                                                        @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                                       @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                                        @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
-        return billOfMaterialService.findAll(warehouseId, number, itemName, genericQuery);
+                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
+                                                       ClientRestriction clientRestriction) {
+        return billOfMaterialService.findAll(warehouseId, number, numbers,
+                itemName, genericQuery, clientRestriction);
     }
 
     @RequestMapping(value="/bill-of-materials/matched-with-work-order", method = RequestMethod.GET)
@@ -95,8 +96,9 @@ public class BillOfMaterialController {
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/validate-new-number", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewBOMNumber(@RequestParam Long warehouseId,
+                                                            @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                                             @RequestParam String number) {
-        return ResponseBodyWrapper.success(billOfMaterialService.validateNewBOMNumber(warehouseId, number));
+        return ResponseBodyWrapper.success(billOfMaterialService.validateNewBOMNumber(warehouseId, clientId, number));
     }
 
     @BillableEndpoint

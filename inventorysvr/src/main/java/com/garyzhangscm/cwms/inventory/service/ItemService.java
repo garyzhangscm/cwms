@@ -99,6 +99,8 @@ public class ItemService {
     @Autowired
     private KafkaSender kafkaSender;
 
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -142,6 +144,7 @@ public class ItemService {
     public List<Item> findAll(Long companyId,
                               Long warehouseId,
                               String name,
+                              String names,
                               String quickbookListId,
                               String clientIds,
                               String itemFamilyIds,
@@ -178,6 +181,14 @@ public class ItemService {
                     }
                 }
 
+                if (Strings.isNotBlank(names)) {
+
+                    CriteriaBuilder.In<String> in = criteriaBuilder.in(root.get("name"));
+                    for(String itemName : names.split(",")) {
+                        in.value(itemName);
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
                 if (StringUtils.isNotBlank(quickbookListId)) {
                     if (quickbookListId.contains("*")) {
                         predicates.add(criteriaBuilder.like(root.get("quickbookListId"), quickbookListId.replaceAll("\\*", "%")));
@@ -241,6 +252,12 @@ public class ItemService {
                 }
 
                 // special handing for client id
+
+                return clientRestrictionUtil.addClientRestriction(root,
+                        predicates,
+                        clientRestriction,
+                        criteriaBuilder);
+                /**
                 if (Objects.isNull(clientRestriction) ||
                         !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
                         Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
@@ -282,6 +299,7 @@ public class ItemService {
                                     criteriaBuilder.isNotNull(root.get("clientId")),
                                     accessibleClientListPredicate));
                 }
+                 **/
             }
             ,
             // we may get duplicated record from the above query when we pass in the warehouse id
@@ -1205,11 +1223,11 @@ public class ItemService {
 
         logger.debug("start to get item by name equals to the keyword");
         List<Item> items = findAll(companyId, warehouseId,
-                "*" + keyword + "*",null,  null, null,null,
+                "*" + keyword + "*",null,  null,null, null,null,
                 null,null, null, loadDetails, clientRestriction);
         // query by description
         logger.debug("start to get item by description equals to the keyword");
-        items.addAll(findAll(companyId, warehouseId, null,null,null, null,null,
+        items.addAll(findAll(companyId, warehouseId, null,null,null,null, null,null,
                 null,null, keyword, loadDetails, clientRestriction));
 
         return items;
@@ -1635,7 +1653,7 @@ public class ItemService {
      */
     public List<Item> findByBarcode(Long companyId, Long warehouseId, String barcode, Boolean loadDetails, ClientRestriction clientRestriction) {
         List<Item> items = findAll(companyId,
-                warehouseId, barcode, null,
+                warehouseId, barcode, null,null,
                 null,null,null,null,null,null,
           loadDetails, clientRestriction);
 
@@ -1646,5 +1664,22 @@ public class ItemService {
         );
 
         return items;
+    }
+
+    /**
+     * Mark the item as kit item
+     * @param warehouseId
+     * @param id
+     * @param billOfMaterialId
+     * @return
+     */
+    public Item createKitItem(Long warehouseId, Long id,
+                              Long billOfMaterialId) {
+        Item item = findById(id, false);
+
+        item.setBillOfMaterialId(billOfMaterialId);
+        item.setKitItemFlag(true);
+
+        return saveOrUpdate(item);
     }
 }

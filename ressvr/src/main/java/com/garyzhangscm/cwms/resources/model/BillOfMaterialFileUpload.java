@@ -43,6 +43,10 @@ public class BillOfMaterialFileUpload extends FileUploadType {
                 "expectedQuantity", "BOM Line Item Expected Quantity",
                 String.class, 100, false
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "createKitItem", "Create Kit Item",
+                Boolean.class, 100, true
+        ));
     }
 
 

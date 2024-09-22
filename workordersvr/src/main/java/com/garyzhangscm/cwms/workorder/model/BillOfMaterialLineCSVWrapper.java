@@ -7,6 +7,8 @@ import org.apache.logging.log4j.util.Strings;
 public class BillOfMaterialLineCSVWrapper {
 
     private String number;
+    private String client;
+
 
     // BOM number
     private String billOfMaterial;
@@ -24,9 +26,12 @@ public class BillOfMaterialLineCSVWrapper {
 
     private String inventoryStatus;
 
+    private Boolean createKitItem;
+
     public BillOfMaterialLineCSVWrapper trim() {
 
         number = Strings.isBlank(number) ? "" : number.trim();
+        client = Strings.isBlank(client) ? "" : client.trim();
         billOfMaterial = Strings.isBlank(billOfMaterial) ? "" : billOfMaterial.trim();
         bomItem = Strings.isBlank(bomItem) ? "" : bomItem.trim();
         warehouse = Strings.isBlank(warehouse) ? "" : warehouse.trim();
@@ -118,5 +123,21 @@ public class BillOfMaterialLineCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public Boolean getCreateKitItem() {
+        return createKitItem;
+    }
+
+    public void setCreateKitItem(Boolean createKitItem) {
+        this.createKitItem = createKitItem;
     }
 }

@@ -11,7 +11,10 @@ public class BillOfMaterialCSVWrapper {
 
     private String item;
 
+    private String client;
+
     private Double expectedQuantity;
+
 
     public String getCompany() {
         return company;
@@ -51,5 +54,13 @@ public class BillOfMaterialCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
     }
 }

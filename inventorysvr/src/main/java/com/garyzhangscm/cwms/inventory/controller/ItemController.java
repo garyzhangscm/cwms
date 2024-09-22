@@ -65,6 +65,7 @@ public class ItemController {
     public List<Item> findAllItems(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                   @RequestParam(name="names", required = false, defaultValue = "") String names,
                                    @RequestParam(name="description", required = false, defaultValue = "") String description,
                                    @RequestParam(name="quickbookListId", required = false, defaultValue = "") String quickbookListId,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
@@ -99,6 +100,7 @@ public class ItemController {
 
         return itemService.findAll(companyId, warehouseId,
                 URLDecoder.decode(name, StandardCharsets.UTF_8.name()),
+                names,
                 quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
                 warehouseSpecificItem, description,  loadDetails, clientRestriction);
     }
@@ -396,4 +398,16 @@ public class ItemController {
 
         return itemService.addItemBarcode(id, warehouseId, itemBarcode);
     }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/items/{id}/create-kit-item")
+    public Item createKitItem(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam Long billOfMaterialId)   {
+
+
+        return itemService.createKitItem(warehouseId, id, billOfMaterialId);
+    }
+
+
 }

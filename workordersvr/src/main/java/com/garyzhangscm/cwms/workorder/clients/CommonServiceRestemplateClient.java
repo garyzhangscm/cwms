@@ -30,6 +30,8 @@ import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -99,6 +101,36 @@ public class CommonServiceRestemplateClient {
         );
 
 
+    }
+
+
+    @Cacheable(cacheNames = "WorkOrderService_Client", unless="#result == null")
+    public Client getClientByName(Long warehouseId, String name) {
+        UriComponentsBuilder builder =
+                null;
+        try {
+            builder = UriComponentsBuilder.newInstance()
+                    .scheme("http").host("zuulserver").port(5555)
+                    .path("/api/common/clients")
+                    .queryParam("warehouseId", warehouseId)
+                    .queryParam("name", URLEncoder.encode(name, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
+        List<Client> clients = restTemplateProxy.exchangeList(
+                Client.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+        if (clients.size() == 0) {
+            return null;
+        }
+        else {
+            return clients.get(0);
+        }
     }
 
 

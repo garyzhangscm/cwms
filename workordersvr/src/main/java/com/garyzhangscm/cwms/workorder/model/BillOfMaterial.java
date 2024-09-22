@@ -59,6 +59,13 @@ public class BillOfMaterial extends AuditibleEntity<String>{
     @Transient
     private Item item;
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
+
 
     @Column(name = "expected_quantity")
     private Double expectedQuantity;
@@ -159,5 +166,21 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
     public void setBillOfMaterialByProducts(List<BillOfMaterialByProduct> billOfMaterialByProducts) {
         this.billOfMaterialByProducts = billOfMaterialByProducts;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

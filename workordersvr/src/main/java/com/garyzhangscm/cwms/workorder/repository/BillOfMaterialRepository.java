@@ -30,7 +30,12 @@ import javax.transaction.Transactional;
 
 @Repository
 public interface BillOfMaterialRepository extends JpaRepository<BillOfMaterial, Long>, JpaSpecificationExecutor<BillOfMaterial> {
+    @Query(value = "select b from  BillOfMaterial where number = :number " +
+            "  and warehouseId = :warehouseId and clientId is null")
     BillOfMaterial findByWarehouseIdAndNumber(Long warehouseId, String number);
+
+
+    BillOfMaterial findByWarehouseIdAndClientIdAndNumber(Long warehouseId, Long clientId, String number);
 
     /**
      * Override a item in the warehouse level. We will change  item id to the new warehouse level
