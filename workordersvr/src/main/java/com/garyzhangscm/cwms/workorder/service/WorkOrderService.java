@@ -1963,7 +1963,7 @@ public class WorkOrderService implements TestDataInitiableService {
                     .findFirst();
             if (!matchedWorkOrderLineSparePartDetailOptional.isPresent()) {
 
-                throw WorkOrderException.raiseException("Can't find any work order line matched with item id ." + itemId +
+                throw WorkOrderException.raiseException("Can't find any work order line matched with item id " + itemId +
                         "Fail to generate manual pick");
             }
             else {

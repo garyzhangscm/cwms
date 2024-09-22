@@ -87,6 +87,8 @@ public class ReceiptService {
     @Autowired
     private AdminServiceRestemplateClient adminServiceRestemplateClient;
 
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
 
     private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> receiptFileUploadProgress = new ConcurrentHashMap<>();
@@ -232,7 +234,12 @@ public class ReceiptService {
 
                     }
 
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
 
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -279,7 +286,7 @@ public class ReceiptService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
-
+**/
                 }
         );
         if (receipts.size() > 0 && loadDetails) {

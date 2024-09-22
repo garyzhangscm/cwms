@@ -45,6 +45,8 @@ public class OrderLineBillableActivityService {
     private OrderLineBillableActivityRepository orderLineBillableActivityRepository;
 
     @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
+    @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     @Autowired
@@ -79,6 +81,11 @@ public class OrderLineBillableActivityService {
                         predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
 
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -125,7 +132,7 @@ public class OrderLineBillableActivityService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
-
+**/
                 }
         );
     }

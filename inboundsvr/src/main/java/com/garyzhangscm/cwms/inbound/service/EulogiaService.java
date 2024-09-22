@@ -203,6 +203,8 @@ public class EulogiaService {
                             getReceiptLineFromCustomerPackingSlipCSVWrapper(warehouseId,
                                 receipt, item, eulogiaCustomerPackingSlipCSVWrapper));
 
+                    logger.debug("Receipt {}, line number {} is created!",
+                            receipt.getNumber(), receiptLine.getNumber());
                     receipt.addReceiptLines(receiptLine);
                     receiptMap.put(receipt.getNumber(), receipt);
 
@@ -277,16 +279,21 @@ public class EulogiaService {
         ReceiptLine receiptLine = new ReceiptLine();
         // get the next line number
         Long maxLineNumber = 0l;
+        logger.debug("Start to calculate the line number for the current line");
         for (ReceiptLine existingReceiptLine : receipt.getReceiptLines()) {
             try{
                 Long lineNumber = Long.parseLong(existingReceiptLine.getNumber());
                 maxLineNumber = Math.max(lineNumber, maxLineNumber);
+                logger.debug("after process the existing line {}, the max line number is {}",
+                        lineNumber, maxLineNumber);
             }
             catch (Exception ex) {
                 // do nothing
             }
         }
         receiptLine.setNumber(String.valueOf(maxLineNumber + 1));
+        logger.debug("The number for current line is setup to {}",
+                receiptLine.getNumber());
         receiptLine.setItemId(item.getId());
         receiptLine.setItem(item);
 

@@ -798,4 +798,20 @@ public class InventoryServiceRestemplateClient {
         );
     }
 
+    public Item createKitItem(Long warehouseId, Long id, Long billOfMaterialId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/inventory/item/{id}/create-kit-item")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("billOfMaterialId", billOfMaterialId);
+
+
+        return restTemplateProxy.exchange(
+                Item.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.PUT,
+                null
+        );
+    }
 }

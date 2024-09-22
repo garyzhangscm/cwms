@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
@@ -54,6 +55,9 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
     private BillOfMaterialLineRepository billOfMaterialLineRepository;
     @Autowired
     private BillOfMaterialService billOfMaterialService;
+
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -237,6 +241,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
 
         BillOfMaterialLine billOfMaterialLine = new BillOfMaterialLine();
 
+
         billOfMaterialLine.setNumber(billOfMaterialLineCSVWrapper.getNumber());
         billOfMaterialLine.setExpectedQuantity(billOfMaterialLineCSVWrapper.getExpectedQuantity());
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
@@ -244,15 +249,40 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
                 billOfMaterialLineCSVWrapper.getWarehouse()
         );
 
+        Client client = null;
+        if (Strings.isNotBlank(billOfMaterialLineCSVWrapper.getClient())) {
+            client = commonServiceRestemplateClient.getClientByName(
+                    warehouse.getId(),billOfMaterialLineCSVWrapper.getClient());
+            if (Objects.isNull(client)) {
+                throw ResourceNotFoundException.raiseException("can not find client with name " + billOfMaterialLineCSVWrapper.getClient());
+            }
+            billOfMaterialLine.setClientId(client.getId());
+        }
+
         // let's check if already have the BOM header
         BillOfMaterial billOfMaterial =
-                billOfMaterialService.findByNumber(warehouse.getId(), billOfMaterialLineCSVWrapper.getBillOfMaterial());
+                billOfMaterialService.findByNumber(
+                        warehouse.getId(),
+                        Objects.isNull(client) ? null : client.getId(),
+                        billOfMaterialLineCSVWrapper.getBillOfMaterial());
+
         if (Objects.isNull(billOfMaterial)) {
             // BOM is not created yet, let's create it on the fly
             billOfMaterial = createBillOfMaterial(billOfMaterialLineCSVWrapper);
         }
 
+        if (Boolean.TRUE.equals(billOfMaterialLineCSVWrapper.getCreateKitItem())) {
+
+            // mark the item as kit item
+            inventoryServiceRestemplateClient.createKitItem(
+                    billOfMaterial.getWarehouseId(),
+                    billOfMaterial.getItemId(),
+                    billOfMaterial.getId());
+        }
+
+
         billOfMaterialLine.setBillOfMaterial(billOfMaterial);
+
 
         billOfMaterialLine.setItemId(
                 inventoryServiceRestemplateClient.getItemByName(
@@ -275,10 +305,12 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
         billOfMaterialCSVWrapper.setNumber(billOfMaterialLineCSVWrapper.getBillOfMaterial());
         billOfMaterialCSVWrapper.setItem(billOfMaterialLineCSVWrapper.getBomItem());
         billOfMaterialCSVWrapper.setWarehouse(billOfMaterialLineCSVWrapper.getWarehouse());
+        billOfMaterialCSVWrapper.setClient(billOfMaterialLineCSVWrapper.getClient());
 
         return billOfMaterialService.saveOrUpdate(
                 billOfMaterialService.convertFromWrapper(billOfMaterialCSVWrapper)
         );
+
     }
 
 
@@ -329,7 +361,6 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
 
 
                     saveOrUpdate(billOfMaterialLine);
-
 
                     bomFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalBOMLineCount) * (index + 1));
 

@@ -41,6 +41,14 @@ public class BillOfMaterialLine extends AuditibleEntity<String>{
     private InventoryStatus inventoryStatus;
 
 
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
+
+
     @Override
     public String toString() {
         try {
@@ -113,5 +121,21 @@ public class BillOfMaterialLine extends AuditibleEntity<String>{
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

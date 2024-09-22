@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -210,6 +211,15 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     @Column(name="handling_rate_by_unit")
     private Double handlingRateByUnit;
+
+
+    @Column(name = "bill_of_material_id")
+    private Long billOfMaterialId;
+
+
+    @Column(name = "kit_item_flag")
+    private Boolean kitItemFlag = false;
+
 
     @Transient
     private Warehouse warehouse;
@@ -407,6 +417,22 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setDefaultInventoryAttribute4(String defaultInventoryAttribute4) {
         this.defaultInventoryAttribute4 = defaultInventoryAttribute4;
+    }
+
+    public Long getBillOfMaterialId() {
+        return billOfMaterialId;
+    }
+
+    public void setBillOfMaterialId(Long billOfMaterialId) {
+        this.billOfMaterialId = billOfMaterialId;
+    }
+
+    public Boolean getKitItemFlag() {
+        return kitItemFlag;
+    }
+
+    public void setKitItemFlag(Boolean kitItemFlag) {
+        this.kitItemFlag = kitItemFlag;
     }
 
     public boolean isTrackingInventoryAttribute5Flag() {
@@ -673,4 +699,5 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     public void setWorkOrderSOPUrl(String workOrderSOPUrl) {
         this.workOrderSOPUrl = workOrderSOPUrl;
     }
+
 }
