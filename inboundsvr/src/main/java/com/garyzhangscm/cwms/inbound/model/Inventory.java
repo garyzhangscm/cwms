@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -27,11 +28,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Column;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -100,6 +101,15 @@ public class Inventory implements Serializable {
     private String attribute3;
     private String attribute4;
     private String attribute5;
+
+
+    private Boolean kitInventoryFlag = false;
+
+    private Boolean kitInnerInventoryFlag = false;
+
+    private Inventory kitInventory;
+
+    private List<Inventory> kitInnerInventories = new ArrayList<>();
 
     public Double getSize() {
         if (itemPackageType == null) {
@@ -393,5 +403,37 @@ public class Inventory implements Serializable {
 
     public void setReceiptLineNumber(String receiptLineNumber) {
         this.receiptLineNumber = receiptLineNumber;
+    }
+
+    public Boolean getKitInventoryFlag() {
+        return kitInventoryFlag;
+    }
+
+    public void setKitInventoryFlag(Boolean kitInventoryFlag) {
+        this.kitInventoryFlag = kitInventoryFlag;
+    }
+
+    public Boolean getKitInnerInventoryFlag() {
+        return kitInnerInventoryFlag;
+    }
+
+    public void setKitInnerInventoryFlag(Boolean kitInnerInventoryFlag) {
+        this.kitInnerInventoryFlag = kitInnerInventoryFlag;
+    }
+
+    public Inventory getKitInventory() {
+        return kitInventory;
+    }
+
+    public void setKitInventory(Inventory kitInventory) {
+        this.kitInventory = kitInventory;
+    }
+
+    public List<Inventory> getKitInnerInventories() {
+        return kitInnerInventories;
+    }
+
+    public void setKitInnerInventories(List<Inventory> kitInnerInventories) {
+        this.kitInnerInventories = kitInnerInventories;
     }
 }

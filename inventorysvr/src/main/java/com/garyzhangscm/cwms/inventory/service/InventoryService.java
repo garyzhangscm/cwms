@@ -2570,6 +2570,13 @@ public class InventoryService {
         logger.debug("inventory {} needs QC? {}",
                 inventory.getLpn(), inventory.getInboundQCRequired());
 
+        if (Boolean.TRUE.equals(inventory.getKitInventory())) {
+            logger.debug("start to add kit inventory with {} inner inventory ",
+                    inventory.getKitInnerInventories().size());
+            for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
+                kitInnerInventory.setKitInventory(inventory);
+            }
+        }
 
         inventory = saveOrUpdate(inventory);
 

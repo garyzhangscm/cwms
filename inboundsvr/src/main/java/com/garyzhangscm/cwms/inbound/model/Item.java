@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,12 @@ public class Item implements Serializable {
 
     private boolean trackingInventoryAttribute5Flag;
     private String defaultInventoryAttribute5;
+
+    private Boolean kitItemFlag = false;
+
+    private Long billOfMaterialId;
+
+    private List<Item> kitInnerItems = new ArrayList<>();
 
     @Override
     public boolean equals(Object anotherItem) {
@@ -338,5 +345,29 @@ public class Item implements Serializable {
 
     public void setDefaultInventoryAttribute5(String defaultInventoryAttribute5) {
         this.defaultInventoryAttribute5 = defaultInventoryAttribute5;
+    }
+
+    public Boolean getKitItemFlag() {
+        return kitItemFlag;
+    }
+
+    public void setKitItemFlag(Boolean kitItemFlag) {
+        this.kitItemFlag = kitItemFlag;
+    }
+
+    public Long getBillOfMaterialId() {
+        return billOfMaterialId;
+    }
+
+    public void setBillOfMaterialId(Long billOfMaterialId) {
+        this.billOfMaterialId = billOfMaterialId;
+    }
+
+    public List<Item> getKitInnerItems() {
+        return kitInnerItems;
+    }
+
+    public void setKitInnerItems(List<Item> kitInnerItems) {
+        this.kitInnerItems = kitInnerItems;
     }
 }

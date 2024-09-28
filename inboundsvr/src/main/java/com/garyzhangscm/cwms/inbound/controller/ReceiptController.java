@@ -195,8 +195,8 @@ public class ReceiptController {
             }
     )
     public Inventory receive(@PathVariable Long receiptId,
-                               @PathVariable Long receiptLineId,
-                               @RequestBody Inventory inventory,
+                             @PathVariable Long receiptLineId,
+                             @RequestBody Inventory inventory,
                              @RequestParam(name = "rfCode", defaultValue = "", required = false) String rfCode,
                              @RequestParam(name = "receiveToStage", defaultValue = "false", required = false) Boolean receiveToStage,
                              @RequestParam(name = "stageLocation", defaultValue = "", required = false) String stageLocation) {
@@ -209,6 +209,31 @@ public class ReceiptController {
         logger.debug("Attribute 3: {}", Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3());
         logger.debug("Attribute 4: {}", Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4());
         logger.debug("Attribute 5: {}", Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5());
+
+        if (Boolean.TRUE.equals(inventory.getKitInventoryFlag())) {
+            logger.debug("start to receive a kit inventory");
+            for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
+                logger.debug(">> inner inventory: item = {}, quantity = {}",
+                        kitInnerInventory.getItem().getName(), kitInnerInventory.getQuantity());
+
+                logger.debug(">>>> inner inventory color: {}",
+                        Strings.isBlank(kitInnerInventory.getColor()) ? "N/A" : kitInnerInventory.getColor());
+                logger.debug(">>>> inner inventory Product Size: {}",
+                        Strings.isBlank(kitInnerInventory.getProductSize()) ? "N/A" : kitInnerInventory.getProductSize());
+                logger.debug(">>>> inner inventory Style: {}",
+                        Strings.isBlank(kitInnerInventory.getStyle()) ? "N/A" : kitInnerInventory.getStyle());
+                logger.debug(">>>> inner inventory Attribute 1: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute1()) ? "N/A" : kitInnerInventory.getAttribute1());
+                logger.debug(">>>> inner inventory Attribute 2: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute2()) ? "N/A" : kitInnerInventory.getAttribute2());
+                logger.debug(">>>> inner inventory Attribute 3: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute3()) ? "N/A" : kitInnerInventory.getAttribute3());
+                logger.debug(">>>> inner inventory Attribute 4: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute4()) ? "N/A" : kitInnerInventory.getAttribute4());
+                logger.debug(">>>> inner inventory Attribute 5: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute5()) ? "N/A" : kitInnerInventory.getAttribute5());
+            }
+        }
             return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation, rfCode);
     }
 

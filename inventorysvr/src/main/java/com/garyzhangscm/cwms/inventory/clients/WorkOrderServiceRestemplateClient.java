@@ -49,18 +49,35 @@ public class WorkOrderServiceRestemplateClient {
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/work-orders/{id}");
 /**
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(id).toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+ ResponseBodyWrapper<WorkOrder> responseBodyWrapper
+ = restTemplate.exchange(
+ builder.buildAndExpand(id).toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
-**/
+ return responseBodyWrapper.getData();
+ **/
 
         return restTemplateProxy.exchange(
                 WorkOrder.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
+
+    @Cacheable(cacheNames = "InventoryService_BillOfMaterial", unless="#result == null")
+    public BillOfMaterial getBillOfMaterialById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("zuulserver").port(5555)
+                        .path("/api/workorder/bill-of-materials/{id}");
+
+        return restTemplateProxy.exchange(
+                BillOfMaterial.class,
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
                 null
