@@ -382,6 +382,24 @@ public class ItemService {
 
         });
 
+        // for kit item, we may need to load inner items as well
+        if (Boolean.TRUE.equals(item.getKitItemFlag()) && Objects.nonNull(item.getBillOfMaterialId())) {
+            BillOfMaterial billOfMaterial =
+                    Objects.nonNull(item.getBillOfMaterial()) ?
+                            item.getBillOfMaterial() :
+                    workOrderServiceRestemplateClient.getBillOfMaterialById(item.getBillOfMaterialId());
+            item.setBillOfMaterial(billOfMaterial);
+            for (BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
+                Item kitInnerItem = billOfMaterialLine.getItem();
+                if (Objects.isNull(kitInnerItem)) {
+                    kitInnerItem = findById(billOfMaterial.getItemId());
+                }
+                item.addKitInnerItem(kitInnerItem);
+            }
+        }
+
+
+
     }
 
 

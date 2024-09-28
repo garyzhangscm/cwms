@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -208,6 +209,24 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "inbound_qc_required")
     private Boolean inboundQCRequired = false;
 
+    // if this inventory is kit item
+    @Column(name = "kit_inventory_flag")
+    private Boolean kitInventoryFlag = false;
+
+    // if this inventory is in a kit
+    @Column(name = "kit_inner_inventory_flag")
+    private Boolean kitInnerInventoryFlag = false;
+
+    // if this inventory is in a kit,
+    // point to the kit inventory
+    @ManyToOne(cascade=CascadeType.PERSIST)
+    @JoinColumn(name="kit_inventory_id")
+    @JsonIgnore
+    private Inventory kitInventory;
+
+    @OneToMany(mappedBy="kitInventory")
+    private List<Inventory> kitInnerInventories = new ArrayList<>();
+
     @OneToMany(
             mappedBy = "inventory",
             cascade = CascadeType.REMOVE,
@@ -263,6 +282,35 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
         inventory.setInWarehouseDatetime(getInWarehouseDatetime());
         inventory.setShippedDatetime(getShippedDatetime());
+
+        inventory.setKitInventoryFlag(getKitInventoryFlag());
+
+        inventory.setKitInnerInventoryFlag(getKitInnerInventoryFlag());
+
+        // if we are split a kit inventory, then we will
+        // need to split all the inner inventory into the new kit
+        // Note: We will always assume there's only one level of kit - inner
+        // which means if this is a kit inner inventory, then it won't be
+        // a kit inventory that contains other inventory
+        if (Boolean.TRUE.equals(inventory.getKitInventory())) {
+            List<Inventory> innerInventoryInNewKitInventory = new ArrayList<>();
+            for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
+
+                Long newKitInnerInventoryQuantity = newQuantity * kitInnerInventory.getQuantity() / getQuantity();
+                Inventory newKitInnerInventory = kitInnerInventory.split(newLpn, newKitInnerInventoryQuantity);
+                newKitInnerInventory.setKitInventory(inventory);
+                innerInventoryInNewKitInventory.add(newKitInnerInventory);
+                // in case of split a kit inventory, we will need to update the inner inventory's quantity as well
+                kitInnerInventory.setQuantity(kitInnerInventory.getQuantity() - newKitInnerInventoryQuantity);
+            }
+            inventory.setKitInnerInventories(innerInventoryInNewKitInventory);
+
+        }
+        // if we are split a inventory inside the kit, then copy the reference
+        // to the kit inventory to the new inner kit inventory
+        if (Boolean.TRUE.equals(inventory.getKitInnerInventoryFlag())) {
+            inventory.setKitInventory(getKitInventory());
+        }
 
         return inventory;
 
@@ -684,5 +732,37 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setAttribute5(String attribute5) {
         this.attribute5 = attribute5;
+    }
+
+    public Boolean getKitInventoryFlag() {
+        return kitInventoryFlag;
+    }
+
+    public void setKitInventoryFlag(Boolean kitInventoryFlag) {
+        this.kitInventoryFlag = kitInventoryFlag;
+    }
+
+    public Boolean getKitInnerInventoryFlag() {
+        return kitInnerInventoryFlag;
+    }
+
+    public void setKitInnerInventoryFlag(Boolean kitInnerInventoryFlag) {
+        this.kitInnerInventoryFlag = kitInnerInventoryFlag;
+    }
+
+    public Inventory getKitInventory() {
+        return kitInventory;
+    }
+
+    public void setKitInventory(Inventory kitInventory) {
+        this.kitInventory = kitInventory;
+    }
+
+    public List<Inventory> getKitInnerInventories() {
+        return kitInnerInventories;
+    }
+
+    public void setKitInnerInventories(List<Inventory> kitInnerInventories) {
+        this.kitInnerInventories = kitInnerInventories;
     }
 }

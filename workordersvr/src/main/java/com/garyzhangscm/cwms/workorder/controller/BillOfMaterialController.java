@@ -26,6 +26,8 @@ import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.FileService;
 import com.garyzhangscm.cwms.workorder.service.UploadFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,6 +72,11 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public BillOfMaterial addBillOfMaterials(@RequestBody BillOfMaterial billOfMaterial) {
         return billOfMaterialService.addBillOfMaterials(billOfMaterial);
     }
@@ -82,6 +89,11 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public BillOfMaterial changeBillOfMaterial(@PathVariable Long id,
                                                @RequestBody BillOfMaterial billOfMaterial){
         return billOfMaterialService.changeBillOfMaterial(id, billOfMaterial);
@@ -89,6 +101,11 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public void removeBillOfMaterials(@RequestParam(name = "billOfMaterialIds", required = false, defaultValue = "") String billOfMaterialIds) {
         billOfMaterialService.delete(billOfMaterialIds);
     }
@@ -103,6 +120,11 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/bill-of-materials/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public ResponseBodyWrapper uploadBillOfMaterials(Long companyId, Long warehouseId,
                                                      @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                      @RequestParam("file") MultipartFile file) throws IOException {
