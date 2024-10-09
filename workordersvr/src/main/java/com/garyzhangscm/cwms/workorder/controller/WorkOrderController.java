@@ -67,8 +67,10 @@ public class WorkOrderController {
 
 
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.GET)
-    public WorkOrder findWorkOrder(@PathVariable Long id) {
-        return workOrderService.findById(id);
+    public WorkOrder findWorkOrder(@PathVariable Long id,
+                                   @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails,
+                                   @RequestParam(name="loadWorkOrderDetails", required = false, defaultValue = "true") boolean loadWorkOrderDetails) {
+        return workOrderService.findById(id, loadDetails, loadWorkOrderDetails);
     }
 
     @BillableEndpoint
@@ -462,7 +464,7 @@ public class WorkOrderController {
                                                  @RequestParam String lpn,
                                                  @RequestParam Long productionLineId,
                                                  @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to getPickableQuantityForManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);

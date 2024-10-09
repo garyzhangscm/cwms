@@ -40,23 +40,21 @@ public class WorkOrderServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
-    @Cacheable(cacheNames = "OutboundService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
+        return getWorkOrderById(id, true, true);
+
+    }
+
+    @Cacheable(cacheNames = "OutboundService_WorkOrder", unless="#result == null")
+    public WorkOrder getWorkOrderById(Long id, boolean loadDetails, boolean loadWorkOrderDetails) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/workorder/work-orders/{id}");
-/**
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.buildAndExpand(id).toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
+                        .path("/api/workorder/work-orders/{id}")
+                .queryParam("loadDetails", loadDetails)
+                        .queryParam("loadWorkOrderDetails", loadWorkOrderDetails);
 
-        return responseBodyWrapper.getData();
-**/
         return restTemplateProxy.exchange(
                 WorkOrder.class,
                 builder.buildAndExpand(id).toUriString(),
@@ -65,6 +63,7 @@ public class WorkOrderServiceRestemplateClient {
         );
 
     }
+
     @Cacheable(cacheNames = "OutboundService_WorkOrderLine", unless="#result == null")
     public WorkOrderLine getWorkOrderLineById(Long id) {
 

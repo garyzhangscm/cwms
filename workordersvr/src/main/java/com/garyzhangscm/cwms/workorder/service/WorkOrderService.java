@@ -152,9 +152,17 @@ public class WorkOrderService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
+
+
                         if (genericQuery) {
 
                             predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), number.replaceAll("\\*", "%")));
                         }
                         else {
 
@@ -1819,13 +1827,13 @@ public class WorkOrderService implements TestDataInitiableService {
     public List<Pick> generateManualPick(Long workOrderId, String lpn,
                                          Long productionLineId,
                                          Boolean pickWholeLPN) {
-        WorkOrder workOrder = findById(workOrderId);
+        WorkOrder workOrder = findById(workOrderId, false, false);
 
         validateWorkOrderStatusForManualPick(workOrder);
 
         // make the work order to be in process
         workOrder.setStatus(WorkOrderStatus.INPROCESS);
-        workOrder = saveOrUpdate(workOrder);
+        workOrder = saveOrUpdate(workOrder, false);
 
 
         // make sure we can manual pick the LPN for the work order
@@ -1845,6 +1853,8 @@ public class WorkOrderService implements TestDataInitiableService {
                     productionLineId,
                     pickableQuantity
             );
+            logger.debug("We got {} manual picks for this work order {}", picks.size(),
+                    workOrder.getNumber());
             if (picks.size() > 0) {
 
                 // we should only get the picks from the allocation
@@ -1853,8 +1863,10 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 // process the quantity in the work order and work order line
                 // to reflect the allocation
+                logger.debug("let's update the work order's line quantity based on the picks we just generated");
                 processAllocateResult(workOrder, allocationResult);
                 // process the spare part, if needed
+                logger.debug("let's update the work order's spare quantity based on the picks we just generated");
                 processAllocationResultForSpareParts(allocationResult);
 
                 Long pickedQuantity = picks.stream()
@@ -1863,6 +1875,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 // only process the production line assignment if the pick is not for spare part
                 if (pickableQuantity > 0) {
+                    logger.debug("we may need to update the production line assignment after we got the picks");
                     processProductionLineAssignment(workOrder, productionLineId, pickedQuantity);
 
                 }
@@ -1874,7 +1887,7 @@ public class WorkOrderService implements TestDataInitiableService {
         catch (Exception ex) {
             ex.printStackTrace();
             throw WorkOrderException.raiseException("Can't do manual pick from LPN " + lpn +
-                    " for the work order " + workOrder.getNumber());
+                    " for the work order " + workOrder.getNumber() + ", error: " + ex.getMessage());
         }
 
         // if the work order is still in PENDING process, then
@@ -1894,7 +1907,7 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     public Long getPickableQuantityForManualPick(Long workOrderId, String lpn, Long productionLineId, Boolean pickWholeLPN) {
-        return getPickableQuantityForManualPick(findById(workOrderId), lpn, productionLineId, pickWholeLPN);
+        return getPickableQuantityForManualPick(findById(workOrderId, false, false), lpn, productionLineId, pickWholeLPN);
     }
 
     /**
@@ -1918,6 +1931,8 @@ public class WorkOrderService implements TestDataInitiableService {
 
         }
         // make sure the LPN is valid LPN
+        logger.debug("work order matches with the production line, let's get the inventory from lpn {}",
+                lpn);
         List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
                 workOrder.getWarehouseId(), lpn
         );
@@ -1926,6 +1941,8 @@ public class WorkOrderService implements TestDataInitiableService {
             throw WorkOrderException.raiseException("LPN " + lpn +
                     " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
         }
+
+        logger.debug("we are able to find inventory with this LPN, let's see if the item matches with the work order");
 
         // make sure there's only one item in the LPN
         List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
@@ -1955,6 +1972,7 @@ public class WorkOrderService implements TestDataInitiableService {
         // if there's no matched work order line with the item id, see if this item is a
         // spare part
         if (!matchedWorkOrderLineOptional.isPresent()) {
+            logger.debug("can't find the item in the work lines, it may be a spare part");
             Optional<WorkOrderLineSparePartDetail> matchedWorkOrderLineSparePartDetailOptional =
                     workOrder.getWorkOrderLines().stream().map(
                     workOrderLine -> workOrderLine.getWorkOrderLineSpareParts())
@@ -1993,6 +2011,8 @@ public class WorkOrderService implements TestDataInitiableService {
         }
         else {
             WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+            logger.debug("found matched work order line {} / {}", workOrder.getNumber(),
+                    matchedWorkOrderLine.getNumber());
 
             // if the open quantity is 0, which means the work order line is fully allocated,
             // we either have pick or short allocation against the work order line
@@ -2006,10 +2026,9 @@ public class WorkOrderService implements TestDataInitiableService {
             inventoryStatusId = matchedWorkOrderLine.getInventoryStatusId();
             quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
                     ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+            logger.debug("> the line still need {} of the item", quantityRequiredByWorkOrderLine);
 
         }
-
-
 
 
         // get the pickable inventory
@@ -2025,9 +2044,11 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // check if how much we can pick from this LPN
         Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        logger.debug("> we can pick {} from the LPN {}", inventoryQuantity, lpn);
         if (Boolean.TRUE.equals(pickWholeLPN)) {
             // if the user specify to pick the whole LPN
             // then return the pickable quantity from this LPN
+            logger.debug("pickWholeLPN is set to true, we will pick the whole LPN regardless of the quantity");
             return inventoryQuantity;
         }
         return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);

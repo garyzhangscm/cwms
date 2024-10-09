@@ -21,6 +21,8 @@ public class AllocationRequest {
 
     private InventoryStatus inventoryStatus;
 
+    private Long inventoryStatusId;
+
     Long quantity = 0L;
 
     private List<ShipmentLine> shipmentLines = new ArrayList<>();
@@ -367,5 +369,13 @@ public class AllocationRequest {
 
     public void setSkipLocations(Set<Long> skipLocations) {
         this.skipLocations = skipLocations;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
     }
 }

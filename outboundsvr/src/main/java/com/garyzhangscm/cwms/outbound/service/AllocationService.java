@@ -34,6 +34,9 @@ public class AllocationService {
 
 
     @Autowired
+    private AllocationRequestService allocationRequestService;
+
+    @Autowired
     KafkaSender kafkaSender;
     @Autowired
     @Qualifier("oauth2ClientContext")
@@ -62,7 +65,7 @@ public class AllocationService {
     public AllocationResult allocate(ShipmentLine shipmentLine,
                                      AllocationStrategyType allocationStrategyType,
                                      Set<Long> skipLocations){
-        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine, skipLocations);
+        AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(shipmentLine, skipLocations);
 
 
         // save the allocate request to Kafka so that we will allocate later
@@ -90,7 +93,7 @@ public class AllocationService {
                                      boolean manualAllocation,
                                      String lpn, Long pickableQuantity){
 
-        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine);
+        AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(shipmentLine);
         allocationRequest.setQuantity(pickableQuantity);
         allocationRequest.setManualAllocation(manualAllocation);
         allocationRequest.setLpn(lpn);
@@ -256,8 +259,10 @@ public class AllocationService {
                             Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
 
-                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, item, productionLineAssignment
+                    AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(
+                            workOrder, workOrderLine, item, productionLineAssignment
                             , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
+
                     allocationRequest.setManualAllocation(manualAllocation);
                     allocationRequest.setLpn(lpn);
 

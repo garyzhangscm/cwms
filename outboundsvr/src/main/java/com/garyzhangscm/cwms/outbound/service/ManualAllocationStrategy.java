@@ -38,6 +38,7 @@ public class ManualAllocationStrategy implements AllocationStrategy {
     protected InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
+
     @Override
     public AllocationStrategyType getType() {
         return AllocationStrategyType.MANUAL_ALLOCATION;
@@ -64,7 +65,8 @@ public class ManualAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getItem().getId(),
                 allocationRequest.getItem().getName(),
                 allocationRequest.getQuantity(),
-                allocationRequest.getInventoryStatus().getName(),
+                Objects.isNull(allocationRequest.getInventoryStatus()) ?
+                        allocationRequest.getInventoryStatusId() : allocationRequest.getInventoryStatus().getName(),
                 Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
         AllocationResult allocationResult = new AllocationResult();
