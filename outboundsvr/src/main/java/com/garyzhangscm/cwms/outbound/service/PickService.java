@@ -1940,7 +1940,7 @@ public class PickService {
     @Transactional
     public List<Pick> generateManualPickForWorkOrder(Long warehouseId, Long workOrderId, Long productionLineId,
                                                     String lpn, Long pickableQuantity) {
-        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId);
+        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId, false, false);
         return generateManualPickForWorkOrder(warehouseId, workOrder, productionLineId, lpn, pickableQuantity);
     }
     /**
@@ -1985,7 +1985,12 @@ public class PickService {
         Item itemToBeAllocated = null;
         if (matchedWorkOrderLineOptional.isPresent()) {
             matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+
             itemToBeAllocated = matchedWorkOrderLine.getItem();
+            if (Objects.isNull(itemToBeAllocated) && Objects.nonNull(matchedWorkOrderLine.getItemId())) {
+                itemToBeAllocated = inventoryServiceRestemplateClient.getItemById(matchedWorkOrderLine.getItemId());
+                matchedWorkOrderLine.setItem(itemToBeAllocated);
+            }
         }
         else {
             // let's see if we may need to pick spare part
@@ -2000,6 +2005,11 @@ public class PickService {
                                     workOrderLine.getId());
                             matchedWorkOrderLine = workOrderLine;
                             itemToBeAllocated = workOrderLineSparePartDetail.getItem();
+
+                            if (Objects.isNull(itemToBeAllocated) && Objects.nonNull(workOrderLineSparePartDetail.getItemId())) {
+                                itemToBeAllocated = inventoryServiceRestemplateClient.getItemById(workOrderLineSparePartDetail.getItemId());
+                                workOrderLineSparePartDetail.setItem(itemToBeAllocated);
+                            }
                             break  outerLoop;
                         }
                     }
@@ -2012,7 +2022,7 @@ public class PickService {
         }
 
         logger.debug("we will pick item {} for work order line {} / {}",
-                itemToBeAllocated.getName(),
+                matchedWorkOrderLine.getItem().getName(),
                 workOrder.getNumber(),
                 matchedWorkOrderLine.getNumber());
 

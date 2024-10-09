@@ -75,6 +75,12 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "auto_deposit_for_lpn_with_same_destination")
     private Boolean autoDepositForLpnWithSameDestination = false;
 
+    // order - manual pick, whether
+    // check the partial LPN if whole LPN is too much
+    // for the current pick
+    @Column(name = "outbound_order_validate_partial_lpn_pick")
+    private Boolean outboundOrderValidatePartialLPNPick = false;
+
     @Column(name = "printer_name")
     private String printerName;
 
@@ -148,5 +154,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setAutoDepositForLpnWithSameDestination(Boolean autoDepositForLpnWithSameDestination) {
         this.autoDepositForLpnWithSameDestination = autoDepositForLpnWithSameDestination;
+    }
+
+    public Boolean getOutboundOrderValidatePartialLPNPick() {
+        return outboundOrderValidatePartialLPNPick;
+    }
+
+    public void setOutboundOrderValidatePartialLPNPick(Boolean outboundOrderValidatePartialLPNPick) {
+        this.outboundOrderValidatePartialLPNPick = outboundOrderValidatePartialLPNPick;
     }
 }

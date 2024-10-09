@@ -2366,5 +2366,6 @@
   "inventory-activity": "库存活动",
   "copyLocation": "复制库位",
   "copy": "复制",
-  "order-summary": "订单汇总"
+  "order-summary": "订单汇总",
+  "outboundOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货"
 }

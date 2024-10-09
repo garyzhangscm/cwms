@@ -30,7 +30,7 @@ import javax.transaction.Transactional;
 
 @Repository
 public interface BillOfMaterialRepository extends JpaRepository<BillOfMaterial, Long>, JpaSpecificationExecutor<BillOfMaterial> {
-    @Query(value = "select b from  BillOfMaterial where number = :number " +
+    @Query(value = "select b from  BillOfMaterial b where number = :number " +
             "  and warehouseId = :warehouseId and clientId is null")
     BillOfMaterial findByWarehouseIdAndNumber(Long warehouseId, String number);
 
