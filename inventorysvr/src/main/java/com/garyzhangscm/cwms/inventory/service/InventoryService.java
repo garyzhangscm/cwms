@@ -1310,7 +1310,8 @@ public class InventoryService {
                 Objects.isNull(inventory.getWorkOrder())) {
              try {
 
-                 inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+                 inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(
+                         inventory.getWorkOrderId(), false, false));
              }
              catch (Exception ex) {
                  ex.printStackTrace();
