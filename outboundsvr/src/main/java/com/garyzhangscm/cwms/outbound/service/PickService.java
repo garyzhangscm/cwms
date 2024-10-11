@@ -1608,7 +1608,7 @@ public class PickService {
 
 
         synchronized (pickKeyPool.intern(key)) {
-            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
+            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn, false);
             logger.debug(" Get {} valid inventory for pick {}",
                     pickableInventories.size(), pick.getNumber());
             if (pickableInventories.size() == 0) {

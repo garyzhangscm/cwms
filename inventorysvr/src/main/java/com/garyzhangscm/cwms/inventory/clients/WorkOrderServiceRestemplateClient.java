@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -42,22 +43,18 @@ public class WorkOrderServiceRestemplateClient {
     private RestTemplateProxy restTemplateProxy;
 
 
-    @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
+        return getWorkOrderById(id, true, true);
+
+    }
+    @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
+    public WorkOrder getWorkOrderById(Long id, boolean loadDetails, boolean loadWorkOrderDetails) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/workorder/work-orders/{id}");
-/**
- ResponseBodyWrapper<WorkOrder> responseBodyWrapper
- = restTemplate.exchange(
- builder.buildAndExpand(id).toUriString(),
- HttpMethod.GET,
- null,
- new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
-
- return responseBodyWrapper.getData();
- **/
+                        .path("/api/workorder/work-orders/{id}")
+                .queryParam("loadDetails", loadDetails)
+                        .queryParam("loadWorkOrderDetails", loadWorkOrderDetails);
 
         return restTemplateProxy.exchange(
                 WorkOrder.class,

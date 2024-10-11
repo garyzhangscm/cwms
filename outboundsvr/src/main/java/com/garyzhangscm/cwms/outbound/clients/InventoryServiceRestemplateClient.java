@@ -701,6 +701,9 @@ public class InventoryServiceRestemplateClient {
         return getInventoryForPick(pick, "");
     }
     public List<Inventory> getInventoryForPick(Pick pick, String lpn)   {
+        return getInventoryForPick(pick, lpn, true);
+    }
+    public List<Inventory> getInventoryForPick(Pick pick, String lpn, boolean includeDetails)   {
         try {
 
             UriComponentsBuilder builder =
@@ -709,9 +712,10 @@ public class InventoryServiceRestemplateClient {
                             .path("/api/inventory/inventories")
                             .queryParam("itemName",  URLEncoder.encode(pick.getItem().getName(), "UTF-8") )
                             .queryParam("location", URLEncoder.encode(pick.getSourceLocation().getName(), "UTF-8") )
-                            .queryParam("maxLPNCount", 50)
+                            .queryParam("maxLPNCount", 2)
                             .queryParam("inventoryStatusId", pick.getInventoryStatusId())
-                            .queryParam("warehouseId", pick.getWarehouseId());
+                            .queryParam("warehouseId", pick.getWarehouseId())
+                                    .queryParam("includeDetails", includeDetails);
             if (Strings.isNotBlank(lpn)) {
                 builder.queryParam("lpn", lpn);
             }
