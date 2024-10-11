@@ -21,6 +21,8 @@ package com.garyzhangscm.cwms.inventory;
 import com.garyzhangscm.cwms.inventory.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.inventory.exception.GenericException;
 import com.garyzhangscm.cwms.inventory.exception.SystemFatalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -52,6 +54,8 @@ import java.util.List;
  */
 @RestControllerAdvice
 public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> {
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseGlobalResponseBodyAdvice.class);
 
     /**
      * Only process when the client want to have a JSON return
@@ -108,8 +112,11 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
             Object obj, MethodParameter methodParameter, MediaType mediaType,
             Class<? extends HttpMessageConverter<?>> converterType,
             ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
+        logger.debug("Process the response body before we can sent it to the user");
         //Only process when the client request a JSON response
         if (!jsonMediaTypes.contains(mediaType)) {
+            logger.debug("the client requested a different media return other than JSON, " +
+                    "we will return the object directly");
             return obj;
         }
         // Only process when the result is not in the right format yet
@@ -126,8 +133,10 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         // After this method(beforeBodyWrite) returns, spring will still call
         // the @ExceptionHandler marked method to process the exceptions.
         if (obj == null || !(obj instanceof ResponseBodyWrapper)) {
+            logger.debug("the current response is not wrapped yet, let's wrap the object");
             obj = new ResponseBodyWrapper(0, "", obj);
         }
+        logger.debug("HTTP Response wrapper is done. sent to the user");
         return obj;
     }
 
