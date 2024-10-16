@@ -1674,7 +1674,12 @@ public class WaveService {
                             orderToBeComplete.getNumber(), wave.getNumber());
                     // complete order should complete the shipment that attached to it
                     // TO-DO: when we have multiple shipment
-                    orderService.completeOrder(orderId, orderToBeComplete);
+                    if (!orderToBeComplete.getStatus().equals(OrderStatus.COMPLETE) &&
+                        !orderToBeComplete.getStatus().equals(OrderStatus.CANCELLED)) {
+                        logger.debug("Complete the order {} as it is not completed or cancelled");
+
+                        orderService.completeOrder(orderId, orderToBeComplete);
+                    }
                 }
         );
     }
