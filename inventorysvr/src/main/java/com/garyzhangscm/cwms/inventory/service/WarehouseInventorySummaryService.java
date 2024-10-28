@@ -87,7 +87,8 @@ public class WarehouseInventorySummaryService {
                 null,
                 null,
                 clientRestriction, false,
-                null);
+                null,
+                -1, 0);
 
         Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
         List<Client> clients = commonServiceRestemplateClient.getAllClients(warehouseId);

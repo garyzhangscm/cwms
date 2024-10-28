@@ -91,6 +91,8 @@ public class InventoryController {
                                               @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "maxLPNCount", defaultValue = "", required = false) Integer maxLPNCount,
+                                              @RequestParam(name = "pageIndex", defaultValue = "-1", required = false) Integer pageIndex,
+                                              @RequestParam(name = "recordPerPage", defaultValue = "10", required = false) Integer recordPerPage,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
@@ -118,7 +120,7 @@ public class InventoryController {
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
-                includeDetails, maxLPNCount);
+                includeDetails, maxLPNCount, pageIndex, recordPerPage);
 
 
     }
@@ -150,6 +152,8 @@ public class InventoryController {
                                   @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                  @RequestParam(name = "color", defaultValue = "", required = false) String color,
                                  @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                 @RequestParam(name = "pageIndex", defaultValue = "-1", required = false) Integer pageIndex,
+                                 @RequestParam(name = "recordPerPage", defaultValue = "10", required = false) Integer recordPerPage,
                                  @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                  @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
                                  @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
@@ -175,7 +179,8 @@ public class InventoryController {
                 URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
-                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null).size();
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null,
+                pageIndex, recordPerPage).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)

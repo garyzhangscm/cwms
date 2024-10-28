@@ -100,6 +100,7 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     private Long companyId;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     public ItemUnitOfMeasure(){}

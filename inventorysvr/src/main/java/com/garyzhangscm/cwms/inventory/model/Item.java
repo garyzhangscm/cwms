@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,6 +52,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private Long clientId;
 
     @Transient
+    @JsonIgnore
     private Client client;
 
     @ManyToOne
@@ -140,12 +142,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private Long abcCategoryId;
 
     @Transient
+    @JsonIgnore
     private ABCCategory abcCategory;
 
     @Column(name="velocity_id")
     private Long velocityId;
 
     @Transient
+    @JsonIgnore
     private Velocity velocity;
 
 
@@ -219,6 +223,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "bill_of_material_id")
     private Long billOfMaterialId;
     @Transient
+    @JsonIgnore
     private BillOfMaterial billOfMaterial;
 
     @Transient
@@ -226,6 +231,7 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Override

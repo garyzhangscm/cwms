@@ -190,7 +190,9 @@ public class InventoryService {
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
                                    ClientRestriction clientRestriction,
-                                   Integer maxLPNCount) {
+                                   Integer maxLPNCount,
+                                   int pageIndex,
+                                   int recordPerPage) {
         return findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
                 locationName, locationId, locationIds, locationGroupId, pickZoneId,
@@ -201,7 +203,7 @@ public class InventoryService {
                 attribute1, attribute2, attribute3, attribute4, attribute5,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
-                true, maxLPNCount);
+                true, maxLPNCount, pageIndex, recordPerPage);
     }
 
 
@@ -241,7 +243,9 @@ public class InventoryService {
                                    Boolean includeVirturalInventory,
                                    ClientRestriction clientRestriction,
                                    boolean includeDetails,
-                                   Integer maxLPNCount) {
+                                   Integer maxLPNCount,
+                                   int pageIndex,
+                                   int recordPerPage) {
 
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
         logger.debug("====> Start to find all inventory that match criteria @ {}", currentLocalDateTime );
@@ -659,6 +663,14 @@ public class InventoryService {
                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
                 LocalDateTime.now(),
                 inventories.size());
+
+        if ( pageIndex >= 0) {
+
+            if (recordPerPage <= 0) {
+                recordPerPage = 10;
+            }
+            inventories = inventories.subList(pageIndex * recordPerPage, (pageIndex + 1) * recordPerPage);
+        }
         return inventories;
     }
 
@@ -749,7 +761,8 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null);
+                null,
+                -1, 0);
     }
 
     public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId, int lpnLimit) {
@@ -1045,7 +1058,8 @@ public class InventoryService {
                 null,
                 null,
                 null, null, includeDetails,
-                null);
+                null,
+                -1, 0);
     }
 
     public List<Inventory> findByLocationId(Long locationId, boolean includeDetails) {
@@ -1100,7 +1114,8 @@ public class InventoryService {
                 null,
                 null,
                 null, null,
-                includeDetails, null
+                includeDetails, null,
+                -1, 0
 
         );
     }
@@ -2933,7 +2948,8 @@ public class InventoryService {
                         null,
                         null,
                         null, null, null,
-                        null
+                        null,
+                        -1, 0
                 );
                 // Let's remove those inventories
                 pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
@@ -2993,7 +3009,8 @@ public class InventoryService {
                     null,
                     null,
                     null, null, null,
-                    null
+                    null,
+                    -1, 0
             );
             // we will only return the inventory without any pick attached to it
             return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
@@ -3040,7 +3057,8 @@ public class InventoryService {
                         null,
                         null,
                         null, null, null,
-                        null
+                        null,
+                        -1, 0
                 );
             }
             return pickedInventories;
@@ -3557,7 +3575,8 @@ public class InventoryService {
                 null,
                 null,
                 null, null,
-                null);
+                null,
+                -1, 0);
 
 
     }
@@ -3678,7 +3697,8 @@ public class InventoryService {
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
                 false,
-                null);
+                null,
+                -1, 0);
 
         logger.debug("find {} inventory to REMOVE by criteria {}",
                 inventories.size(),
@@ -4295,7 +4315,8 @@ public class InventoryService {
                 null,
                 null,
                 null, includeDetails,
-                null);
+                null,
+                -1, 0);
     }
 
     /**
@@ -4648,7 +4669,8 @@ public class InventoryService {
                         null,
                         null,
                         null, null, false, clientRestriction,
-                         false, null );
+                         false, null ,
+                        -1, 0);
 
         if (availableInventories.isEmpty()) {
             return new ArrayList<>();
@@ -4681,7 +4703,8 @@ public class InventoryService {
                         null,
                         null,
                         null, null, false, clientRestriction,
-                        false, null );
+                        false, null,
+                        -1, 0 );
 
         availableInventoryForQuantityValidation.forEach(
                 inventory -> {
@@ -4851,7 +4874,8 @@ public class InventoryService {
                 null,
                 true,
                 null, false,
-                null);
+                null,
+                -1, 0);
 
         logger.debug("start to calculate the {} inventories for billing category {} ",
                 allInventory.size(), billableCategory);
