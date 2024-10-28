@@ -56,6 +56,8 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "lpn")
     private String lpn;
 
+
+    @JsonIgnore
     @Transient
     private Client client;
 
@@ -65,12 +67,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "location_id")
     private Long locationId;
 
+    @JsonIgnore
     @Transient
     private Location location;
 
     @Column(name = "pick_id")
     private Long pickId;
 
+    @JsonIgnore
     @Transient
     private Pick pick;
 
@@ -79,6 +83,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long allocatedByPickId;
 
     // Only when allocate by LPN happens
+    @JsonIgnore
     @Transient
     private Pick allocatedByPick;
 
@@ -86,12 +91,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "receipt_id")
     private Long receiptId;
 
+    @JsonIgnore
     @Transient
     private Receipt receipt;
 
     @Column(name = "receipt_line_id")
     private Long receiptLineId;
 
+    @JsonIgnore
     @Transient
     private ReceiptLine receiptLine;
 
@@ -106,6 +113,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "work_order_id")
     private Long workOrderId;
 
+    @JsonIgnore
     @Transient
     private WorkOrder workOrder;
 
@@ -127,6 +135,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @JoinColumn(name="item_id")
     private Item item;
 
+
     @ManyToOne
     @JoinColumn(name="item_package_type_id")
     private ItemPackageType itemPackageType;
@@ -145,6 +154,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long warehouseId;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Column(name="color")
@@ -316,6 +326,18 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     }
 
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -328,7 +350,6 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     public int hashCode() {
         return Objects.hash(id);
     }
-
 
     public Client getClient() {
         return client;
@@ -344,16 +365,6 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
-    }
-
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public String getColor() {
@@ -523,14 +534,6 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
-    }
-
-    public Warehouse getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(Warehouse warehouse) {
-        this.warehouse = warehouse;
     }
 
     public Boolean getLockedForAdjust() {
@@ -764,5 +767,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setKitInnerInventories(List<Inventory> kitInnerInventories) {
         this.kitInnerInventories = kitInnerInventories;
+    }
+
+    public Warehouse getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
     }
 }

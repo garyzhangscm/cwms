@@ -50,12 +50,14 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     private Long clientId;
 
     @Transient
+    @JsonIgnore
     private Client client;
 
     @Column(name = "supplier_id")
     private Long supplierId;
 
     @Transient
+    @JsonIgnore
     private Supplier supplier;
 
     @JsonIgnore
@@ -95,6 +97,7 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     private Integer casePerTier;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @JsonIgnore

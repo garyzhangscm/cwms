@@ -67,7 +67,8 @@ public class InventoryAllocationSummaryService {
                 null,null,null,null,null, null,null,null,null,
                 null,null,null,null,null,
                 false, null,
-                null);
+                null,
+                -1, 0);
         // key: location id + item id  + inventory status id
         Map<String, InventoryAllocationSummary> inventoryAllocationSummaryMap = new HashMap<>();
         inventories.forEach(
