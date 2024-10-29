@@ -222,8 +222,7 @@ public class InventoryStatusService implements TestDataInitiableService{
                 null, null, null, null,null,null,null,
                 null,null,null,null,null,
                 null, null, null, null,false, null,
-                null,
-                -1, 0).isEmpty()) {
+                null ).isEmpty()) {
             throw InventoryException.raiseException("Can't remove the inventory status " + inventoryStatus.getName() +
                     " as there's existing inventory");
         }

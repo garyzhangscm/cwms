@@ -58,7 +58,7 @@ public class InventoryController {
 
     @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
-    public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
+    public ResponseBodyWrapper<List<Inventory>> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
@@ -103,7 +103,7 @@ public class InventoryController {
         logger.debug("see if we have restriction on the max LPN we can return: {}",
                 Objects.nonNull(maxLPNCount) ? maxLPNCount : "No Restriction");
 
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
+        List<Inventory> inventories = inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
                 itemPackageTypeName, clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
                 locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptIds,  receiptNumber,
@@ -120,7 +120,15 @@ public class InventoryController {
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
-                includeDetails, maxLPNCount, pageIndex, recordPerPage);
+                includeDetails, maxLPNCount  );
+        int totalCount = inventories.size();
+        if (pageIndex >= 0) {
+            if (recordPerPage <= 0) {
+                recordPerPage = 10;
+            }
+            inventories = inventories.subList(pageIndex * recordPerPage, (pageIndex + 1) * recordPerPage);
+        }
+        return new ResponseBodyWrapper<>(0, "", inventories, totalCount);
 
 
     }
@@ -152,8 +160,6 @@ public class InventoryController {
                                   @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
                                  @RequestParam(name = "color", defaultValue = "", required = false) String color,
                                  @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
-                                 @RequestParam(name = "pageIndex", defaultValue = "-1", required = false) Integer pageIndex,
-                                 @RequestParam(name = "recordPerPage", defaultValue = "10", required = false) Integer recordPerPage,
                                  @RequestParam(name = "style", defaultValue = "", required = false) String style,
                                  @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
                                  @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
@@ -179,8 +185,7 @@ public class InventoryController {
                 URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
-                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null,
-                pageIndex, recordPerPage).size();
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
