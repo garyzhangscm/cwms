@@ -1055,8 +1055,7 @@ public class ItemService {
                         null,null,null,null, null, null,null,null, null,
                         null,null,null,null,null,
                         null,null,null,
-                        false, null, null,
-                        -1, 0)
+                        false, null, null )
                 .stream().filter(
                         existingInventory -> Objects.equals(item.getClientId(), existingInventory.getClientId())
                 ).collect(Collectors.toList());

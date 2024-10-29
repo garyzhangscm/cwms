@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.*;
 import org.apache.coyote.Request;
@@ -100,8 +101,17 @@ public class ReceiptController {
 
 
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
-    public Receipt findReceipt(@PathVariable Long id) {
-        return receiptService.findById(id);
+    public Receipt findReceipt(@PathVariable Long id,
+                               @RequestParam(name="ignoreNotFoundError", required = false, defaultValue = "false") Boolean ignoreNotFoundError) {
+        try {
+            return receiptService.findById(id);
+        }
+        catch (ResourceNotFoundException ex) {
+            if (Boolean.TRUE.equals(ignoreNotFoundError)) {
+                return null;
+            }
+            throw ResourceNotFoundException.raiseException(ex.getMessage());
+        }
     }
 
     @RequestMapping(value="/receipts/receipt-lines/{id}", method = RequestMethod.GET)
