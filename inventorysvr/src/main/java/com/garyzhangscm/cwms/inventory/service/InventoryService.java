@@ -5042,4 +5042,20 @@ public class InventoryService {
 
         return saveOrUpdate(inventory);
     }
+
+    public void compress(List<Inventory> inventories) {
+        for (Inventory inventory : inventories) {
+            inventory.setItemId(inventory.getItem().getId());
+            inventory.setItemName(inventory.getItem().getName());
+
+            inventory.setItemtemPackageTypeId(inventory.getItemPackageType().getId());
+            inventory.setItemPackageTypeName(inventory.getItemPackageType().getName());
+
+            // set the item and item package type to null to reduce the network traffic
+            // in case the enduser need those information , they will need to make another
+            // request
+            inventory.setItem(null);
+            inventory.setItemPackageType(null);
+        }
+    }
 }

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,10 +136,22 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @JoinColumn(name="item_id")
     private Item item;
 
+    @Transient
+    private Long itemId;
+
+    @Transient
+    private String itemName;
+
 
     @ManyToOne
     @JoinColumn(name="item_package_type_id")
     private ItemPackageType itemPackageType;
+
+    @Transient
+    private Long itemtemPackageTypeId;
+
+    @Transient
+    private String itemPackageTypeName;
 
     @Column(name = "quantity")
     private Long quantity;
@@ -235,6 +248,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Inventory kitInventory;
 
     @OneToMany(mappedBy="kitInventory")
+    @JsonIgnore
     private List<Inventory> kitInnerInventories = new ArrayList<>();
 
     @OneToMany(
@@ -775,5 +789,63 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Long getItemId() {
+        if (Objects.nonNull(itemId)) {
+            return itemId;
+        }
+        if (Objects.nonNull(item)) {
+            return item.getId();
+        }
+        return null;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemName() {
+
+        if (Strings.isNotBlank(itemName)) {
+            return itemName;
+        }
+        if (Objects.nonNull(item)) {
+            return item.getName();
+        }
+        return "";
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public Long getItemtemPackageTypeId() {
+        if (Objects.nonNull(itemtemPackageTypeId)) {
+            return itemtemPackageTypeId;
+        }
+        if (Objects.nonNull(itemPackageType)) {
+            return itemPackageType.getId();
+        }
+        return null;
+    }
+
+    public void setItemtemPackageTypeId(Long itemtemPackageTypeId) {
+        this.itemtemPackageTypeId = itemtemPackageTypeId;
+    }
+
+    public String getItemPackageTypeName() {
+
+        if (Strings.isNotBlank(itemPackageTypeName)) {
+            return itemPackageTypeName;
+        }
+        if (Objects.nonNull(itemPackageType)) {
+            return itemPackageType.getName();
+        }
+        return "";
+    }
+
+    public void setItemPackageTypeName(String itemPackageTypeName) {
+        this.itemPackageTypeName = itemPackageTypeName;
     }
 }

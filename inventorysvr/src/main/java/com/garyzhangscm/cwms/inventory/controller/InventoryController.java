@@ -96,6 +96,7 @@ public class InventoryController {
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
+                                                                   @RequestParam(name = "compression", defaultValue = "false", required = false) Boolean compression,
                                               ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
 
@@ -127,6 +128,14 @@ public class InventoryController {
                 recordPerPage = 10;
             }
             inventories = inventories.subList(pageIndex * recordPerPage, (pageIndex + 1) * recordPerPage);
+        }
+
+        // for compression, we will just return the item's id / name and
+        // item package type's id and name to the uesr so that it won't cause big network traffic
+        if (Boolean.TRUE.equals(compression)) {
+            logger.debug("Return compressed {} inventory to the end user",
+                    inventories.size());
+            inventoryService.compress(inventories);
         }
         return new ResponseBodyWrapper<>(0, "", inventories, totalCount);
 
