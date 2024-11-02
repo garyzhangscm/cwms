@@ -127,7 +127,8 @@ public class InventoryController {
             if (recordPerPage <= 0) {
                 recordPerPage = 10;
             }
-            inventories = inventories.subList(pageIndex * recordPerPage, (pageIndex + 1) * recordPerPage);
+            int lastIndex = Math.min(inventories.size(), pageIndex  * recordPerPage);
+            inventories = inventories.subList((pageIndex  -1) * recordPerPage, lastIndex);
         }
 
         // for compression, we will just return the item's id / name and
