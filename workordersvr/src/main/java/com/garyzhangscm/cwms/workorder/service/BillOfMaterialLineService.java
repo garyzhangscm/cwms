@@ -29,13 +29,11 @@ import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.BillOfMaterialLineRepository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -44,11 +42,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 
 @Service
-public class BillOfMaterialLineService  implements TestDataInitiableService {
+public class BillOfMaterialLineService  {
     private static final Logger logger = LoggerFactory.getLogger(BillOfMaterialLineService.class);
 
     @Autowired
@@ -220,7 +216,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
 
         return fileService.loadData(inputStream, getCsvSchema(), BillOfMaterialLineCSVWrapper.class);
     }
-
+/**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -236,17 +232,18 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+ **/
 
-    private BillOfMaterialLine convertFromWrapper(BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
+    private BillOfMaterialLine convertFromWrapper(Long warehouseId, BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
 
         BillOfMaterialLine billOfMaterialLine = new BillOfMaterialLine();
 
 
         billOfMaterialLine.setNumber(billOfMaterialLineCSVWrapper.getNumber());
         billOfMaterialLine.setExpectedQuantity(billOfMaterialLineCSVWrapper.getExpectedQuantity());
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                billOfMaterialLineCSVWrapper.getCompany(),
-                billOfMaterialLineCSVWrapper.getWarehouse()
+        logger.debug("Start to get warehouse by id {}", warehouseId);
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                warehouseId
         );
 
         Client client = null;
@@ -268,7 +265,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
 
         if (Objects.isNull(billOfMaterial)) {
             // BOM is not created yet, let's create it on the fly
-            billOfMaterial = createBillOfMaterial(billOfMaterialLineCSVWrapper);
+            billOfMaterial = createBillOfMaterial(warehouse, billOfMaterialLineCSVWrapper);
         }
 
         if (Boolean.TRUE.equals(billOfMaterialLineCSVWrapper.getCreateKitItem())) {
@@ -298,7 +295,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
         return billOfMaterialLine;
     }
 
-    private BillOfMaterial createBillOfMaterial(BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
+    private BillOfMaterial createBillOfMaterial(Warehouse warehouse, BillOfMaterialLineCSVWrapper billOfMaterialLineCSVWrapper) {
         BillOfMaterialCSVWrapper billOfMaterialCSVWrapper = new BillOfMaterialCSVWrapper();
         billOfMaterialCSVWrapper.setCompany(billOfMaterialLineCSVWrapper.getCompany());
         billOfMaterialCSVWrapper.setExpectedQuantity(billOfMaterialLineCSVWrapper.getBomExpectedQuantity());
@@ -308,7 +305,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
         billOfMaterialCSVWrapper.setClient(billOfMaterialLineCSVWrapper.getClient());
 
         return billOfMaterialService.saveOrUpdate(
-                billOfMaterialService.convertFromWrapper(billOfMaterialCSVWrapper)
+                billOfMaterialService.convertFromWrapper(warehouse, billOfMaterialCSVWrapper)
         );
 
     }
@@ -357,7 +354,7 @@ public class BillOfMaterialLineService  implements TestDataInitiableService {
                     bomFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalBOMLineCount) * (index));
 
                     BillOfMaterialLine billOfMaterialLine =
-                            convertFromWrapper(billOfMaterialLineCSVWrapper);
+                            convertFromWrapper(warehouseId, billOfMaterialLineCSVWrapper);
 
 
                     saveOrUpdate(billOfMaterialLine);

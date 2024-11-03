@@ -802,7 +802,7 @@ public class InventoryServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/inventory/item/{id}/create-kit-item")
+                        .path("/api/inventory/items/{id}/create-kit-item")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("billOfMaterialId", billOfMaterialId);
 

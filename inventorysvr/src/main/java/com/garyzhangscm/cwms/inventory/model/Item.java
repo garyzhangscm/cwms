@@ -223,11 +223,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "bill_of_material_id")
     private Long billOfMaterialId;
     @Transient
-    @JsonIgnore
     private BillOfMaterial billOfMaterial;
 
     @Transient
     private List<Item> kitInnerItems = new ArrayList<>();
+
+    @Transient
+    private List<Double> kitInnerItemQuanties = new ArrayList<>();
+
 
 
     @Transient
@@ -727,5 +730,24 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setBillOfMaterial(BillOfMaterial billOfMaterial) {
         this.billOfMaterial = billOfMaterial;
+    }
+
+    public Double getBillOfMaterialQuantity() {
+        if (Objects.isNull(billOfMaterial)) {
+            return null;
+        }
+        return billOfMaterial.getExpectedQuantity();
+    }
+
+    public List<Double> getKitInnerItemQuanties() {
+        return kitInnerItemQuanties;
+    }
+
+    public void setKitInnerItemQuanties(List<Double> kitInnerItemQuanties) {
+        this.kitInnerItemQuanties = kitInnerItemQuanties;
+    }
+
+    public void addKitInnerItemQuanty(Double quantity) {
+        this.kitInnerItemQuanties.add(quantity);
     }
 }
