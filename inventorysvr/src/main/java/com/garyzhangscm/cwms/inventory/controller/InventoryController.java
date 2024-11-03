@@ -435,16 +435,19 @@ public class InventoryController {
     // Adjust up the inventory from 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
+                                                   @RequestParam(name = "kitInventoryUseDefaultAttribute", required = false, defaultValue = "true") Boolean kitInventoryUseDefaultAttribute,
                                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                                    @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
 
         logger.debug("Start to create inventory \n{}", inventory.getLpn());
-        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,
+                documentNumber, comment, kitInventoryUseDefaultAttribute);
     }
     @BillableEndpoint
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
     public Inventory addInventoryByReceiving(@RequestBody Inventory inventory,
+                                             @RequestParam(name = "kitInventoryUseDefaultAttribute", required = false, defaultValue = "true") Boolean kitInventoryUseDefaultAttribute,
                                              @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
                                              @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
                                              @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId) {
@@ -459,23 +462,28 @@ public class InventoryController {
         // We may receive  from a receipt, or a work order
         if (Objects.nonNull(inventory.getReceiptId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment, reasonCodeId);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment, reasonCodeId);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment, reasonCodeId);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment, reasonCodeId);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else {
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN, documentNumber, comment, reasonCodeId);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
     }
 

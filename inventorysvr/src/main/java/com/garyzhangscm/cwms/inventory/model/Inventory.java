@@ -341,6 +341,60 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     }
 
 
+    public Inventory copy(String newLpn, Long newQuantity) {
+        Inventory inventory = new Inventory();
+        if (StringUtils.isBlank(newLpn)) {
+            newLpn = getLpn();
+        }
+        inventory.setLpn(newLpn);
+        // inventory.setPickId(getPickId());
+        inventory.setWarehouseId(warehouseId);
+        // Copy inventory movement
+        List<InventoryMovement> inventoryMovements = new ArrayList<>();
+        getInventoryMovements().stream().forEach(inventoryMovement -> {
+            InventoryMovement newInventoryMovement = (InventoryMovement)inventoryMovement.clone();
+            newInventoryMovement.setInventory(inventory);
+            newInventoryMovement.setWarehouseId(inventoryMovement.getWarehouseId());
+            inventoryMovements.add(newInventoryMovement);
+        });
+
+        inventory.setInventoryMovements(inventoryMovements);
+
+        inventory.setInventoryStatus(getInventoryStatus());
+        inventory.setItem(getItem());
+        inventory.setItemPackageType(getItemPackageType());
+        inventory.setLocationId(getLocationId());
+        inventory.setLocation(getLocation());
+        inventory.setQuantity(newQuantity);
+        inventory.setWorkOrderId(getWorkOrderId());
+        inventory.setVirtual(getVirtual());
+        inventory.setReceiptId(getReceiptId());
+        inventory.setReceiptLineId(getReceiptLineId());
+        inventory.setClientId(getClientId());
+
+        inventory.setColor(getColor());
+        inventory.setProductSize(getProductSize());
+        inventory.setStyle(getStyle());
+
+        inventory.setAttribute1(getAttribute1());
+        inventory.setAttribute2(getAttribute2());
+        inventory.setAttribute3(getAttribute3());
+        inventory.setAttribute4(getAttribute4());
+        inventory.setAttribute5(getAttribute5());
+
+        inventory.setFifoDate(getFifoDate());
+
+        inventory.setInWarehouseDatetime(getInWarehouseDatetime());
+        inventory.setShippedDatetime(getShippedDatetime());
+
+        inventory.setKitInventoryFlag(getKitInventoryFlag());
+
+        inventory.setKitInnerInventoryFlag(getKitInnerInventoryFlag());
+
+        return inventory;
+
+    }
+
     @Override
     public String toString() {
         try {
