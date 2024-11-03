@@ -121,6 +121,9 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
     @Column(name = "comment")
     private String comment;
 
+    @Column(name = "kit_inventory_use_default_attribute")
+    private Boolean kitInventoryUseDefaultAttribute;
+
 
 
     @Column(name = "reason_code_id")
@@ -146,12 +149,13 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
                 inventoryQuantityChangeType,
                 username,
                 documentNumber,
-                comment, reasonCodeId);
+                comment, reasonCodeId, true);
     }
     public InventoryAdjustmentRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                       InventoryQuantityChangeType inventoryQuantityChangeType,
                                       String username,
-                                      String documentNumber, String comment, Long reasonCodeId) {
+                                      String documentNumber, String comment, Long reasonCodeId,
+                                      Boolean kitInventoryUseDefaultAttribute) {
         setInventoryId(inventory.getId());
         setLpn(inventory.getLpn());
         setLocationId(inventory.getLocationId());
@@ -168,6 +172,7 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
         setRequestedByDateTime(ZonedDateTime.now(ZoneOffset.UTC));
         setDocumentNumber(documentNumber);
         setComment(comment);
+        setKitInventoryUseDefaultAttribute(kitInventoryUseDefaultAttribute);
         this.reasonCodeId = reasonCodeId;
     }
 
@@ -351,5 +356,13 @@ public class InventoryAdjustmentRequest extends AuditibleEntity<String> implemen
 
     public void setReasonCode(ReasonCode reasonCode) {
         this.reasonCode = reasonCode;
+    }
+
+    public Boolean getKitInventoryUseDefaultAttribute() {
+        return kitInventoryUseDefaultAttribute;
+    }
+
+    public void setKitInventoryUseDefaultAttribute(Boolean kitInventoryUseDefaultAttribute) {
+        this.kitInventoryUseDefaultAttribute = kitInventoryUseDefaultAttribute;
     }
 }

@@ -1578,7 +1578,7 @@ public class InventoryService {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,
-                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, false);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
@@ -2410,8 +2410,8 @@ public class InventoryService {
         }
     }
 
-    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
-        return addInventory(inventory, inventoryQuantityChangeType, "", "");
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType, Boolean kitInventoryUseDefaultAttribute) {
+        return addInventory(inventory, inventoryQuantityChangeType, "", "", kitInventoryUseDefaultAttribute);
 
     }
 
@@ -2425,18 +2425,18 @@ public class InventoryService {
      */
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment, Long reasonCodeId) {
+                                  String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         return addInventory(userService.getCurrentUserName(), inventory, inventoryQuantityChangeType,
-                documentNumber, comment, reasonCodeId);
+                documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
     }
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment) {
+                                  String documentNumber, String comment, Boolean kitInventoryUseDefaultAttribute) {
         return addInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, null);
     }
     @Transactional
     public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment,  Long reasonCodeId) {
+                                  String documentNumber, String comment,  Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
 
         logger.debug("Start to add inventory with LPN {}",
                 Strings.isBlank(inventory.getLpn()) ? "N/A" : inventory.getLpn());
@@ -2456,12 +2456,13 @@ public class InventoryService {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,  inventory.getQuantity(),
-                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
             inventory.setLockedForAdjust(true);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
+            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber,
+                    comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
     }
 
@@ -2476,20 +2477,28 @@ public class InventoryService {
         saveOrUpdate(inventory);
     }
 
-
     private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
                                              String documentNumber, String comment, Long reasonCodeId) {
 
+        writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
+                inventoryQuantityChangeType,
+                documentNumber, comment, reasonCodeId, true);
+    }
+
+    private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
+                                             InventoryQuantityChangeType inventoryQuantityChangeType,
+                                             String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
+
 
         writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
                 inventoryQuantityChangeType,
-                documentNumber, comment, reasonCodeId);
+                documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
     }
     private void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
                                              String documentNumber, String comment,
-                                             Long reasonCodeId) {
+                                             Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
 
         // if we are manupulating an existing inventory, let's lock teh inventory first
         if (Objects.nonNull(inventory.getId())) {
@@ -2500,7 +2509,8 @@ public class InventoryService {
             inventory.setLockedForAdjust(true);
         }
         inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType,
-                  documentNumber,  comment, reasonCodeId);
+                  documentNumber,  comment, reasonCodeId,
+                kitInventoryUseDefaultAttribute);
 
     }
 
@@ -2533,15 +2543,15 @@ public class InventoryService {
     }
 
     public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment, Long reasonCodeId) {
+                                         String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         return processAddInventory(
                 userService.getCurrentUserName(),
                 inventory, inventoryQuantityChangeType,
-                documentNumber, comment, reasonCodeId);
+                documentNumber, comment, reasonCodeId,  kitInventoryUseDefaultAttribute);
     }
     public Inventory processAddInventory(String username,
                                          Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment, Long reasonCodeId) {
+                                         String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType, inventory.getWarehouseId());
@@ -2571,13 +2581,17 @@ public class InventoryService {
         inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
         logger.debug("inventory {} needs QC? {}",
                 inventory.getLpn(), inventory.getInboundQCRequired());
-
+/**
         if (Boolean.TRUE.equals(inventory.getKitInventory())) {
             logger.debug("start to add kit inventory with {} inner inventory ",
                     inventory.getKitInnerInventories().size());
             for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
                 kitInnerInventory.setKitInventory(inventory);
             }
+        }
+ **/
+        if (inventory.getItem().getKitItemFlag()) {
+            inventory.setKitInventoryFlag(true);
         }
 
         inventory = saveOrUpdate(inventory);
@@ -2629,7 +2643,20 @@ public class InventoryService {
             setupQCInspectionRequest(inventory);
         }
 
-        return moveInventory(inventory, destinationLocation);
+        inventory =  moveInventory(inventory, destinationLocation);
+
+        if (Boolean.TRUE.equals(inventory.getItem().getKitItemFlag())) {
+            logger.debug("We just received a kit inventory {}, let's also create the inner" +
+                    " inventory " , inventory.getLpn());
+            List<Inventory> innerInventories = createKitInnerInventory(inventory, kitInventoryUseDefaultAttribute);
+            for(Inventory innerInventory: innerInventories) {
+
+                processAddInventory(username,
+                        innerInventory, inventoryQuantityChangeType,
+                        documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
+            }
+        }
+        return inventory;
 
 
         /***********
@@ -2649,6 +2676,149 @@ public class InventoryService {
         }
         return save(consolidatedInventory);
         *********/
+    }
+
+    private List<Inventory> createKitInnerInventory(Inventory inventory, Boolean kitInventoryUseDefaultAttribute) {
+        List<Inventory> innerInventories = new ArrayList<>();
+
+        Item kitItem = inventory.getItem();
+
+        if (!Boolean.TRUE.equals(kitItem.getKitItemFlag()) ||
+            Objects.isNull(kitItem.getBillOfMaterialId())) {
+            logger.debug("The inventory {}'s item {} is not a proper kit item",
+                    inventory.getLpn(), kitItem.getName());
+            throw MissingInformationException.raiseException(
+                    "The inventory " + inventory.getLpn() + "'s item "
+                    + kitItem.getName() + " is not a proper kit item");
+        }
+        BillOfMaterial billOfMaterial = kitItem.getBillOfMaterial();
+        if (Objects.isNull(billOfMaterial)) {
+            // load the bill of material. We will get the inner inventory
+            // item and quantity from the BOM
+            billOfMaterial =
+                    workOrderServiceRestemplateClient.getBillOfMaterialById(
+                            kitItem.getBillOfMaterialId(),
+                            false
+                    );
+            if (Objects.isNull(billOfMaterial)) {
+                throw MissingInformationException.raiseException(
+                        "The inventory " + inventory.getLpn() + "'s item "
+                                + kitItem.getName() + " doesn't have a BOM setup, fail to " +
+                                "create kit inventory ");
+            }
+
+        }
+
+        // start to create inner items with the same inventory status
+        for(BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
+            Inventory innerInventory = createKitInnerInventory(
+                    inventory,billOfMaterial, billOfMaterialLine, kitInventoryUseDefaultAttribute);
+            innerInventory.setKitInventory(inventory);
+            innerInventory = saveOrUpdate(innerInventory);
+            innerInventories.add(innerInventory);
+        }
+
+        return innerInventories;
+
+    }
+    private Inventory createKitInnerInventory(Inventory inventory,
+                                              BillOfMaterial billOfMaterial, BillOfMaterialLine billOfMaterialLine,
+                                              Boolean kitInventoryUseDefaultAttribute) {
+        Item innerItem = billOfMaterialLine.getItem();
+        if (Objects.isNull(innerItem)) {
+            innerItem = itemService.findById(billOfMaterialLine.getItemId(), false);
+        }
+        Long innerInventoryQuantity =(long) (inventory.getQuantity() * billOfMaterialLine.getExpectedQuantity() / billOfMaterial.getExpectedQuantity());
+
+
+        Inventory innerInventory = inventory.copy(inventory.getLpn(), innerInventoryQuantity);
+        innerInventory.setItem(innerItem);
+
+        // setup the inventory attribute from the default attribute of the item
+        // or inherit from the parent
+        // inventory.copy will copy the inventory attribute from the parent as well
+        // so we will only need to change the attribute only if we will need to
+        // use the default inventory attribute that associated with the item
+        if (Boolean.TRUE.equals(kitInventoryUseDefaultAttribute)) {
+            setupDefaultInventoryAttribute(innerInventory);
+        }
+
+        innerInventory.setItemPackageType(innerItem.getDefaultItemPackageType());
+        innerInventory.setKitInventoryFlag(innerItem.getKitItemFlag());
+        innerInventory.setKitInnerInventoryFlag(true);
+
+        return innerInventory;
+
+
+    }
+
+    private void setupDefaultInventoryAttribute(Inventory inventory) {
+        Item item = inventory.getItem();
+        if (item.isTrackingColorFlag()) {
+
+            inventory.setColor(item.getDefaultColor());
+        }
+        else {
+            inventory.setColor(null);
+        }
+
+        if (item.isTrackingStyleFlag()) {
+
+            inventory.setStyle(item.getDefaultStyle());
+        }
+        else {
+            inventory.setStyle(null);
+        }
+
+        if (item.isTrackingProductSizeFlag()) {
+
+            inventory.setProductSize(item.getDefaultProductSize());
+        }
+        else {
+            inventory.setProductSize(null);
+        }
+
+        if (item.isTrackingInventoryAttribute1Flag()) {
+
+            inventory.setAttribute1(item.getDefaultInventoryAttribute1());
+        }
+        else {
+            inventory.setAttribute1(null);
+        }
+
+        if (item.isTrackingInventoryAttribute2Flag()) {
+
+            inventory.setAttribute2(item.getDefaultInventoryAttribute2());
+        }
+        else {
+            inventory.setAttribute2(null);
+        }
+        if (item.isTrackingInventoryAttribute3Flag()) {
+
+            inventory.setAttribute3(item.getDefaultInventoryAttribute3());
+        }
+        else {
+            inventory.setAttribute3(null);
+        }
+        if (item.isTrackingInventoryAttribute4Flag()) {
+
+            inventory.setAttribute4(item.getDefaultInventoryAttribute4());
+        }
+        else {
+            inventory.setAttribute4(null);
+        }
+        if (item.isTrackingInventoryAttribute5Flag()) {
+
+            inventory.setAttribute5(item.getDefaultInventoryAttribute5());
+        }
+        else {
+            inventory.setAttribute5(null);
+        }
+
+
+
+
+
     }
 
     private void setupQCInspectionRequest(Inventory inventory) {
@@ -2801,7 +2971,8 @@ public class InventoryService {
 
             logger.debug("Will start to add inventory after the change is approved");
             processAddInventory(inventory, inventoryAdjustmentRequest.getInventoryQuantityChangeType(),
-                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment(), null);
+                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment(),
+                    null, true);
         }
         else {
 
@@ -2868,7 +3039,7 @@ public class InventoryService {
     public Inventory changeQuantityByAuditCount(Inventory inventory, Long newQuantity) {
         if (Objects.isNull(inventory.getId())) {
             inventory.setQuantity(newQuantity);
-            return addInventory(inventory, InventoryQuantityChangeType.AUDIT_COUNT);
+            return addInventory(inventory, InventoryQuantityChangeType.AUDIT_COUNT, true);
         }
         else {
             // Adjust the quantity without any document and comment
@@ -3808,7 +3979,8 @@ public class InventoryService {
 
                     addInventory(username, inventory,
                             InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                            "", "", null);
+                            "", "", null,
+                            true);
 
                     // we complete this inventory
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));

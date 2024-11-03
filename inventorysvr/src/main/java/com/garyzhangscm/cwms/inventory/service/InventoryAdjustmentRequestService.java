@@ -195,16 +195,18 @@ public class InventoryAdjustmentRequestService{
     public void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType,
                                             String documentNumber, String comment, Long reasonCodeId) {
         writeInventoryAdjustRequest(inventory, inventory.getQuantity(), newQuantity,
-                inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
+                inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, true);
 
     }
     public void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                            String documentNumber, String comment, Long reasonCodeId) {
+                                            String documentNumber, String comment, Long reasonCodeId,
+                                            Boolean kitInventoryUseDefaultAttribute
+    ) {
 
 
         InventoryAdjustmentRequest inventoryAdjustmentRequest
                 = new InventoryAdjustmentRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType, userService.getCurrentUserName(),
-                                                 documentNumber, comment, reasonCodeId);
+                                                 documentNumber, comment, reasonCodeId,kitInventoryUseDefaultAttribute);
         // logger.debug("Will persist the adjust request: {}", inventoryAdjustmentRequest);
         save(inventoryAdjustmentRequest);
 
