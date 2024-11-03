@@ -67,11 +67,14 @@ public class WorkOrderServiceRestemplateClient {
 
 
     @Cacheable(cacheNames = "InventoryService_BillOfMaterial", unless="#result == null")
-    public BillOfMaterial getBillOfMaterialById(Long id) {
+    public BillOfMaterial getBillOfMaterialById(Long id,  Boolean loadDetails) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/bill-of-materials/{id}");
+        if (Objects.nonNull(loadDetails)) {
+            builder = builder.queryParam("loadDetails", loadDetails);
+        }
 
         return restTemplateProxy.exchange(
                 BillOfMaterial.class,

@@ -44,7 +44,7 @@ public class BillOfMaterialFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
         addColumn(new FileUploadTemplateColumn(
-                "createKitItem", "Create Kit Item",
+                "createKitItem", "Mark the BOM item as a Kit item with the line items as the inner items",
                 Boolean.class, 100, true
         ));
     }

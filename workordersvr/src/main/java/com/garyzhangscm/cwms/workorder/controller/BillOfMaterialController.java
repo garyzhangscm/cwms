@@ -54,9 +54,10 @@ public class BillOfMaterialController {
                                                        @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                                        @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                                        @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
+                                                       @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                                        ClientRestriction clientRestriction) {
         return billOfMaterialService.findAll(warehouseId, number, numbers,
-                itemName, genericQuery, clientRestriction);
+                itemName, genericQuery, loadDetails, clientRestriction);
     }
 
     @RequestMapping(value="/bill-of-materials/matched-with-work-order", method = RequestMethod.GET)
@@ -83,8 +84,9 @@ public class BillOfMaterialController {
 
 
     @RequestMapping(value="/bill-of-materials/{id}", method = RequestMethod.GET)
-    public BillOfMaterial findBillOfMaterial(@PathVariable Long id) {
-        return billOfMaterialService.findById(id);
+    public BillOfMaterial findBillOfMaterial(@PathVariable Long id,
+                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+        return billOfMaterialService.findById(id, loadDetails);
     }
 
     @BillableEndpoint

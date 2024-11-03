@@ -387,12 +387,13 @@ public class ItemService {
             BillOfMaterial billOfMaterial =
                     Objects.nonNull(item.getBillOfMaterial()) ?
                             item.getBillOfMaterial() :
-                    workOrderServiceRestemplateClient.getBillOfMaterialById(item.getBillOfMaterialId());
+                    workOrderServiceRestemplateClient.getBillOfMaterialById(item.getBillOfMaterialId(), false);
             item.setBillOfMaterial(billOfMaterial);
             for (BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
                 Item kitInnerItem = billOfMaterialLine.getItem();
                 if (Objects.isNull(kitInnerItem)) {
-                    kitInnerItem = findById(billOfMaterial.getItemId());
+                    kitInnerItem = findById(billOfMaterialLine.getItemId());
+                    billOfMaterialLine.setItem(kitInnerItem);
                 }
                 item.addKitInnerItem(kitInnerItem);
             }

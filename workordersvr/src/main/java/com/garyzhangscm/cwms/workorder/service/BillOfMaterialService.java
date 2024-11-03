@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class BillOfMaterialService implements TestDataInitiableService {
+public class BillOfMaterialService  {
     private static final Logger logger = LoggerFactory.getLogger(BillOfMaterialService.class);
 
     @Autowired
@@ -248,7 +248,7 @@ public class BillOfMaterialService implements TestDataInitiableService {
 
         return fileService.loadData(inputStream, schema, BillOfMaterialCSVWrapper.class);
     }
-
+/**
     public void initTestData(Long companyId, String warehouseName) {
         try {
             String companyCode = warehouseLayoutServiceRestemplateClient.getCompanyById(companyId).getCode();
@@ -264,21 +264,23 @@ public class BillOfMaterialService implements TestDataInitiableService {
             logger.debug("Exception while load test data: {}", ex.getMessage());
         }
     }
+ **/
 
-    public BillOfMaterial convertFromWrapper(BillOfMaterialCSVWrapper billOfMaterialCSVWrapper) {
+    public BillOfMaterial convertFromWrapper(Long warehouseId, BillOfMaterialCSVWrapper billOfMaterialCSVWrapper) {
+
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                warehouseId
+        );
+        return convertFromWrapper(warehouse, billOfMaterialCSVWrapper);
+    }
+    public BillOfMaterial convertFromWrapper(Warehouse warehouse, BillOfMaterialCSVWrapper billOfMaterialCSVWrapper) {
 
         BillOfMaterial billOfMaterial = new BillOfMaterial();
         billOfMaterial.setNumber(billOfMaterialCSVWrapper.getNumber());
+        billOfMaterial.setDescription(billOfMaterialCSVWrapper.getNumber());
         billOfMaterial.setExpectedQuantity(billOfMaterialCSVWrapper.getExpectedQuantity());
 
-        logger.debug("Start to get warehouse: {}", billOfMaterialCSVWrapper.getWarehouse());
-        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseByName(
-                billOfMaterialCSVWrapper.getCompany(),
-                billOfMaterialCSVWrapper.getWarehouse()
-        );
-        logger.debug("warehouse is null? {}", (warehouse == null));
         billOfMaterial.setWarehouseId(warehouse.getId());
-        logger.debug("Start to get item: {}", billOfMaterialCSVWrapper.getItem());
 
         Client client = null;
         if (Strings.isNotBlank(billOfMaterialCSVWrapper.getClient())) {

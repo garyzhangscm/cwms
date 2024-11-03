@@ -145,8 +145,8 @@ public class ItemUnitOfMeasureFileUpload extends FileUploadType {
 
         // only necessary if the item package type doesn't exist yet
         addColumn(new FileUploadTemplateColumn(
-                "defaultItemPackageType", "Default Item Package Type",
-                String.class, 100, true
+                "defaultItemPackageType", "Whether this is the default Item Package Type",
+                Boolean.class, 100, true
         ));
 
 
