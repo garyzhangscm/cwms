@@ -231,6 +231,17 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Transient
     private List<Double> kitInnerItemQuanties = new ArrayList<>();
 
+    // whether allow the operator to break the kit
+    // and process the individuals
+    // only when it is a kit item
+    @Column(name = "kit_allow_break_flag")
+    private Boolean kitAllowBreakFlag = false;
+    @Column(name = "kit_allow_ship_individual_flag")
+    // whether allow the operator to break the kit
+    // and ship the individuals
+    // only when it is a kit item
+    private Boolean kitAllowShipIndividualFlag = false;
+
 
 
     @Transient
@@ -749,5 +760,21 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void addKitInnerItemQuanty(Double quantity) {
         this.kitInnerItemQuanties.add(quantity);
+    }
+
+    public Boolean getKitAllowBreakFlag() {
+        return kitAllowBreakFlag;
+    }
+
+    public void setKitAllowBreakFlag(Boolean kitAllowBreakFlag) {
+        this.kitAllowBreakFlag = kitAllowBreakFlag;
+    }
+
+    public Boolean getKitAllowShipIndividualFlag() {
+        return kitAllowShipIndividualFlag;
+    }
+
+    public void setKitAllowShipIndividualFlag(Boolean kitAllowShipIndividualFlag) {
+        this.kitAllowShipIndividualFlag = kitAllowShipIndividualFlag;
     }
 }

@@ -1,10 +1,12 @@
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.Inventory;
 import com.garyzhangscm.cwms.outbound.model.InventorySummary;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,6 +15,8 @@ import java.util.*;
 public class InventorySummaryService {
 
     private static final Logger logger = LoggerFactory.getLogger(InventorySummaryService.class);
+    @Autowired
+    private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
     public List<InventorySummary> getInventorySummaryForAllocation(List<Inventory> inventories) {
         Map<String, InventorySummary> inventorySummaryMap = new HashMap<>();
@@ -27,6 +31,14 @@ public class InventorySummaryService {
                 inventorySummary.addInventory(inventory);
             }
             else {
+                if (Objects.isNull(inventory.getLocation()) &&
+                        Objects.nonNull(inventory.getLocationId())) {
+                    inventory.setLocation(
+                            warehouseLayoutServiceRestemplateClient.getLocationById(
+                                    inventory.getLocationId()
+                            )
+                    );
+                }
                 inventorySummary = new InventorySummary(inventory);
                 logger.debug("Add inventory to the inventory summary. " +
                         "Inventory's create datetime: {}, inventory summary's FIFO: {}",
