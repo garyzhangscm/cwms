@@ -838,6 +838,13 @@ public class PickService {
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn,
                                              boolean wholeLPNPick) {
+        if (Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+            inventory.setLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            inventory.getLocationId()
+                    )
+            );
+        }
         return generateBasicPickInformation(warehouseId,
                 inventory.getItem(),
                 inventory.getLocation(),
@@ -853,6 +860,13 @@ public class PickService {
                                              String lpn,
                                              boolean wholeLPNPick) {
 
+        if (Objects.isNull(inventorySummary.getLocation()) && Objects.nonNull(inventorySummary.getLocationId())) {
+            inventorySummary.setLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            inventorySummary.getLocationId()
+                    )
+            );
+        }
         return generateBasicPickInformation(warehouseId,
                 inventorySummary.getItem(),
                 inventorySummary.getLocation(),
