@@ -72,12 +72,18 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Location location;
 
+    @Transient
+    private String locationName;
+
     @Column(name = "pick_id")
     private Long pickId;
 
     @JsonIgnore
     @Transient
     private Pick pick;
+
+    @Transient
+    private String pickNumber;
 
     // Only when allocate by LPN happens
     @Column(name = "allocated_by_pick_id")
@@ -901,5 +907,33 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setItemPackageTypeName(String itemPackageTypeName) {
         this.itemPackageTypeName = itemPackageTypeName;
+    }
+
+    public String getLocationName() {
+        if(Strings.isNotBlank(locationName)) {
+            return locationName;
+        }
+        if (Objects.nonNull(location)) {
+            return location.getName();
+        }
+        return "";
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getPickNumber() {
+        if(Strings.isNotBlank(pickNumber)) {
+            return pickNumber;
+        }
+        if (Objects.nonNull(pick)) {
+            return pick.getNumber();
+        }
+        return "";
+    }
+
+    public void setPickNumber(String pickNumber) {
+        this.pickNumber = pickNumber;
     }
 }

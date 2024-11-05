@@ -1252,6 +1252,19 @@ public class WaveService {
         List<Inventory> pickedInventories =
                 getPickedInventory(wave);
 
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
         // only return the picked inventory that is already in stage
         return pickedInventories.stream()
                 .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())

@@ -236,10 +236,10 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     // only when it is a kit item
     @Column(name = "kit_allow_break_flag")
     private Boolean kitAllowBreakFlag = false;
-    @Column(name = "kit_allow_ship_individual_flag")
     // whether allow the operator to break the kit
     // and ship the individuals
     // only when it is a kit item
+    @Column(name = "kit_allow_ship_individual_flag")
     private Boolean kitAllowShipIndividualFlag = false;
 
 
