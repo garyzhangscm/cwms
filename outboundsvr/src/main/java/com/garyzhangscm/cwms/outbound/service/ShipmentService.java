@@ -547,6 +547,20 @@ public class ShipmentService {
         // Let's get all the picked inventory and check which is already staged
         List<Inventory> pickedInventories = getPickedInventory(shipment);
         logger.debug("Get {} picked inventory ", pickedInventories.size());
+
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
         return pickedInventories.stream()
                 .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
                 .collect(Collectors.toList());
@@ -569,6 +583,19 @@ public class ShipmentService {
         List<Inventory> pickedInventories = getPickedInventory(shipment);
 
 
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
         return pickedInventories.stream()
                 .filter(inventory -> inventory.getLocation().getName().equals(String.valueOf(trailer.getId())))
                 .collect(Collectors.toList());
@@ -590,6 +617,19 @@ public class ShipmentService {
         }
         List<Inventory> pickedInventories = getPickedInventory(shipment);
 
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
         return pickedInventories.stream()
                 .filter(inventory -> inventory.getLocation().getName().equals(String.valueOf(trailer.getId())))
                 .collect(Collectors.toList());
@@ -776,6 +816,21 @@ public class ShipmentService {
                 = inventoryServiceRestemplateClient.getPickedInventory(shipment.getWarehouseId(), shipmentPicks);
         logger.debug("Shipment {} has picked {} inventories",
                 shipment.getNumber(), pickedInventories.size());
+
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
+
         if (pickedInventories.stream()
                 .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage() != true)
                 .count() > 0) {
@@ -1002,6 +1057,21 @@ public class ShipmentService {
         // shipping stage area, or already shipped
         List<Inventory> pickedInventories = getPickedInventory(shipment);
         logger.debug("Get {} picked inventory ", pickedInventories.size());
+
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
+
         boolean unStagedInventory =
                 pickedInventories.stream()
                 .anyMatch(inventory -> {

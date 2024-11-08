@@ -102,6 +102,9 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Receipt receipt;
 
+    @Transient
+    private String receiptNumber;
+
     @Column(name = "receipt_line_id")
     private Long receiptLineId;
 
@@ -935,5 +938,20 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setPickNumber(String pickNumber) {
         this.pickNumber = pickNumber;
+    }
+
+    public String getReceiptNumber() {
+
+        if(Strings.isNotBlank(receiptNumber)) {
+            return receiptNumber;
+        }
+        if (Objects.nonNull(receipt)) {
+            return receipt.getNumber();
+        }
+        return "";
+    }
+
+    public void setReceiptNumber(String receiptNumber) {
+        this.receiptNumber = receiptNumber;
     }
 }
