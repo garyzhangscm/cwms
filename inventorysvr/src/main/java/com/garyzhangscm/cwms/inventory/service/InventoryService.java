@@ -2432,7 +2432,7 @@ public class InventoryService {
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
                                   String documentNumber, String comment, Boolean kitInventoryUseDefaultAttribute) {
-        return addInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, null);
+        return addInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, null, null);
     }
     @Transactional
     public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
@@ -2590,7 +2590,7 @@ public class InventoryService {
             }
         }
  **/
-        if (inventory.getItem().getKitItemFlag()) {
+        if (Boolean.TRUE.equals(inventory.getItem().getKitItemFlag())) {
             inventory.setKitInventoryFlag(true);
         }
 
