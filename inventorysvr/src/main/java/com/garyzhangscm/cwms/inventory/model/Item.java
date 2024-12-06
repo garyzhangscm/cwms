@@ -33,7 +33,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "item")
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"hibernateLazyInitializer"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Item extends AuditibleEntity<String> implements Serializable {
 
 
@@ -52,8 +53,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private Long clientId;
 
     @Transient
-    @JsonIgnore
     private Client client;
+
+
 
     @ManyToOne
     @JoinColumn(name="item_family_id")
