@@ -2351,7 +2351,7 @@ public class InventoryService {
         }
 
         // update the pick
-        Pick cancelledPick =
+        List<Pick> newPicks =
                 outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
 
         // disconnect the inventory from the pick and
@@ -2359,7 +2359,8 @@ public class InventoryService {
         inventory.setPickId(null);
         inventoryMovementService.clearInventoryMovement(inventory);
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.UNPICKING,
-                "quantity", String.valueOf(inventory.getQuantity()), "", cancelledPick.getNumber());
+                "quantity", String.valueOf(inventory.getQuantity()), "",
+                String.valueOf(inventory.getPickId()));
 
 
         // Move the inventory to the destination location

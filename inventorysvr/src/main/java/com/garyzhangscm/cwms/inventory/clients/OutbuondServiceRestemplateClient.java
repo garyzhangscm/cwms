@@ -69,7 +69,7 @@ public class OutbuondServiceRestemplateClient {
 
 
 
-    public Pick unpick(Long pickId, Long unpickQuantity) {
+    public List<Pick> unpick(Long pickId, Long unpickQuantity) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -87,13 +87,12 @@ public class OutbuondServiceRestemplateClient {
         return responseBodyWrapper.getData();
  **/
 
-        return restTemplateProxy.exchange(
+        return restTemplateProxy.exchangeList(
                 Pick.class,
                 builder.buildAndExpand(pickId).toUriString(),
                 HttpMethod.POST,
                 null
         );
-
     }
 
     public void refreshPickMovement(Long pickId, Long destinationLocationId,Long quantity) {
