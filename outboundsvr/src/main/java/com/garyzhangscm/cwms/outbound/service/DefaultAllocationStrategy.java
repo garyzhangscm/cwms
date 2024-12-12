@@ -400,7 +400,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
 
             logger.debug("We still have {} left that can be picked in the location {}",
-                    availableInventoryQuantity, inventorySummary.getLocation());
+                    availableInventoryQuantity, inventorySummary.getLocation().getName());
 
             long allocatibleQuantity = getAllocatiableQuantityByUnitOfMeasure(
                     (availableInventoryQuantity - pickByQuantityPicksTotalOpenQuantity),
