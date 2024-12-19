@@ -352,6 +352,11 @@ public class ShortAllocationService {
             shortAllocation.setProductSize(allocationRequest.getProductSize());
             shortAllocation.setStyle(allocationRequest.getStyle());
             shortAllocation.setAllocateByReceiptNumber(allocationRequest.getAllocateByReceiptNumber());
+            shortAllocation.setInventoryAttribute1(allocationRequest.getInventoryAttribute1());
+            shortAllocation.setInventoryAttribute2(allocationRequest.getInventoryAttribute2());
+            shortAllocation.setInventoryAttribute3(allocationRequest.getInventoryAttribute3());
+            shortAllocation.setInventoryAttribute4(allocationRequest.getInventoryAttribute4());
+            shortAllocation.setInventoryAttribute5(allocationRequest.getInventoryAttribute5());
         }
 
         return save(shortAllocation);
