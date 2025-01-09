@@ -2,6 +2,7 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.hibernate.annotations.Where;
 
@@ -82,6 +83,11 @@ public class WorkOrder extends AuditibleEntity<String>{
     @ManyToOne
     @JoinColumn(name = "bill_of_material_id")
     private BillOfMaterial billOfMaterial;
+
+    @ManyToOne
+    @JoinColumn(name = "work_order_flow_line_id")
+    @JsonIgnore
+    private WorkOrderFlowLine workOrderFlowLine;
 
     // When the work order is created from a specific
     // production plan
@@ -471,5 +477,13 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setShortAllocationId(Long shortAllocationId) {
         this.shortAllocationId = shortAllocationId;
+    }
+
+    public WorkOrderFlowLine getWorkOrderFlowLine() {
+        return workOrderFlowLine;
+    }
+
+    public void setWorkOrderFlowLine(WorkOrderFlowLine workOrderFlowLine) {
+        this.workOrderFlowLine = workOrderFlowLine;
     }
 }
