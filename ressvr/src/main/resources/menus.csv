@@ -72,6 +72,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
 "Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false
+"Work Order Flow",menu.main.work-order.work-order-flow,/work-order/work-order-flow,4,Main-Menu-WorkOrderFlow,Work-Order,,true,false
 "Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line,,true,false
 "Work Order Produce Transaction",menu.main.work-order.wo-produce-transaction,/work-order/produce-transaction,5,Main-Menu-WorkOrder,Produce-Transaction,,true,false
 "Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,,true,false
