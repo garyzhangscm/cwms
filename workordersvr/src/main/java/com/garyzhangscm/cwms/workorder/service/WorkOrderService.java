@@ -37,6 +37,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -142,23 +145,25 @@ public class WorkOrderService implements TestDataInitiableService {
 
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
-                                   String itemName, String statusList, Long productionPlanId,
-                                   boolean genericQuery, boolean loadDetails) {
+                                   String itemName, String statusList, Long productionPlanId) {
 
-        List<WorkOrder> workOrders =  workOrderRepository.findAll(
+        return findAll(warehouseId, number,
+                itemName, statusList, productionPlanId,
+                PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "number")));
+
+    }
+    public List<WorkOrder> findAll(Long warehouseId, String number,
+                                   String itemName, String statusList, Long productionPlanId,
+                                   Pageable pageable) {
+
+        Page<WorkOrder> workOrderPage =  workOrderRepository.findAll(
                 (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-
-
-                        if (genericQuery) {
-
-                            predicates.add(criteriaBuilder.like(root.get("number"), number));
-                        }
-                        else if (number.contains("%")) {
+                        if (number.contains("%")) {
                             predicates.add(criteriaBuilder.like(root.get("number"), number));
                         }
                         else if (number.contains("*")) {
@@ -201,19 +206,77 @@ public class WorkOrderService implements TestDataInitiableService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.DESC, "number")
+                pageable
         );
 
-        if (workOrders.size() > 0 && loadDetails) {
-            loadAttribute(workOrders, true, true);
-        }
-        return workOrders;
+        return workOrderPage.getContent();
+
     }
+
+    public Page <WorkOrder> findAllByPagination(Long warehouseId, String number,
+                                   String itemName, String statusList, Long productionPlanId,
+                                   Pageable pageable) {
+
+        return workOrderRepository.findAll(
+                (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (!StringUtils.isBlank(number)) {
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), number.replaceAll("\\*", "%")));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+
+                    }
+                    if (!StringUtils.isBlank(itemName)) {
+                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
+                        if (item != null) {
+                            predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
+                        }
+                        else {
+                            // The client passed in an invalid item name, let's return nothing
+                            predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
+                        }
+                    }
+
+
+                    if (StringUtils.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<WorkOrderStatus> inWorkOrderStatuses = criteriaBuilder.in(root.get("status"));
+                        for(String workOrderStatus : statusList.split(",")) {
+                            inWorkOrderStatuses.value(WorkOrderStatus.valueOf(workOrderStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inWorkOrderStatuses));
+                    }
+
+
+                    if (Objects.nonNull(productionPlanId)) {
+                        Join<WorkOrder, ProductionPlanLine> joinProductionPlanLine = root.join("productionPlanLine", JoinType.INNER);
+                        Join<ProductionPlanLine, ProductionPlan> joinProductionPlan = joinProductionPlanLine.join("productionPlan", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionPlan.get("id"), productionPlanId));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+                ,
+                pageable
+        );
+
+    }
+
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
                                    String itemName, String statusList, Long productionPlanId,
                                    boolean genericQuery) {
-        return findAll(warehouseId, number, itemName,  statusList, productionPlanId, genericQuery, true);
+        return findAll(warehouseId, number, itemName,  statusList, productionPlanId);
     }
 
 

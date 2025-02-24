@@ -147,7 +147,7 @@ public class WorkOrderFlowService  {
 
         List<WorkOrder> workOrders = workOrderService.findAll(warehouseId,
                 null, null, statusList,
-        null, false, false);
+        null);
 
         return workOrders.stream().map(workOrder -> workOrder.getNumber()).collect(Collectors.toList());
     }
