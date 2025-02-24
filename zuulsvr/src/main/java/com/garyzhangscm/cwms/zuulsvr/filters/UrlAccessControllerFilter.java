@@ -72,7 +72,10 @@ public class UrlAccessControllerFilter implements Filter {
 
     private static final String[] URL_WHITE_LIST = new String[]{
             "/api/integration/tiktok/webhook",
-            "/api/integration/shopify/shop-oauth"
+            "/api/integration/shopify/shop-oauth",
+            "/api/layout/companies",
+            "/api/layout/warehouses",
+            "/api/layout/warehouse-configuration/by-warehouse"
     };
 
     @Override
@@ -232,7 +235,9 @@ public class UrlAccessControllerFilter implements Filter {
 
     private boolean isUrlInWhiteList(String requestURI) {
         return Arrays.stream(URL_WHITE_LIST).anyMatch(
-                whiteListUrl -> whiteListUrl.equalsIgnoreCase(requestURI)
+                whiteListUrl ->
+                        // whiteListUrl.equalsIgnoreCase(requestURI)
+                        requestURI.toLowerCase(Locale.ROOT).startsWith(whiteListUrl.toLowerCase(Locale.ROOT))
         );
     }
 

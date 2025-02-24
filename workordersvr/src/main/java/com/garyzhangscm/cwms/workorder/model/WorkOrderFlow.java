@@ -31,7 +31,7 @@ public class WorkOrderFlow extends AuditibleEntity<String>{
 
 
     @OneToMany(
-            mappedBy = "workOrderFow",
+            mappedBy = "workOrderFlow",
             cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )

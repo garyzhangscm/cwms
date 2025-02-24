@@ -100,4 +100,27 @@ public class AuthenticationServerApplication {
 				.disableCachingNullValues()
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
+
+	@Bean
+	public OAuth2AuthorizedClientManager authorizedClientManager(
+			ClientRegistrationRepository clientRegistrationRepository,
+			OAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+		OAuth2AuthorizedClientProvider authorizedClientProvider =
+				OAuth2AuthorizedClientProviderBuilder.builder()
+						.authorizationCode()
+						.refreshToken()
+						.build();
+
+		DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+				new DefaultOAuth2AuthorizedClientManager(
+						clientRegistrationRepository, authorizedClientRepository);
+		authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+		// Assuming the `username` and `password` are supplied as `HttpServletRequest` parameters,
+		// map the `HttpServletRequest` parameters to `OAuth2AuthorizationContext.getAttributes()`
+		authorizedClientManager.setContextAttributesMapper(contextAttributesMapper());
+
+		return authorizedClientManager;
+	}
 }

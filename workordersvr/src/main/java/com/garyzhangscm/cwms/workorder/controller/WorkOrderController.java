@@ -18,6 +18,9 @@
 
 package com.garyzhangscm.cwms.workorder.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -48,15 +52,32 @@ public class WorkOrderController {
     WorkOrderLineService workOrderLineService;
 
 
+
     @RequestMapping(value="/work-orders", method = RequestMethod.GET)
     public List<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                              @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
+                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId) {
+
+        return workOrderService.findAll(warehouseId, number, itemName, statusList, productionPlanId);
+
+    }
+
+    @RequestMapping(value="/work-orders/pagination", method = RequestMethod.GET)
+    public Page<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
+                                             @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
                                              @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
                                              @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
-                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails) {
-        return workOrderService.findAll(warehouseId, number, itemName, statusList, productionPlanId, genericQuery, loadDetails);
+                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails,
+                                             @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                             @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize) {
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number"));
+        return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+
     }
 
     @BillableEndpoint

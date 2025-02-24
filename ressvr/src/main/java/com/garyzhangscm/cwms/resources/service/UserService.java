@@ -107,7 +107,7 @@ public class UserService  implements TestDataInitiableService{
             // this user, to indicate that the user doesn't belong to any company
             user = userRepository.findByCompanyIdAndUsername(-1l, username);
         }
-        logger.debug("we find user by company id {}, username {}? {}",
+        logger.debug("we find user by company id {}, username {}? user != null: {}",
                 companyId, username, user != null );
         if (user != null && loadAttribute) {
             loadAttribute(user);
