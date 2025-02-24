@@ -18,6 +18,12 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -103,6 +109,7 @@ public class AuthenticationServerApplication {
 
 	@Bean
 	public OAuth2AuthorizedClientManager authorizedClientManager(
+
 			ClientRegistrationRepository clientRegistrationRepository,
 			OAuth2AuthorizedClientRepository authorizedClientRepository) {
 
@@ -119,7 +126,7 @@ public class AuthenticationServerApplication {
 
 		// Assuming the `username` and `password` are supplied as `HttpServletRequest` parameters,
 		// map the `HttpServletRequest` parameters to `OAuth2AuthorizationContext.getAttributes()`
-		authorizedClientManager.setContextAttributesMapper(contextAttributesMapper());
+		// authorizedClientManager.setContextAttributesMapper(contextAttributesMapper());
 
 		return authorizedClientManager;
 	}
