@@ -12,39 +12,20 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SpringBootApplication
-@RestController
-@EnableResourceServer
-@EnableAuthorizationServer
-@RefreshScope
 @EnableJpaAuditing
 public class AuthenticationServerApplication {
-
+/**
 	@RequestMapping(value = { "/user" }, produces = "application/json")
 	public Map<String, Object> user(OAuth2Authentication user) {
 		System.out.println("inside /user: " + (user == null));
@@ -53,6 +34,7 @@ public class AuthenticationServerApplication {
 		userInfo.put("authorities", AuthorityUtils.authorityListToSet(user.getUserAuthentication().getAuthorities()));
 		return userInfo;
 	}
+	**/
 
 	// Rest Template with Robbin
 	@LoadBalanced
@@ -107,27 +89,4 @@ public class AuthenticationServerApplication {
 				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 	}
 
-	@Bean
-	public OAuth2AuthorizedClientManager authorizedClientManager(
-
-			ClientRegistrationRepository clientRegistrationRepository,
-			OAuth2AuthorizedClientRepository authorizedClientRepository) {
-
-		OAuth2AuthorizedClientProvider authorizedClientProvider =
-				OAuth2AuthorizedClientProviderBuilder.builder()
-						.authorizationCode()
-						.refreshToken()
-						.build();
-
-		DefaultOAuth2AuthorizedClientManager authorizedClientManager =
-				new DefaultOAuth2AuthorizedClientManager(
-						clientRegistrationRepository, authorizedClientRepository);
-		authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-
-		// Assuming the `username` and `password` are supplied as `HttpServletRequest` parameters,
-		// map the `HttpServletRequest` parameters to `OAuth2AuthorizationContext.getAttributes()`
-		// authorizedClientManager.setContextAttributesMapper(contextAttributesMapper());
-
-		return authorizedClientManager;
-	}
 }

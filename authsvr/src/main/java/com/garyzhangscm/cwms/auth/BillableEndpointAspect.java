@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.auth;
 import com.garyzhangscm.cwms.auth.clients.KafkaSender;
 import com.garyzhangscm.cwms.auth.model.BillableRequest;
 import com.garyzhangscm.cwms.auth.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,13 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Aspect // indicate the component is used for aspect
 @Component
