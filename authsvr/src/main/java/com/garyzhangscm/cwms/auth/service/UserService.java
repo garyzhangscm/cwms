@@ -22,22 +22,28 @@ import com.garyzhangscm.cwms.auth.clients.KafkaSender;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.model.UserLoginEvent;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private UserRepository userRepository;
@@ -170,4 +176,14 @@ public class UserService {
     public Boolean validateCompanyAccess(Long companyId, String token) {
         return Objects.nonNull(findByToken(companyId, token));
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return findByUsername(1l, username);
+
+    }
+
+
+
+
 }

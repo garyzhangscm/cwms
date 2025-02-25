@@ -19,14 +19,13 @@
 package com.garyzhangscm.cwms.auth.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
 import java.util.*;
 
 @Entity
@@ -84,7 +83,7 @@ public class User implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList( new SimpleGrantedAuthority(" ADMIN"));
+        return List.of(new SimpleGrantedAuthority(" ADMIN"));
 
     }
 
