@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.auth.model;
 
 
-public class OAuth2TokenWrapper {
+public class JWTTokenWrapper {
 
     private String token;
     private String refreshToken;
@@ -30,8 +30,8 @@ public class OAuth2TokenWrapper {
     private int refreshIn;
 
 
-    public OAuth2TokenWrapper(String token, String name, String email, Long id, Long time,
-                              int refreshIn, String refreshToken) {
+    public JWTTokenWrapper(String token, String name, String email, Long id, Long time,
+                           int refreshIn, String refreshToken) {
         this.token = token;
         this.refreshToken = refreshToken;
         this.name = name;
@@ -40,10 +40,12 @@ public class OAuth2TokenWrapper {
         this.time = time;
         this.refreshIn = refreshIn;
     }
-    public static OAuth2TokenWrapper of(OAuth2Token oAuth2Token) {
-        return new OAuth2TokenWrapper(oAuth2Token.getAccess_token(), oAuth2Token.getUser().getUsername(),
-                oAuth2Token.getUser().getEmail(), oAuth2Token.getUser().getId(), System.currentTimeMillis(),
-                oAuth2Token.getExpires_in(), oAuth2Token.getRefresh_token());
+
+    public JWTTokenWrapper(User user) {
+        this.token = user.getCurrentToken();
+        this.refreshToken = user.getRefreshToken();
+        this.name = user.getUsername();
+        this.email = user.getEmail();
     }
 
     public String getToken() {

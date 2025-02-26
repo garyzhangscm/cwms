@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.auth.service;
 
 import com.garyzhangscm.cwms.auth.clients.KafkaSender;
+import com.garyzhangscm.cwms.auth.exception.SystemFatalException;
+import com.garyzhangscm.cwms.auth.model.JWTTokenWrapper;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.model.UserLoginEvent;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
@@ -30,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -38,9 +41,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -48,10 +54,18 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Value("${auth.jwt.refresh_token.expire_time_in_minutes:30}")
+    public int jwtRefreshTokenExpireTimeInMinutes;
+    @Value("${auth.jwt.token.expire_time_in_minutes:30}")
+    public int jwtTokenExpireTimeInMinutes;
+
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     private KafkaSender kafkaSender;
+
+    @Autowired
+    private JwtService jwtService;
 
 
     public User findById(Long id) {
@@ -184,6 +198,26 @@ public class UserService implements UserDetailsService {
     }
 
 
+    public JWTTokenWrapper generateJWTToken(Long companyId, String username) {
+        User user = findByUsername(companyId, username);
+        if(Objects.isNull(user)) {
+            throw SystemFatalException.raiseException("can't find user " + username);
+        }
 
+        String jwtToken = jwtService.generateToken(user.getCompanyId(), user.getUsername());
+        String refreshToken = UUID.randomUUID().toString();
 
+        logger.debug("will return JWT token: " + jwtToken + " with refresh token: " + refreshToken);
+
+        user.setCurrentToken(jwtToken);
+        user.setCurrentTokenExpireTime(jwtService.extractExpiration(jwtToken).toInstant().atZone(ZoneOffset.UTC));
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpireTime(ZonedDateTime.now().plusMinutes(jwtRefreshTokenExpireTimeInMinutes));
+
+        saveOrUpdate(user);
+
+        JWTTokenWrapper jwtTokenWrapper = new JWTTokenWrapper(user);
+        jwtTokenWrapper.setRefreshIn(jwtTokenExpireTimeInMinutes / 2);
+        return jwtTokenWrapper;
+    }
 }

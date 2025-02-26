@@ -47,8 +47,6 @@ public class LoginController {
 
 
 
-    @Autowired
-    private JwtService jwtService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -77,9 +75,9 @@ public class LoginController {
 
         logger.debug("user is authenticated? {}", authentication.isAuthenticated());
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(user.getUsername());
-            logger.debug("will return JWT token: " + jwtToken);
-            return LoginResponseWrapper.of(0, "", OAuth2TokenWrapper.of(oAuth2Token));
+            return LoginResponseWrapper.of(0, "", userService.generateJWTToken(
+                    user.getCompanyId(), user.getUsername()
+            ));
         } else {
             throw new UsernameNotFoundException("Username and password doesn't match!");
         }
