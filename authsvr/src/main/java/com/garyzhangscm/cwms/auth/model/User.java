@@ -19,13 +19,17 @@
 package com.garyzhangscm.cwms.auth.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Entity
@@ -61,6 +65,25 @@ public class User implements UserDetails {
     // current login token
     @Column(name = "current_token")
     private String currentToken;
+
+
+    @Column(name = "current_token_expire_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime currentTokenExpireTime;
+
+    // current login token
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+
+    @Column(name = "refresh_token_expire_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime refreshTokenExpireTime;
+
 
     @Override
     public boolean isAccountNonExpired() {
@@ -166,5 +189,29 @@ public class User implements UserDetails {
 
     public void setCurrentToken(String currentToken) {
         this.currentToken = currentToken;
+    }
+
+    public ZonedDateTime getCurrentTokenExpireTime() {
+        return currentTokenExpireTime;
+    }
+
+    public void setCurrentTokenExpireTime(ZonedDateTime currentTokenExpireTime) {
+        this.currentTokenExpireTime = currentTokenExpireTime;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public ZonedDateTime getRefreshTokenExpireTime() {
+        return refreshTokenExpireTime;
+    }
+
+    public void setRefreshTokenExpireTime(ZonedDateTime refreshTokenExpireTime) {
+        this.refreshTokenExpireTime = refreshTokenExpireTime;
     }
 }
