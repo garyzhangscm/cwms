@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;

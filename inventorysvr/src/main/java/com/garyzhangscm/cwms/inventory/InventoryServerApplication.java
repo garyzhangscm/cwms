@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -37,7 +36,6 @@ import java.util.Arrays;
 // Database configuration won't be updated in the client even the
 // configuration server is updated with new DB information
 @RefreshScope
-@EnableResourceServer
 @EnableCaching
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableScheduling

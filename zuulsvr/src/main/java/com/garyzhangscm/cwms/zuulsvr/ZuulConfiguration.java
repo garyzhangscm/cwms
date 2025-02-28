@@ -18,7 +18,6 @@ import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.lang.reflect.Method;
 
 /***
  * Start from springboot 2.5, spring doesn't support ZUUL any more. As a temporary

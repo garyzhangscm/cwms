@@ -25,11 +25,11 @@ public class JWTTokenWrapper {
     private String refreshToken;
     private String name;
     private String email;
-    private Long id;
-    private Long time;
+    // private Long id;
+    // private Long time;
     private int refreshIn;
 
-
+/**
     public JWTTokenWrapper(String token, String name, String email, Long id, Long time,
                            int refreshIn, String refreshToken) {
         this.token = token;
@@ -40,7 +40,7 @@ public class JWTTokenWrapper {
         this.time = time;
         this.refreshIn = refreshIn;
     }
-
+**/
     public JWTTokenWrapper(User user) {
         this.token = user.getCurrentToken();
         this.refreshToken = user.getRefreshToken();
@@ -72,21 +72,6 @@ public class JWTTokenWrapper {
         this.email = email;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
 
     public String getRefreshToken() {
         return refreshToken;
@@ -96,9 +81,6 @@ public class JWTTokenWrapper {
         this.refreshToken = refreshToken;
     }
 
-    public void setTime(Long time) {
-        this.time = time;
-    }
 
     public int getRefreshIn() {
         return refreshIn;

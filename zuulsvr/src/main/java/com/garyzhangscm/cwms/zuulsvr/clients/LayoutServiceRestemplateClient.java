@@ -39,24 +39,6 @@ public class LayoutServiceRestemplateClient {
     private RestTemplate restTemplate;
 
 
-    @Cacheable(cacheNames = "ZuulService_CompanyEnabled", unless="#result == null")
-    public Boolean isCompanyEnabled(Long companyId) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/companies/{id}/is-enabled")
-                        .queryParam("innerCall", "true");
-
-        ResponseBodyWrapper<Boolean> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(companyId).toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Boolean>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
 
     /**
      * Please note since Redis will always return int when the value is within the int range
@@ -69,8 +51,7 @@ public class LayoutServiceRestemplateClient {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/warehouses/{warehouseId}/company-id")
-                        .queryParam("innerCall", "true");
+                        .path("/api/layout/warehouses/{warehouseId}/company-id");
 
         ResponseBodyWrapper<Long> responseBodyWrapper
                 = restTemplate.exchange(
@@ -90,8 +71,7 @@ public class LayoutServiceRestemplateClient {
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/layout/companies")
-                .queryParam("code", companyCode)
-                        .queryParam("innerCall", "true");
+                .queryParam("code", companyCode);
 
         ResponseBodyWrapper<List<Company>> responseBodyWrapper =
                 restTemplate.exchange(

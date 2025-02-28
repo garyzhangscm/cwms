@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.layout.controller;
 
 import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.MissingInformationException;
 import com.garyzhangscm.cwms.layout.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.layout.model.BillableEndpoint;
+import com.garyzhangscm.cwms.layout.model.Client;
 import com.garyzhangscm.cwms.layout.model.Company;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.CompanyService;
@@ -41,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.event.CaretListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,6 +60,9 @@ public class CompanyController {
     @Autowired
     CompanyService companyService;
 
+    @Autowired
+    private CommonServiceRestemplateClient commonServiceRestemplateClient;
+
 
     @RequestMapping(value="/companies", method=RequestMethod.GET)
     public List<Company> listCompanies(
@@ -68,6 +74,13 @@ public class CompanyController {
         }
  **/
 
+        Client client =  commonServiceRestemplateClient.getClientByName(1L, "ABC");
+        if (Objects.isNull(client)) {
+            logger.debug("Can't find client");
+        }
+        else {
+            logger.debug("found client");
+        }
         return companyService.findAll(code, name);
     }
 

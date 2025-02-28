@@ -43,12 +43,6 @@ public class ResourceServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private RestTemplateProxy restTemplateProxy;
 
 
@@ -68,14 +62,12 @@ public class ResourceServiceRestemplateClient {
             builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
         }
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplateProxy.getRestTemplate().exchange(
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
 
     }
 

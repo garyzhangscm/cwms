@@ -29,7 +29,9 @@ docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-dbli
 
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-quickbook:v1.58 --push .
 
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.58 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-apigateway:v1.58 --push .
+
+// docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.58 --push .
 
 
 =====================       Batch build from CWMS ============================
@@ -73,8 +75,8 @@ cd workordersvr
 docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-workorderserver:v1.58 --push .
 cd ..
 
-cd zuulsvr
-docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-zuulsvr:v1.58 --push .
+cd APIGateway
+docker buildx build --platform linux/amd64,linux/arm64 -t garyzhangscm/cwms-apigateway:v1.58 --push .
 cd ..
 
 cd dblink

@@ -32,11 +32,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -45,17 +45,20 @@ public class RestTemplateProxy {
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateProxy.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
+    RestTemplate restTemplate;
 
-    @Autowired
-    @Qualifier("autoLoginRestTemplate")
-    RestTemplate autoLoginRestTemplate;
+    // @Autowired
+    // @Qualifier("autoLoginRestTemplate")
+    // RestTemplate autoLoginRestTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
 
-
+    public RestOperations getRestTemplate()  {
+        return restTemplate;
+    }
+  /*
     public RestOperations getRestTemplate()  {
 
         boolean inUserContext = true;
@@ -77,6 +80,7 @@ public class RestTemplateProxy {
             return autoLoginRestTemplate;
         }
     }
+    */
 
     public <T> T exchange(Class<T> t, String uri, HttpMethod method,
                           Object obj) {
@@ -110,6 +114,49 @@ public class RestTemplateProxy {
             // logger.debug("after cast to JSON: \n {}", json);
 
             return objectMapper.readValue(json, t);
+            // logger.debug("resultT class is {}", resultT.getClass().getName());
+            // return resultT;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+    }
+
+    public <T> List<T> exchangeList(Class<T> t, String uri, HttpMethod method,
+                                    Object obj) {
+        HttpEntity entity = null;
+        try {
+            entity = Objects.isNull(obj) ?
+                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(e.getMessage()));
+        }
+
+        ResponseBodyWrapper response = getRestTemplate().exchange(
+                uri,
+                method,
+                entity,
+                ResponseBodyWrapper.class).getBody();
+
+        if (response.getResult() != 0) {
+            throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
+                    GenericException.createDefaultData(response.getMessage()));
+        }
+
+        try {
+
+            // response.getData() is of type linkedHashMap
+            // we will need to cast the data into json format , then
+            // cast the JSON back to the POJO
+            String json = objectMapper.writeValueAsString(response.getData());
+            // logger.debug("after cast to JSON: \n {}", json);
+
+            return objectMapper.readValue(json,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, t));
             // logger.debug("resultT class is {}", resultT.getClass().getName());
             // return resultT;
 

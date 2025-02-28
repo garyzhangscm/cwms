@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -26,14 +25,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
 
 @SpringBootApplication
 // Refresh configuration when config server is updated
@@ -42,7 +37,6 @@ import java.util.Collections;
 // configuration server is updated with new DB information
 @RefreshScope
 @EnableScheduling
-@EnableResourceServer
 @EnableCaching
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class WorkOrderServerApplication {
