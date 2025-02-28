@@ -21,7 +21,6 @@ package com.garyzhangscm.cwms.layout.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.layout.clients.InboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
@@ -69,8 +68,7 @@ public class WarehouseService implements TestDataInitiableService {
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
-    @Autowired
-    private InboundServiceRestemplateClient inboundServiceRestemplateClient;
+
     @Autowired
     private FileService fileService;
 

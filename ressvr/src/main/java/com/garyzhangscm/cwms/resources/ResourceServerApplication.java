@@ -27,17 +27,8 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 import java.time.Duration;
 import java.util.*;
@@ -50,7 +41,6 @@ import java.util.*;
 // configuration server is updated with new DB information
 @RefreshScope
 // @EnableEurekaClient
-@EnableResourceServer
 // @EnableOAuth2Client
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableScheduling
@@ -62,36 +52,6 @@ public class ResourceServerApplication {
 
 		SpringApplication.run(ResourceServerApplication.class, args);
 	}
-
-
-
-	@Bean
-	@ConfigurationProperties("security.oauth2.client")
-	public ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails() {
-		return new ClientCredentialsResourceDetails();
-	}
-
-	@Bean
-	public CustomRestTemplateCustomizer customRestTemplateCustomizer() {
-		return new CustomRestTemplateCustomizer();
-	}
-	@Bean
-	@LoadBalanced
-	public OAuth2RestOperations oauth2RestTemplate(CustomRestTemplateCustomizer customizer,
-												   ClientCredentialsResourceDetails oauth2ClientCredentialsResourceDetails,
-												   @Qualifier("oauth2ClientContext") OAuth2ClientContext oauth2ClientContext) {
-		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(oauth2ClientCredentialsResourceDetails, oauth2ClientContext);
-
-
-		// restTemplate.setInterceptors(Collections.singletonList(new JsonMimeInterceptor()));
-		restTemplate.setInterceptors(
-				Arrays.asList(new ClientHttpRequestInterceptor[]{
-						new JsonMimeInterceptor(),  new UserContextInterceptor()}));
-
-		customizer.customize(restTemplate);
-		return restTemplate;
-	}
-
 	@Bean
 	@Primary
 	public ObjectMapper getObjMapper(){
@@ -106,13 +66,6 @@ public class ResourceServerApplication {
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
-
-	@Bean
-	@Qualifier("noTokenRestTemplate")
-	public RestTemplate noTokenRestTemplate() {
-		RestTemplate restTemplate = new RestTemplate();
-		return restTemplate;
-	}
 
 	// setup the configuration for redis cache
 

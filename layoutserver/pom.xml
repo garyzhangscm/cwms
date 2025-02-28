@@ -94,6 +94,7 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
 		</dependency>
         -->
 
+		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -110,6 +111,7 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
 			<version>2.1.6.RELEASE</version>
 		</dependency>
 
+        -->
 		<!-- MySQL DB -->
 		<dependency>
 			<groupId>mysql</groupId>

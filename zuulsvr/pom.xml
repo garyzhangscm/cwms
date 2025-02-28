@@ -5,8 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!--<version>2.2.2.RELEASE</version>-->
-		<version>2.6.7</version>
+		<!--
+		<version>2.2.2.RELEASE</version>
+		<version>2.7.8</version>
+		-->
+
+		<version>3.0.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
@@ -16,7 +20,8 @@
 	<description>Zuul Server</description>
 
 	<properties>
-		<java.version>13</java.version>
+		<java.version>17</java.version>
+		<jjwt.version>0.11.5</jjwt.version>
 		<!--
 		   get spring cloud version based on springboot version
 		  https://start.spring.io/actuator/info
@@ -77,6 +82,22 @@
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 		</dependency>
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
 	</dependencies>
 
 
@@ -86,7 +107,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-		</plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                  <source>16</source>
+                  <target>16</target>
+              </configuration>
+          </plugin>
+      </plugins>
 	</build>
 
 </project>

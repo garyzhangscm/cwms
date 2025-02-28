@@ -7,35 +7,37 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ressvr" />
-        <module name="inboundsvr" />
         <module name="dblink" />
         <module name="inventoryserver" />
-        <module name="inventorysvr" />
         <module name="inboundserver" />
+        <module name="commonsvr" />
+        <module name="adminserver" />
+        <module name="layoutserver" />
+        <module name="outboundsvr" />
+        <module name="quickbook" />
+        <module name="outboundserver" />
+        <module name="workorderserver" />
+        <module name="APIGateway" />
+        <module name="zuulsvr" />
+        <module name="authenticationserver" />
+        <module name="inboundsvr" />
+        <module name="inventorysvr" />
         <module name="workordersvr" />
         <module name="authsvr" />
         <module name="configurationserver" />
         <module name="resourceserver" />
-        <module name="commonsvr" />
-        <module name="adminserver" />
-        <module name="layoutserver" />
         <module name="commonserver" />
-        <module name="outboundsvr" />
-        <module name="quickbook" />
         <module name="confsvr" />
-        <module name="outboundserver" />
-        <module name="workorderserver" />
         <module name="adminsvr" />
         <module name="integrationserver" />
         <module name="integrationsvr" />
-        <module name="zuulsvr" />
-        <module name="authenticationserver" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="13" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="APIGateway" options="-parameters" />
       <module name="adminserver" options="-parameters" />
       <module name="authenticationserver" options="-parameters" />
       <module name="commonserver" options="-parameters" />
