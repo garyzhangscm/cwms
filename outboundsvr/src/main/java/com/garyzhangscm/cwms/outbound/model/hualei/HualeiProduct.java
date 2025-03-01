@@ -21,7 +21,7 @@ package com.garyzhangscm.cwms.outbound.model.hualei;
 import com.garyzhangscm.cwms.outbound.model.AuditibleEntity;
 import com.garyzhangscm.cwms.outbound.model.Carrier;
 import com.garyzhangscm.cwms.outbound.model.CarrierServiceLevel;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

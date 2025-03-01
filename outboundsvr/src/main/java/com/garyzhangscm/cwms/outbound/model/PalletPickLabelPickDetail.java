@@ -20,7 +20,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.outbound.service.PalletPickLabelContentService;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

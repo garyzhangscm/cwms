@@ -133,6 +133,7 @@
         <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
         -->
+        <!--
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -148,6 +149,7 @@
             <artifactId>spring-security-oauth2-autoconfigure</artifactId>
             <version>2.1.6.RELEASE</version>
         </dependency>
+        -->
 
         <!-- MySQL DB -->
         <dependency>
@@ -277,6 +279,10 @@
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
         </dependency>
     </dependencies>
 

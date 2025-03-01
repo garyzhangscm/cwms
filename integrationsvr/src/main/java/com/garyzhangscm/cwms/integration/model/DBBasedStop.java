@@ -8,7 +8,7 @@ import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestempla
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.outbound.service.UnitService;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

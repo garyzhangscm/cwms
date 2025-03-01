@@ -21,12 +21,10 @@ package com.garyzhangscm.cwms.integration.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.integration.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.integration.exception.ExceptionCode;
 import com.garyzhangscm.cwms.integration.exception.GenericException;
 import com.garyzhangscm.cwms.integration.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.integration.model.tiktok.TiktokAPICallResponse;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -39,9 +37,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 

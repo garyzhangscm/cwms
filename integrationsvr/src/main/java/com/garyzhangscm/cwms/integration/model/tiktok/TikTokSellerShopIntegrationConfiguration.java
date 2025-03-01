@@ -20,7 +20,7 @@ package com.garyzhangscm.cwms.integration.model.tiktok;
 
 
 import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

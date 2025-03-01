@@ -20,12 +20,10 @@ package com.garyzhangscm.cwms.adminserver.clients;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -40,17 +38,6 @@ public class IntegrationServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(IntegrationServiceRestemplateClient.class);
 
-
-    // Customized
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
-
-    @Autowired
-    // private OAuth2RestOperations restTemplate;
-    RestTemplate restTemplate;
 
     @Autowired
     private RestTemplateProxy restTemplateProxy;

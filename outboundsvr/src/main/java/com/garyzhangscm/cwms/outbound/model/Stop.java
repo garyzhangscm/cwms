@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

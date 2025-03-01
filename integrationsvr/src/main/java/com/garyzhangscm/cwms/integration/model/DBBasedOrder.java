@@ -25,7 +25,7 @@ import com.garyzhangscm.cwms.integration.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

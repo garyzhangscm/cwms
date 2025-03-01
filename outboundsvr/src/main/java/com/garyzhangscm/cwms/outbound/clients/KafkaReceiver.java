@@ -11,13 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -40,9 +37,6 @@ public class KafkaReceiver {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    @Qualifier("oauth2ClientContext")
-    OAuth2ClientContext oauth2ClientContext;
 
     @Autowired
     private OrderActivityService orderActivityService;
@@ -110,36 +104,7 @@ public class KafkaReceiver {
         logger.info("# received integration - allocation request data:\n {}", allocationRequestJsonRepresent);
 
         logger.info("# oAuth2AccessTokenJsonRepresent:\n {}", oAuth2AccessTokenJsonRepresent);
-        try {
 
-            OAuth2AccessToken oAuth2AccessToken = objectMapper.readValue(oAuth2AccessTokenJsonRepresent, OAuth2AccessToken.class);
-            ServletRequestAttributes servletRequestAttributes =
-                    userService.getUserServletRequestAttribute(oAuth2AccessToken.getValue());
-            if (Objects.isNull(servletRequestAttributes)) {
-                logger.debug("servletRequestAttributes is null for token: {}", oAuth2AccessTokenJsonRepresent);
-            }
-            else {
-                logger.debug("servletRequestAttributes is NOT null for token: {}", oAuth2AccessTokenJsonRepresent);
-
-                RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-            }
-            /*
-            oauth2ClientContext.setAccessToken(
-                    oAuth2AccessToken
-            );
-             */
-            logger.debug("We setup the oauth client, we will start to get the empty dock location");
-
-            List<Location> locations = warehouseLayoutServiceRestemplateClient.findEmptyDockLocations(1l);
-
-            logger.debug("We get empty docker locations {}",
-                    locations.size());
-
-
-        }
-        catch (JsonProcessingException ex) {
-            logger.debug("JsonProcessingException: {}", ex.getMessage());
-        }
 
     }
 

@@ -7,13 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -38,9 +34,7 @@ public class AllocationService {
 
     @Autowired
     KafkaSender kafkaSender;
-    @Autowired
-    @Qualifier("oauth2ClientContext")
-    OAuth2ClientContext oauth2ClientContext;
+
 
 
     /**
