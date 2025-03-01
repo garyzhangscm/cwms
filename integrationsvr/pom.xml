@@ -93,7 +93,7 @@
         <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
         -->
-
+<!--
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -109,6 +109,8 @@
             <artifactId>spring-security-oauth2-autoconfigure</artifactId>
             <version>2.1.6.RELEASE</version>
         </dependency>
+        -->
+
         <!-- Ribbon based rest template -->
         <!--
         <dependency>
@@ -203,6 +205,14 @@
             <groupId>org.springframework.ws</groupId>
             <artifactId>spring-ws-core</artifactId>
             <version>3.0.10.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
         </dependency>
 
     </dependencies>

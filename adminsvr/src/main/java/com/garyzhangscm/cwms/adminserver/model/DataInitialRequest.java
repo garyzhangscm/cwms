@@ -1,7 +1,7 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
 import com.garyzhangscm.cwms.adminserver.model.wms.*;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;

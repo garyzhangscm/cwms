@@ -20,7 +20,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.garyzhangscm.cwms.outbound.service.UnitService;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.util.Pair;
 
 import javax.persistence.*;

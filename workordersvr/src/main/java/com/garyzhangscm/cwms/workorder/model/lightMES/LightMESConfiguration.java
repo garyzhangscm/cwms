@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.workorder.model.lightMES;
 
 import com.garyzhangscm.cwms.workorder.model.AuditibleEntity;
 import com.garyzhangscm.cwms.workorder.model.Warehouse;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 

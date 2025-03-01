@@ -21,7 +21,7 @@ package com.garyzhangscm.cwms.integration.model.shopify;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.integration.model.AuditibleEntity;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

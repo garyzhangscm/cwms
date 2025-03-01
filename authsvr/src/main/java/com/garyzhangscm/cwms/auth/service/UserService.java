@@ -28,7 +28,9 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,8 @@ public class UserService implements UserDetailsService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    HttpServletRequest request;
 
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
@@ -155,9 +159,15 @@ public class UserService implements UserDetailsService {
         }
     }
 
+
     public String getCurrentUserName() {
+        if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+
+            return request.getHeader("username");
+        }
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
+
 
     /**
      * Record the event that a certain user login to some company / warehouse

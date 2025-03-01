@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.adminserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
