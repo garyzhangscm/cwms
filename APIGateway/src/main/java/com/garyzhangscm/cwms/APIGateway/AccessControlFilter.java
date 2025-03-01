@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,8 @@ import java.util.*;
 
 
 @Component
-public class AccessControlFilter implements GlobalFilter {
+// public class AccessControlFilter implements GlobalFilter {
+public class AccessControlFilter implements GatewayFilter {
 
     final Logger logger =
             LoggerFactory.getLogger(AccessControlFilter.class);
@@ -57,14 +59,17 @@ public class AccessControlFilter implements GlobalFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
         logger.info("Global Pre Filter executed");
+
         try {
             JWTToken jwtToken = validateCompanyAccess(exchange.getRequest());
+            logger.debug("We are able to validate the token \n{} \n for the user {} for company  {}",
+                    jwtToken.getToken(),
+                    jwtToken.getUsername(),
+                    jwtToken.getCompanyId());
 
             // we will add the user name to the http header, if not done yet
-            if (exchange.getRequest()
-                    .getHeaders()
-                    .get("username")
-                    .isEmpty()) {
+            if (!exchange.getRequest().getHeaders().containsKey("username") ||
+                    exchange.getRequest().getHeaders().get("username").isEmpty()) {
 
                 exchange.getRequest()
                         .mutate()
@@ -79,15 +84,17 @@ public class AccessControlFilter implements GlobalFilter {
     }
 
     private JWTToken validateCompanyAccess(ServerHttpRequest request) {
+        logger.debug("Start to validate http access for  {} ",
+                request.getURI().getPath());
 
-        JWTToken jwtToken = getJWTTokenFromReqeuest(request);
-
-        logger.debug("Start to validate http access");
         if (isUrlInWhiteList(request.getURI().getPath())) {
             logger.debug("URL {} is in the white list, pass the validation",
                     request.getURI().getPath());
-            return jwtToken;
+            return JWTToken.EMPTY_TOKEN();
         }
+
+        JWTToken jwtToken = getJWTTokenFromReqeuest(request);
+
         if (isInnerCall(jwtToken.getToken())) {
             logger.debug("pass the validation for any intra microservice call",
                     request.getURI().getPath());

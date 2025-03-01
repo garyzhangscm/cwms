@@ -20,6 +20,10 @@ public class JWTToken {
         this.isValid = isValid;
     }
 
+    public static JWTToken EMPTY_TOKEN() {
+        return new JWTToken("EMPTY", -1l, "EMPTY", false, true);
+    }
+
 
     public String getToken() {
         return token;

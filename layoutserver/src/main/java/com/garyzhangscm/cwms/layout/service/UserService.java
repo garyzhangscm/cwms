@@ -1,13 +1,17 @@
 package com.garyzhangscm.cwms.layout.service;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class UserService {
-
+    @Autowired
+    HttpServletRequest request;
 
     public String getCurrentUserName() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        return request.getHeader("username");
     }
 }
