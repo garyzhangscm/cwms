@@ -19,9 +19,6 @@
 package com.garyzhangscm.cwms.resources.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
 public class Supplier  implements Serializable {

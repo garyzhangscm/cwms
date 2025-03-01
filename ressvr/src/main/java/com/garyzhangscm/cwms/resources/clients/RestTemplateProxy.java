@@ -47,9 +47,6 @@ public class RestTemplateProxy {
     @Autowired
     RestTemplate restTemplate;
 
-    // @Autowired
-    // @Qualifier("autoLoginRestTemplate")
-    // RestTemplate autoLoginRestTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired

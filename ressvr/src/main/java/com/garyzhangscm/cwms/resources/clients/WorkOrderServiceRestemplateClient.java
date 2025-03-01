@@ -23,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -34,8 +32,7 @@ import java.util.Arrays;
 public class WorkOrderServiceRestemplateClient implements  InitiableServiceRestemplateClient{
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     public String initTestData(Long companyId, String warehouseName) {
 
@@ -46,13 +43,12 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String initTestData(Long companyId, String name, String warehouseName) {
@@ -64,13 +60,13 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.buildAndExpand(name).toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(name).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String[] getTestDataNames() {
@@ -81,14 +77,14 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
                         .scheme("http").host("zuulserver").port(5555)
                         .path("/api/workorder/test-data");
 
-        ResponseBodyWrapper<String[]> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<String[]>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+
+        return restTemplateProxy.exchange(
+                String[].class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
     public boolean contains(String name) {
         return Arrays.stream(getTestDataNames()).anyMatch(dataName -> dataName.equals(name));
@@ -101,13 +97,14 @@ public class WorkOrderServiceRestemplateClient implements  InitiableServiceReste
                         .path("/api/workorder/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
+
+
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                String.class);
-        return restExchange.getBody();
+                null
+        );
     }
 
 }

@@ -18,53 +18,33 @@
 
 package com.garyzhangscm.cwms.resources;
 
-import com.garyzhangscm.cwms.resources.clients.AuthServiceRestemplateClient;
-import com.garyzhangscm.cwms.resources.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class RequestInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInterceptor.class);
-    @Autowired
-    AuthServiceRestemplateClient authServiceRestemplateClient;
-
-
-    @Autowired
-    UserService userService;
+    @Value("auth.jwt.inner_call.token")
+    private String innerCallJWTToken;
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body,
                                         ClientHttpRequestExecution execution) throws IOException {
-        // If the call is from a web client, then we will do nothing.
-        // Otherwise, we will log in as a specific predefined user
-        // so that we can still use the OAuth2 framework
-        /****
-        if (StringUtils.isNotBlank(userService.getCurrentUserName())) {
-
-            logger.debug("web service call from web client by user {}", userService.getCurrentUserName());
-            return execution.execute(request, body);
-        }
-         ***/
-        logger.debug("Start to get current token");
-        String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
 
         HttpHeaders headers = request.getHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        headers.set("Authorization", "Bearer "+token);
+        if (!headers.containsKey("Authorization")) {
+            headers.set("Authorization", "Bearer " + innerCallJWTToken);
+        }
 
         // Add
         return execution.execute(request, body);

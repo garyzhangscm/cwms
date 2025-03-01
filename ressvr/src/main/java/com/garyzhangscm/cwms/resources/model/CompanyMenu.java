@@ -18,15 +18,10 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.*;
-import java.util.Set;
-import java.util.TreeSet;
-
 @Entity
 @Table(name = "company_menu")
 public class CompanyMenu extends AuditibleEntity<String>  {
