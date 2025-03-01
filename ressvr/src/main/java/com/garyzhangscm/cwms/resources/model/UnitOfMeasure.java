@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.resources.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 public class UnitOfMeasure extends AuditibleEntity<String> implements Serializable {
