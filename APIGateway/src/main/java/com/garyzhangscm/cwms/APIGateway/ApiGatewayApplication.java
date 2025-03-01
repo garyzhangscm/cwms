@@ -1,5 +1,6 @@
 package com.garyzhangscm.cwms.APIGateway;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,6 +17,24 @@ public class ApiGatewayApplication {
 		SpringApplication.run(ApiGatewayApplication.class, args);
 	}
 
+	@Autowired
+	private AccessControlFilter accessControlFilter;
+	@Bean
+	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
+		return builder.routes()
+				.route(p -> p
+						.path("/api/resource/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						// .filters(f -> f.addRequestHeader("service", "resource").stripPrefix(2))
+						.uri("http://resourceservice:8280"))
+				.route(p -> p
+						.path("/api/layout/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						//.filters(f -> f.addRequestHeader("service", "layout").stripPrefix(2))
+						.uri("http://layoutservice:8180"))
+				.build();
+	}
+/**
 	@Bean
 	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
@@ -57,5 +76,6 @@ public class ApiGatewayApplication {
 						.uri("http://quickbook:11818"))
 				.build();
 	}
+	*/
 
 }
