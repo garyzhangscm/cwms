@@ -32,8 +32,7 @@ public class AccessControlFilter implements GatewayFilter {
     @Autowired
     private JwtService jwtService;
 
-
-    @Value("auth.jwt.inner_call.token")
+    @Value("${auth.jwt.inner_call.token}")
     private String innerCallJWTToken;
 
 
@@ -96,8 +95,6 @@ public class AccessControlFilter implements GatewayFilter {
         JWTToken jwtToken = getJWTTokenFromReqeuest(request);
 
         if (isInnerCall(jwtToken.getToken())) {
-            logger.debug("pass the validation for any intra microservice call",
-                    request.getURI().getPath());
             return jwtToken;
         }
 
@@ -142,6 +139,12 @@ public class AccessControlFilter implements GatewayFilter {
             token = token.substring(7).trim();
         }
 
+        if (isInnerCall(token)) {
+            logger.debug("this is an inner call, skip any validation");
+            return JWTToken.INNER_CALL(token);
+        }
+
+
         JWTToken jwtToken = jwtService.extractToken(token);
         if (!jwtToken.isValid()) {
 
@@ -181,6 +184,9 @@ public class AccessControlFilter implements GatewayFilter {
     }
 
     private boolean isInnerCall(String token) {
+        logger.debug("check token {} against inner call jwt token {}",
+                token, innerCallJWTToken);
+        logger.debug("> is inner call ? {}", token.equals(innerCallJWTToken));
         return token.equals(innerCallJWTToken);
     }
 

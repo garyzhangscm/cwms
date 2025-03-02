@@ -30,8 +30,7 @@ import java.util.Collections;
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class AdminserverApplication {
 
-    @Autowired
-    RequestInterceptor requestInterceptor;
+
 
     public static void main(String[] args) {
         SpringApplication.run(AdminserverApplication.class, args);

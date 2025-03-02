@@ -24,7 +24,7 @@ public class RestTemplateConfiguration {
      */
 
     @Autowired
-    RequestInterceptor requestInterceptor;
+    UserContextInterceptor userContextInterceptor;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -33,8 +33,7 @@ public class RestTemplateConfiguration {
         restTemplate.setInterceptors(
                 Arrays.asList(new ClientHttpRequestInterceptor[]{
                         new JsonMimeInterceptor(),
-                        new UserContextInterceptor(),
-                        requestInterceptor}));
+                        userContextInterceptor}));
         return restTemplate;
     }
 

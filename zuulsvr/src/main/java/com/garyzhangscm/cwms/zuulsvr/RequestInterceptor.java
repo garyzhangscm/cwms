@@ -34,7 +34,7 @@ import java.io.IOException;
 public class RequestInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInterceptor.class);
-    @Value("auth.jwt.inner_call.token")
+    @Value("${auth.jwt.inner_call.token}")
     private String innerCallJWTToken;
 
     @Override

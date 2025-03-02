@@ -5,8 +5,6 @@ import com.garyzhangscm.cwms.layout.usercontext.UserContextInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -26,18 +24,16 @@ public class RestTemplateConfiguration {
      */
 
     @Autowired
-    RequestInterceptor requestInterceptor;
+    UserContextInterceptor userContextInterceptor;
 
     @Bean
-    @LoadBalanced
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.setInterceptors(
                 Arrays.asList(new ClientHttpRequestInterceptor[]{
                         new JsonMimeInterceptor(),
-                        new UserContextInterceptor(),
-                        requestInterceptor}));
+                        userContextInterceptor}));
         return restTemplate;
     }
 
