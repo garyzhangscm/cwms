@@ -1,5 +1,7 @@
 package com.garyzhangscm.cwms.quickbook.usercontext;
 
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -9,6 +11,9 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 
 public class UserContextInterceptor implements ClientHttpRequestInterceptor {
+
+    @Value("auth.jwt.inner_call.token")
+    private String innerCallJWTToken;
 
     @Override
     public ClientHttpResponse intercept(
@@ -26,7 +31,13 @@ public class UserContextInterceptor implements ClientHttpRequestInterceptor {
                 UserContextHolder.getContext().getWarehouseId());
         headers.add("innerCall", "true");
 
-        headers.add(UserContext.AUTH_TOKEN, UserContextHolder.getContext().getAuthToken());
+        if (Strings.isBlank(UserContextHolder.getContext().getAuthToken())) {
+            headers.add(UserContext.AUTH_TOKEN, "Bearer " + innerCallJWTToken);
+        }
+        else {
+
+            headers.add(UserContext.AUTH_TOKEN, UserContextHolder.getContext().getAuthToken());
+        }
         return execution.execute(request, body);
     }
 }
