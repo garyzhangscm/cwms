@@ -48,7 +48,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -73,7 +73,7 @@ public class CommonServiceRestemplateClient {
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/policies")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("key", key);
@@ -102,7 +102,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/policies");
 
 
@@ -118,7 +118,7 @@ public class CommonServiceRestemplateClient {
     public String removePolicy(Warehouse warehouse, String key) {
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/common/policies")
                 .queryParam("warehouseId", warehouse.getId());
 

@@ -47,7 +47,7 @@ public class CommonServiceRestemplateClient {
     public Trailer getTrailerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailers/{id}");
 /**
         ResponseBodyWrapper<Trailer> responseBodyWrapper
@@ -73,7 +73,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients/{id}");
 /**
         ResponseBodyWrapper<Client> responseBodyWrapper
@@ -97,7 +97,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -129,7 +129,7 @@ public class CommonServiceRestemplateClient {
     public Supplier getSupplierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/suppliers/{id}");
 /**
         ResponseBodyWrapper<Supplier> responseBodyWrapper
@@ -153,7 +153,7 @@ public class CommonServiceRestemplateClient {
     public Carrier getCarrierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carriers")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -177,7 +177,7 @@ public class CommonServiceRestemplateClient {
     public Carrier getCarrierById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carriers/{id}");
 /**
         ResponseBodyWrapper<Carrier> responseBodyWrapper
@@ -201,7 +201,7 @@ public class CommonServiceRestemplateClient {
     public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carrier-service-levels")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -226,7 +226,7 @@ public class CommonServiceRestemplateClient {
     public CarrierServiceLevel getCarrierServiceLevelById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carrier-service-levels/{id}");
 /**
         ResponseBodyWrapper<CarrierServiceLevel> responseBodyWrapper
@@ -250,7 +250,7 @@ public class CommonServiceRestemplateClient {
     public Customer getCustomerById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/customers/{id}");
 /**
         ResponseBodyWrapper<Customer> responseBodyWrapper
@@ -277,7 +277,7 @@ public class CommonServiceRestemplateClient {
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/common/customers")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
@@ -324,7 +324,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -357,7 +357,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures/{id}");
 /**
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
@@ -380,7 +380,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                 .queryParam("warehouseId", warehouseId);
 
@@ -415,7 +415,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/units")
                         .queryParam("warehouseId", warehouseId);
 
@@ -432,7 +432,7 @@ public class CommonServiceRestemplateClient {
     public TrailerAppointment getTrailerAppointmentById(Long trailerAppointmentId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailers/appointments/{id}");
 /**
         ResponseBodyWrapper<TrailerAppointment> responseBodyWrapper
@@ -456,7 +456,7 @@ public class CommonServiceRestemplateClient {
     public TrailerAppointment getTrailerAppointmentByNumber(Long warehouseId, String number) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailer-appointments")
                 .queryParam("warehouseId", warehouseId);
         if (Strings.isNotBlank(number)) {
@@ -495,7 +495,7 @@ public class CommonServiceRestemplateClient {
                                                     TrailerAppointmentType type) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailer-appointments/new")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("trailerNumber", URLEncoder.encode(trailerNumber, "UTF-8") )
@@ -528,7 +528,7 @@ public class CommonServiceRestemplateClient {
                                                           TrailerAppointmentStatus trailerAppointmentStatus) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailer-appointments/{id}/change-status")
                 .queryParam("status", trailerAppointmentStatus);
 /**
@@ -553,7 +553,7 @@ public class CommonServiceRestemplateClient {
     public List<Unit> getAllUnits(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/units")
                         .queryParam("warehouseId", warehouseId);
 
@@ -568,7 +568,7 @@ public class CommonServiceRestemplateClient {
     public TrailerAppointment createTrailerAppointment(Long warehouseId, String load) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/trailer-appointments/new")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("trailerNumber", load)
@@ -587,7 +587,7 @@ public class CommonServiceRestemplateClient {
     public Customer addCustomer(Long warehouseId, Customer customer) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/customers")
                         .queryParam("warehouseId", warehouseId);
 
@@ -602,7 +602,7 @@ public class CommonServiceRestemplateClient {
     public Customer changeCustomer(Long warehouseId, Customer customer) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/customers/{id}")
                         .queryParam("warehouseId", warehouseId);
 

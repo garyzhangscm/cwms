@@ -58,9 +58,6 @@ public class TiktokRestTemplateProxy {
 
     private static final Logger logger = LoggerFactory.getLogger(TiktokRestTemplateProxy.class);
 
-    @Autowired
-    @Qualifier("noAuthRestTemplate")
-    RestTemplate noAuthRestTemplate;
 
     @Value("${tiktok.appKey:NOT-SET-YET}")
     private String appKey;
@@ -100,7 +97,8 @@ public class TiktokRestTemplateProxy {
 
         logger.debug("start to call api {} with uri\n{}", path, uri);
 
-        TiktokAPICallResponse response = noAuthRestTemplate.exchange(
+        RestTemplate restTemplate = new RestTemplate();
+        TiktokAPICallResponse response = restTemplate.exchange(
                 uri,
                 method,
                 entity,
@@ -153,7 +151,9 @@ public class TiktokRestTemplateProxy {
                 getSignature(path, parameters, requestBodyString);
 
         String uri = getUrl(path, parameters, signature);
-        TiktokAPICallResponse response = noAuthRestTemplate.exchange(
+
+        RestTemplate restTemplate = new RestTemplate();
+        TiktokAPICallResponse response = restTemplate.exchange(
                 uri,
                 method,
                 entity,

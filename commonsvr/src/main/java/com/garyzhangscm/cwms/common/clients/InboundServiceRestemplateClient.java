@@ -37,7 +37,7 @@ public class InboundServiceRestemplateClient {
     public int getReceiptCountBySupplier(Long warehouseId, Long supplierId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipts/count-by-supplier")
                 .queryParam("warehouseId", warehouseId)
                         .queryParam("supplierId", supplierId);

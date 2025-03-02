@@ -43,7 +43,7 @@ public class InboundServiceRestemplateClient {
     public Receipt getReceiptById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipts/{id}");
 /**
         ResponseBodyWrapper<Receipt> responseBodyWrapper
@@ -67,7 +67,7 @@ public class InboundServiceRestemplateClient {
     public Receipt getReceiptByNumber(Long warehouseId, String receiptNumber) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipts")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", receiptNumber);
@@ -92,7 +92,7 @@ public class InboundServiceRestemplateClient {
                                                 Boolean inboundQCRequired, Boolean reverseQCQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipts/{receiptId}/lines/{receiptLineId}/reverse")
                 .queryParam("quantity", quantity);
         if (Boolean.TRUE.equals(inboundQCRequired)) {
@@ -124,7 +124,7 @@ public class InboundServiceRestemplateClient {
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/inbound-configuration/item-override")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
@@ -153,7 +153,7 @@ public class InboundServiceRestemplateClient {
     public ReportHistory printLPNLabel(Long receiptLineId, String lpn, Long quantity, String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipts/receipt-lines/{receiptLineId}/pre-print-lpn-label")
                         .queryParam("lpn", lpn);
         if (Objects.nonNull(quantity)) {

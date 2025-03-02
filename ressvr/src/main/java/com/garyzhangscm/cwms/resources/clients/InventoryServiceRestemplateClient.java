@@ -39,7 +39,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -57,7 +57,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -74,7 +74,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public List<Inventory> getInventoryByLpn(Long warehouseId, String lpn) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("lpn", lpn)
                         .queryParam("warehouseId", warehouseId);
@@ -92,7 +92,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String[] getTestDataNames() {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/test-data");
 
         return restTemplateProxy.exchange(
@@ -109,7 +109,7 @@ public class InventoryServiceRestemplateClient implements  InitiableServiceReste
     public String clearData(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

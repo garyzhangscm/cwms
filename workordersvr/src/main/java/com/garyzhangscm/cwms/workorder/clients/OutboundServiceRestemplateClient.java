@@ -55,7 +55,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/allocation/work-order");
 
         if (Objects.nonNull(productionLineId)) {
@@ -93,7 +93,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}");
 
 /**
@@ -122,7 +122,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}");
 /**
         ResponseBodyWrapper<OrderLine> responseBodyWrapper
@@ -157,7 +157,7 @@ public class OutboundServiceRestemplateClient {
         }
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", workOrder.getWarehouseId());
@@ -183,7 +183,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/shortAllocations")
                         .queryParam("warehouseId", workOrder.getWarehouseId())
                         .queryParam("workOrderLineIds", getWorkOrderLineIds(workOrder));
@@ -217,7 +217,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineId", workOrderLine.getId())
                         .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId())
@@ -247,7 +247,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/shortAllocations")
                         .queryParam("warehouseId", workOrderLine.getWorkOrder().getWarehouseId())
                         .queryParam("workOrderLineId", workOrderLine.getId())
@@ -274,7 +274,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}/production-plan-line/register")
                         .queryParam("productionPlanLineQuantity", productionPlanLine.getExpectedQuantity());
 /**
@@ -299,7 +299,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}/production-plan/produced")
                         .queryParam("producedQuantity", producedQuantity);
 /**
@@ -327,7 +327,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/generate-manual-pick-for-work-order")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("workOrderId", workOrderId)
@@ -357,7 +357,7 @@ public class OutboundServiceRestemplateClient {
                                                   Long allocatingQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/allocation/work-order-line")
                 .queryParam("workOrderId", workOrderLine.getWorkOrder().getId());
 

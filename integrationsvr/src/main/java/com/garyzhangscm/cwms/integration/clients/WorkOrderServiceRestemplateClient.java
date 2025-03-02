@@ -51,7 +51,7 @@ public class WorkOrderServiceRestemplateClient {
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/workorder//work-orders")
                             .queryParam("number", URLEncoder.encode(number, "UTF-8"))
                             .queryParam("warehouseId", warehouseId);

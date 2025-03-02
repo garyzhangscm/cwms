@@ -42,7 +42,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/{id}");
 /**
         ResponseBodyWrapper<User> responseBodyWrapper
@@ -67,7 +67,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -102,7 +102,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles/{id}");
 /**
         ResponseBodyWrapper<Role> responseBodyWrapper
@@ -130,7 +130,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles")
                         .queryParam("name", name)
                         .queryParam("companyId", companyId);
@@ -168,7 +168,7 @@ public class ResourceServiceRestemplateClient {
                                         Report reportData, String locale ) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 /**
@@ -204,7 +204,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/report-histories/print/{companyId}/{warehouseId}/{type}/{fileName}")
                         .queryParam("printerName", printerName)
                         .queryParam("copies", 1);
@@ -221,7 +221,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -255,7 +255,7 @@ public class ResourceServiceRestemplateClient {
     public ArchiveConfiguration getArchiveConfiguration(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/archive-configuration")
                         .queryParam("warehouseId", warehouseId);
 
@@ -273,7 +273,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{type}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);

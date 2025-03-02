@@ -45,9 +45,6 @@ public class ShipEngineRestemplateClient {
     @Value("${parcel.shipEngine.apiKey}")
     private String apiKey;
 
-    @Autowired
-    @Qualifier("noTokenRestTemplate")
-    RestTemplate restTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired
@@ -63,6 +60,8 @@ public class ShipEngineRestemplateClient {
 
         String rateRequestJSON = objectMapper.writeValueAsString(rateRequest);
         logger.debug("send request to the server \n{}", rateRequestJSON);
+
+        RestTemplate restTemplate = new RestTemplate();
 
         String result =
                 restTemplate.exchange(

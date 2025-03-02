@@ -50,7 +50,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{id}")
                 .queryParam("loadDetails", loadDetails)
                         .queryParam("loadWorkOrderDetails", loadWorkOrderDetails);
@@ -69,7 +69,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}");
 /**
         ResponseBodyWrapper<WorkOrderLine> responseBodyWrapper
@@ -94,7 +94,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", number);
@@ -131,7 +131,7 @@ public class WorkOrderServiceRestemplateClient {
                                            Long destinationLocationId){
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/pick-cancelled")
                         .queryParam("cancelledQuantity", cancelledQuantity)
                         .queryParam("destinationLocationId", destinationLocationId);
@@ -156,7 +156,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrder registerShortAllocationCancelled(Long workOrderLineId, Long cancelledQuantity){
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/short-allocation-cancelled")
                         .queryParam("cancelledQuantity", cancelledQuantity);
 /**
@@ -181,7 +181,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/create-for-short-allocation")
                         .queryParam("shortAllocationId", id)
                         .queryParam("billOfMaterialId", bomId)
@@ -210,7 +210,7 @@ public class WorkOrderServiceRestemplateClient {
                                                          Long deliveredLocationId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/inventory-being-delivered")
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);

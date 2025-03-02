@@ -43,7 +43,7 @@ public class OutbuondServiceRestemplateClient {
                 null;
         try {
             builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/outbound/orders/validate-new-order-number")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("orderNumber", URLEncoder.encode(orderNumber, "UTF-8"));
@@ -77,7 +77,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
-                .scheme("http").host("zuulserver").port(5555)
+                .scheme("http").host("apigateway").port(5555)
                 .path("/api/outbound/orders/count")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("customerId", customerId);

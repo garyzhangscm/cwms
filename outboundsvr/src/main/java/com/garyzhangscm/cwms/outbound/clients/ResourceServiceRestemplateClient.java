@@ -47,7 +47,7 @@ public class ResourceServiceRestemplateClient {
                                  Report reportData, String locale) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 /**
@@ -80,7 +80,7 @@ public class ResourceServiceRestemplateClient {
                 + companyId + "/" + warehouseId + "/" + type + "/" + filename;
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path(url);
         if (Strings.isNotBlank(findPrinterBy)) {
             builder = builder.queryParam("findPrinterBy", URLEncoder.encode(findPrinterBy, "UTF-8") );
@@ -112,7 +112,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -147,7 +147,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -182,7 +182,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{typename}");
         return restTemplateProxy.exchange(
                 FileUploadType.class,
@@ -198,7 +198,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -231,7 +231,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -258,7 +258,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}")
                         .queryParam("warehouseId", warehouseId);
 
@@ -273,7 +273,7 @@ public class ResourceServiceRestemplateClient {
     public WorkTask completeWorkTask(Long warehouseId, Long workTaskId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/complete")
                         .queryParam("warehouseId", warehouseId);
 
@@ -289,7 +289,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/assign-user")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("userId", userId);
@@ -317,7 +317,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/unassign-user")
                         .queryParam("warehouseId", warehouseId);
 
@@ -354,7 +354,7 @@ public class ResourceServiceRestemplateClient {
                                        List<ReportHistory> reportHistories) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/report-histories/labels/combine")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);
@@ -373,7 +373,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{type}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);

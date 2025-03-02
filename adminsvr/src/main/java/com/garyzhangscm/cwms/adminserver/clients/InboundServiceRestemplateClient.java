@@ -229,7 +229,7 @@ public class InboundServiceRestemplateClient {
     ) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/putaway-configuration");
 /**
         ResponseBodyWrapper<PutawayConfiguration> responseBodyWrapper
@@ -255,7 +255,7 @@ public class InboundServiceRestemplateClient {
             ZonedDateTime endTime, Boolean includeLineActivity )   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inbound/receipt-billable-activities/billable-activity")
                 .queryParam("warehouseId", warehouseId)
                         .queryParam("clientId", clientId)

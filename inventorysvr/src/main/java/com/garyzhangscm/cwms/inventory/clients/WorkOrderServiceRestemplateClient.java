@@ -51,7 +51,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrder getWorkOrderById(Long id, boolean loadDetails, boolean loadWorkOrderDetails) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{id}")
                 .queryParam("loadDetails", loadDetails)
                         .queryParam("loadWorkOrderDetails", loadWorkOrderDetails);
@@ -70,7 +70,7 @@ public class WorkOrderServiceRestemplateClient {
     public BillOfMaterial getBillOfMaterialById(Long id,  Boolean loadDetails) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/bill-of-materials/{id}");
         if (Objects.nonNull(loadDetails)) {
             builder = builder.queryParam("loadDetails", loadDetails);
@@ -91,7 +91,7 @@ public class WorkOrderServiceRestemplateClient {
                                                           String number) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/qc-samples")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("number", number);
@@ -124,7 +124,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrderQCSample getWorkOrderQCSampleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/qc-samples/{id}");
 /**
         ResponseBodyWrapper<WorkOrderQCSample> responseBodyWrapper
@@ -162,7 +162,7 @@ public class WorkOrderServiceRestemplateClient {
                                                                              Long inventoryId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/inventory-being-delivered")
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);
@@ -194,7 +194,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrder addQCQuantity(Long workOrderId, Long qcQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{id}/add-qc-quantity")
                         .queryParam("qcQuantity", qcQuantity);
 /**
@@ -220,7 +220,7 @@ public class WorkOrderServiceRestemplateClient {
     public ReportHistory printLPNLabel(Long workOrderId, String lpn, Long quantity, String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{workOrderId}/pre-print-lpn-label")
                         .queryParam("lpn", lpn);
         if (Objects.nonNull(quantity)) {
@@ -253,7 +253,7 @@ public class WorkOrderServiceRestemplateClient {
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/item-override")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)

@@ -41,7 +41,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies/{id}");
 
         return restTemplateProxy.exchange(
@@ -58,7 +58,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies")
                         .queryParam("code", companyCode);
 
@@ -85,7 +85,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
@@ -113,7 +113,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Warehouse getWarehouseByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyId", companyId)
                         .queryParam("name", name);
@@ -138,7 +138,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{id}");
 
         return restTemplateProxy.exchange(
@@ -153,7 +153,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -171,7 +171,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -190,7 +190,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data");
 
 
@@ -208,7 +208,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -232,7 +232,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -259,7 +259,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public LocationGroupType getLocationGroupTypeByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgrouptypes")
                         .queryParam("name", name);
 
@@ -286,7 +286,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}");
 
 
@@ -307,7 +307,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 
@@ -324,7 +324,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/rf")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
@@ -343,7 +343,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/rf")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
@@ -364,7 +364,7 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouse-configuration/by-warehouse/{warehouseId}") ;
 
 

@@ -43,7 +43,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -69,7 +69,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{type}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);

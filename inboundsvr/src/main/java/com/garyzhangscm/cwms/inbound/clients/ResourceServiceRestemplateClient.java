@@ -46,7 +46,7 @@ public class ResourceServiceRestemplateClient {
                                         String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 
@@ -78,7 +78,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -114,7 +114,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -147,7 +147,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{type}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);

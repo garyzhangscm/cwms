@@ -45,7 +45,7 @@ public class AuthServiceRestemplateClient {
         try {
 
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/auth/users")
                     .queryParam("companyId", companyId)
                     .queryParam("usernames", URLEncoder.encode(usernames, "UTF-8"));
@@ -71,7 +71,7 @@ public class AuthServiceRestemplateClient {
         try {
 
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/auth/users")
                     .queryParam("companyId", companyId)
                     .queryParam("usernames", URLEncoder.encode(username, "UTF-8"));
@@ -101,7 +101,7 @@ public class AuthServiceRestemplateClient {
         logger.debug("Start to change user auth: {}", userAuth);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/auth/users");
 
 

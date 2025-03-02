@@ -82,7 +82,7 @@ public class IntegrationServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         // .scheme("http").host("server.example.invalid").port(32262)
 
                         // .path("/api/integration/integration-data/dblink/" + subUrl);
