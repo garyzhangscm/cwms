@@ -43,14 +43,6 @@ public class RestTemplateConfiguration {
         return restTemplate;
     }
 
-    @Bean
-    @Qualifier("noAuthRestTemplate")
-    public RestTemplate noAuthRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-
-        return restTemplate;
-    }
-
 
 
 }

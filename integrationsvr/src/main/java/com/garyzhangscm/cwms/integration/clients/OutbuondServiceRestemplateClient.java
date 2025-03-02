@@ -43,7 +43,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/{id}");
 /**
         ResponseBodyWrapper<Order> responseBodyWrapper
@@ -71,7 +71,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}");
         return restTemplateProxy.exchange(
                 OrderLine.class,
@@ -89,7 +89,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders")
                 .queryParam("warehouseId", warehosueId)
                 .queryParam("number", number)

@@ -60,7 +60,7 @@ public class AuthServiceRestemplateClient {
         LoginCredential loginCredential = new LoginCredential(-1L,integrationUsername, integrationPassword);
 
         StringBuilder url = new StringBuilder()
-                .append("http://zuulserver:5555/api/auth/login?")
+                .append("http://apigateway:5555/api/auth/login?")
                 .append("_allow_anonymous=true");
 
 

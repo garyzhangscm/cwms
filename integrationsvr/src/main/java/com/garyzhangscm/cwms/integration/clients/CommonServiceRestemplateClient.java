@@ -49,7 +49,7 @@ public class CommonServiceRestemplateClient {
     public List<Client> getAllClients(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId);
 
@@ -68,7 +68,7 @@ public class CommonServiceRestemplateClient {
                 null;
         try {
             builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/common/clients")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -108,7 +108,7 @@ public class CommonServiceRestemplateClient {
                 null;
         try {
             builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/common/suppliers")
                     .queryParam("warehouseId", warehouseId)
                     .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -158,7 +158,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("name", name);
 
@@ -207,7 +207,7 @@ public class CommonServiceRestemplateClient {
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/common/customers")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
@@ -252,7 +252,7 @@ public class CommonServiceRestemplateClient {
     public Carrier getCarrierByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carriers")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -289,7 +289,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carriers/{id}");
 
         return restTemplateProxy.exchange(
@@ -304,7 +304,7 @@ public class CommonServiceRestemplateClient {
     public CarrierServiceLevel getCarrierServiceLevelByName(Long warehouseId, String name) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/carrier-service-levels")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", URLEncoder.encode(name, "UTF-8"));
@@ -337,7 +337,7 @@ public class CommonServiceRestemplateClient {
 
     public Supplier getSupplierByQuickbookListId(Long warehouseId, String quickbookListId) throws UnsupportedEncodingException {
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/common/suppliers")
+                UriComponentsBuilder.fromHttpUrl("http://apigateway:5555/api/common/suppliers")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("quickbookListId", URLEncoder.encode(quickbookListId, "UTF-8"));
         /**

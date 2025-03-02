@@ -60,9 +60,6 @@ public class TikTokAPIRestemplateClient {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    @Qualifier("noAuthRestTemplate")
-    RestTemplate noAuthRestTemplate;
 
     @Autowired
     TiktokRestTemplateProxy tiktokRestTemplateProxy;
@@ -84,8 +81,9 @@ public class TikTokAPIRestemplateClient {
         String url = builder.toUriString();
         //logger.debug("start to get seller's token by url \n{}", url);
 
+        RestTemplate restTemplate = new RestTemplate();
         TiktokAPICallResponse<TiktokRequestAccessTokenAPICallResponse> response =
-                noAuthRestTemplate.exchange(
+                restTemplate.exchange(
                         url,
                         HttpMethod.GET,
                         null,

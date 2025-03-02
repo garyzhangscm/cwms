@@ -47,9 +47,6 @@ public class USPSAPIRestemplateClient {
     @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
 
-    @Autowired
-    @Qualifier("noAuthRestTemplate")
-    RestTemplate noAuthRestTemplate;
 
     @Value("${usps.api.username:\"\"}")
     private String username;
@@ -75,7 +72,8 @@ public class USPSAPIRestemplateClient {
 
         String url = "https://secure.shippingapis.com/ShippingAPI.dll?API=Verify&XML=" + xml;
 
-        String response = noAuthRestTemplate.exchange(
+        RestTemplate restTemplate = new RestTemplate();
+        String response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     null,

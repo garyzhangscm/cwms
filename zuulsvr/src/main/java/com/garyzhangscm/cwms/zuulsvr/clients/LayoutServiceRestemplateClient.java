@@ -50,7 +50,7 @@ public class LayoutServiceRestemplateClient {
     public Number getCompanyIdByWarehouseId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{warehouseId}/company-id");
 
         ResponseBodyWrapper<Long> responseBodyWrapper
@@ -69,7 +69,7 @@ public class LayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies")
                 .queryParam("code", companyCode);
 

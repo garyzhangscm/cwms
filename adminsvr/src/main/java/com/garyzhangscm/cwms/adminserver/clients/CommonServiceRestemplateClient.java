@@ -47,7 +47,7 @@ public class CommonServiceRestemplateClient {
     public Client getClientById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients/{id}");
 /**
         ResponseBodyWrapper<Client> responseBodyWrapper
@@ -75,7 +75,7 @@ public class CommonServiceRestemplateClient {
                 null;
         try {
             builder = UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/common/clients")
                     .queryParam("name", URLEncoder.encode(name, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
@@ -111,7 +111,7 @@ public class CommonServiceRestemplateClient {
     public Supplier getSupplierByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/suppliers")
                         .queryParam("name", name);
 /**
@@ -143,7 +143,7 @@ public class CommonServiceRestemplateClient {
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/common/customers")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"));
 
@@ -190,7 +190,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures/{id}");
 /**
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
@@ -213,7 +213,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -239,7 +239,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
@@ -273,7 +273,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/unit-of-measures");
 /**
         ResponseBodyWrapper<UnitOfMeasure> responseBodyWrapper
@@ -300,7 +300,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                         .queryParam("warehouseId", warehouseId);
         /**
@@ -326,7 +326,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/system-controlled-numbers")
                 .queryParam("warehouseId", warehouseId);
         /**
@@ -353,7 +353,7 @@ public class CommonServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/system-controlled-numbers");
 /**
         ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
@@ -382,7 +382,7 @@ public class CommonServiceRestemplateClient {
     public List<Policy> getPoliciesByWarehouseId(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/policies")
                         .queryParam("warehouseId", warehouseId);
 /**

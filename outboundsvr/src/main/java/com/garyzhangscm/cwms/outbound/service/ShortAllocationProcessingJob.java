@@ -1,24 +1,16 @@
 package com.garyzhangscm.cwms.outbound.service;
 
-import com.garyzhangscm.cwms.outbound.CustomRequestScopeAttr;
-import com.garyzhangscm.cwms.outbound.clients.AuthServiceRestemplateClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-
-import java.io.IOException;
 
 @Component
 public class ShortAllocationProcessingJob {
 
     private static final Logger logger = LoggerFactory.getLogger(ShortAllocationProcessingJob.class);
 
-    @Autowired
-    AuthServiceRestemplateClient authServiceRestemplateClient;
     @Autowired
     private OutboundConfigurationService outboundConfigurationService;
 

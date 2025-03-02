@@ -38,7 +38,7 @@ public class OutboundServiceRestemplateClient implements  InitiableServiceRestem
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -57,7 +57,7 @@ public class OutboundServiceRestemplateClient implements  InitiableServiceRestem
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
@@ -76,7 +76,7 @@ public class OutboundServiceRestemplateClient implements  InitiableServiceRestem
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/test-data");
 
 
@@ -96,7 +96,7 @@ public class OutboundServiceRestemplateClient implements  InitiableServiceRestem
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 

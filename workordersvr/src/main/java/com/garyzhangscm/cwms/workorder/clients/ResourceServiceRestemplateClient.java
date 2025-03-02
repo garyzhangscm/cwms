@@ -55,7 +55,7 @@ public class ResourceServiceRestemplateClient {
             throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
         if (Strings.isNotBlank(printerName)) {
@@ -85,7 +85,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -119,7 +119,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -151,7 +151,7 @@ public class ResourceServiceRestemplateClient {
     public RF getRFByCode(Long warehouseId, String rfCode) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/rfs")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
@@ -186,7 +186,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/report-histories/print/{companyId}/{warehouseId}/{type}/{fileName}")
                         .queryParam("printerName", printerName)
                         .queryParam("copies", copies);
@@ -204,7 +204,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/types/{type}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId);

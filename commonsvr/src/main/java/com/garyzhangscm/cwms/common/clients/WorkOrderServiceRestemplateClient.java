@@ -40,7 +40,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/bill-of-materials/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);
@@ -68,7 +68,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/production-plans/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);
@@ -95,7 +95,7 @@ public class WorkOrderServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/validate-new-number")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("number", bomNumber);

@@ -43,7 +43,7 @@ public class ResourceServiceRestemplateClient {
     public Boolean isSystemAdmin(String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/is-system-admin")
                 .queryParam("username", username)
                         .queryParam("innerCall", "true");

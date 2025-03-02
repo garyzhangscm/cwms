@@ -46,7 +46,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}");
 /**
         ResponseBodyWrapper<Pick> responseBodyWrapper
@@ -73,7 +73,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}/unpick")
                         .queryParam("unpickQuantity", unpickQuantity);
 /**
@@ -99,7 +99,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/pick-movement/refresh")
                         .queryParam("pickId", pickId)
                         .queryParam("destinationLocationId", destinationLocationId)
@@ -126,7 +126,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", warehouseId);
@@ -151,7 +151,7 @@ public class OutbuondServiceRestemplateClient {
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/outbound-configuration/item-override")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
@@ -192,7 +192,7 @@ public class OutbuondServiceRestemplateClient {
                                    boolean exactMatch) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/quantity-in-order")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemId", itemId)
@@ -245,7 +245,7 @@ public class OutbuondServiceRestemplateClient {
                                    boolean exactMatch) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/quantity-in-order-pick")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemId", itemId)
@@ -277,7 +277,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemId", itemId)
