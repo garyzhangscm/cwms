@@ -21,7 +21,13 @@ public class JWTToken {
     }
 
     public static JWTToken EMPTY_TOKEN() {
-        return new JWTToken("EMPTY", -1l, "EMPTY", false, true);
+        return new JWTToken("EMPTY", -1l, "EMPTY",
+                false, true);
+    }
+
+    public static JWTToken INNER_CALL(String token) {
+
+        return new JWTToken(token, -1l, "CWMS_INNER_CALL", false, true);
     }
 
 

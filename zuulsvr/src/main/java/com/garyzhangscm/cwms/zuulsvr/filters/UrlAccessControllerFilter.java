@@ -62,7 +62,7 @@ public class UrlAccessControllerFilter implements Filter {
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
-    @Value("auth.jwt.inner_call.token")
+    @Value("${auth.jwt.inner_call.token}")
     private String innerCallJWTToken;
 
 

@@ -7,12 +7,12 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
+@Component
 public class UserContextInterceptor implements ClientHttpRequestInterceptor {
-
-    @Value("auth.jwt.inner_call.token")
+    @Value("${auth.jwt.inner_call.token}")
     private String innerCallJWTToken;
 
     @Override

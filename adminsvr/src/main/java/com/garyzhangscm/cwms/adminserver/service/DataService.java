@@ -523,6 +523,7 @@ public class DataService {
     public void initSystemControllerNumber() {
         // let's first get all the companies and warehouse defined in the system
         List<Company> companies = warehouseLayoutServiceRestemplateClient.getAllCompanies();
+        logger.debug("Got {} companies", companies.size());
         List<Warehouse> warehouses = new ArrayList<>();
         companies.forEach(
                 company -> {

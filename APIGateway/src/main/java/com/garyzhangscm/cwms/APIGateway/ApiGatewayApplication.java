@@ -23,15 +23,54 @@ public class ApiGatewayApplication {
 	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
 				.route(p -> p
-						.path("/api/resource/**")
-						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
-						// .filters(f -> f.addRequestHeader("service", "resource").stripPrefix(2))
-						.uri("http://resourceservice:8280"))
-				.route(p -> p
 						.path("/api/layout/**")
 						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
 						//.filters(f -> f.addRequestHeader("service", "layout").stripPrefix(2))
 						.uri("http://layoutservice:8180"))
+				.route(p -> p
+						.path("/api/auth/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://authserver:8901"))
+				.route(p -> p
+						.path("/api/resource/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://resourceservice:8280"))
+				.route(p -> p
+						.path("/api/common/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://commonservice:8380"))
+				.route(p -> p
+						.path("/api/inventory/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://inventoryservice:8480"))
+				.route(p -> p
+						.path("/api/inbound/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://inboundservice:8580"))
+				.route(p -> p
+						.path("/api/outbound/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://outboundservice:8680"))
+				.route(p -> p
+						.path("/api/workorder/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://workorderservice:8780"))
+				.route(p -> p
+						.path("/api/integration/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://integrationservice:8880"))
+				.route(p -> p
+						.path("/api/admin/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://adminservice:8078"))
+				.route(p -> p
+						.path("/api/dblink/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://dblinkserver:11808"))
+				.route(p -> p
+						.path("/api/quickbook/**")
+						.filters(f -> f.filter(accessControlFilter).stripPrefix(2))
+						.uri("http://quickbook:11818"))
 				.build();
 	}
 /**
