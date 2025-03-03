@@ -5,19 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.garyzhangscm.cwms.resources.service.InitTestDataService;
-import com.garyzhangscm.cwms.resources.usercontext.UserContextInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
-import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
-import org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -26,12 +16,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
-import java.util.*;
 
 
 @SpringBootApplication
@@ -39,7 +26,7 @@ import java.util.*;
 // only customized configure can be re-fetched from the server
 // Database configuration won't be updated in the client even the
 // configuration server is updated with new DB information
-@RefreshScope
+//@RefreshScope
 // @EnableEurekaClient
 // @EnableOAuth2Client
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")

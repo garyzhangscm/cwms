@@ -49,7 +49,10 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/layout/companies",
             "/api/layout/warehouses",
             "/api/layout/warehouse-configuration/by-warehouse",
-            "/api/auth/users/username-by-token"
+            "/api/auth/users/username-by-token",
+            "/api/resource/assets/i18n",
+            "/api/resource/site-information/default",
+            "/api/auth/login"
     };
 
 
@@ -105,6 +108,7 @@ public class AccessControlFilter implements GatewayFilter {
             throw UnauthorizedException.raiseException("There's no company ID in the header");
         }
 
+
         if (jwtToken.getCompanyId() == -1 || companyId.equals(jwtToken.getCompanyId())) {
             return jwtToken;
         }
@@ -149,6 +153,10 @@ public class AccessControlFilter implements GatewayFilter {
         if (!jwtToken.isValid()) {
 
             throw UnauthorizedException.raiseException("current JWT Token is invalid");
+        }
+        if (Objects.isNull(jwtToken.getCompanyId())) {
+
+            throw UnauthorizedException.raiseException("current JWT Token doesn't have company information");
         }
         if (jwtToken.isExpired()) {
 
