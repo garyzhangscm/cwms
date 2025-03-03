@@ -32,8 +32,10 @@ public class JwtService {
         final Claims claims = extractAllClaims(token);
         String username = claims.getSubject();
         Date expireTime = claims.getExpiration();
-        Long companyId = claims.containsKey("companyId") ? null :
-                Long.parseLong(String.valueOf(claims.get("companyId")));
+        Long companyId = claims.containsKey("companyId") ?
+                Long.parseLong(String.valueOf(claims.get("companyId")))
+                :
+                null;
 
         return new JWTToken(token, companyId, username, expireTime.before(new Date()), true);
     }
