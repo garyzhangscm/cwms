@@ -9,7 +9,6 @@ import com.garyzhangscm.cwms.auth.usercontext.UserContextInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -37,6 +36,7 @@ public class AuthenticationServerApplication {
 	**/
 
 	// Rest Template with Robbin
+/**
 	@LoadBalanced
 	@Bean
 	public RestTemplate getRestTemplate(){
@@ -55,7 +55,7 @@ public class AuthenticationServerApplication {
 		return template;
 
 	}
-
+**/
 	public static void main(String[] args) {
 		SpringApplication.run(AuthenticationServerApplication.class, args);
 	}

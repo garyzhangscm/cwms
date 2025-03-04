@@ -31,7 +31,7 @@ public class UserContextInterceptor implements ClientHttpRequestInterceptor {
                 UserContextHolder.getContext().getCompanyId());
         headers.add(UserContext.WAREHOUSE_ID,
                 UserContextHolder.getContext().getWarehouseId());
-        headers.add("innerCall", "true");
+
 
         if (Strings.isBlank(UserContextHolder.getContext().getAuthToken())) {
             headers.add(UserContext.AUTH_TOKEN, "Bearer " + innerCallJWTToken);

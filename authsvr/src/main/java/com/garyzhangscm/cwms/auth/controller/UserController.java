@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.auth.controller;
 
+import com.garyzhangscm.cwms.auth.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.auth.model.BillableEndpoint;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.service.UserService;
@@ -41,36 +42,38 @@ public class UserController {
     UserService userService;
 
     @RequestMapping(method =  RequestMethod.GET)
-    public List<User> findUsers(@RequestParam Long companyId,
-                                @RequestParam(name="usernames", defaultValue = "", required = false) String usernames)   {
+    public ResponseBodyWrapper findUsers(@RequestParam Long companyId,
+                                         @RequestParam(name="usernames", defaultValue = "", required = false) String usernames)   {
 
-        return userService.findAll(companyId, usernames);
+        return new ResponseBodyWrapper(0, "",
+                userService.findAll(companyId, usernames));
     }
 
 
     @BillableEndpoint
     @RequestMapping(method =  RequestMethod.POST)
-    public User changeUser(@RequestBody User user) {
-        return userService.saveOrUpdate(user);
+    public ResponseBodyWrapper changeUser(@RequestBody User user) {
+
+        return new ResponseBodyWrapper(0, "",userService.saveOrUpdate(user));
     }
 
 
     @RequestMapping(value = "/company-access-validation", method =  RequestMethod.GET)
-    public Boolean validateCompanyAccess(@RequestParam Long companyId,
+    public ResponseBodyWrapper validateCompanyAccess(@RequestParam Long companyId,
                                          @RequestParam String token) {
-        return userService.validateCompanyAccess(companyId, token);
+        return new ResponseBodyWrapper(0, "",userService.validateCompanyAccess(companyId, token));
     }
 
 
     @RequestMapping(value = "/username-by-token", method =  RequestMethod.GET)
-    public String getUserNameByToken(@RequestParam Long companyId,
+    public ResponseBodyWrapper getUserNameByToken(@RequestParam Long companyId,
                                          @RequestParam String token) {
         User user = userService.findByToken(companyId, token);
         if (Objects.nonNull(user)) {
-            return  user.getUsername();
+            return  new ResponseBodyWrapper(0, "",user.getUsername());
         }
         else {
-            return "";
+            return new ResponseBodyWrapper(0, "","");
         }
     }
 
