@@ -20,7 +20,8 @@ package com.garyzhangscm.cwms.auth.service;
 
 import com.garyzhangscm.cwms.auth.clients.KafkaSender;
 import com.garyzhangscm.cwms.auth.exception.SystemFatalException;
-import com.garyzhangscm.cwms.auth.model.JWTTokenWrapper;
+import com.garyzhangscm.cwms.auth.model.JWTToken;
+import com.garyzhangscm.cwms.auth.model.UserAuthentication;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.model.UserLoginEvent;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
@@ -208,7 +209,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public JWTTokenWrapper generateJWTToken(Long companyId, String username) {
+    public UserAuthentication generateJWTToken(Long companyId, String username) {
         User user = findByUsername(companyId, username);
         if(Objects.isNull(user)) {
             throw SystemFatalException.raiseException("can't find user " + username);
@@ -226,8 +227,37 @@ public class UserService implements UserDetailsService {
 
         saveOrUpdate(user);
 
-        JWTTokenWrapper jwtTokenWrapper = new JWTTokenWrapper(user);
-        jwtTokenWrapper.setRefreshIn(jwtTokenExpireTimeInMinutes / 2);
-        return jwtTokenWrapper;
+        UserAuthentication userAuthentication = new UserAuthentication(user);
+        userAuthentication.setRefreshIn(jwtTokenExpireTimeInMinutes / 2);
+        return userAuthentication;
     }
+    public UserAuthentication refreshJWTToken(JWTToken jwtToken, String refreshToken) {
+        if (Objects.isNull(jwtToken.getCompanyId())) {
+            throw SystemFatalException.raiseException("can't refresh the token as the company id " +
+                    " in current JWT token is empty");
+        }
+
+        User user = findByUsername(jwtToken.getCompanyId(), jwtToken.getUsername());
+        if(Objects.isNull(user)) {
+            throw SystemFatalException.raiseException("can't find the user, fail to refresh the current token");
+        }
+        if (Strings.isBlank(user.getRefreshToken()) || Objects.isNull(user.getRefreshTokenExpireTime()) ) {
+
+            throw SystemFatalException.raiseException("the current user's refresh token is not valid, please login again");
+        }
+        if (user.getRefreshTokenExpireTime().isBefore(ZonedDateTime.now())) {
+
+            throw SystemFatalException.raiseException("the current user's refresh token is expired, please login again");
+        }
+        if (!user.getRefreshToken().equals(refreshToken)) {
+            throw SystemFatalException.raiseException("invalid refresh token, fail to refresh the current token");
+        }
+
+        // at this point we know we got a valid refresh token, let's start to generate a new
+        // jwt token
+        UserAuthentication userAuthentication = generateJWTToken(jwtToken.getCompanyId(), jwtToken.getUsername());
+        return userAuthentication;
+    }
+
+
 }

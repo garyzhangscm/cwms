@@ -31,6 +31,10 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -139,6 +143,73 @@ public class InventoryController {
             inventoryService.compress(inventories);
         }
         return new ResponseBodyWrapper<>(0, "", inventories, totalCount);
+
+
+    }
+
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/inventories/pagination", method = RequestMethod.GET)
+    public Page<Inventory> findPaginatedInventories(@RequestParam Long warehouseId,
+                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                              @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
+                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                              @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
+                                              @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
+                                              @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
+                                              @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                              @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                              @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
+                                              @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
+                                              @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="pickZoneId", required = false, defaultValue = "") Long pickZoneId,
+                                              @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="receiptIds", required = false, defaultValue = "") String receiptIds,
+                                              @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
+                                              @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
+                                              @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+                                              @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                              @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
+                                              @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
+                                              @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                              @RequestParam(name="color", required = false, defaultValue = "") String color,
+                                              @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
+                                              @RequestParam(name="style", required = false, defaultValue = "") String style,
+                                              @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                              @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                              @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                              @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                              @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
+                                              @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                             @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
+                                                    @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                                    @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize,
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
+
+
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "locationId"));
+        //return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+
+        return inventoryService.findAllByPagination(warehouseId, itemId, itemName, itemNames,
+                itemPackageTypeName, clientId,  clientIds,
+                itemFamilyIds,inventoryStatusId,  locationName,
+                locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptIds,  receiptNumber,
+                customerReturnOrderId,  workOrderId,
+                workOrderLineIds, workOrderByProductIds,
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                inventoryIds,
+                includeVirturalInventory, clientRestriction, paging  );
+
 
 
     }

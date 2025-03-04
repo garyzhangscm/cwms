@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.auth.model;
 
 
-public class JWTTokenWrapper {
+public class UserAuthentication {
 
     private String token;
     private String refreshToken;
@@ -41,7 +41,23 @@ public class JWTTokenWrapper {
         this.refreshIn = refreshIn;
     }
 **/
-    public JWTTokenWrapper(User user) {
+    public UserAuthentication() {
+
+    }
+
+    public UserAuthentication(String token,
+                              String refreshToken,
+                              String name,
+                              String email,
+                              int refreshIn) {
+        this.token = token;
+        this.refreshToken = refreshToken;
+        this.name = name;
+        this.email = email;
+        this.refreshIn = refreshIn;
+
+    }
+    public UserAuthentication(User user) {
         this.token = user.getCurrentToken();
         this.refreshToken = user.getRefreshToken();
         this.name = user.getUsername();
