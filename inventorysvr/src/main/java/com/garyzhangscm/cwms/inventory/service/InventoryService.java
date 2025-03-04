@@ -35,7 +35,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -204,7 +206,6 @@ public class InventoryService {
                 true, maxLPNCount);
     }
 
-
     public List<Inventory> findAll(Long warehouseId,
                                    Long itemId,
                                    String itemName,
@@ -270,16 +271,16 @@ public class InventoryService {
 
                     }
                     if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds) ||
-                       Strings.isNotBlank(itemNames)) {
+                            Strings.isNotBlank(itemNames)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
 
-                                if (itemName.contains("*")) {
-                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
-                                }
-                                else {
-                                    predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
-                                }
+                            if (itemName.contains("*")) {
+                                predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
+                            }
+                            else {
+                                predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+                            }
                         }
 
                         if (Strings.isNotBlank(itemNames)) {
@@ -545,7 +546,7 @@ public class InventoryService {
                     return Objects.isNull(clientRestriction) ?
                             predicate :
                             clientRestriction.addClientRestriction(predicate,
-                                root, criteriaBuilder);
+                                    root, criteriaBuilder);
 
 
                 }
@@ -582,7 +583,7 @@ public class InventoryService {
         });
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we found {} record",
-                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
                 LocalDateTime.now(),
                 inventories.size());
         currentLocalDateTime = LocalDateTime.now();
@@ -661,6 +662,407 @@ public class InventoryService {
                 inventories.size());
 
         return inventories;
+    }
+
+    public Page<Inventory> findAllByPagination(Long warehouseId,
+                                               Long itemId,
+                                               String itemName,
+                                               String itemNames,
+                                               String itemPackageTypeName,
+                                               Long clientId,
+                                               String clientIds,
+                                               String itemFamilyIds,
+                                               Long inventoryStatusId,
+                                               String locationName,
+                                               Long locationId,
+                                               String locationIds,
+                                               Long locationGroupId,
+                                               Long pickZoneId,
+                                               String receiptId,
+                                               String receiptIds,
+                                               String receiptNumber,
+                                               String customerReturnOrderId,
+                                               Long workOrderId,
+                                               String workOrderLineIds,
+                                               String workOrderByProductIds,
+                                               String pickIds,
+                                               String lpn,
+                                               String color,
+                                               String productSize,
+                                               String style,
+                                               String attribute1,
+                                               String attribute2,
+                                               String attribute3,
+                                               String attribute4,
+                                               String attribute5,
+                                               String inventoryIds,
+                                               Boolean includeVirturalInventory,
+                                               ClientRestriction clientRestriction,
+                                               Pageable pageable) {
+
+        List<String> locationIdsInGroup = null;
+        if (locationGroupId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
+                            warehouseId, String.valueOf(locationGroupId));
+            locationIdsInGroup = locations.stream().map(location -> location.getId().toString()).collect(Collectors.toList());
+        }
+
+        List<String> locationIdsInPickZone = null;
+        if (pickZoneId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByPickZones(
+                            warehouseId, String.valueOf(pickZoneId));
+
+            locationIdsInPickZone = locations.stream().map(location -> location.getId().toString()).collect(Collectors.toList());
+        }
+
+        List<String> finalLocationIdsInGroup = locationIdsInGroup;
+        List<String> finalLocationIdsInPickZone = locationIdsInPickZone;
+        return inventoryRepository.findAll(
+                (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+                    }
+                    else if (Strings.isNotBlank(clientIds)) {
+
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientIds.split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inClientIds));
+                    }
+
+                    if (Objects.nonNull(itemId)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
+
+                    }
+                    if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds) ||
+                       Strings.isNotBlank(itemNames)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        if (StringUtils.isNotBlank(itemName)) {
+
+                                if (itemName.contains("*")) {
+                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
+                                }
+                                else {
+                                    predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+                                }
+                        }
+
+                        if (Strings.isNotBlank(itemNames)) {
+                            CriteriaBuilder.In<String> inItemNames = criteriaBuilder.in(joinItem.get("name"));
+                            for(String name : itemNames.split(",")) {
+                                inItemNames.value(name);
+                            }
+                            predicates.add(criteriaBuilder.and(inItemNames));
+
+                        }
+                        if (StringUtils.isNotBlank(clientIds)) {
+                            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(joinItem.get("clientId"));
+                            for(String id : clientIds.split(",")) {
+                                inClientIds.value(Long.parseLong(id));
+                            }
+                            predicates.add(criteriaBuilder.and(inClientIds));
+
+                        }
+                    }
+                    if (StringUtils.isNotBlank(itemPackageTypeName)) {
+
+                        Join<Inventory, ItemPackageType> joinItemPackageType = root.join("itemPackageType", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItemPackageType.get("name"), itemPackageTypeName));
+
+                    }
+                    if (StringUtils.isNotBlank(itemFamilyIds)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        Join<Item, ItemFamily> joinItemFamily = joinItem.join("itemFamily", JoinType.INNER);
+
+                        CriteriaBuilder.In<Long> inItemFamilyIds = criteriaBuilder.in(joinItemFamily.get("id"));
+                        for(String id : itemFamilyIds.split(",")) {
+                            inItemFamilyIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inItemFamilyIds));
+                    }
+                    if (Objects.nonNull(inventoryStatusId)) {
+                        Join<Inventory, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
+
+                    }
+
+                    // if location ID is passed in, we will only filter by location id, no matter whether
+                    // the location name is passed in or not
+                    // otherwise, we will try to filter by location name
+                    if (Objects.nonNull(locationId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
+                    }
+                    else if (StringUtils.isNotBlank(locationName) &&
+                            Objects.nonNull(warehouseId)) {
+
+                        logger.debug("Will get inventory from location {} / {}",
+                                warehouseId, locationName);
+                        if (locationName.contains("*")) {
+
+                            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationsByName(warehouseId, locationName);
+
+                            if (locations.isEmpty()) {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                            else {
+
+                                CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                                for(Long id : locations.stream().map(location -> location.getId()).collect(Collectors.toSet())) {
+                                    inLocationIds.value(id);
+                                }
+                                predicates.add(criteriaBuilder.and(inLocationIds));
+                            }
+                        }
+                        else {
+                            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+
+                            if (location != null) {
+                                logger.debug(">> location id: {}",
+                                        location.getId());
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            }
+                            else {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                        }
+
+                    }
+
+                    if (StringUtils.isNotBlank(locationIds)) {
+
+                        CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                        for(String id : locationIds.split(",")) {
+                            inLocationIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inLocationIds));
+                    }
+
+                    if (Objects.nonNull(finalLocationIdsInGroup)) {
+                        if (finalLocationIdsInGroup.isEmpty()) {
+
+                            // since the user passed in a location group without any location, we will add a
+                            // wrong id into the query so it won't return anything
+                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                        }
+                        else {
+                            CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                            for(String id : finalLocationIdsInGroup) {
+                                inLocationIds.value(Long.parseLong(id));
+                            }
+
+                            predicates.add(criteriaBuilder.and(inLocationIds));
+
+                        }
+                    }
+
+
+                    if (Objects.nonNull(finalLocationIdsInPickZone)) {
+                        if (finalLocationIdsInPickZone.isEmpty()) {
+
+                            // since the user passed in a location pick zone without any location, we will add a
+                            // wrong id into the query so it won't return anything
+                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                        }
+                        else {
+                            CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                            for(String id : finalLocationIdsInPickZone) {
+                                inLocationIds.value(Long.parseLong(id));
+                            }
+
+                            predicates.add(criteriaBuilder.and(inLocationIds));
+
+                        }
+                    }
+
+
+                    if (StringUtils.isNotBlank(receiptId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+                    if (StringUtils.isNotBlank(receiptIds)) {
+                        CriteriaBuilder.In<Long> inReceiptIds = criteriaBuilder.in(root.get("receiptId"));
+                        for(String id : receiptIds.split(",")) {
+                            inReceiptIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptIds));
+                    }
+
+                    if (Strings.isNotBlank(receiptNumber)) {
+                        Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
+                                warehouseId,
+                                receiptNumber
+                        );
+                        if (Objects.nonNull(receipt)) {
+
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), receipt.getId()));
+                        }
+                        else {
+
+                            // since there's no receipt match with the receipt, we will use -1 as the receipt id
+                            // to match with the inventory and we will assume there won't be anything return
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), -1));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(customerReturnOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("customerReturnOrderId"), customerReturnOrderId));
+
+                    }
+
+                    if (Objects.nonNull(workOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderId"), workOrderId));
+
+                    }
+
+
+                    if (StringUtils.isNotBlank(workOrderLineIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderLineId"));
+                        Arrays.stream(workOrderLineIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderLineId -> inClause.value(workOrderLineId));
+                        predicates.add(inClause);
+
+                    }
+                    if (StringUtils.isNotBlank(workOrderByProductIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderByProductId"));
+                        Arrays.stream(workOrderByProductIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderByProductId -> inClause.value(workOrderByProductId));
+                        predicates.add(inClause);
+
+                    }
+
+                    if (StringUtils.isNotBlank(pickIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("pickId"));
+                        Arrays.stream(pickIds.split(",")).map(Long::parseLong).forEach(pickId -> inClause.value(pickId));
+                        predicates.add(inClause);
+
+                    }
+                    if (StringUtils.isNotBlank(lpn)) {
+
+                        logger.debug("lpn {} , lpn.contains(%) ? {}",
+                                lpn, lpn.contains("*"));
+                        if (lpn.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("lpn"), lpn.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
+                        }
+
+                    }
+
+                    if (StringUtils.isNotBlank(color)) {
+                        if (color.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("color"), color.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("color"), color));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(productSize)) {
+                        if (productSize.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("productSize"), productSize.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("productSize"), productSize));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(style)) {
+                        if (style.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("style"), style.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("style"), style));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(attribute1)) {
+                        if (attribute1.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute1"), attribute1.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute1"), attribute1));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute2)) {
+                        if (attribute2.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute2"), attribute2.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute2"), attribute2));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute3)) {
+                        if (attribute3.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute3"), attribute3.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute3"), attribute3));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute4)) {
+                        if (attribute4.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute4"), attribute4.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute4"), attribute4));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute5)) {
+                        if (attribute5.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute5"), attribute5.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute5"), attribute5));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(inventoryIds)) {
+
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
+                        Arrays.stream(inventoryIds.split(","))
+                                .map(Long::parseLong).forEach(inventoryId -> inClause.value(inventoryId));
+                        predicates.add(inClause);
+                    }
+
+                    // Only return actual inventory
+                    if(!Boolean.TRUE.equals(includeVirturalInventory)) {
+                        predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    // return addClientRestriction(predicate, clientRestriction,
+                    //        root, criteriaBuilder);
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                root, criteriaBuilder);
+
+
+                }
+                ,
+                pageable
+        );
+
     }
 
     private Predicate addClientRestriction(Predicate predicate,

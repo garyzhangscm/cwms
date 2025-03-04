@@ -70,8 +70,6 @@ public class WorkOrderController {
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                              @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
                                              @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
-                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
-                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails,
                                              @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
                                              @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize) {
         Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number"));

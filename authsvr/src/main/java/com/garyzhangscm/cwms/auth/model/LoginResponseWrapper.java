@@ -21,16 +21,16 @@ package com.garyzhangscm.cwms.auth.model;
 public class LoginResponseWrapper {
     private int result;
     private String message;
-    private JWTTokenWrapper user;
+    private UserAuthentication user;
 
 
-    private LoginResponseWrapper(int result, String message, JWTTokenWrapper userInfo) {
+    private LoginResponseWrapper(int result, String message, UserAuthentication userInfo) {
         this.result = result;
         this.message = message;
         this.user = userInfo;
     }
 
-    public static LoginResponseWrapper of(int result, String message, JWTTokenWrapper userInfo) {
+    public static LoginResponseWrapper of(int result, String message, UserAuthentication userInfo) {
         return new LoginResponseWrapper(result, message, userInfo);
     }
 
@@ -42,11 +42,11 @@ public class LoginResponseWrapper {
         this.message = message;
     }
 
-    public JWTTokenWrapper getUser() {
+    public UserAuthentication getUser() {
         return user;
     }
 
-    public void setUser(JWTTokenWrapper user) {
+    public void setUser(UserAuthentication user) {
         this.user = user;
     }
 

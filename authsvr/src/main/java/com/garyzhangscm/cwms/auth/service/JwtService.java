@@ -1,11 +1,19 @@
 package com.garyzhangscm.cwms.auth.service;
 
+import com.garyzhangscm.cwms.auth.exception.SystemFatalException;
+import com.garyzhangscm.cwms.auth.model.JWTToken;
+import com.garyzhangscm.cwms.auth.model.UserAuthentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +21,15 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Component
 public class JwtService {
+
+    final Logger logger =
+            LoggerFactory.getLogger(JwtService.class);
+
     // Replace this with a secure key in a real application, ideally fetched from environment variables
     @Value("${auth.jwt.secret:5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}")
     public String secret;
@@ -82,4 +95,55 @@ public class JwtService {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
+
+    public JWTToken extractToken(String token) {
+
+
+        final Claims claims = extractAllClaims(token);
+        String username = claims.getSubject();
+        Date expireTime = claims.getExpiration();
+        Long companyId = claims.containsKey("companyId") ?
+                Long.parseLong(String.valueOf(claims.get("companyId")))
+                :
+                null;
+
+        return new JWTToken(token, companyId, username, expireTime.before(new Date()), false);
+    }
+
+    public JWTToken getJWTTokenFromRequest(HttpServletRequest request) {
+
+        String token  = getJWTTokenString(request);
+        if (Strings.isBlank(token)) {
+
+            throw SystemFatalException.raiseException("There's no JWT Token in the header");
+        }
+
+
+        return extractToken(token);
+    }
+
+
+    private String getJWTTokenString(HttpServletRequest request) {
+
+        if (Objects.isNull(request.getHeaders("Authorization")) ||
+                !request.getHeaders("Authorization").hasMoreElements()) {
+            return "";
+        }
+        String token = request.getHeaders("Authorization").nextElement();
+        logger.debug("JWT token: " + token);
+
+        if (Strings.isBlank(token)) {
+            return "";
+        }
+
+        if (token.startsWith("Bearer")) {
+            return token.substring(7).trim();
+        }
+        else {
+            return "";
+        }
+
+
+    }
+
 }
