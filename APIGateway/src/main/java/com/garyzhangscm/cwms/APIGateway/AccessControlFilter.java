@@ -43,7 +43,7 @@ public class AccessControlFilter implements GatewayFilter {
 
 
     // URL that is accessible even if the user is not logged in
-    private static final String[] URL_WHITE_LIST = new String[]{
+    private static final String[] ANONYMOUS_ACCESSIBLE_URL_LIST = new String[]{
             "/api/integration/tiktok/webhook",
             "/api/integration/shopify/shop-oauth",
             "/api/layout/companies",
@@ -53,6 +53,10 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/resource/assets/i18n",
             "/api/resource/site-information/default",
             "/api/auth/login"
+    };
+
+    private static final String[] EMPTY_COMPANY_ID_ACCESSIBLE_URL_LIST = new String[]{
+            "/api/layout/companies"
     };
 
 
@@ -82,6 +86,9 @@ public class AccessControlFilter implements GatewayFilter {
         catch (UnauthorizedException ex) {
             return this.onError(exchange,ex.getMessage() ,HttpStatus.FORBIDDEN);
         }
+        logger.debug("{} with parameters {} passed validation, forward to the micro service for handling",
+                exchange.getRequest().getURI().getPath(),
+                exchange.getRequest().getQueryParams());
         return chain.filter(exchange);
     }
 
@@ -89,15 +96,23 @@ public class AccessControlFilter implements GatewayFilter {
         logger.debug("Start to validate http access for  {} ",
                 request.getURI().getPath());
 
-        if (isUrlInWhiteList(request.getURI().getPath())) {
-            logger.debug("URL {} is in the white list, pass the validation",
-                    request.getURI().getPath());
-            return JWTToken.EMPTY_TOKEN();
+
+        JWTToken jwtToken = getJWTTokenFromRequest(request);
+
+        // at this point, if the jwt token is a fake token for
+        // url in white list or inter microservice call,
+        // the valid flag is already marked, we can simply
+        // return here. otherwise, we will need to validate
+        // if the jwt token has access to the company as well
+        if (jwtToken.isValid()) {
+
+            return jwtToken;
         }
 
-        JWTToken jwtToken = getJWTTokenFromReqeuest(request);
-
-        if (isInnerCall(jwtToken.getToken())) {
+        if (isEmptyCompanyIdAccessibleURL(request.getURI().getPath())) {
+            logger.debug("No need to validate the company id for current url {}",
+                    request.getURI().getPath());
+            jwtToken.setValid(true);
             return jwtToken;
         }
 
@@ -105,43 +120,66 @@ public class AccessControlFilter implements GatewayFilter {
         Long companyId = getLongValueFromRequest(request, "companyId");
         if (Objects.isNull(companyId)) {
 
+            logger.debug("Current http request doesn't have company ID in the header ");
             throw UnauthorizedException.raiseException("There's no company ID in the header");
         }
 
 
         if (jwtToken.getCompanyId() == -1 || companyId.equals(jwtToken.getCompanyId())) {
+            jwtToken.setValid(true);
             return jwtToken;
         }
+
+        logger.debug("current user {} has access to company id {} in the jwt token but the " +
+                "company id in the http request head is {}, validation fail",
+                jwtToken.getUsername(),
+                jwtToken.getCompanyId(),
+                companyId);
+
         throw UnauthorizedException.raiseException("current user " + jwtToken.getUsername() +
                 " does not have access to the request company");
 
-
-
-
-
     }
 
-    private JWTToken getJWTTokenFromReqeuest(ServerHttpRequest request) {
+    private String getJWTTokenString(ServerHttpRequest request) {
 
         if (!request.getHeaders().containsKey("Authorization")) {
-            logger.debug("There's no JWT Token in the header, fail to access URL {}",
-                    request.getURI().getPath());
-            throw UnauthorizedException.raiseException("There's no JWT Token in the header");
-
+            return "";
         }
-
         String token = request.getHeaders().get("Authorization").get(0);
         logger.debug("JWT token: " + token);
 
         if (Strings.isBlank(token)) {
-            logger.debug("There's no JWT Token in the header, fail to access URL {}",
-                    request.getURI().getPath());
-            throw UnauthorizedException.raiseException("There's no JWT Token in the header");
+            return "";
         }
 
         if (token.startsWith("Bearer")) {
-            token = token.substring(7).trim();
+            return token.substring(7).trim();
         }
+        else {
+            return "";
+        }
+
+
+    }
+
+    private JWTToken getJWTTokenFromRequest(ServerHttpRequest request) {
+
+        String token  = getJWTTokenString(request);
+        if (Strings.isBlank(token)) {
+            logger.debug("There's no JWT Token in the http request header, " +
+                    " let's see if the URL is in the white list");
+            if (isAnonymousAccessibleURL(request.getURI().getPath())) {
+                logger.debug("{} is in the white list, let's return an empty token",
+                        request.getURI().getPath() );
+                return JWTToken.EMPTY_TOKEN();
+            }
+            else {
+
+                throw UnauthorizedException.raiseException("There's no JWT Token in the header");
+            }
+        }
+
 
         if (isInnerCall(token)) {
             logger.debug("this is an inner call, skip any validation");
@@ -150,16 +188,15 @@ public class AccessControlFilter implements GatewayFilter {
 
 
         JWTToken jwtToken = jwtService.extractToken(token);
-        if (!jwtToken.isValid()) {
 
-            throw UnauthorizedException.raiseException("current JWT Token is invalid");
-        }
         if (Objects.isNull(jwtToken.getCompanyId())) {
+            logger.debug("Current token doesn't have company id, validation fail");
 
             throw UnauthorizedException.raiseException("current JWT Token doesn't have company information");
         }
         if (jwtToken.isExpired()) {
 
+            logger.debug("Current token is expired, validation fail");
             throw UnauthorizedException.raiseException("current JWT Token is expired");
         }
         return jwtToken;
@@ -167,9 +204,18 @@ public class AccessControlFilter implements GatewayFilter {
 
 
     private String getStringValueFromRequest(ServerHttpRequest request, String name) {
-
+        // see if we can get from the header
+        if (request.getHeaders().containsKey(name)) {
+            logger.debug("we found {} in the http request header, return the value {}",
+                    name, request.getHeaders().get(name));
+            if (!request.getHeaders().get(name).isEmpty()) {
+                return request.getHeaders().get(name).get(0);
+            }
+        }
+        logger.debug("we can't find {} in the http request header, let's see if we can find from the query string");
         // see if we can find from the parameters
         MultiValueMap<String, String> parameters =  request.getQueryParams();
+
         if (!parameters.containsKey(name)) {
             return null;
         }
@@ -198,10 +244,17 @@ public class AccessControlFilter implements GatewayFilter {
         return token.equals(innerCallJWTToken);
     }
 
-    private boolean isUrlInWhiteList(String requestURI) {
-        return Arrays.stream(URL_WHITE_LIST).anyMatch(
+    private boolean isAnonymousAccessibleURL(String requestURI) {
+        return Arrays.stream(ANONYMOUS_ACCESSIBLE_URL_LIST).anyMatch(
                 whiteListUrl ->
                         // whiteListUrl.equalsIgnoreCase(requestURI)
+                        requestURI.toLowerCase(Locale.ROOT).startsWith(whiteListUrl.toLowerCase(Locale.ROOT))
+        );
+    }
+
+    private boolean isEmptyCompanyIdAccessibleURL(String requestURI) {
+        return Arrays.stream(EMPTY_COMPANY_ID_ACCESSIBLE_URL_LIST).anyMatch(
+                whiteListUrl ->
                         requestURI.toLowerCase(Locale.ROOT).startsWith(whiteListUrl.toLowerCase(Locale.ROOT))
         );
     }

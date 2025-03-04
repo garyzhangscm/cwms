@@ -44,12 +44,13 @@ public class WebSecurityConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
+                // permit all request. we will handle the permission in api gateway
                 .authorizeHttpRequests(
-                        auth -> auth
-                                .requestMatchers("/app", "/login/**", "/oauth/**",
-                                        "/actuator", "/probe/**", "/users/company-access-validation",
-                                        "/users/username-by-token").permitAll()
-                        .anyRequest().authenticated()
+                        auth -> auth.anyRequest().permitAll()
+                                //.requestMatchers("/**", "/app", "/login/**", "/oauth/**",
+                                //        "/actuator", "/probe/**", "/users/company-access-validation",
+                                //        "/users/username-by-token").permitAll()
+                        // .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions

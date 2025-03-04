@@ -37,7 +37,7 @@ public class JwtService {
                 :
                 null;
 
-        return new JWTToken(token, companyId, username, expireTime.before(new Date()), true);
+        return new JWTToken(token, companyId, username, expireTime.before(new Date()), false);
     }
 
     // Extract the username from the token

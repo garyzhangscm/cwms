@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,6 +76,8 @@ public class UserService  implements TestDataInitiableService{
     @Autowired
     private WorkTaskService workTaskService;
 
+    @Autowired
+    HttpServletRequest request;
 
     @Value("${fileupload.test-data.users:users}")
     String testDataFile;
@@ -377,6 +380,12 @@ public class UserService  implements TestDataInitiableService{
 
 
     public String getCurrentUserName() {
+
+        if (Objects.isNull(request)) {
+            return "ANONYMOUS";
+        }
+        return request.getHeader("username");
+        /**
         logger.debug("SecurityContextHolder.getContext().getAuthentication().getName(): {}",
                 SecurityContextHolder.getContext().getAuthentication().getName());
         if (SecurityContextHolder.getContext().getAuthentication().getName().equals("anonymousUser")) {
@@ -385,6 +394,7 @@ public class UserService  implements TestDataInitiableService{
         else {
             return SecurityContextHolder.getContext().getAuthentication().getName();
         }
+         **/
     }
 
     public User getCurrentUser(Long companyId) {

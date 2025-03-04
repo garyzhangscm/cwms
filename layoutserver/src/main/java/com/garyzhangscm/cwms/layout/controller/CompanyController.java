@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.layout.model.Company;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
 import com.garyzhangscm.cwms.layout.service.CompanyService;
 import com.garyzhangscm.cwms.layout.service.WarehouseService;
+import com.garyzhangscm.cwms.layout.usercontext.UserContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.swing.event.CaretListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -61,6 +63,9 @@ public class CompanyController {
     CompanyService companyService;
 
     @Autowired
+    HttpServletRequest request;
+
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
 
@@ -73,14 +78,6 @@ public class CompanyController {
             throw MissingInformationException.raiseException("code or name is required to get the company information");
         }
  **/
-
-        Client client =  commonServiceRestemplateClient.getClientByName(1L, "ABC");
-        if (Objects.isNull(client)) {
-            logger.debug("Can't find client");
-        }
-        else {
-            logger.debug("found client");
-        }
         return companyService.findAll(code, name);
     }
 

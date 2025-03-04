@@ -19,16 +19,19 @@
 package com.garyzhangscm.cwms.resources;
 
 
+import com.garyzhangscm.cwms.resources.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
 public class AuditorAwareImpl implements AuditorAware<String> {
+    @Autowired
+    private UserService userService;
     @Override
     public Optional<String> getCurrentAuditor() {
         try {
-            return Optional.of(SecurityContextHolder.getContext().getAuthentication().getName());
+            return Optional.of(userService.getCurrentUserName());
         }
         catch (Exception ex) {
 
