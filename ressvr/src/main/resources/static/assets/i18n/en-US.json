@@ -2372,5 +2372,7 @@
   "copyLocation": "Copy Location",
   "copy": "Copy",
   "order-summary": "Order Summary",
-  "outboundOrderValidatePartialLPNPick": "Validate Partial LPN During Pick"
+  "outboundOrderValidatePartialLPNPick": "Validate Partial LPN During Pick",
+  "menu.mobile.inbound.qc": "Inbound QC",
+  "menu.main.work-order.work-order-flow": "Work Order Flow"
 }

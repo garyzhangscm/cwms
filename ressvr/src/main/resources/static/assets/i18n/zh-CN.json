@@ -2367,5 +2367,7 @@
   "copyLocation": "复制库位",
   "copy": "复制",
   "order-summary": "订单汇总",
-  "outboundOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货"
+  "outboundOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货",
+  "menu.mobile.inbound.qc": "入库QC",
+  "menu.main.work-order.work-order-flow": "工单流"
 }

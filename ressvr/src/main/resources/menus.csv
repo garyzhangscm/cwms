@@ -146,6 +146,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png,true,false
 "Barcode Receiving",menu.mobile.inbound.barcode-receiving,barcode_receiving,2,Mobile-Menu-Inbound,Mobile-Inbound-BarcodeReceiving,menu_inbound_barcode_receiving.png,true,false
 "Reverse Receiving",menu.mobile.inbound.reverse-receiving,reverse_receiving,3,Mobile-Menu-Inbound,Mobile-Inbound-ReverseReceiving,menu_reverse.png,true,false
+"Inbound QC",menu.mobile.inbound.qc,inbound_qc,4,Mobile-Menu-Inbound,Mobile-Inbound-QC,menu_inventory_qc.png,true,false
 "Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png,true,false
 "Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png,true,false
 "Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png,true,false
