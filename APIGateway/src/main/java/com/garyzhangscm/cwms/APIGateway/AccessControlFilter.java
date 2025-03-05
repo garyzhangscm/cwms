@@ -49,10 +49,16 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/layout/companies",
             "/api/layout/warehouses",
             "/api/layout/warehouse-configuration/by-warehouse",
-            "/api/auth/users/username-by-token",
             "/api/resource/assets/i18n",
             "/api/resource/site-information/default",
-            "/api/auth/login"
+            "/api/auth/login",
+            "/api/auth/users/username-by-token",
+            // mobile related
+            "/api/resource/mobile",
+            "/api/resource/validate/rf",
+            "/api/layout/validate/locations",
+            "/api/resource/rf-app-version/latest-version",
+            "/api/resource/assets/images/mobile"
     };
 
     private static final String[] EMPTY_COMPANY_ID_ACCESSIBLE_URL_LIST = new String[]{
