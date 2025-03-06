@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.APIGateway;
 import com.garyzhangscm.cwms.APIGateway.exception.UnauthorizedException;
 import com.garyzhangscm.cwms.APIGateway.model.JWTToken;
 import com.garyzhangscm.cwms.APIGateway.service.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +92,9 @@ public class AccessControlFilter implements GatewayFilter {
         }
         catch (UnauthorizedException ex) {
             return this.onError(exchange,ex.getMessage() ,HttpStatus.FORBIDDEN);
+        }
+        catch (ExpiredJwtException ex) {
+            return this.onError(exchange, "Login expired, please login again",HttpStatus.FORBIDDEN);
         }
         logger.debug("{} with parameters {} passed validation, forward to the micro service for handling",
                 exchange.getRequest().getURI().getPath(),
