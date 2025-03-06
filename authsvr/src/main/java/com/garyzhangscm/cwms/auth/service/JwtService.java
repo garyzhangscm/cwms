@@ -33,7 +33,7 @@ public class JwtService {
     // Replace this with a secure key in a real application, ideally fetched from environment variables
     @Value("${auth.jwt.secret}")
     public String secret;
-    @Value("${auth.jwt.token.expire_time_in_minutes:30}")
+    @Value("${auth.jwt.token.expire_time_in_minutes:180}")
     public int jwtTokenExpireTimeInMinutes;
 
     // Generate token with given user name

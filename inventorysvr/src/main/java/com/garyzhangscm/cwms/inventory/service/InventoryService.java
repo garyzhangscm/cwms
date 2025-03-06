@@ -5633,4 +5633,18 @@ public class InventoryService {
             inventory.setItemPackageType(null);
         }
     }
+
+
+    public List<QCInspectionRequest> generateManualQCInspectionRequests(Long warehouseId, Long inventoryId) {
+        Inventory inventory = findById(inventoryId);
+
+        logger.debug("Start to generate manual QC inspection request for inventory {} / {}",
+                inventory.getId(), inventory.getLpn());
+
+        // let's setup the item family and inventory status first, just in case
+        // we may need to compare
+
+        return qcInspectionRequestService.generateManualQCInspectionRequests(inventory);
+    }
+
 }

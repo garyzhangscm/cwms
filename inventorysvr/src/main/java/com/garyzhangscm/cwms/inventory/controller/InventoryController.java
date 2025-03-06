@@ -1015,4 +1015,12 @@ public class InventoryController {
         return inventoryService.getInventoryAgingForBilling(warehouseId, clientId, billableCategory,
                 startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
     }
+
+
+    @RequestMapping(value="/inventories/qc-inspection-requests/manual", method = RequestMethod.POST)
+    public List<QCInspectionRequest> generateManualQCInspectionRequests(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId ) {
+        return inventoryService.generateManualQCInspectionRequests(warehouseId, inventoryId);
+    }
 }

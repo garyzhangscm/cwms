@@ -268,6 +268,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     )
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+
+    // date used when we will use to keep inventory aging
+    @Column(name = "last_qc_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime lastQCTime;
+
     public Inventory split(String newLpn, Long newQuantity) {
         Inventory inventory = new Inventory();
         if (StringUtils.isBlank(newLpn)) {
@@ -953,5 +961,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setReceiptNumber(String receiptNumber) {
         this.receiptNumber = receiptNumber;
+    }
+
+    public ZonedDateTime getLastQCTime() {
+        return lastQCTime;
+    }
+
+    public void setLastQCTime(ZonedDateTime lastQCTime) {
+        this.lastQCTime = lastQCTime;
     }
 }
