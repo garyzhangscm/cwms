@@ -155,10 +155,11 @@ public class ProductionLineService implements TestDataInitiableService {
                 Sort.by(Sort.Direction.ASC, "name")
         );
 
-
+/**
         if (productionLines.size() > 0) {
             loadAttribute(productionLines, loadDetails, loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails, loadWorkOrderItemDetails);
         }
+ **/
         return productionLines;
     }
 
