@@ -997,6 +997,9 @@ public class ReceiptService {
         lpnLabelContent.put("item_name", receiptLine.getItem().getName());
         qrCode.append("itemName=").append(receiptLine.getItem().getName()).append(";");
 
+        lpnLabelContent.put("item_id", receiptLine.getItemId());
+        qrCode.append("itemId=").append(receiptLine.getItemId()).append(";");
+
         lpnLabelContent.put("receipt_number", receiptLine.getReceipt().getNumber());
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
