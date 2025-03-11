@@ -28,6 +28,8 @@ public class UserAuthentication {
     // private Long id;
     // private Long time;
     private int refreshIn;
+    // expired in minutes
+    private int expiredIn;
 
 /**
     public JWTTokenWrapper(String token, String name, String email, Long id, Long time,
@@ -49,12 +51,14 @@ public class UserAuthentication {
                               String refreshToken,
                               String name,
                               String email,
-                              int refreshIn) {
+                              int refreshIn,
+                              int expiredIn) {
         this.token = token;
         this.refreshToken = refreshToken;
         this.name = name;
         this.email = email;
         this.refreshIn = refreshIn;
+        this.expiredIn = expiredIn;
 
     }
     public UserAuthentication(User user) {
@@ -106,4 +110,11 @@ public class UserAuthentication {
         this.refreshIn = refreshIn;
     }
 
+    public int getExpiredIn() {
+        return expiredIn;
+    }
+
+    public void setExpiredIn(int expiredIn) {
+        this.expiredIn = expiredIn;
+    }
 }
