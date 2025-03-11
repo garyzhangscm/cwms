@@ -229,6 +229,7 @@ public class UserService implements UserDetailsService {
 
         UserAuthentication userAuthentication = new UserAuthentication(user);
         userAuthentication.setRefreshIn(jwtTokenExpireTimeInMinutes / 2);
+        userAuthentication.setExpiredIn(jwtTokenExpireTimeInMinutes);
         return userAuthentication;
     }
     public UserAuthentication refreshJWTToken(JWTToken jwtToken, String refreshToken) {
