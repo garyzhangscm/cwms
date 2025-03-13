@@ -22,21 +22,18 @@ import com.garyzhangscm.cwms.resources.exception.MissingInformationException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.CustomReportRepository;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -166,13 +163,21 @@ public class CustomReportService {
 
     }
 
-    @Transactional
-    public CustomReportExecutionHistory runCustomReport(Long id,
-                                                        Long companyId,
-                                                        Long warehouseId,
-                                                        CustomReport customReport) {
-        Map<String, String> paramMap = new HashMap<>();
+    /***
+     * get the parameterized query and the actual query for the custom report
+     * @param companyId
+     * @param warehouseId
+     * @param customReport
+     * @return
+     */
+    public Triple<String, String, Map<String, String>> getQuery(Long companyId,
+                                                Long warehouseId,
+                                                CustomReport customReport) {
 
+
+        Map<String, String> paramMap = new HashMap<>();
+        // we will run the query string
+        // and show the actual query string for tracibility
         StringBuilder queryString = new StringBuilder()
                 .append(customReport.getQuery()).append(" where 1 = 1");
 
@@ -206,26 +211,46 @@ public class CustomReportService {
 
 
         //Map<String, String> validParameters = new HashMap<>();
+        for (CustomReportParameter customReportParameter : customReport.getCustomReportParameters()) {
+            if (Strings.isBlank(customReportParameter.getName())) {
+                throw MissingInformationException.raiseException("report is not correctly setup, " +
+                        " the parameter name is empty");
+            }
 
-        customReport.getCustomReportParameters().stream().filter(
-                customReportParameter -> Strings.isNotBlank(customReportParameter.getName()) &&
-                        Strings.isNotBlank(customReportParameter.getValue())
-        )
-                .forEach(
-                        customReportParameter -> {
-                            queryString.append(" and ").append(customReportParameter.getName())
-                                   .append(" = ")
-                                    .append(" :").append(customReportParameter.getName());
+            // 1. if the parameter is passed in, use the value
+            // 2. if there's a default value define, user the default value
+            // 3. if the parameter is not required, ignore the parameter
+            // 4. raise error
+            if (Strings.isNotBlank(customReportParameter.getValue())) {
 
-                            paramMap.put(customReportParameter.getName(), customReportParameter.getValue());
+                queryString.append(" and ").append(customReportParameter.getName())
+                        .append(" = ")
+                        .append(" :").append(customReportParameter.getName());
 
-                            actualQueryString.append(" and ").append(customReportParameter.getName())
-                                    .append(" = '").append(customReportParameter.getValue()).append("'");
+                paramMap.put(customReportParameter.getName(), customReportParameter.getValue());
 
-                            //validParameters.put(customReportParameter.getName(),
-                            //        customReportParameter.getValue());
-                        }
-                );
+                actualQueryString.append(" and ").append(customReportParameter.getName())
+                        .append(" = '").append(customReportParameter.getValue()).append("'");
+            }
+            else if (Strings.isNotBlank(customReportParameter.getDefaultValue())){
+
+                queryString.append(" and ").append(customReportParameter.getName())
+                        .append(" = ")
+                        .append(" :").append(customReportParameter.getName());
+
+                paramMap.put(customReportParameter.getName(), customReportParameter.getDefaultValue());
+
+                actualQueryString.append(" and ").append(customReportParameter.getName())
+                        .append(" = '").append(customReportParameter.getDefaultValue()).append("'");
+
+            }
+            else if (Boolean.TRUE.equals(customReportParameter.getRequired())) {
+
+                throw MissingInformationException.raiseException("parameter  " + customReportParameter.getName() +
+                        " is required");
+            }
+        }
+
 
 
         if (Strings.isNotBlank(customReport.getGroupBy())) {
@@ -236,13 +261,60 @@ public class CustomReportService {
             queryString.append(" order  by ").append(customReport.getSortBy());
             actualQueryString.append(" order  by ").append(customReport.getSortBy());
         }
+        return Triple.of(queryString.toString(), actualQueryString.toString(), paramMap);
+    }
+
+    @Transactional
+    public CustomReportExecutionHistory runCustomReport(Long id,
+                                                        Long companyId,
+                                                        Long warehouseId,
+                                                        CustomReport customReport) {
 
         CustomReportExecutionHistory customReportExecutionHistory =
                 new CustomReportExecutionHistory(customReport, companyId, warehouseId,
-                        actualQueryString.toString());
+                        customReport.getQuery());
 
         customReportExecutionHistory =
                 customReportExecutionHistoryService.addCustomReportExecutionHistory(customReportExecutionHistory);
+
+        Map<String, String> paramMap;
+        String queryString;
+        String actualQueryString;
+
+        try{
+            Triple<String, String, Map<String, String>> query = getQuery(companyId, warehouseId, customReport);
+            queryString = query.getLeft();
+            actualQueryString = query.getMiddle();
+            paramMap = query.getRight();
+
+            customReportExecutionHistory.setQuery(actualQueryString);
+            customReportExecutionHistoryService.save(customReportExecutionHistory);
+
+        }
+        catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            customReportExecutionHistory.setCustomReportExecutionPercent(100);
+            customReportExecutionHistory.setStatus(CustomReportExecutionStatus.FAIL);
+            customReportExecutionHistory.setErrorMessage(ex.getMessage());
+            customReportExecutionHistoryService.save(customReportExecutionHistory);
+            return customReportExecutionHistory;
+        }
+
+        if (Strings.isBlank(queryString) || Strings.isBlank(actualQueryString) ||
+            Objects.isNull(paramMap)) {
+            logger.debug("fail to generate the query");
+
+            customReportExecutionHistory.setCustomReportExecutionPercent(100);
+            customReportExecutionHistory.setStatus(CustomReportExecutionStatus.FAIL);
+            customReportExecutionHistory.setErrorMessage("fail to generate the query");
+            customReportExecutionHistoryService.save(customReportExecutionHistory);
+            return customReportExecutionHistory;
+        }
+
+
+
 
         Long customReportExecutionHistoryId = customReportExecutionHistory.getId();
         inProcessCustomReport.put(customReportExecutionHistoryId, customReportExecutionHistory);
@@ -254,7 +326,7 @@ public class CustomReportService {
             // the one in the new thread is working on the same CustomReportExecutionHistory
             // as the one in the main thread
             try {
-                Thread.sleep(3000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
