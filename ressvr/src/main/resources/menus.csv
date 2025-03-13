@@ -126,7 +126,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Data Transfer",menu.main.util.data-transfer,/util/data-transfer,14,Main-Menu-Util,Util-DataTransfer,,true,true
 "QuickBook Auth",menu.main.util.quickbook-auth,/util/quickbook-auth,15,Main-Menu-Util,Util-QuickBookAuth,,true,true
 "QuickBook Configuration",menu.main.util.quickbook-config,/util/quickbook/configuration,16,Main-Menu-Util,Util-QuickbookConfig,,true,true
-"Custom Report",menu.main.util.custom-report,/util/custom-report,17,Main-Menu-Util,Util-CustomReport,,true,true
+"Custom Report",menu.main.util.custom-report,/util/custom-report,17,Main-Menu-Util,Util-CustomReport,,true,false
 "Alert",menu.main.alert.alert,/alert/alert,1,Main-Menu-Alert,Alert-Alert,,true,true
 "Alert Configuration",menu.main.alert.config,/alert/configuration,2,Main-Menu-Alert,Alert-Config,,true,true
 "Alert Subscription",menu.main.alert.subscription,/alert/subscription,3,Main-Menu-Alert,Alert-Subscription,,true,false

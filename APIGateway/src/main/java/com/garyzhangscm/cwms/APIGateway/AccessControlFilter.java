@@ -153,22 +153,22 @@ public class AccessControlFilter implements GatewayFilter {
 
     private String getJWTTokenString(ServerHttpRequest request) {
 
-        if (!request.getHeaders().containsKey("Authorization")) {
-            return "";
+        String token = "";
+        if (request.getHeaders().containsKey("Authorization")) {
+            token = request.getHeaders().get("Authorization").get(0);
+            // token is "Bearer xxxxxxxxxxxxxxxxx"
+            // we will get the actual JWT token
+            token = token.substring(7).trim();
+            logger.debug("Get token {} from http header", token);
         }
-        String token = request.getHeaders().get("Authorization").get(0);
-        logger.debug("JWT token: " + token);
-
-        if (Strings.isBlank(token)) {
-            return "";
-        }
-
-        if (token.startsWith("Bearer")) {
-            return token.substring(7).trim();
+        else if (request.getQueryParams().containsKey("token")){
+            token = request.getQueryParams().get("token").get(0);
+            logger.debug("Get token {} from query string", token);
         }
         else {
-            return "";
+            logger.debug("fail to get jwt token");
         }
+        return token;
 
 
     }
@@ -222,7 +222,8 @@ public class AccessControlFilter implements GatewayFilter {
                 return request.getHeaders().get(name).get(0);
             }
         }
-        logger.debug("we can't find {} in the http request header, let's see if we can find from the query string");
+        logger.debug("we can't find {} in the http request header, let's see if we can find from the query string",
+                name);
         // see if we can find from the parameters
         MultiValueMap<String, String> parameters =  request.getQueryParams();
 

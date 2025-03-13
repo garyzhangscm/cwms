@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.controller;
 
 import com.garyzhangscm.cwms.resources.model.CustomReportExecutionHistory;
 import com.garyzhangscm.cwms.resources.service.CustomReportExecutionHistoryService;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -62,11 +63,16 @@ public class CustomReportExecutionHistoryController {
     public ResponseEntity<Resource> downloadCustomReportResultFile(@PathVariable Long id)
             throws FileNotFoundException {
 
-        File customReportResultFile = customReportExecutionHistoryService.getCustomReportResultFile(id);
+        CustomReportExecutionHistory customReportExecutionHistory
+                = customReportExecutionHistoryService.findById(id);
+        File customReportResultFile = new File(customReportExecutionHistory.getResultFile());
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(customReportResultFile));
+
+        String resultFileName =  customReportExecutionHistory.getCustomReport().getName() +
+                "." + FilenameUtils.getExtension(customReportResultFile.getName());
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;fileName=" + customReportResultFile.getName())
+                .header("Content-Disposition", "attachment;fileName=" + resultFileName)
                 .contentLength(customReportResultFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
