@@ -49,6 +49,13 @@ public class CustomReportParameter extends AuditibleEntity<String>  {
     @Column(name = "display_text")
     private String displayText;
 
+    @Column(name = "value_required")
+    private Boolean required;
+
+    @Column(name = "default_value")
+    private String defaultValue;
+
+
     @Transient
     private String value;
 
@@ -106,5 +113,21 @@ public class CustomReportParameter extends AuditibleEntity<String>  {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }
