@@ -142,6 +142,8 @@ public class CustomReportService {
         customReport.setQuery(
                 customReport.getQuery().replace("\n", "  ")
         );
+
+        logger.debug("start to add custom report \n{}", customReport);
         return saveOrUpdate(customReport);
 
     }
@@ -270,9 +272,14 @@ public class CustomReportService {
                                                         Long warehouseId,
                                                         CustomReport customReport) {
 
+        CustomReport existingCustomReport = findById(id);
+        copyParameterValues(existingCustomReport, customReport);
+
+
+
         CustomReportExecutionHistory customReportExecutionHistory =
-                new CustomReportExecutionHistory(customReport, companyId, warehouseId,
-                        customReport.getQuery());
+                new CustomReportExecutionHistory(existingCustomReport, companyId, warehouseId,
+                        existingCustomReport.getQuery());
 
         customReportExecutionHistory =
                 customReportExecutionHistoryService.addCustomReportExecutionHistory(customReportExecutionHistory);
@@ -282,7 +289,7 @@ public class CustomReportService {
         String actualQueryString;
 
         try{
-            Triple<String, String, Map<String, String>> query = getQuery(companyId, warehouseId, customReport);
+            Triple<String, String, Map<String, String>> query = getQuery(companyId, warehouseId, existingCustomReport);
             queryString = query.getLeft();
             actualQueryString = query.getMiddle();
             paramMap = query.getRight();
@@ -413,6 +420,30 @@ public class CustomReportService {
 
         return customReportExecutionHistory;
 
+    }
+
+    /**
+     * Copy the parameters value from to
+     * @param to
+     * @param from
+     */
+    private void copyParameterValues(CustomReport to, CustomReport from) {
+
+        // setup the custom report with parameters from the user
+        Map<Long, String> parametersWithValue =new HashMap<>();
+        from.getCustomReportParameters().forEach(
+                parameter -> parametersWithValue.put(
+                        parameter.getId(),
+                        parameter.getValue()
+                )
+        );
+        to.getCustomReportParameters().forEach(
+                parameter -> {
+                    if (parametersWithValue.containsKey(parameter.getId())) {
+                        parameter.setValue(parametersWithValue.get(parameter.getId()));
+                    }
+                }
+        );
     }
 
     private int displaySqlRowSet(SqlRowSet sqlRowSet) {
