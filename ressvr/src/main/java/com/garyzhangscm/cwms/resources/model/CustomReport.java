@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.resources.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,9 @@ public class CustomReport extends AuditibleEntity<String>  {
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "description")
+    private String description;
 
     // whether run the query at the company level or
     // warehouse level
@@ -103,6 +108,14 @@ public class CustomReport extends AuditibleEntity<String>  {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Boolean getRunAtCompanyLevel() {

@@ -46,6 +46,7 @@ public class CustomReportParameter extends AuditibleEntity<String>  {
 
     @Column(name = "name")
     private String name;
+
     @Column(name = "display_text")
     private String displayText;
 
