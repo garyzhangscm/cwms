@@ -2369,5 +2369,6 @@
   "order-summary": "订单汇总",
   "outboundOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货",
   "menu.mobile.inbound.qc": "入库QC",
-  "menu.main.work-order.work-order-flow": "工单流"
+  "menu.main.work-order.work-order-flow": "工单流",
+  "send-delete-request": "发送删除请求"
 }

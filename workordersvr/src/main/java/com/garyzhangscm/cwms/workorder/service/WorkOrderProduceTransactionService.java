@@ -243,7 +243,7 @@ public class WorkOrderProduceTransactionService  {
         logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
 
         // get the latest information
-        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId(), true, false);
+        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
         workOrderProduceTransaction.setWorkOrder(workOrder);
         logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
@@ -385,7 +385,7 @@ public class WorkOrderProduceTransactionService  {
             else {
                 WorkOrder workOrder = workOrderService.findByNumber(
                         workOrderProduceTransaction.getWarehouseId(),
-                        workOrderProduceTransaction.getWorkOrderNumber(), false
+                        workOrderProduceTransaction.getWorkOrderNumber()
                 );
                 if (Objects.isNull(workOrder)) {
 

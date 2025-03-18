@@ -86,10 +86,8 @@ public class WorkOrderController {
 
 
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.GET)
-    public WorkOrder findWorkOrder(@PathVariable Long id,
-                                   @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails,
-                                   @RequestParam(name="loadWorkOrderDetails", required = false, defaultValue = "true") boolean loadWorkOrderDetails) {
-        return workOrderService.findById(id, loadDetails, loadWorkOrderDetails);
+    public WorkOrder findWorkOrder(@PathVariable Long id) {
+        return workOrderService.findById(id);
     }
 
     @BillableEndpoint

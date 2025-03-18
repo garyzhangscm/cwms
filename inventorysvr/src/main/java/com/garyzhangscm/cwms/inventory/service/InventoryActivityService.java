@@ -598,17 +598,25 @@ public class InventoryActivityService{
 
     private String getTransactionGroupId(Long warehouseId) {
         String transactionGroupId;
-        if (Objects.isNull(httpSession.getAttribute("Inventory-Activity-Transaction-Id"))) {
-            logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
-            transactionGroupId = commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId(warehouseId);
-            httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionGroupId);
-            logger.debug(">> {}", transactionGroupId);
+        try {
+
+            if (Objects.isNull(httpSession.getAttribute("Inventory-Activity-Transaction-Id"))) {
+                logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
+                transactionGroupId = commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId(warehouseId);
+                httpSession.setAttribute("Inventory-Activity-Transaction-Id", transactionGroupId);
+                logger.debug(">> {}", transactionGroupId);
+            }
+            else {
+                transactionGroupId = httpSession.getAttribute("Inventory-Activity-Transaction-Id").toString();
+                logger.debug("Get transaction ID {} from current session", transactionGroupId);
+            }
+            return transactionGroupId;
         }
-        else {
-            transactionGroupId = httpSession.getAttribute("Inventory-Activity-Transaction-Id").toString();
-            logger.debug("Get transaction ID {} from current session", transactionGroupId);
+        catch (IllegalStateException ex) {
+            ex.printStackTrace();
+            logger.debug("Error when get transaction group id from session, we will always get a new group id");
+            return commonServiceRestemplateClient.getNextInventoryActivityTransactionGroupId(warehouseId);
         }
-        return transactionGroupId;
     }
 
     private String getNextTransactionId(Long warehouseId) {
@@ -616,7 +624,16 @@ public class InventoryActivityService{
     }
 
     private String getRFCode() {
-        return httpServletRequest.getHeader("rfCode") ;
+
+        try {
+            return httpServletRequest.getHeader("rfCode");
+
+        }
+        catch (IllegalStateException ex) {
+            ex.printStackTrace();
+            logger.debug("Not in a http session, we will return Anonymous as the RF code");
+            return "Anonymous";
+        }
     }
 
 

@@ -54,7 +54,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1975,7 +1975,9 @@ public class InventoryService {
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
                                             String documentNumber, String comment, Long reasonCodeId) {
 
-        logger.debug("Start to remove inventory");
+        logger.debug("start to remove inventory {} , lpn {}",
+                inventory.getId(),
+                inventory.getLpn());
         if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
@@ -4137,11 +4139,45 @@ public class InventoryService {
 
     }
 
-    public List<Inventory> removeInventores(String inventoryIds) {
+    public String removeInventores(Long companyId, String inventoryIds, Boolean asyncronized) {
 
-        return Arrays.stream(inventoryIds.split(",")).map(
-                id -> Long.parseLong(id)
-        ).map(id -> removeInventory(id, "", "")).collect(Collectors.toList());
+        if (Boolean.TRUE.equals(asyncronized)) {
+            User user = userService.getCurrentUser(companyId);
+
+            // we will need to run the removal asyncronized. let's make sure
+            // there's no approval needed for the current user
+            ExecutorService executor = Executors.newFixedThreadPool(10);
+
+            for(String id : inventoryIds.split(",")) {
+                executor.execute(() -> {
+
+                    Inventory inventory = findById(Long.parseLong(id));
+                    if (InventoryQuantityChangeType.INVENTORY_ADJUST.isNoApprovalNeeded()) {
+
+                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
+                    }
+                    else if (inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory,
+                            InventoryQuantityChangeType.INVENTORY_ADJUST, inventory.getQuantity(), 0l,
+                            user)) {
+
+                        writeInventoryAdjustRequest(inventory, 0L,
+                                InventoryQuantityChangeType.INVENTORY_ADJUST,
+                                "", "", null, false);
+                    }
+                    else {
+                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
+                    }
+                });
+            }
+
+            return "remove request has been sent";
+        }
+        else {
+
+            return "all inventory has been removed";
+        }
 
     }
 

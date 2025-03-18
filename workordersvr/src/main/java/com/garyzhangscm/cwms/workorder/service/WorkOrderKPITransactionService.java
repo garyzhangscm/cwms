@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderKPIRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderKPITransactionRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,32 +49,30 @@ public class WorkOrderKPITransactionService {
     private WorkOrderKPIService workOrderKPIService;
 
 
-    public WorkOrderKPITransaction findById(Long id, boolean loadDetails) {
-        WorkOrderKPITransaction workOrderKPITransaction = workOrderKPITransactionRepository.findById(id)
+    public WorkOrderKPITransaction findById(Long id) {
+        return workOrderKPITransactionRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("work order KPI transaction not found by id: " + id));
-        if (loadDetails) {
-            loadAttribute(workOrderKPITransaction);
-        }
-        return workOrderKPITransaction;
     }
 
-    public WorkOrderKPITransaction findById(Long id) {
-        return findById(id, true);
-    }
 
 
     public List<WorkOrderKPITransaction> findAll(Long warehouseId, WorkOrder workOrder,
                                                  String username, String workingTeamName,
-                                                 boolean genericQuery, boolean loadDetails) {
-
-        List<WorkOrderKPITransaction> workOrderKPITransactions =  workOrderKPITransactionRepository.findAll(
+                                                 String workOrderNumber) {
+        return workOrderKPITransactionRepository.findAll(
                 (Root<WorkOrderKPITransaction> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (Objects.nonNull(warehouseId)) {
+                    if (Objects.nonNull(warehouseId) || Strings.isNotBlank(workOrderNumber)) {
 
                         Join<WorkOrderKPI, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
-                        predicates.add(criteriaBuilder.equal(joinWorkOrder.get("warehouseId"), warehouseId));
+                        if (Objects.nonNull(warehouseId) ) {
+
+                            predicates.add(criteriaBuilder.equal(joinWorkOrder.get("warehouseId"), warehouseId));
+                        }
+                        if (Strings.isNotBlank(workOrderNumber)) {
+                            predicates.add(criteriaBuilder.equal(joinWorkOrder.get("number"), workOrderNumber));
+                        }
                     }
 
 
@@ -93,32 +92,11 @@ public class WorkOrderKPITransactionService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
-
-        if (workOrderKPITransactions.size() > 0 && loadDetails) {
-            loadAttribute(workOrderKPITransactions);
-        }
-        return workOrderKPITransactions;
-    }
-
-    public List<WorkOrderKPITransaction> findAll(Long warehouseId, WorkOrder workOrder,
-                                                 String username, String workingTeamName,
-                                                 boolean genericQuery ) {
-        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery, true);
-    }
-
-    public List<WorkOrderKPITransaction> findAll(Long warehouseId, String workOrderNumber,
-                                                 String username, String workingTeamName,
-                                                 boolean genericQuery) {
-        WorkOrder workOrder = null;
-        if (StringUtils.isNotBlank(workOrderNumber)) {
-            workOrder = workOrderService.findByNumber(warehouseId, workOrderNumber);
-        }
-        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery);
     }
 
 
 
-
+/**
     public void loadAttribute(List<WorkOrderKPITransaction> workOrderKPITransactions) {
         for (WorkOrderKPITransaction workOrderKPITransaction : workOrderKPITransactions) {
             loadAttribute(workOrderKPITransaction);
@@ -131,35 +109,19 @@ public class WorkOrderKPITransactionService {
 
 
     }
+ **/
 
-    public WorkOrderKPITransaction findByWorkOrderAndUsername(WorkOrder workOrder, String username, boolean loadDetails) {
-        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
-        return findAll(warehouseId, workOrder, username, null,  loadDetails).stream().findFirst().orElse(null);
-    }
-    public List<WorkOrderKPITransaction> findByWorkOrder(WorkOrder workOrder, boolean loadDetails) {
-        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
-        return findAll(warehouseId, workOrder, null, null, loadDetails);
-    }
     public List<WorkOrderKPITransaction> findByWorkOrder(WorkOrder workOrder) {
-        return findByWorkOrder(workOrder, true);
-    }
-
-
-    public WorkOrderKPITransaction findByWorkOrderAndUsername(WorkOrder workOrder, String username) {
-        return findByWorkOrderAndUsername(workOrder, username, true);
+        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
+        return findAll(warehouseId, workOrder, null, null, null);
     }
 
 
 
 
     public WorkOrderKPITransaction save(WorkOrderKPITransaction workOrderKPITransaction) {
-        WorkOrderKPITransaction newWorkOrderKPITransaction = workOrderKPITransactionRepository.save(workOrderKPITransaction);
-        loadAttribute(newWorkOrderKPITransaction);
-        return newWorkOrderKPITransaction;
+        return workOrderKPITransactionRepository.save(workOrderKPITransaction);
     }
-
-
-
 
     public void delete(WorkOrderKPITransaction workOrderKPITransaction) {
         workOrderKPITransactionRepository.delete(workOrderKPITransaction);
