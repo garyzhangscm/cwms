@@ -244,7 +244,15 @@ public class WorkOrderProduceTransactionService  {
 
         // get the latest information
         WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
+        if (Objects.isNull(workOrder.getWarehouse())) {
+            workOrder.setWarehouse(
+                    warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                            workOrder.getWarehouseId()
+                    )
+            );
+        }
         workOrderProduceTransaction.setWorkOrder(workOrder);
+
         logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
         // make sure
