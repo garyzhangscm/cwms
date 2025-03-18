@@ -30,11 +30,19 @@ public class UserService {
 
 
     public String getCurrentUserName() {
-        if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+        try {
 
-            return request.getHeader("username");
+            if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+
+                return request.getHeader("username");
+            }
+            return SecurityContextHolder.getContext().getAuthentication().getName();
         }
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        catch (IllegalStateException ex) {
+            ex.printStackTrace();
+            logger.debug("Not in a http session, we will return Anonymous as the username");
+            return "Anonymous";
+        }
     }
 
     /**

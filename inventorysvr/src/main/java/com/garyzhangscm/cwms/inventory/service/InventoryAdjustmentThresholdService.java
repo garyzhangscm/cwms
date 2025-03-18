@@ -430,7 +430,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         try {
             username = userService.getCurrentUserName();
         }
-        catch (NullPointerException ex) {
+        catch (Exception ex) {
             logger.debug("Can't get user from the context, by default allow the inventory adjust");
             return false;
         }

@@ -2374,5 +2374,6 @@
   "order-summary": "Order Summary",
   "outboundOrderValidatePartialLPNPick": "Validate Partial LPN During Pick",
   "menu.mobile.inbound.qc": "Inbound QC",
-  "menu.main.work-order.work-order-flow": "Work Order Flow"
+  "menu.main.work-order.work-order-flow": "Work Order Flow",
+  "send-delete-request": "Send Remove Request"
 }

@@ -462,10 +462,18 @@ public class InventoryController {
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.DELETE, value="/inventory")
-    public List<Inventory> removeInventories(@RequestParam String inventoryIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory/batch-remove")
+    public ResponseBodyWrapper<String> removeInventories(
+            @RequestParam Long companyId,
+            @RequestBody String inventoryIds,
+                                    @RequestParam(name ="asyncronized", required =  false, defaultValue = "false") Boolean asyncronized) {
 
-        return inventoryService.removeInventores(inventoryIds);
+        logger.debug("Start to remove inventory by id {}", inventoryIds);
+        logger.debug("asyncronized? {}", asyncronized);
+        if (Strings.isBlank(inventoryIds.trim())) {
+            return ResponseBodyWrapper.success("no inventory id is passed in");
+        }
+        return ResponseBodyWrapper.success(inventoryService.removeInventores(companyId, inventoryIds, asyncronized));
     }
 
 

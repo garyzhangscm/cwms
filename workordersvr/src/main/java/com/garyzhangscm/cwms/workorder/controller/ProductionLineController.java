@@ -45,14 +45,8 @@ public class ProductionLineController {
                                                        @RequestParam(name="ids", required = false, defaultValue = "") String productionLineIds,
                                                        @RequestParam(name="names", required = false, defaultValue = "") String productionLineNames,
                                                        @RequestParam(name="type", required = false, defaultValue = "") String type,
-                                                       @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled,
-                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericMatch,
-                                                       @RequestParam(name="loadDetailsForDeassignedWorkOrder", required = false, defaultValue = "false") Boolean loadDetailsForDeassignedWorkOrder,
-                                                       @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
-                                                       @RequestParam(name="loadWorkOrderDetails", required = false, defaultValue = "true") Boolean loadWorkOrderDetails,
-                                                       @RequestParam(name="loadWorkOrderItemDetails", required = false, defaultValue = "false") Boolean loadWorkOrderItemDetails) {
-        return productionLineService.findAll(warehouseId, name, productionLineIds, productionLineNames, type, enabled, genericMatch,
-                loadDetailsForDeassignedWorkOrder, loadDetails, loadWorkOrderDetails, loadWorkOrderItemDetails);
+                                                       @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
+        return productionLineService.findAll(warehouseId, name, productionLineIds, productionLineNames, type, enabled);
     }
 
     @RequestMapping(value="/production-lines/available", method = RequestMethod.GET)

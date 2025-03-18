@@ -78,17 +78,11 @@ public class ProductionLineAssignmentService   {
 
 
 
-    public ProductionLineAssignment findById(Long id) {
-        return findById(id, true);
-    }
-    public ProductionLineAssignment findById(Long id, boolean loadDetail ) {
-        ProductionLineAssignment productionLineAssignment = productionLineAssignmentRepository.findById(id)
+    public ProductionLineAssignment findById(Long id ) {
+        return productionLineAssignmentRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line assignment not found by id: " + id));
-        if (loadDetail) {
-            loadAttribute(productionLineAssignment);
-        }
-        return productionLineAssignment;
     }
+    /**
     public void loadAttribute(List<ProductionLineAssignment> productionLineAssignments) {
         productionLineAssignments.forEach(
                 productionLineAssignment -> loadAttribute(productionLineAssignment)
@@ -106,6 +100,7 @@ public class ProductionLineAssignmentService   {
                 workOrderService.loadAttribute(productionLineAssignment.getWorkOrder());
         }
     }
+     **/
 
 
     public List<ProductionLineAssignment> findAll(Long warehouseId,
@@ -353,10 +348,7 @@ public class ProductionLineAssignmentService   {
             productionLineAssignments.size(), productionLineId, warehouseId);
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()
-        ).map(workOrder -> {
-            workOrderService.loadAttribute(workOrder, false, false, true);
-            return workOrder;
-        }).collect(Collectors.toList());
+        ).collect(Collectors.toList());
     }
 
     private void processReturnableMaterial(
@@ -456,7 +448,7 @@ public class ProductionLineAssignmentService   {
 
         logger.debug("Start to deassign work order {} from production line {}",
                 workOrderId, productionLineId);
-        WorkOrder workOrder = workOrderService.findById(workOrderId, false, false);
+        WorkOrder workOrder = workOrderService.findById(workOrderId);
         ProductionLineAssignment productionLineAssignment =
                 workOrder.getProductionLineAssignments().stream().filter(
                         existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)
@@ -661,14 +653,9 @@ public class ProductionLineAssignmentService   {
                                                                              Boolean loadDetails) {
         logger.debug("start to get production line assignment between [{}, {}] for warehouse {}",
                 startTime, endTime, warehouseId);
-        List<ProductionLineAssignment> productionLineAssignments =
-                productionLineAssignmentRepository.getProductionAssignmentByTimeRange(
+        return productionLineAssignmentRepository.getProductionAssignmentByTimeRange(
                         warehouseId, startTime, endTime
                 );
-        if (loadDetails) {
-            loadAttribute(productionLineAssignments);
-        }
-        return productionLineAssignments;
     }
 
     public List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId,
