@@ -276,6 +276,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime lastQCTime;
 
+    // flag to make the inventory for remove
+    @Column(name = "marked_for_remove")
+    private Boolean markedForRemove;
+
     public Inventory split(String newLpn, Long newQuantity) {
         Inventory inventory = new Inventory();
         if (StringUtils.isBlank(newLpn)) {
@@ -969,5 +973,13 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setLastQCTime(ZonedDateTime lastQCTime) {
         this.lastQCTime = lastQCTime;
+    }
+
+    public Boolean getMarkedForRemove() {
+        return markedForRemove;
+    }
+
+    public void setMarkedForRemove(Boolean markedForRemove) {
+        this.markedForRemove = markedForRemove;
     }
 }

@@ -34,15 +34,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+ import org.springframework.stereotype.Service;
 
 
 import javax.persistence.criteria.*;
@@ -4148,6 +4145,12 @@ public class InventoryService {
             // there's no approval needed for the current user
             ExecutorService executor = Executors.newFixedThreadPool(10);
 
+            // for asyncroized we will mark the inventory as removed
+            // then actually remove the inventory
+            markAsRemoved(inventoryIds);
+
+
+
             for(String id : inventoryIds.split(",")) {
                 executor.execute(() -> {
 
@@ -4178,6 +4181,13 @@ public class InventoryService {
 
             return "all inventory has been removed";
         }
+
+    }
+
+    private void markAsRemoved(String inventoryIds) {
+        List<Long> ids =  Arrays.stream(inventoryIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
+
+        inventoryRepository.markAsRemoved(ids);
 
     }
 
