@@ -120,4 +120,11 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     @Transactional
     long deleteByLocationId(Long locationId);
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "update Inventory inv set inv.markedForRemove = true, inv.virtual = true " +
+            " where inv.id in :ids")
+    void markAsRemoved(List<Long> ids);
 }
