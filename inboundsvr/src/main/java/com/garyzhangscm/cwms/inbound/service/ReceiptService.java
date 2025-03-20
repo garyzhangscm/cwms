@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -294,6 +296,127 @@ public class ReceiptService {
         }
         return receipts;
     }
+    public Page<Receipt> findAllByPagination(Long warehouseId, String number, String receiptStatusList,
+                                             Long supplierId, String supplierName,
+                                             Long clientId, String clientName,
+                                             ZonedDateTime checkInStartTime,
+                                             ZonedDateTime checkInEndTime,
+                                             LocalDate checkInDate,
+                                             Long purchaseOrderId,
+                                             String ids,
+                                             boolean loadDetails,
+                                             ClientRestriction clientRestriction,
+                                             Pageable pageable) {
+
+
+
+        return receiptRepository.findAll(
+                (Root<Receipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
+
+                        for(String id : ids.split(",")) {
+                            inIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inIds));
+                    }
+                    if (StringUtils.isNotBlank(number)) {
+
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+                    }
+
+                    if (Objects.nonNull(supplierId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplierId));
+
+                    }
+                    if (StringUtils.isNotBlank(supplierName)) {
+
+                        Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouseId, supplierName);
+                        if (Objects.nonNull(supplier)) {
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplier.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the supplier by name,
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), -1));
+                        }
+                    }
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+
+                    }
+                    if (StringUtils.isNotBlank(clientName)) {
+
+                        Client client = commonServiceRestemplateClient.getClientByName(warehouseId, clientName);
+                        if (Objects.nonNull(client)) {
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), client.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the client by name,
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), -1));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(receiptStatusList)) {
+                        CriteriaBuilder.In<ReceiptStatus> inReceiptStatuses = criteriaBuilder.in(root.get("receiptStatus"));
+                        for(String receiptStatus : receiptStatusList.split(",")) {
+                            inReceiptStatuses.value(ReceiptStatus.valueOf(receiptStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptStatuses));
+                    }
+
+                    if (Objects.nonNull(checkInStartTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("checkInTime"), checkInStartTime));
+
+                    }
+
+                    if (Objects.nonNull(checkInEndTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("checkInTime"), checkInEndTime));
+
+                    }
+                    logger.debug(">> Check In Date is passed in {}", checkInDate);
+                    if (Objects.nonNull(checkInDate)) {
+                        LocalDateTime dateStartTime = checkInDate.atStartOfDay();
+                        LocalDateTime dateEndTime = checkInDate.atStartOfDay().plusDays(1).minusSeconds(1);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("checkInTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+
+                    }
+                    if (Objects.nonNull(purchaseOrderId)) {
+                        Join<Receipt, PurchaseOrder> joinPurchaseOrder = root.join("purchaseOrder", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinPurchaseOrder.get("id"), purchaseOrderId));
+
+                    }
+
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+
+
+                }
+                ,
+                pageable
+        );
+    }
+
 
     public Receipt findByNumber(Long warehouseId, Long clientId, String number, boolean loadDetails) {
         Receipt receipt = receiptRepository.findByNumber(warehouseId, clientId, number);
