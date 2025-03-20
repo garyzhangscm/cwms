@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.*;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import com.garyzhangscm.cwms.workorder.exception.MissingInformationException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
@@ -1660,6 +1661,19 @@ public class WorkOrderService implements TestDataInitiableService {
                                                     Long lpnQuantity, String productionLineName) {
 
         Map<String, Object> lpnLabelContent = new HashMap<>();
+        if (Objects.isNull(workOrder.getItem())) {
+            workOrder.setItem(
+                    inventoryServiceRestemplateClient.getItemById(
+                            workOrder.getItemId()
+                    )
+            );
+        }
+
+        if (Objects.isNull(workOrder.getItem())) {
+            throw MissingInformationException.raiseException("Not able to print LPN label for work order " +
+                    workOrder.getNumber() + ". Fail to get item for this work order");
+        }
+
 
         lpnLabelContent.put("lpn", lpnNumber);
         lpnLabelContent.put("item_family", Objects.nonNull(workOrder.getItem().getItemFamily()) ?
