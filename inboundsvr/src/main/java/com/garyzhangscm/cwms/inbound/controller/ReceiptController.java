@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,6 +88,37 @@ public class ReceiptController {
                 checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, ids, loadDetails, clientRestriction);
     }
 
+    @ClientValidationEndpoint
+    @RequestMapping(value="/paginated-receipts", method = RequestMethod.GET)
+    public Page<Receipt> findPaginatedReceipts(@RequestParam Long warehouseId,
+                                               @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                               @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
+                                               @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
+                                               @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
+                                               @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                               @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
+                                               @RequestParam(name = "checkInStartTime", required = false, defaultValue = "")
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime checkInStartTime,
+                                               @RequestParam(name = "checkInEndTime", required = false, defaultValue = "")
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
+                                               @RequestParam(name = "checkInDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
+                                               @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
+                                               @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
+                                               @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                               @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                               @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize,
+                                               ClientRestriction clientRestriction) {
+
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number"));
+        //return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+        return receiptService.findAllByPagination(warehouseId, number, receiptStatusList,
+                supplierId, supplierName,
+                clientId, clientName,
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId,
+                ids, loadDetails, clientRestriction,
+                paging);
+    }
 
     @RequestMapping(value="/receipts/count-by-supplier", method = RequestMethod.GET)
     public Integer getReceiptCountBySupplier(@RequestParam Long warehouseId,
