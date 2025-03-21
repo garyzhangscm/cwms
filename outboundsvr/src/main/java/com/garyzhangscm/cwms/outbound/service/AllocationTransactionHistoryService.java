@@ -278,6 +278,15 @@ public class AllocationTransactionHistoryService   {
                             shipmentLine.getWarehouseId() :
                             workOrderLine.getWarehouseId();
 
+        String username = "";
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (IllegalStateException ex) {
+            // if the current session is not in a http session
+            // let's user anonymous
+            username = "Anonymous";
+        }
 
 
 
@@ -318,7 +327,7 @@ public class AllocationTransactionHistoryService   {
                 .isSkippedFlag(isSkippedFlag)
                 .isAllocatedByLPNFlag(isAllocatedByLPNFlag)
                 .isRoundUpFlag(isRoundUpFlag)
-                .username(userService.getCurrentUserName())
+                .username(username)
                 .message(message);
         AllocationTransactionHistory allocationTransactionHistory =
                 builder.build();
