@@ -38,7 +38,7 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
-    @Cacheable(cacheNames = "InventoryService_User")
+    @Cacheable(cacheNames = "InventoryService_User", unless="#result == null")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
@@ -63,7 +63,7 @@ public class ResourceServiceRestemplateClient {
         );
 
     }
-    @Cacheable(cacheNames = "InventoryService_User")
+    @Cacheable(cacheNames = "InventoryService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
