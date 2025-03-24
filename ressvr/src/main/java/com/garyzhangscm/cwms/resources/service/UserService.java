@@ -407,6 +407,7 @@ public class UserService  implements TestDataInitiableService{
         if (Objects.nonNull(findByUsername(user.getCompanyId(), user.getUsername()))) {
             throw UserOperationException.raiseException("User name " + user.getUsername() + " already exists!");
         }
+
         // make sure the username have the right format
         // 1. clear all the empty space in the begin or end of the username
         user.setUsername(user.getUsername().trim());
