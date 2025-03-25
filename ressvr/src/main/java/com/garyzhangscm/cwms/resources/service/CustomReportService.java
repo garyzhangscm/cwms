@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
@@ -172,12 +173,13 @@ public class CustomReportService {
      * @param customReport
      * @return
      */
-    public Triple<String, String, Map<String, String>> getQuery(Long companyId,
+    public Triple<String, String, MapSqlParameterSource> getQuery(Long companyId,
                                                 Long warehouseId,
                                                 CustomReport customReport) {
 
 
-        Map<String, String> paramMap = new HashMap<>();
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        // Map<String, String> paramMap = new HashMap<>();
         // we will run the query string
         // and show the actual query string for tracibility
         StringBuilder queryString = new StringBuilder()
@@ -189,7 +191,7 @@ public class CustomReportService {
         if (Strings.isNotBlank(customReport.getCompanyIdFieldName())) {
             queryString.append(" and ").append(customReport.getCompanyIdFieldName())
                     .append(" = ").append(companyId);
-            paramMap.put(customReport.getCompanyIdFieldName(), companyId.toString());
+            parameters.addValue(customReport.getCompanyIdFieldName(), companyId.toString());
             actualQueryString.append(" and ").append(customReport.getCompanyIdFieldName())
                     .append(" = ").append(companyId);
         }
@@ -206,7 +208,7 @@ public class CustomReportService {
 
             queryString.append(" and ").append(customReport.getWarehouseIdFieldName())
                     .append(" = ").append(warehouseId);
-            paramMap.put(customReport.getWarehouseIdFieldName(), warehouseId.toString());
+            parameters.addValue(customReport.getWarehouseIdFieldName(), warehouseId.toString());
             actualQueryString.append(" and ").append(customReport.getWarehouseIdFieldName())
                     .append(" = ").append(warehouseId);
         }
@@ -223,27 +225,38 @@ public class CustomReportService {
             // 2. if there's a default value define, user the default value
             // 3. if the parameter is not required, ignore the parameter
             // 4. raise error
-            if (Strings.isNotBlank(customReportParameter.getValue())) {
+            String value = Strings.isNotBlank(customReportParameter.getValue()) ?
+                    customReportParameter.getValue() :
+                    Strings.isNotBlank(customReportParameter.getDefaultValue()) ?
+                            customReportParameter.getDefaultValue() : "";
 
-                queryString.append(" and ").append(customReportParameter.getName())
-                        .append(" = ")
-                        .append(" :").append(customReportParameter.getName());
+            if (Strings.isNotBlank(value)) {
+                switch (customReportParameter.getType()) {
+                    case LIST:
+                        queryString.append(" and ").append(customReportParameter.getName())
+                                .append(" in ")
+                                .append(" (:").append(customReportParameter.getName() + ")");
 
-                paramMap.put(customReportParameter.getName(), customReportParameter.getValue());
+                        Set<String> values =  Set.of(customReportParameter.getValue().split(","));
+                        parameters.addValue(customReportParameter.getName(), values);
 
-                actualQueryString.append(" and ").append(customReportParameter.getName())
-                        .append(" = '").append(customReportParameter.getValue()).append("'");
-            }
-            else if (Strings.isNotBlank(customReportParameter.getDefaultValue())){
 
-                queryString.append(" and ").append(customReportParameter.getName())
-                        .append(" = ")
-                        .append(" :").append(customReportParameter.getName());
+                        actualQueryString.append(" and ").append(customReportParameter.getName())
+                                .append(" in '").append(customReportParameter.getValue()).append("'");
+                        break;
+                    default:
+                        queryString.append(" and ").append(customReportParameter.getName())
+                                .append(" = ")
+                                .append(" :").append(customReportParameter.getName());
 
-                paramMap.put(customReportParameter.getName(), customReportParameter.getDefaultValue());
+                        // paramMap.put(customReportParameter.getName(), customReportParameter.getValue());
+                        parameters.addValue(customReportParameter.getName(), customReportParameter.getValue());
 
-                actualQueryString.append(" and ").append(customReportParameter.getName())
-                        .append(" = '").append(customReportParameter.getDefaultValue()).append("'");
+                        actualQueryString.append(" and ").append(customReportParameter.getName())
+                                .append(" = '").append(customReportParameter.getValue()).append("'");
+
+
+                }
 
             }
             else if (Boolean.TRUE.equals(customReportParameter.getRequired())) {
@@ -263,7 +276,7 @@ public class CustomReportService {
             queryString.append(" order  by ").append(customReport.getSortBy());
             actualQueryString.append(" order  by ").append(customReport.getSortBy());
         }
-        return Triple.of(queryString.toString(), actualQueryString.toString(), paramMap);
+        return Triple.of(queryString.toString(), actualQueryString.toString(), parameters);
     }
 
     @Transactional
@@ -274,9 +287,6 @@ public class CustomReportService {
 
         CustomReport existingCustomReport = findById(id);
         copyParameterValues(existingCustomReport, customReport);
-
-
-
         CustomReportExecutionHistory customReportExecutionHistory =
                 new CustomReportExecutionHistory(existingCustomReport, companyId, warehouseId,
                         existingCustomReport.getQuery());
@@ -284,15 +294,15 @@ public class CustomReportService {
         customReportExecutionHistory =
                 customReportExecutionHistoryService.addCustomReportExecutionHistory(customReportExecutionHistory);
 
-        Map<String, String> paramMap;
+        MapSqlParameterSource paramters;
         String queryString;
         String actualQueryString;
 
         try{
-            Triple<String, String, Map<String, String>> query = getQuery(companyId, warehouseId, existingCustomReport);
+            Triple<String, String, MapSqlParameterSource> query = getQuery(companyId, warehouseId, existingCustomReport);
             queryString = query.getLeft();
             actualQueryString = query.getMiddle();
-            paramMap = query.getRight();
+            paramters = query.getRight();
 
             customReportExecutionHistory.setQuery(actualQueryString);
             customReportExecutionHistoryService.save(customReportExecutionHistory);
@@ -310,7 +320,7 @@ public class CustomReportService {
         }
 
         if (Strings.isBlank(queryString) || Strings.isBlank(actualQueryString) ||
-            Objects.isNull(paramMap)) {
+            Objects.isNull(paramters)) {
             logger.debug("fail to generate the query");
 
             customReportExecutionHistory.setCustomReportExecutionPercent(100);
@@ -364,7 +374,7 @@ public class CustomReportService {
                         actualQueryString.toString());
 
                 // List<Map<String, Object>> results = jdbcTemplate.queryForList(actualQueryString.toString(), paramMap);
-                SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(queryString.toString(), paramMap);
+                SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(queryString.toString(), paramters);
                 if (!sqlRowSet.next()) {
                     throw new Exception("No result found");
                 }

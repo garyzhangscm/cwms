@@ -2370,5 +2370,18 @@
   "outboundOrderValidatePartialLPNPick": "拣货时验证是否为非整托盘拣货",
   "menu.mobile.inbound.qc": "入库QC",
   "menu.main.work-order.work-order-flow": "工单流",
-  "send-delete-request": "发送删除请求"
+  "send-delete-request": "发送删除请求",
+  "required": "必填",
+  "defaultValue": "默认值",
+  "query": "查询",
+  "parameter": "参数",
+  "CUSTOM-REPORT-PARAMETER-TYPE_TEXT": "文字",
+  "CUSTOM-REPORT-PARAMETER-TYPE_NUMBER": "整数",
+  "CUSTOM-REPORT-PARAMETER-TYPE_LIST": "列表",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DATE": "日期",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DATETIME": "日期和时间",
+  "CUSTOM-REPORT-PARAMETER-TYPE_BOOLEAN": "是/否",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DOUBLE": "整数/小数",
+  "value": "值",
+  "results": "结果"
 }

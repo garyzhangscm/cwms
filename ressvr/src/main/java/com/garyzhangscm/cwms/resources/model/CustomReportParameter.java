@@ -56,6 +56,9 @@ public class CustomReportParameter extends AuditibleEntity<String>  {
     @Column(name = "default_value")
     private String defaultValue;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "custom_report_parameter_type")
+    private CustomReportParameterType type;
 
     @Transient
     private String value;
@@ -130,5 +133,13 @@ public class CustomReportParameter extends AuditibleEntity<String>  {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public CustomReportParameterType getType() {
+        return type;
+    }
+
+    public void setType(CustomReportParameterType type) {
+        this.type = type;
     }
 }

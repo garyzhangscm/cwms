@@ -2375,5 +2375,19 @@
   "outboundOrderValidatePartialLPNPick": "Validate Partial LPN During Pick",
   "menu.mobile.inbound.qc": "Inbound QC",
   "menu.main.work-order.work-order-flow": "Work Order Flow",
-  "send-delete-request": "Send Remove Request"
+  "send-delete-request": "Send Remove Request",
+  "required": "Required",
+  "defaultValue": "Default Value",
+  "query": "Query",
+  "parameter": "Parameter",
+  "CUSTOM-REPORT-PARAMETER-TYPE_TEXT": "Text",
+  "CUSTOM-REPORT-PARAMETER-TYPE_NUMBER": "Number(Integer)",
+  "CUSTOM-REPORT-PARAMETER-TYPE_LIST": "List",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DATE": "Date",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DATETIME": "Datetime",
+  "CUSTOM-REPORT-PARAMETER-TYPE_BOOLEAN": "Boolean",
+  "CUSTOM-REPORT-PARAMETER-TYPE_DOUBLE": "Double",
+  "value": "Value",
+  "results": "Result"
+
 }
