@@ -170,14 +170,23 @@ public class WorkOrderService implements TestDataInitiableService {
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
-                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
-                        if (item != null) {
-                            predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
-                        }
-                        else {
+                        List<Item> items = inventoryServiceRestemplateClient.findItemsByName(warehouseId, itemName);
+                        logger.debug("Find {} items by name {}",
+                                items.size(),
+                                itemName);
+                        if (items.isEmpty()) {
+
                             // The client passed in an invalid item name, let's return nothing
                             predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
                         }
+                        else {
+                            CriteriaBuilder.In<Long> inItemIds = criteriaBuilder.in(root.get("itemId"));
+                            for(Item item : items) {
+                                inItemIds.value(item.getId());
+                            }
+                            predicates.add(criteriaBuilder.and(inItemIds));
+                        }
+
                     }
 
 
@@ -231,14 +240,23 @@ public class WorkOrderService implements TestDataInitiableService {
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
-                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
-                        if (item != null) {
-                            predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
-                        }
-                        else {
+                        List<Item> items = inventoryServiceRestemplateClient.findItemsByName(warehouseId, itemName);
+                        logger.debug("Find {} items by name {}",
+                                items.size(),
+                                itemName);
+                        if (items.isEmpty()) {
+
                             // The client passed in an invalid item name, let's return nothing
                             predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
                         }
+                        else {
+                            CriteriaBuilder.In<Long> inItemIds = criteriaBuilder.in(root.get("itemId"));
+                            for(Item item : items) {
+                                inItemIds.value(item.getId());
+                            }
+                            predicates.add(criteriaBuilder.and(inItemIds));
+                        }
+
                     }
 
 

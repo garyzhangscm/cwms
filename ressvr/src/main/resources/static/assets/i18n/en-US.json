@@ -2388,6 +2388,6 @@
   "CUSTOM-REPORT-PARAMETER-TYPE_BOOLEAN": "Boolean",
   "CUSTOM-REPORT-PARAMETER-TYPE_DOUBLE": "Double",
   "value": "Value",
-  "results": "Result"
-
+  "results": "Result",
+  "shipment.line": "Shipment Line"
 }

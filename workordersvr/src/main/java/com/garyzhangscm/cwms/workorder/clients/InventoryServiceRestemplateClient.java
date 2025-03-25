@@ -187,6 +187,42 @@ public class InventoryServiceRestemplateClient {
     }
 
 
+
+    public List<Item> findItemsByName(Long warehouseId, String name) {
+
+        return findItemsByName(warehouseId, null, name);
+    }
+
+    public List<Item> findItemsByName(Long warehouseId, Long clientId, String name) {
+
+        try {
+            UriComponentsBuilder builder =
+                    UriComponentsBuilder.newInstance()
+                            .scheme("http").host("apigateway").port(5555)
+                            .path("/api/inventory/items")
+                            .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            .queryParam("warehouseId", warehouseId);
+
+            if (Objects.nonNull(clientId)) {
+                builder = builder.queryParam("clientIds", String.valueOf(clientId));
+            }
+
+
+            return restTemplateProxy.exchangeList(
+                    Item.class,
+                    builder.build(true).toUriString(),
+                    HttpMethod.GET,
+                    null
+            );
+
+        }
+        catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            throw ResourceNotFoundException.raiseException("can't find the item by name " + name);
+        }
+    }
+
+
     @Cacheable(cacheNames = "WorkOrderService_InventoryStatus", unless="#result == null")
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
