@@ -81,6 +81,8 @@ public class PickService {
     private EntityManager entityManager;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private PickConfirmTransactionService pickConfirmTransactionService;
 
     @Autowired
     private PalletPickLabelContentService palletPickLabelContentService;
@@ -1543,11 +1545,21 @@ public class PickService {
         return confirmPick(pickId, quantity, nextLocationId, nextLocationName,
                 pickToContainer, containerId, "", "");
     }
+
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
                             String lpn, String destinationLpn)  {
-        Pick pick = findById(pickId);
+        return confirmPick(findById(pickId), quantity, nextLocationId,
+                nextLocationName, pickToContainer, containerId,
+                lpn, destinationLpn);
+    }
+
+    public Pick confirmPick(Pick pick, Long quantity, Long nextLocationId,
+                            String nextLocationName,
+                            boolean pickToContainer, String containerId,
+                            String lpn, String destinationLpn)  {
+
 
         if (Objects.nonNull(pick.getShipmentLine())) {
             Order order = pick.getShipmentLine().getOrderLine().getOrder();
@@ -1815,6 +1827,10 @@ public class PickService {
         pick.setPickedTime(ZonedDateTime.now());
         pick.setPickedByUsername(userService.getCurrentUserName());
         saveOrUpdate(pick);
+
+        pickConfirmTransactionService.addConfirmation(null, pick.getWarehouseId(),
+                pick, userService.getCurrentUserName(),
+                quantityToBePicked, inventoryToBePicked.getLpn());
 
         // Let's update the list if the pick belongs to any list
         pickListService.processPickConfirmed(pick);
