@@ -21,21 +21,33 @@ package com.garyzhangscm.cwms.outbound.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.service.PickConfirmTransactionService;
 import com.garyzhangscm.cwms.outbound.service.PickService;
+import com.garyzhangscm.cwms.outbound.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 
 @RestController
 public class PickController {
     private static final Logger logger = LoggerFactory.getLogger(PickController.class);
     @Autowired
     PickService pickService;
+
+    @Autowired
+    private PickConfirmTransactionService pickConfirmTransactionService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private HttpSession httpSession;
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     @ClientValidationEndpoint
@@ -136,6 +148,8 @@ public class PickController {
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
     public Pick confirmPick(@PathVariable Long id,
+                            @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
+                            @RequestParam(name="companyId", required = false, defaultValue = "") Long companyId,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
@@ -151,7 +165,15 @@ public class PickController {
         logger.debug("=> containerId: {}", containerId);
         logger.debug("=> pick from LPN: {}", lpn);
         logger.debug("=> pick to LPN: {}", destinationLpn);
-            return pickService.confirmPick(id, quantity, nextLocationId, nextLocationName,
+
+        Pick pick = pickService.findById(id);
+
+        httpSession.setAttribute("PICK-CONFIRM-SESSION-ID", UUID.randomUUID());
+
+        pickConfirmTransactionService.addRequest(companyId, warehouseId, pick,
+                userService.getCurrentUserName(), quantity);
+
+            return pickService.confirmPick(pick, quantity, nextLocationId, nextLocationName,
                     pickToContainer, containerId, lpn, destinationLpn);
     }
 
