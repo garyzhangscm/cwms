@@ -22,6 +22,8 @@ import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemSamplingRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -31,8 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;

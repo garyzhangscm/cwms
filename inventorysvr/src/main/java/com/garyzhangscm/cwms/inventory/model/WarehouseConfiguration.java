@@ -21,7 +21,8 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)

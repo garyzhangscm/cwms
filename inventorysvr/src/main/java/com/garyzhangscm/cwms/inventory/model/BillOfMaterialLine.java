@@ -1,11 +1,8 @@
 package com.garyzhangscm.cwms.inventory.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
 
 public class BillOfMaterialLine extends AuditibleEntity<String>{
     private Long id;

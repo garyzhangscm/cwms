@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.inventory.repository;
 
 import com.garyzhangscm.cwms.inventory.model.Inventory;
-import com.garyzhangscm.cwms.inventory.model.QuickbookDesktopInventorySummary;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -27,7 +27,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 @Repository

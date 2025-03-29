@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.util.Strings;
 
-import javax.persistence.Column;
+
 import java.io.Serializable;
 
 public class InventoryCSVWrapper implements Serializable {

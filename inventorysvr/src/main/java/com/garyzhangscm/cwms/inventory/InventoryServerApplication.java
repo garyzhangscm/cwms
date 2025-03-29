@@ -8,7 +8,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AuditorAware;
@@ -24,7 +24,8 @@ import java.time.Duration;
 // only customized configure can be re-fetched from the server
 // Database configuration won't be updated in the client even the
 // configuration server is updated with new DB information
-@RefreshScope
+
+
 @EnableCaching
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableScheduling

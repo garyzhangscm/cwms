@@ -1,8 +1,6 @@
 package com.garyzhangscm.cwms.inventory.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.*;
 
 public class RoleClientAccess extends AuditibleEntity<String>  {
 

@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.inventory;
 import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
 import com.garyzhangscm.cwms.inventory.model.BillableRequest;
 import com.garyzhangscm.cwms.inventory.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
