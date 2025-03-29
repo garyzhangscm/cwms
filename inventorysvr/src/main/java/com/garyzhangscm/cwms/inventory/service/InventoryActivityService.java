@@ -27,6 +27,9 @@ import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryActivityRepository;
 
+import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -39,9 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 
-import javax.persistence.criteria.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

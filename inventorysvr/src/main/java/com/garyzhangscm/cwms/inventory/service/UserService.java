@@ -2,15 +2,17 @@ package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

@@ -20,7 +20,9 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.persistence.*;
+
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 
 @Entity

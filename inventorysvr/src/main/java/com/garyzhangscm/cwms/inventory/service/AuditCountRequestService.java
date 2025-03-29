@@ -19,14 +19,13 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 
-import ch.qos.logback.core.util.StringCollectionUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.AuditCountRequestRepository;
-import io.micrometer.core.instrument.util.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +199,7 @@ public class AuditCountRequestService {
 
 
         List<AuditCountRequest> auditCountRequests;
-        if (StringUtils.isNotBlank(auditCountRequestIds)) {
+        if (Strings.isNotBlank(auditCountRequestIds)) {
             auditCountRequests =
                     Arrays.stream(auditCountRequestIds.split(","))
                             .map(Long::parseLong)

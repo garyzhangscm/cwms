@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import javax.persistence.*;
+
 
 public class ArchiveConfiguration extends AuditibleEntity<String>  {
 

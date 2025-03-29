@@ -18,30 +18,23 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
 import com.garyzhangscm.cwms.inventory.repository.QCRuleRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class QCRuleService{

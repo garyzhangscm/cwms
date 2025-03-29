@@ -6,6 +6,7 @@ import com.garyzhangscm.cwms.inventory.model.User;
 import com.garyzhangscm.cwms.inventory.model.Warehouse;
 import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
 import com.garyzhangscm.cwms.inventory.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

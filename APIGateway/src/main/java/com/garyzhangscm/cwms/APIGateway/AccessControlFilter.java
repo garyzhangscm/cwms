@@ -59,7 +59,9 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/resource/validate/rf",
             "/api/layout/validate/locations",
             "/api/resource/rf-app-version/latest-version",
-            "/api/resource/assets/images/mobile"
+            "/api/resource/assets/images/mobile",
+            "/api/workorder/graphiql",
+            "/api/inventory"
     };
 
     private static final String[] EMPTY_COMPANY_ID_ACCESSIBLE_URL_LIST = new String[]{
@@ -99,6 +101,8 @@ public class AccessControlFilter implements GatewayFilter {
         logger.debug("{} with parameters {} passed validation, forward to the micro service for handling",
                 exchange.getRequest().getURI().getPath(),
                 exchange.getRequest().getQueryParams());
+
+
         return chain.filter(exchange);
     }
 

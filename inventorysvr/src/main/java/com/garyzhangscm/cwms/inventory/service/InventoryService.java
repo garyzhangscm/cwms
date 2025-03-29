@@ -28,6 +28,9 @@ import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -42,9 +45,9 @@ import org.springframework.data.util.Pair;
  import org.springframework.stereotype.Service;
 
 
-import javax.persistence.criteria.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+// import javax.persistence.criteria.*;
+// import javax.servlet.http.HttpServletRequest;
+// import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.*;

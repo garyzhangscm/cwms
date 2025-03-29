@@ -23,21 +23,17 @@ import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemBarcodeRepository;
-import com.garyzhangscm.cwms.inventory.repository.ItemBarcodeTypeRepository;
-import org.apache.commons.lang.StringUtils;
+import jakarta.persistence.criteria.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectStreamClass;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
