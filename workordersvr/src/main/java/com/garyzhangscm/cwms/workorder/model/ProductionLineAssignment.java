@@ -11,10 +11,10 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.apache.logging.log4j.util.Strings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

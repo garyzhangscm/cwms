@@ -18,6 +18,8 @@
 
 package com.garyzhangscm.cwms.workorder.controller;
 
+import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import org.hibernate.jdbc.Work;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +36,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -50,6 +55,9 @@ public class WorkOrderController {
 
     @Autowired
     WorkOrderLineService workOrderLineService;
+
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
 
@@ -527,5 +535,16 @@ public class WorkOrderController {
         return ResponseBodyWrapper.success("success");
     }
 
+
+    // Graphql
+    @QueryMapping
+    public WorkOrder workOrderById(@Argument Long id) {
+        return workOrderService.findById(id);
+    }
+
+    @SchemaMapping
+    public Item item(WorkOrder workOrder) {
+        return inventoryServiceRestemplateClient.getItemById(workOrder.getItemId());
+    }
 
 }

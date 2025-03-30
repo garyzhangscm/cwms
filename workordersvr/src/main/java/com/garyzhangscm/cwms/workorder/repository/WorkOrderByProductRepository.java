@@ -20,14 +20,14 @@ package com.garyzhangscm.cwms.workorder.repository;
 
 
 import com.garyzhangscm.cwms.workorder.model.WorkOrderByProduct;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface WorkOrderByProductRepository extends JpaRepository<WorkOrderByProduct, Long>, JpaSpecificationExecutor<WorkOrderByProduct> {

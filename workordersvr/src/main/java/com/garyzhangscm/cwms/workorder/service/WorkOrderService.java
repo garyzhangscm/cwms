@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.logging.log4j.util.Strings;
@@ -44,7 +45,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;

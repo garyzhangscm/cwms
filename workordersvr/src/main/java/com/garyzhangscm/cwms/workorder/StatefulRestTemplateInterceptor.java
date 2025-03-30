@@ -1,6 +1,5 @@
 package com.garyzhangscm.cwms.workorder;
 
-import com.garyzhangscm.cwms.workorder.clients.SiloRestemplateClient;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

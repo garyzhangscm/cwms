@@ -60,8 +60,6 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/layout/validate/locations",
             "/api/resource/rf-app-version/latest-version",
             "/api/resource/assets/images/mobile",
-            "/api/workorder/graphiql",
-            "/api/inventory"
     };
 
     private static final String[] EMPTY_COMPANY_ID_ACCESSIBLE_URL_LIST = new String[]{

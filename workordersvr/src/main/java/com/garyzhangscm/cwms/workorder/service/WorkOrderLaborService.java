@@ -18,28 +18,20 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ProductionLineException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderLaborRepository;
-import org.apache.commons.lang.StringUtils;
+import jakarta.persistence.criteria.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;

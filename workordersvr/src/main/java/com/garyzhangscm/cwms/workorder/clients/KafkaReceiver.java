@@ -38,7 +38,7 @@ public class KafkaReceiver {
      * */
     @KafkaListener(topics = {"INTEGRATION_WORK_ORDER"})
     public void processWorkOrder(@Payload String orderJsonRepresent,
-                                 @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+                                 @Header(KafkaHeaders.RECEIVED_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received integration - work order data:\n {}", orderJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
@@ -82,7 +82,7 @@ public class KafkaReceiver {
      * */
     @KafkaListener(topics = {"INTEGRATION_BILL_OF_MATERIAL"})
     public void processBillOfMaterial(@Payload String bomJsonRepresent,
-                                      @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+                                      @Header(KafkaHeaders.RECEIVED_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received integration - bill of material data:\n {}", bomJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 

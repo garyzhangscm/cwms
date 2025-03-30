@@ -2,12 +2,13 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.Objects;
 
 @Service

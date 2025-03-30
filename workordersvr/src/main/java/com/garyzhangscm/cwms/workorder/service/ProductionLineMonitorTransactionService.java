@@ -23,8 +23,8 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineMonitor;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineMonitorTransaction;
-import com.garyzhangscm.cwms.workorder.repository.ProductionLineMonitorRepository;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineMonitorTransactionRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

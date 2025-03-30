@@ -2,7 +2,8 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

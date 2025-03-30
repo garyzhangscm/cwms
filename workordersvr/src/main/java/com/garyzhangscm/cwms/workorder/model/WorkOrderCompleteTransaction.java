@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class WorkOrderCompleteTransaction extends AuditibleEntity<String>{
 
 
     @OneToMany(
-            mappedBy = "workOrderProduceTransaction",
+            mappedBy = "workOrderCompleteTransaction",
             cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )

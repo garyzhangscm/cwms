@@ -27,7 +27,7 @@ import com.garyzhangscm.cwms.workorder.repository.ProductionShiftScheduleReposit
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderConfigurationRepository;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.jdbc.Work;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +37,11 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.*;

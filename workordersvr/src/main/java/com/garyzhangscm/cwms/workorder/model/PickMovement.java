@@ -19,12 +19,7 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 public class PickMovement implements Serializable {

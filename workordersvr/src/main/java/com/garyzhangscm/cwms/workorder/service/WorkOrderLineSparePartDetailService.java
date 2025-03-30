@@ -22,20 +22,18 @@ import com.garyzhangscm.cwms.workorder.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
-import com.garyzhangscm.cwms.workorder.model.WorkOrderInstruction;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderLine;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderLineSparePart;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderLineSparePartDetail;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineSparePartDetailRepository;
-import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineSparePartRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

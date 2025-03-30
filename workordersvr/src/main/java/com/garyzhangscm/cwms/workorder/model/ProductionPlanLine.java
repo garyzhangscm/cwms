@@ -5,8 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-
+import jakarta.persistence.*;
 /**
  * A master table that will create work order from this production plan.
  * Like P.O and Receipt.

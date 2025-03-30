@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
@@ -29,17 +28,14 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentLineRepository;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentRepository;
-import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
-import org.apache.commons.lang.StringUtils;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

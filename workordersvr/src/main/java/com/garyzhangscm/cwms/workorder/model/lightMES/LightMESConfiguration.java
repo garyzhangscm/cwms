@@ -3,8 +3,8 @@ package com.garyzhangscm.cwms.workorder.model.lightMES;
 import com.garyzhangscm.cwms.workorder.model.AuditibleEntity;
 import com.garyzhangscm.cwms.workorder.model.Warehouse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 
 @Entity
 @Table(name = "light_mes_configuration")

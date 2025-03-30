@@ -27,6 +27,8 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderProduceTransactionRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderProducedInventoryResultRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -35,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

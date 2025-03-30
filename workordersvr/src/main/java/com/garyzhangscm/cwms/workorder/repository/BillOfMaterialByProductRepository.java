@@ -20,14 +20,13 @@ package com.garyzhangscm.cwms.workorder.repository;
 
 
 import com.garyzhangscm.cwms.workorder.model.BillOfMaterialByProduct;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
 
 @Repository
 public interface BillOfMaterialByProductRepository extends JpaRepository<BillOfMaterialByProduct, Long>, JpaSpecificationExecutor<BillOfMaterialByProduct> {

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.util.Strings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

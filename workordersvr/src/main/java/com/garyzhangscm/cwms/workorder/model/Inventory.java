@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Transient;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
