@@ -3,8 +3,7 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-
+import jakarta.persistence.*;
 @Entity
 @Table(name = "work_order_instruction_template")
 public class WorkOrderInstructionTemplate extends AuditibleEntity<String>{

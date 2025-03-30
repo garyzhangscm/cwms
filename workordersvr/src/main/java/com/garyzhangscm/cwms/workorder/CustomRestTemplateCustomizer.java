@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.workorder;
 
-import org.springframework.cloud.client.loadbalancer.RestTemplateCustomizer;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.web.client.RestTemplate;
 
 public class CustomRestTemplateCustomizer implements RestTemplateCustomizer {

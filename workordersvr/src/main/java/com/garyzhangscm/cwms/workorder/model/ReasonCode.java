@@ -18,10 +18,6 @@
 
 package com.garyzhangscm.cwms.workorder.model;
 
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.persistence.*;
 import java.io.Serializable;
 
 public class ReasonCode extends AuditibleEntity<String> implements Serializable {

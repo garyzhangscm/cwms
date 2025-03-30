@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Where;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -122,6 +122,7 @@ public class WorkOrder extends AuditibleEntity<String>{
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private WorkOrderStatus status;
 
     @Column(name = "consume_by_bom_only")

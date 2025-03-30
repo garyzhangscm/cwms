@@ -19,9 +19,7 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,24 +89,25 @@ public class Order implements Serializable {
 
     // Some statistics numbers that we can show
     // in the frontend
-    @Transient
+
     private Integer totalLineCount;
-    @Transient
+
     private Integer totalItemCount;
-    @Transient
+
     private Long totalExpectedQuantity;
-    @Transient
+
+
     private Long totalOpenQuantity; // Open quantity that is not in shipment yet
-    @Transient
+
     private Long totalInprocessQuantity; // Total quantity that is in shipment
     // totalInprocessQuantity = totalPendingAllocationQuantity + totalOpenPickQuantity + totalPickedQuantity
-    @Transient
+
     private Long totalPendingAllocationQuantity;
-    @Transient
+
     private Long totalOpenPickQuantity;
-    @Transient
+
     private Long totalPickedQuantity;
-    @Transient
+
     private Long totalShippedQuantity;
 
     @Override

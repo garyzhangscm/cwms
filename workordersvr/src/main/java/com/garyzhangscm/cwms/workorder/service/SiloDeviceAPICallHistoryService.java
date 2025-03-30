@@ -18,17 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.workorder.model.SiloConfiguration;
 import com.garyzhangscm.cwms.workorder.model.SiloDeviceAPICallHistory;
-import com.garyzhangscm.cwms.workorder.repository.SiloConfigurationRepository;
 import com.garyzhangscm.cwms.workorder.repository.SiloDeviceAPICallHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineRepository;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -59,8 +59,7 @@ public class WorkOrderLineService implements TestDataInitiableService {
     @Autowired
     private WorkOrderLineSparePartService workOrderLineSparePartService;
 
-    @Autowired
-    EntityManager entityManager;
+
 
     @Autowired
     private OutboundServiceRestemplateClient outboundServiceRestemplateClient;

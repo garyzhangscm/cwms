@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "silo_api_call_history")

@@ -18,24 +18,17 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderReverseProductionInventoryRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
