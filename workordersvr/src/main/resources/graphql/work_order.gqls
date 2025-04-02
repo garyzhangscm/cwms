@@ -1,0 +1,114 @@
+type WorkOrder {
+    id: ID!
+    number: String!
+
+    workOrderLines: [WorkOrderLine]
+    workOrderInstructions: [WorkOrderInstruction]
+#   workOrderKPIs: [WorkOrderKPI]
+#   workOrderByProducts: [WorkOrderByProduct]
+#    productionLineAssignments: [ProductionLineAssignment]
+
+    itemId: Int!
+    item: Item
+
+    shortAllocationId: Int
+#    billOfMaterial: BillOfMaterial
+#    productionPlanLine: ProductionPlanLine
+    poNumber: String
+
+    expectedQuantity: Int
+    producedQuantity: Int
+
+#    assignments: WorkOrderAssignment
+
+    status: WorkOrderStatus
+    consumeByBomOnly: Boolean
+#    consumeByBom: BillOfMaterial
+    materialConsumeTiming: WorkOrderMaterialConsumeTiming
+
+    totalLineCount: Int
+    totalItemCount: Int
+    totalExpectedQuantity: Int
+    totalOpenQuantity: Int
+    totalOpenPickQuantity: Int
+    totalPickedQuantity: Int
+    qcQuantity: Int
+    qcPercentage:Float
+    qcQuantityRequested: Int
+    qcQuantityCompleted: Int
+    btoOutboundOrderId: Int
+    btoCustomerId: Int
+}
+
+type WorkOrderLine {
+    id: ID!
+    number: String!
+    itemId: Int!
+    item: Item
+    expectedQuantity: Int!
+    openQuantity: Int!
+    inprocessQuantity: Int!
+    deliveredQuantity: Int!
+    consumedQuantity: Int!
+    scrappedQuantity: Int!
+    returnedQuantity: Int!
+    sparePartQuantity: Int!
+    inventoryStatusId: Int!
+    inventoryStatus: InventoryStatus
+}
+
+
+type WorkOrderInstruction  {
+
+    id: ID!
+    sequence: Int
+    instruction: String
+}
+
+type Item {
+    id: ID!
+    name: String!
+}
+
+
+type InventoryStatus {
+    id: ID!
+    name: String
+    description: String
+}
+
+# type WorkOrderKPI  {}
+# type WorkOrderByProduct  {}
+# type ProductionLineAssignment  {}
+
+# type BillOfMaterial {}
+# type ProductionPlanLine {}
+# type WorkOrderAssignment {}
+
+
+enum WorkOrderMaterialConsumeTiming {
+    WHEN_DELIVER
+    BY_TRANSACTION
+    WHEN_CLOSE
+}
+
+enum WorkOrderStatus {
+    CANCELLED
+    PENDING
+    INPROCESS
+    STAGED
+    WORK_IN_PROCESS
+    COMPLETED
+    CLOSED
+}
+
+# The Root Query for the application
+type Query {
+    workOrderById(id: ID): WorkOrder
+    findWorkOrders(warehouseId : Int, number: String, itemName: String,
+        statusList: String, productionPlanId: Int, pageIndex: Int!, pageSize: Int!): [WorkOrder]
+}
+
+# The Root Mutation for the application
+# type Mutation {
+# }

@@ -46,37 +46,32 @@ public class PickConfirmTransactionService   {
 
     public PickConfirmTransaction addRequest(Long companyId, Long warehouseId,
                                       Pick pick, String username,
-                                      Long quantity) {
+                                      Long quantity,
+                                             String sessionId) {
         return add(companyId, warehouseId, pick, username,
                 PickConfirmTransactionType.REQUEST,
-                quantity, "");
+                quantity, "", sessionId);
 
     }
     public PickConfirmTransaction addConfirmation(Long companyId, Long warehouseId,
                                              Pick pick, String username,
-                                             Long quantity, String lpn) {
+                                             Long quantity, String lpn,
+                                                  String sessionId) {
         return add(companyId, warehouseId, pick, username,
                 PickConfirmTransactionType.CONFIRM,
-                quantity, lpn);
+                quantity, lpn, sessionId);
 
     }
     private PickConfirmTransaction add(Long companyId, Long warehouseId,
                                       Pick pick, String username,
                                       PickConfirmTransactionType type,
-                                      Long quantity, String lpn) {
+                                      Long quantity, String lpn,
+                                       String sessionId) {
         if (Objects.isNull(companyId)) {
             companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId)
                     .getCompanyId();
         }
-        String sessionId = UUID.randomUUID().toString();
-        try {
-            if (Objects.nonNull(httpSession.getAttribute("PICK-CONFIRM-SESSION-ID"))) {
-                sessionId = httpSession.getAttribute("PICK-CONFIRM-SESSION-ID").toString();
-            }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
+
 
         PickConfirmTransaction pickConfirmTransaction = new PickConfirmTransaction(
                 companyId, warehouseId,

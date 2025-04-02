@@ -168,13 +168,15 @@ public class PickController {
 
         Pick pick = pickService.findById(id);
 
-        httpSession.setAttribute("PICK-CONFIRM-SESSION-ID", UUID.randomUUID());
+        // http session is shared by multiple request
+        // httpSession.setAttribute("PICK-CONFIRM-SESSION-ID", UUID.randomUUID());
+        String sessionId = UUID.randomUUID().toString();
 
         pickConfirmTransactionService.addRequest(companyId, warehouseId, pick,
-                userService.getCurrentUserName(), quantity);
+                userService.getCurrentUserName(), quantity, sessionId);
 
             return pickService.confirmPick(pick, quantity, nextLocationId, nextLocationName,
-                    pickToContainer, containerId, lpn, destinationLpn);
+                    pickToContainer, containerId, lpn, destinationLpn, sessionId);
     }
 
 

@@ -279,7 +279,7 @@ public class ReceiptController {
                         Strings.isBlank(kitInnerInventory.getAttribute5()) ? "N/A" : kitInnerInventory.getAttribute5());
             }
         }
-            return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation, rfCode);
+        return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation, rfCode);
     }
 
 

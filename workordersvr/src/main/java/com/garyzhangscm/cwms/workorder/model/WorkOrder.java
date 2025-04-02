@@ -109,6 +109,7 @@ public class WorkOrder extends AuditibleEntity<String>{
     private String poNumber;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Column(name = "expected_quantity")
