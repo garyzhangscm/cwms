@@ -542,9 +542,27 @@ public class WorkOrderController {
         return workOrderService.findById(id);
     }
 
-    @SchemaMapping
+    @QueryMapping
+    public List<WorkOrder> findWorkOrders(@Argument Long warehouseId,
+                                          @Argument  String number,
+                                          @Argument  String itemName,
+                                          @Argument  String statusList,
+                                          @Argument  Long productionPlanId,
+                                          @Argument  int pageIndex,
+                                          @Argument  int pageSize) {
+        return workOrderService.findAll(warehouseId, number,
+                itemName, statusList, productionPlanId,
+                PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number")));
+    }
+
+    @SchemaMapping(typeName="WorkOrder", field="item")
     public Item item(WorkOrder workOrder) {
         return inventoryServiceRestemplateClient.getItemById(workOrder.getItemId());
+    }
+
+    @SchemaMapping
+    public InventoryStatus inventoryStatus(WorkOrderLine workOrderLine) {
+        return inventoryServiceRestemplateClient.getInventoryStatusById(workOrderLine.getInventoryStatusId());
     }
 
 }

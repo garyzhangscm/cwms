@@ -31,6 +31,7 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
     private Long warehouseId;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Column(name = "item_id")
@@ -52,6 +53,7 @@ public class ProductionLineCapacity extends AuditibleEntity<String>{
 
     // capacity UNIT
     @Column(name = "capacity_unit")
+    @Enumerated(EnumType.STRING)
     private TimeUnit capacityUnit;
 
 

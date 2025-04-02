@@ -857,7 +857,7 @@ public class PickListService {
             logger.debug("start to confirm pick {} from list {}, with quantity {}",
                     pick.getNumber(), pickList.getNumber(), pickQuantity);
             pickService.confirmPick(pick.getId(), pickQuantity, nextLocationId, nextLocationName,
-                    pickToContainer, containerId, lpn, destinationLPN);
+                    pickToContainer, containerId, lpn, destinationLPN, UUID.randomUUID().toString());
             // remove the picked quantity from the total quantity
             totalPickQuantity -= pickQuantity;
         }
