@@ -2384,5 +2384,6 @@
   "CUSTOM-REPORT-PARAMETER-TYPE_DOUBLE": "整数/小数",
   "value": "值",
   "results": "结果",
-  "shipment.line": "发货单行"
+  "shipment.line": "发货单行",
+  "inWarehouseDatetime": "入库时间"
 }
