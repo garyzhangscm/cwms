@@ -716,11 +716,6 @@ public class InventoryServiceRestemplateClient {
                 builder.queryParam("lpn", lpn);
             }
 
-            // If this is a allocated by LPN, then only pick the specific LPN
-            if (StringUtils.isNotBlank(pick.getLpn())) {
-                builder = builder.queryParam("lpn", URLEncoder.encode(pick.getLpn(), "UTF-8"));
-            }
-
             if (StringUtils.isNotBlank(pick.getColor())) {
                 builder = builder.queryParam("color", URLEncoder.encode(pick.getColor(), "UTF-8"));
             }
