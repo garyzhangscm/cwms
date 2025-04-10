@@ -60,6 +60,9 @@ public class InventoryController {
     @Autowired
     private UploadFileService uploadFileService;
 
+    public InventoryController() {
+    }
+
     @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
     public ResponseBodyWrapper<List<Inventory>> findAllInventories(@RequestParam Long warehouseId,

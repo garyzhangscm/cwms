@@ -35,6 +35,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
+import java.net.URLEncoder;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1646,6 +1647,17 @@ public class PickService {
         if (quantityToBePicked <= 0 ||  quantityToBePicked > pick.getQuantity() - pick.getPickedQuantity()) {
             throw PickingException.raiseException("Over pick is not allowed. Try to pick: " + quantityToBePicked +
                     ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
+        }
+
+
+        // If this is a allocated by LPN, then only pick the specific LPN
+        if (Strings.isNotBlank(pick.getLpn())) {
+            if (Strings.isBlank(lpn)) {
+                lpn = pick.getLpn();
+            }
+            else if (!pick.getLpn().equals(lpn)) {
+                throw PickingException.raiseException("The pick is allocated to LPN " + pick.getLpn());
+            }
         }
 
         // we will use synchronized to prevent multiple users picking the same item from the
