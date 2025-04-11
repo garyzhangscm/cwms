@@ -4300,6 +4300,17 @@ public class OrderService {
                 matchedOrderLine.getOpenQuantity() :
                 shipmentLines.stream().map(ShipmentLine::getOpenQuantity).mapToLong(Long::longValue).sum();
 
+        logger.debug("we still need {} of item with id {} from the order {}, line {}",
+                quantityRequired,
+                matchedOrderLine.getItemId(),
+                order.getNumber(),
+                matchedOrderLine.getNumber());
+        if (quantityRequired <= 0) {
+            throw OrderOperationException.raiseException("can't manual pick from LPN " + lpn +
+                    " as there's no open quantity " +
+                    "for the item from order  " + order.getNumber());
+        }
+
         // get the pickable inventory
         List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
                 inventories.get(0).getItem().getId(),
