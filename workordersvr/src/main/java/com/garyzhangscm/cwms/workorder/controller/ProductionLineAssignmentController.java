@@ -96,6 +96,17 @@ public class ProductionLineAssignmentController {
                 printerName);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/production-line-assignments/{id}/manual-pick-sheet", method = RequestMethod.POST)
+    public ReportHistory generateWorkOrderManualPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+    ) throws JsonProcessingException {
+
+        return productionLineAssignmentService.generateManualPickReportByWorkOrder(id, locale,
+                printerName);
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/{id}/label", method = RequestMethod.POST)

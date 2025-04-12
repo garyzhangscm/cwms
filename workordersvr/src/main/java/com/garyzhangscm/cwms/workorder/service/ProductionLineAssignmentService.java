@@ -661,4 +661,115 @@ public class ProductionLineAssignmentService   {
                 warehouseId, startTime, endTime, true
         );
     }
+
+
+    public ReportHistory generateManualPickReportByWorkOrder(Long productionLineAssignmentId, String locale, String printerName)  {
+
+        return generateManualPickReportByWorkOrder(findById(productionLineAssignmentId), locale, printerName);
+    }
+    public ReportHistory generateManualPickReportByWorkOrder(ProductionLineAssignment productionLineAssignment,
+                                                             String locale,
+                                                             String printerName)  {
+
+        Long warehouseId = productionLineAssignment.getProductionLine().getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWorkOrderManualPickReportParameters(
+                reportData, productionLineAssignment
+        );
+        setupWorkOrderManualPickReportData(
+                reportData, productionLineAssignment
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WORK_ORDER_MANUAL_PICK_SHEET,
+                        reportData, locale,
+                        printerName
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupWorkOrderManualPickReportParameters(
+            Report report, ProductionLineAssignment productionLineAssignment) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("work_order_number", productionLineAssignment.getWorkOrderNumber());
+        report.addParameter("production_line", productionLineAssignment.getProductionLine().getName());
+
+    }
+
+    private void setupWorkOrderManualPickReportData(Report report, ProductionLineAssignment productionLineAssignment) {
+
+
+        productionLineAssignment.getWorkOrder().getWorkOrderLines().forEach(
+                workOrderLine -> {
+                    if (Objects.isNull(workOrderLine.getItem())) {
+                        workOrderLine.setItem(
+                                inventoryServiceRestemplateClient.getItemById(
+                                        workOrderLine.getItemId()
+                                )
+                        );
+                    }
+
+                    List<Inventory> inventories =
+                            inventoryServiceRestemplateClient.getPickableInventory(
+                                    workOrderLine.getItemId(),
+                                    workOrderLine.getInventoryStatusId(),
+                                    null,
+                                    null
+                            );
+                    // setup the locations for the inventory as we will need to
+                    // show the location as well
+                    Set<Long> locationIds = new HashSet<>();
+                    Map<Long, List<Inventory>> inventoryInLocation = new HashMap<>();
+                    for (Inventory inventory : inventories) {
+                        if (Objects.isNull(inventory.getLocation())) {
+                            locationIds.add(inventory.getLocationId());
+                            inventoryInLocation.computeIfAbsent(
+                                    inventory.getLocationId(),  key -> new ArrayList<>()).add(inventory);
+
+                        }
+                    }
+
+                    // setup the location for each inventory
+                    if (!locationIds.isEmpty()) {
+                        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                                productionLineAssignment.getWorkOrder().getWarehouseId(),
+                                Strings.join(locationIds, ',')
+                        );
+                        locations.stream().filter(location -> inventoryInLocation.containsKey(location.getId()))
+                                .forEach(
+                                        location -> {
+                                            inventoryInLocation.get(location.getId()).forEach(
+                                                    inventory -> inventory.setLocation(location)
+                                            );
+                                        }
+                                );
+                    }
+
+                    workOrderLine.setupManualPickableInventoryForDisplay(inventories );
+
+
+
+                    logger.debug("get {} pickable inventory for display for order line # {}",
+                            workOrderLine.getManualPickableInventoryForDisplay().size(),
+                            workOrderLine.getNumber());
+                }
+        );
+
+        report.setData(productionLineAssignment.getWorkOrder().getWorkOrderLines());
+    }
+
 }

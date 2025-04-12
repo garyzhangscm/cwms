@@ -14,7 +14,8 @@ public enum ReportType {
     BILL_OF_LADING(false),
     LPN_LABEL(true),
     PRODUCTION_LINE_ASSIGNMENT_LABEL(true),
-    COMBINED_LABELS(true);
+    COMBINED_LABELS(true),
+    WORK_ORDER_MANUAL_PICK_SHEET(false);
 
     private boolean isLabelFlag;
 

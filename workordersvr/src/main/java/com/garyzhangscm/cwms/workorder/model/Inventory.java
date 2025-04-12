@@ -19,13 +19,17 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +77,12 @@ public class Inventory implements Serializable {
     private Long reasonCodeId;
 
     private ReasonCode reasonCode;
+
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime inWarehouseDatetime;
+
 
     @Override
     public String toString() {
@@ -251,5 +261,13 @@ public class Inventory implements Serializable {
 
     public void setReasonCode(ReasonCode reasonCode) {
         this.reasonCode = reasonCode;
+    }
+
+    public ZonedDateTime getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(ZonedDateTime inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
     }
 }

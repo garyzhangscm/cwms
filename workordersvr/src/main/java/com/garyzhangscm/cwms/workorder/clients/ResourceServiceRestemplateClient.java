@@ -51,8 +51,7 @@ public class ResourceServiceRestemplateClient {
     private RestTemplateProxy restTemplateProxy;
 
     public ReportHistory generateReport(Long warehouseId, ReportType type,
-                                        Report reportData, String locale, String printerName)
-            throws JsonProcessingException {
+                                        Report reportData, String locale, String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("apigateway").port(5555)
