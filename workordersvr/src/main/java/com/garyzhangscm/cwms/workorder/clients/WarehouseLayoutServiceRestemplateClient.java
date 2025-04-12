@@ -349,4 +349,19 @@ public class WarehouseLayoutServiceRestemplateClient {
         );
     }
 
+    public List<Location> getLocationByIds(Long warehouseId, String ids) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("ids", ids);
+
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 }

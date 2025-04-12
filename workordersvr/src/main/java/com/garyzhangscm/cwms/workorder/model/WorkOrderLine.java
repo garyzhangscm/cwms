@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Entity
 @Table(name = "work_order_line")
@@ -91,6 +91,9 @@ public class WorkOrderLine extends AuditibleEntity<String>{
     @Transient
     List<ShortAllocation> shortAllocations = new ArrayList<>();
 
+    @Transient
+    // for display inventory in the manual pick report
+    private List<String> manualPickableInventoryForDisplay = new ArrayList<>();
 
 
     @OneToMany(
@@ -115,6 +118,76 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     }
 
+
+    public void setupManualPickableInventoryForDisplay(List<Inventory> inventories) {
+
+        Collections.sort(inventories, Comparator.comparing(Inventory::getInWarehouseDatetime));
+
+        // key: location name
+        // value: triple
+        //        1. location name
+        //        2. earliest in warehouse date in the location
+        //        3. latest in warehouse date in the location
+        Map<String, Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateMap = new HashMap<>();
+
+        // group inventory with locatin name
+        // key: location name;
+        // value: inventory in the location
+        Map<String, List<Inventory>> inventoryInLocation = new HashMap<>();
+        for(Inventory inventory : inventories) {
+            String locationName = inventory.getLocation().getName();
+            if (locationsWithInWarehouseDateMap.containsKey(locationName)) {
+                Triple<String, ZonedDateTime, ZonedDateTime> locationInWarehouseDate = locationsWithInWarehouseDateMap.get(locationName);
+                if (inventory.getInWarehouseDatetime().isBefore(locationInWarehouseDate.getSecond())) {
+                    locationsWithInWarehouseDateMap.put(locationName,
+                            new Triple(locationName, inventory.getInWarehouseDatetime(), locationInWarehouseDate.getThird()));
+                }
+                else if (inventory.getInWarehouseDatetime().isAfter(locationInWarehouseDate.getThird())) {
+                    locationsWithInWarehouseDateMap.put(locationName,
+                            new Triple(locationName,  locationInWarehouseDate.getSecond(), inventory.getInWarehouseDatetime()));
+
+                }
+            }
+            else {
+                locationsWithInWarehouseDateMap.put(locationName,
+                        new Triple(locationName, inventory.getInWarehouseDatetime(), inventory.getInWarehouseDatetime()));
+            }
+            inventoryInLocation.computeIfAbsent(locationName, key -> new ArrayList<>()).add(inventory);
+
+        }
+
+        // sort the location based on the earliest in warehouse date
+
+        List<Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateList
+                = new ArrayList<>(locationsWithInWarehouseDateMap.values());
+
+
+        Collections.sort(locationsWithInWarehouseDateList, Comparator.comparing(Triple::getSecond));
+
+        manualPickableInventoryForDisplay = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
+        locationsWithInWarehouseDateList.forEach(
+                locationWithInWarehouseDate -> {
+                    // show the location summary first
+                    manualPickableInventoryForDisplay.add(
+                            locationWithInWarehouseDate.getFirst() + ": " +
+                                    locationWithInWarehouseDate.getSecond().format(formatter) + " ~ " +
+                                    locationWithInWarehouseDate.getThird().format(formatter)
+                    );
+
+                    // show each inventory in the location
+                    inventoryInLocation.get(locationWithInWarehouseDate.getFirst()).forEach(
+                            inventory ->
+                                    manualPickableInventoryForDisplay.add("    # " +
+                                            inventory.getLpn() + ", " +
+                                            inventory.getQuantity() + ", " +
+                                            inventory.getInWarehouseDatetime().format(formatter))
+                    );
+
+                }
+        );
+    }
 
     @Override
     public int hashCode() {
@@ -290,5 +363,13 @@ public class WorkOrderLine extends AuditibleEntity<String>{
 
     public void setSparePartQuantity(Long sparePartQuantity) {
         this.sparePartQuantity = sparePartQuantity;
+    }
+
+    public List<String> getManualPickableInventoryForDisplay() {
+        return manualPickableInventoryForDisplay;
+    }
+
+    public void setManualPickableInventoryForDisplay(List<String> manualPickableInventoryForDisplay) {
+        this.manualPickableInventoryForDisplay = manualPickableInventoryForDisplay;
     }
 }

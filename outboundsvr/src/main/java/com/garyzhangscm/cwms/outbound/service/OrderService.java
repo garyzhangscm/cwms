@@ -1860,22 +1860,6 @@ public class OrderService {
 
         report.addParameter("order_number", order.getNumber());
 
-        report.addParameter("customer_name",
-                order.getShipToContactorFirstname() + " " +
-                        order.getShipToContactorLastname());
-
-        Integer totalLineCount = order.getTotalLineCount();
-        Integer totalItemCount = order.getTotalItemCount();
-        Long totalQuantity = order.getOrderLines().stream().mapToLong(
-                orderLine -> orderLine.getQuantity()
-        ).sum();
-
-
-        report.addParameter("totalLineCount", totalLineCount);
-        report.addParameter("totalItemCount", totalItemCount);
-        report.addParameter("totalQuantity", totalQuantity);
-
-
         if (Objects.nonNull(order.getStageLocation())) {
 
             report.addParameter("destination_location", order.getStageLocation().getName());
@@ -1914,10 +1898,42 @@ public class OrderService {
                                     orderLine.getInventoryAttribute5(),
                                     null, null
                             );
-                    Collections.sort(inventories, Comparator.comparing(Inventory::getInWarehouseDatetime));
-                    orderLine.setPickableInventories(inventories );
-                    logger.debug("get {} pickable inventory for order line # {}",
-                            orderLine.getPickableInventories().size(),
+                    // setup the locations for the inventory as we will need to
+                    // show the location as well
+                    Set<Long> locationIds = new HashSet<>();
+                    Map<Long, List<Inventory>> inventoryInLocation = new HashMap<>();
+                    for (Inventory inventory : inventories) {
+                        if (Objects.isNull(inventory.getLocation())) {
+                            locationIds.add(inventory.getLocationId());
+                            inventoryInLocation.computeIfAbsent(
+                                    inventory.getLocationId(),  key -> new ArrayList<>()).add(inventory);
+
+                        }
+                    }
+
+                    // setup the location for each inventory
+                    if (!locationIds.isEmpty()) {
+                        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                                order.getWarehouseId(),
+                                Strings.join(locationIds, ',')
+                        );
+                        locations.stream().filter(location -> inventoryInLocation.containsKey(location.getId()))
+                                .forEach(
+                                        location -> {
+                                            inventoryInLocation.get(location.getId()).forEach(
+                                                    inventory -> inventory.setLocation(location)
+                                            );
+                                        }
+                                );
+                    }
+
+                    orderLine.setupManualPickableInventoryForDisplay(inventories );
+
+                    orderLine.setupRequiredInventoryAttributes();
+
+
+                    logger.debug("get {} pickable inventory for display for order line # {}",
+                            orderLine.getManualPickableInventoryForDisplay().size(),
                             orderLine.getNumber());
                 }
         );
