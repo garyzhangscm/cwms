@@ -717,6 +717,14 @@ public class ReportService implements TestDataInitiableService{
         JasperReport jasperReport = getJasperReport(reportMetaData);
 
 
+        String subReportUrl = "/usr/local/reports/templates/order_manual_pick_sheet_sub_report.jrxml";
+        // File subReportFile = new File(subReportUrl);
+        InputStream subReportStream = getReportStream(subReportUrl);
+
+        JasperReport subReport = JasperCompileManager.compileReport(subReportStream);
+
+        logger.debug("subReport is created!");
+
         JRBeanCollectionDataSource dataSource
                 = new JRBeanCollectionDataSource(reportData.getData());
 
@@ -745,9 +753,10 @@ public class ReportService implements TestDataInitiableService{
         }
         reportData.addParameter("REPORT_RESOURCE_BUNDLE", resourceBundle);
 
+        reportData.addParameter("subreportParameter", subReport);
 
         JasperPrint jasperPrint = JasperFillManager.fillReport(
-                jasperReport, reportData.getParameters(), dataSource
+                jasperReport, reportData.getParameters() , dataSource
         );
 
         logger.debug("Report filled!");
@@ -788,9 +797,11 @@ public class ReportService implements TestDataInitiableService{
 
             logger.debug("Report file stream returned!");
 
+
             // if the file is a pre-compiled,
             jasperReport =
                     JasperCompileManager.compileReport(reportStream);
+
 
             logger.debug("Report file compiled!");
             return jasperReport;

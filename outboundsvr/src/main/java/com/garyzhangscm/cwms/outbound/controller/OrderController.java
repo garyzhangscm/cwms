@@ -258,6 +258,17 @@ public class OrderController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/orders/{id}/manual-pick-report", method = RequestMethod.POST)
+    public ReportHistory generateOrderManualPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print manual pick sheet for order with id: {}", id);
+        return orderService.generateManualPickReportByOrder(id, locale);
+    }
+
+
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/packing-list-report", method = RequestMethod.POST)
     public ReportHistory generatePackingListReport(
             @PathVariable Long id,

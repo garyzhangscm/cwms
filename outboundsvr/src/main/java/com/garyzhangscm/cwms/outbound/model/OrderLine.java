@@ -207,6 +207,9 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Transient
     private Double caseQuantity;
 
+    @Transient
+    private List<Inventory> pickableInventories = new ArrayList<>();
+
     @Override
     public String toString() {
         try {
@@ -619,5 +622,13 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setCaseQuantity(Double caseQuantity) {
         this.caseQuantity = caseQuantity;
+    }
+
+    public List<Inventory> getPickableInventories() {
+        return pickableInventories;
+    }
+
+    public void setPickableInventories(List<Inventory> pickableInventories) {
+        this.pickableInventories = pickableInventories;
     }
 }

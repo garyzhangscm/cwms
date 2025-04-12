@@ -1669,13 +1669,11 @@ public class OrderService {
     }
 
 
-    public ReportHistory generatePickReportByOrder(Long orderId, String locale)
-            throws JsonProcessingException {
+    public ReportHistory generatePickReportByOrder(Long orderId, String locale) {
 
         return generatePickReportByOrder(findById(orderId), locale);
     }
-    public ReportHistory generatePickReportByOrder(Order order, String locale)
-            throws JsonProcessingException {
+    public ReportHistory generatePickReportByOrder(Order order, String locale)  {
 
         Long warehouseId = order.getWarehouseId();
 
@@ -1820,6 +1818,111 @@ public class OrderService {
 
 
         report.setData(picks);
+    }
+
+    public ReportHistory generateManualPickReportByOrder(Long orderId, String locale)  {
+
+        return generateManualPickReportByOrder(findById(orderId), locale);
+    }
+    public ReportHistory generateManualPickReportByOrder(Order order, String locale)  {
+
+        Long warehouseId = order.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupOrderManualPickReportParameters(
+                reportData, order
+        );
+        setupOrderManualPickReportData(
+                reportData, order
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.ORDER_MANUAL_PICK_SHEET, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupOrderManualPickReportParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", order.getNumber());
+
+        report.addParameter("customer_name",
+                order.getShipToContactorFirstname() + " " +
+                        order.getShipToContactorLastname());
+
+        Integer totalLineCount = order.getTotalLineCount();
+        Integer totalItemCount = order.getTotalItemCount();
+        Long totalQuantity = order.getOrderLines().stream().mapToLong(
+                orderLine -> orderLine.getQuantity()
+        ).sum();
+
+
+        report.addParameter("totalLineCount", totalLineCount);
+        report.addParameter("totalItemCount", totalItemCount);
+        report.addParameter("totalQuantity", totalQuantity);
+
+
+        if (Objects.nonNull(order.getStageLocation())) {
+
+            report.addParameter("destination_location", order.getStageLocation().getName());
+        }
+        else if (Objects.nonNull(order.getStageLocationId())) {
+
+            report.addParameter("destination_location",
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            order.getStageLocationId()
+                    ).getName());
+        }
+        else {
+
+            report.addParameter("destination_location", "");
+        }
+
+    }
+
+    private void setupOrderManualPickReportData(Report report, Order order) {
+
+
+        order.getOrderLines().forEach(
+                orderLine -> {
+                    List<Inventory> inventories =
+                            inventoryServiceRestemplateClient.getPickableInventory(
+                                    orderLine.getItemId(),
+                                    orderLine.getInventoryStatusId(),
+                                    null,
+                                    orderLine.getColor(),
+                                    orderLine.getProductSize(),
+                                    orderLine.getStyle(),
+                                    orderLine.getInventoryAttribute1(),
+                                    orderLine.getInventoryAttribute2(),
+                                    orderLine.getInventoryAttribute3(),
+                                    orderLine.getInventoryAttribute4(),
+                                    orderLine.getInventoryAttribute5(),
+                                    null, null
+                            );
+                    Collections.sort(inventories, Comparator.comparing(Inventory::getInWarehouseDatetime));
+                    orderLine.setPickableInventories(inventories );
+                    logger.debug("get {} pickable inventory for order line # {}",
+                            orderLine.getPickableInventories().size(),
+                            orderLine.getNumber());
+                }
+        );
+
+        report.setData(order.getOrderLines());
     }
 
     /**

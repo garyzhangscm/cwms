@@ -2385,5 +2385,6 @@
   "value": "值",
   "results": "结果",
   "shipment.line": "发货单行",
-  "inWarehouseDatetime": "入库时间"
+  "inWarehouseDatetime": "入库时间",
+  "manual-pick-sheet": "手动拣货单"
 }
