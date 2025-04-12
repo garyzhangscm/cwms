@@ -30,7 +30,8 @@ public enum ReportType {
     COMBINED_LABELS(true),
     PALLET_PICK_SUMMARY_LABEL(true),
     WAVE_PICK_SHEET_BY_LOCATION(false),
-    WAVE_PACKING_SLIP(false);
+    WAVE_PACKING_SLIP(false),
+    ORDER_MANUAL_PICK_SHEET(false);
 
     private boolean isLabelFlag;
 

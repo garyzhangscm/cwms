@@ -292,8 +292,8 @@ public class InventoryController {
                                                    @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                                    @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
                                                    @RequestParam(name = "skipLocationIds", defaultValue = "", required = false) String skipLocationIds,
+                                                   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
                                                    @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) throws UnsupportedEncodingException {
-                                                 //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
 
         logger.debug("Start to find pickable inventory by criteria");
         logger.debug("itemId = {}", itemId);
@@ -333,7 +333,7 @@ public class InventoryController {
                 URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
                 URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
-                receiptNumber, skipLocationIds, lpnLimit);
+                receiptNumber, skipLocationIds, lpnLimit, includeDetails);
         logger.debug("return {} pickable inventory with criteria ",
                 pickableInventory.size());
         logger.debug("=========   Pickable   Inventory   ===============");
