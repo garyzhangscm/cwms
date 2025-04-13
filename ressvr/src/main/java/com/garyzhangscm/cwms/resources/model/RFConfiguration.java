@@ -81,6 +81,11 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "outbound_order_validate_partial_lpn_pick")
     private Boolean outboundOrderValidatePartialLPNPick = false;
 
+    // during outbound picking, whether directly pick to ship stage
+    // if NO, then pick to RF and the user has to deposit
+    @Column(name = "pick_to_ship_stage")
+    private Boolean pickToShipStage = false;
+
     @Column(name = "printer_name")
     private String printerName;
 
@@ -162,5 +167,13 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setOutboundOrderValidatePartialLPNPick(Boolean outboundOrderValidatePartialLPNPick) {
         this.outboundOrderValidatePartialLPNPick = outboundOrderValidatePartialLPNPick;
+    }
+
+    public Boolean getPickToShipStage() {
+        return pickToShipStage;
+    }
+
+    public void setPickToShipStage(Boolean pickToShipStage) {
+        this.pickToShipStage = pickToShipStage;
     }
 }

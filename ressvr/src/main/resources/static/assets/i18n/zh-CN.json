@@ -2386,5 +2386,6 @@
   "results": "结果",
   "shipment.line": "发货单行",
   "inWarehouseDatetime": "入库时间",
-  "manual-pick-sheet": "手动拣货单"
+  "manual-pick-sheet": "手动拣货单",
+  "pickToShipStage": "拣货至出库暂存区（不需放置确认）"
 }

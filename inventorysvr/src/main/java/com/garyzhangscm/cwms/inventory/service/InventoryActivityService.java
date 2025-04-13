@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -62,6 +63,9 @@ public class InventoryActivityService{
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private WarehouseConfigurationService warehouseConfigurationService;
 
     @Autowired
     private ClientRestrictionUtil clientRestrictionUtil;
@@ -333,6 +337,8 @@ public class InventoryActivityService{
                                                                     String rfCode,
                                                                     ClientRestriction clientRestriction,
                                                                     Pageable pageable) {
+
+
         return inventoryActivityRepository.findAll(
                 (Root<InventoryActivity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
@@ -407,29 +413,47 @@ public class InventoryActivityService{
                     }
 
                     if (!StringUtils.isBlank(beginDateTime)) {
-                        LocalDateTime begin = LocalDateTime.parse(beginDateTime);
+                        // LocalDateTime begin = LocalDateTime.parse(beginDateTime);
+                        // predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin));
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, beginDateTime
+                        );
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin));
                     }
                     if (!StringUtils.isBlank(endDateTime)) {
-                        LocalDateTime end = LocalDateTime.parse(endDateTime);
+                        // LocalDateTime end = LocalDateTime.parse(endDateTime);
+                        // predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end));
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, endDateTime
+                        );
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end));
                     }
 
                     if (Strings.isNotBlank(beginDate)) {
 
-                        LocalDateTime begin = LocalDate.parse(beginDate).atStartOfDay();
+                        // LocalDateTime begin = LocalDate.parse(beginDate).atStartOfDay();
                         // we will need to convert to the UTC time before we can compare
                         // the user input against the activity date time
-                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC"))));
+                        // predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC"))));
+
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateBeginTimeFromWarehouseTimeZone(
+                                warehouseId, beginDate
+                        );
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("activityDateTime"), begin));
 
                     }
 
                     if (Strings.isNotBlank(endDate)) {
 
-                        LocalDateTime end = LocalDate.parse(endDate).atStartOfDay().plusDays(1).minusSeconds(1);
+                        // LocalDateTime end = LocalDate.parse(endDate).atStartOfDay().plusDays(1).minusSeconds(1);
                         // we will need to convert to the UTC time before we can compare
                         // the user input against the activity date time
-                        predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end.atZone(ZoneId.of("UTC"))));
+                        // predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end.atZone(ZoneId.of("UTC"))));
+
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateEndTimeFromWarehouseTimeZone(
+                                warehouseId, beginDate
+                        );
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("activityDateTime"), end));
 
                     }
 
@@ -437,11 +461,16 @@ public class InventoryActivityService{
                     // date is passed in as the user's local date
                     // based on the user's time zone
                     if (!StringUtils.isBlank(date)) {
-                        LocalDateTime begin = LocalDate.parse(date).atStartOfDay();
-                        LocalDateTime end = begin.plusDays(1).minusNanos(1);
+
+                        // LocalDateTime begin = LocalDate.parse(date).atStartOfDay();
+                        // LocalDateTime end = begin.plusDays(1).minusNanos(1);
                         // we will need to convert to the UTC time before we can compare
                         // the user input against the activity date time
-                        predicates.add(criteriaBuilder.between(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC")), end.atZone(ZoneId.of("UTC"))));
+                        // predicates.add(criteriaBuilder.between(root.get("activityDateTime"), begin.atZone(ZoneId.of("UTC")), end.atZone(ZoneId.of("UTC"))));
+                        Pair<ZonedDateTime, ZonedDateTime> zonedDateTimes =
+                                warehouseConfigurationService.getUTCDateTimeRangeFromWarehouseTimeZone(warehouseId, date);
+                        predicates.add(criteriaBuilder.between(root.get("activityDateTime"),
+                                zonedDateTimes.getFirst(), zonedDateTimes.getSecond()));
                     }
 
                     if (!StringUtils.isBlank(username)) {
