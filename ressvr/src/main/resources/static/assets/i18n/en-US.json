@@ -2391,5 +2391,6 @@
   "results": "Result",
   "shipment.line": "Shipment Line",
   "inWarehouseDatetime": "In Warehouse Date",
-  "manual-pick-sheet": "Manual Pick Sheet"
+  "manual-pick-sheet": "Manual Pick Sheet",
+  "pickToShipStage": "Pick to Ship Stage"
 }
