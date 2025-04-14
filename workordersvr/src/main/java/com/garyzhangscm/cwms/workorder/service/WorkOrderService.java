@@ -1625,8 +1625,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
                                                   String productionLineName,
-                                                  String locale, String printerName)
-            throws JsonProcessingException {
+                                                  String locale, String printerName) {
 
         Long warehouseId = workOrder.getWarehouseId();
 
@@ -1696,6 +1695,33 @@ public class WorkOrderService implements TestDataInitiableService {
                 workOrder.getItem().getItemFamily().getDescription() : "");
         lpnLabelContent.put("item_name", workOrder.getItem().getName());
         lpnLabelContent.put("item_description", workOrder.getItem().getDescription());
+        lpnLabelContent.put("item_description_1", workOrder.getItem().getDescription());
+
+        if (Strings.isNotBlank(workOrder.getItem().getDescription().trim()) &&
+                workOrder.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = workOrder.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+        }
+
         lpnLabelContent.put("work_order_number", workOrder.getNumber());
         lpnLabelContent.put("production_line_name", productionLineName);
         if (Objects.nonNull(lpnQuantity)) {
