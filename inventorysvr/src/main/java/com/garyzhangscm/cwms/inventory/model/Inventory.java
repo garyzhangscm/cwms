@@ -281,7 +281,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     @Column(name = "marked_for_remove")
     private Boolean markedForRemove;
 
-    public Inventory split(String newLpn, Long newQuantity) {
+    public Inventory split(String newLpn, Long newInventoryQuantity) {
         Inventory inventory = new Inventory();
         if (StringUtils.isBlank(newLpn)) {
             newLpn = getLpn();
@@ -305,7 +305,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         inventory.setItemPackageType(getItemPackageType());
         inventory.setLocationId(getLocationId());
         inventory.setLocation(getLocation());
-        inventory.setQuantity(newQuantity);
+        inventory.setQuantity(newInventoryQuantity);
         inventory.setWorkOrderId(getWorkOrderId());
         inventory.setVirtual(getVirtual());
         inventory.setReceiptId(getReceiptId());
@@ -324,7 +324,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
         inventory.setFifoDate(getFifoDate());
 
-        setQuantity(getQuantity() - newQuantity);
+        setQuantity(getQuantity() - newInventoryQuantity);
 
         inventory.setInWarehouseDatetime(getInWarehouseDatetime());
         inventory.setShippedDatetime(getShippedDatetime());
@@ -342,7 +342,7 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
             List<Inventory> innerInventoryInNewKitInventory = new ArrayList<>();
             for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
 
-                Long newKitInnerInventoryQuantity = newQuantity * kitInnerInventory.getQuantity() / getQuantity();
+                Long newKitInnerInventoryQuantity = newInventoryQuantity * kitInnerInventory.getQuantity() / getQuantity();
                 Inventory newKitInnerInventory = kitInnerInventory.split(newLpn, newKitInnerInventoryQuantity);
                 newKitInnerInventory.setKitInventory(inventory);
                 innerInventoryInNewKitInventory.add(newKitInnerInventory);

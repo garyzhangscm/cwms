@@ -2692,24 +2692,24 @@ public class InventoryService {
     // Split the inventory based on the quantity, usually into 2 inventory.
     // the first one in the list is the original inventory with updated quantity
     // the second one in the list is the new inventory
-    public List<Inventory> splitInventory(long id, String newLpn, Long newQuantity) {
-        return splitInventory(findById(id), newLpn, newQuantity);
+    public List<Inventory> splitInventory(long id, String newLpn, Long newInventoryQuantity) {
+        return splitInventory(findById(id), newLpn, newInventoryQuantity);
     }
 
     // Split the inventory based on the quantity, usually into 2 inventory.
     // the first one in the list is the original inventory with updated quantity
     // the second one in the list is the new inventory
-    public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newQuantity) {
+    public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newInventoryQuantity) {
         if (StringUtils.isBlank(newLpn)) {
             newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
         }
-        Inventory newInventory = inventory.split(newLpn, newQuantity);
+        Inventory newInventory = inventory.split(newLpn, newInventoryQuantity);
         List<Inventory> inventories = new ArrayList<>();
         inventories.add(saveOrUpdate(inventory));
         inventories.add(saveOrUpdate(newInventory));
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_SPLIT,
                 "Lpn,Quantity", inventory.getLpn() + "," + inventory.getQuantity(),
-                newLpn + "," + newQuantity);
+                newLpn + "," + newInventoryQuantity);
         return inventories;
     }
 

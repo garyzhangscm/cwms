@@ -850,4 +850,38 @@ public class InventoryServiceRestemplateClient {
                 null
         );
     }
+
+    public List<Inventory> split(Inventory inventory, String newLpn, Long newQuantity) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/inventory/{id}/split")
+                        .queryParam("newLpn", newLpn)
+                        .queryParam("newQuantity", newQuantity);
+
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
+
+    public List<Inventory> moveInventory(Long warehouseId,
+                                         String lpn,
+                                         Location destinationLocation) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/inventory/move")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("lpn", lpn);
+
+        return restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                destinationLocation
+        );
+    }
 }
