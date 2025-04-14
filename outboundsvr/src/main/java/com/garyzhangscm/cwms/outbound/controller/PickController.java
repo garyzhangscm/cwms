@@ -182,23 +182,18 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks/generate-manual-pick-for-work-order", method = RequestMethod.POST)
-    public Pick generateManualPick(@RequestParam Long warehouseId,
-                                   @RequestParam Long workOrderId,
-                                   @RequestParam Long workOrderLineId,
-                                   // @RequestParam Long productionLineId,
-                                   @RequestParam Long pickableQuantity,
-                                   @RequestParam String lpn,
-                                   @RequestParam Long destinationLocationId) {
+    public List<Pick> generateManualPick(@RequestParam Long warehouseId,
+                                         @RequestParam Long workOrderId,
+                                         @RequestParam Long productionLineId,
+                                         @RequestParam Long pickableQuantity,
+                                         @RequestParam String lpn) {
         logger.debug("======        Start to processManualPick pick   ========");
         logger.debug("=> warehouseId: {}", warehouseId);
         logger.debug("=> workOrderId: {}", workOrderId);
-        logger.debug("=> workOrderLineId: {}", workOrderLineId);
-        // logger.debug("=> productionLineId: {}", productionLineId);
+        logger.debug("=> productionLineId: {}", productionLineId);
         logger.debug("=> pickableQuantity: {}", pickableQuantity);
         logger.debug("=> lpn: {}", lpn);
-        logger.debug("=> destinationLocationId: {}", destinationLocationId);
-        return pickService.generateManualPickForWorkOrder(warehouseId, workOrderId, workOrderLineId,
-                 lpn, pickableQuantity, destinationLocationId);
+        return pickService.generateManualPickForWorkOrder(warehouseId, workOrderId, productionLineId, lpn, pickableQuantity);
     }
 
 

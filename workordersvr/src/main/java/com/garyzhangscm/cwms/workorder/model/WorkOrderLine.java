@@ -1,6 +1,7 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.util.Strings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -138,19 +139,19 @@ public class WorkOrderLine extends AuditibleEntity<String>{
             String locationName = inventory.getLocation().getName();
             if (locationsWithInWarehouseDateMap.containsKey(locationName)) {
                 Triple<String, ZonedDateTime, ZonedDateTime> locationInWarehouseDate = locationsWithInWarehouseDateMap.get(locationName);
-                if (inventory.getInWarehouseDatetime().isBefore(locationInWarehouseDate.getSecond())) {
+                if (inventory.getInWarehouseDatetime().isBefore(locationInWarehouseDate.getMiddle())) {
                     locationsWithInWarehouseDateMap.put(locationName,
-                            new Triple(locationName, inventory.getInWarehouseDatetime(), locationInWarehouseDate.getThird()));
+                            Triple.of(locationName, inventory.getInWarehouseDatetime(), locationInWarehouseDate.getRight()));
                 }
-                else if (inventory.getInWarehouseDatetime().isAfter(locationInWarehouseDate.getThird())) {
+                else if (inventory.getInWarehouseDatetime().isAfter(locationInWarehouseDate.getRight())) {
                     locationsWithInWarehouseDateMap.put(locationName,
-                            new Triple(locationName,  locationInWarehouseDate.getSecond(), inventory.getInWarehouseDatetime()));
+                            Triple.of(locationName,  locationInWarehouseDate.getMiddle(), inventory.getInWarehouseDatetime()));
 
                 }
             }
             else {
                 locationsWithInWarehouseDateMap.put(locationName,
-                        new Triple(locationName, inventory.getInWarehouseDatetime(), inventory.getInWarehouseDatetime()));
+                        Triple.of(locationName, inventory.getInWarehouseDatetime(), inventory.getInWarehouseDatetime()));
             }
             inventoryInLocation.computeIfAbsent(locationName, key -> new ArrayList<>()).add(inventory);
 
@@ -162,7 +163,7 @@ public class WorkOrderLine extends AuditibleEntity<String>{
                 = new ArrayList<>(locationsWithInWarehouseDateMap.values());
 
 
-        Collections.sort(locationsWithInWarehouseDateList, Comparator.comparing(Triple::getSecond));
+        Collections.sort(locationsWithInWarehouseDateList, Comparator.comparing(Triple::getMiddle));
 
         manualPickableInventoryForDisplay = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -171,13 +172,13 @@ public class WorkOrderLine extends AuditibleEntity<String>{
                 locationWithInWarehouseDate -> {
                     // show the location summary first
                     manualPickableInventoryForDisplay.add(
-                            locationWithInWarehouseDate.getFirst() + ": " +
-                                    locationWithInWarehouseDate.getSecond().format(formatter) + " ~ " +
-                                    locationWithInWarehouseDate.getThird().format(formatter)
+                            locationWithInWarehouseDate.getLeft() + ": " +
+                                    locationWithInWarehouseDate.getMiddle().format(formatter) + " ~ " +
+                                    locationWithInWarehouseDate.getRight().format(formatter)
                     );
 
                     // show each inventory in the location
-                    inventoryInLocation.get(locationWithInWarehouseDate.getFirst()).forEach(
+                    inventoryInLocation.get(locationWithInWarehouseDate.getLeft()).forEach(
                             inventory ->
                                     manualPickableInventoryForDisplay.add("    # " +
                                             inventory.getLpn() + ", " +
