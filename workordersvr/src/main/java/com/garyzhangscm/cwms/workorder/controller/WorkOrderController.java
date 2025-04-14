@@ -475,12 +475,38 @@ public class WorkOrderController {
                                          @RequestParam String lpn,
                                          @RequestParam Long productionLineId,
                                          @RequestParam Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to generateManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return workOrderService.generateManualPick(workOrderId, lpn, productionLineId, pickWholeLPN);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{workOrderId}/process-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
+    public List<Pick> processManualPick(@RequestParam Long warehouseId,
+                                        @PathVariable  Long workOrderId,
+                                        @RequestParam String lpn,
+                                        @RequestParam Long productionLineId,
+                                        @RequestParam Long nextLocationId,
+                                        @RequestParam Boolean pickWholeLPN) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> workOrderId: {}", workOrderId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> productionLineId: {}", productionLineId);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        logger.debug("=> nextLocationId: {}", nextLocationId);
+        return workOrderService.processManualPick(warehouseId, workOrderId, lpn, productionLineId, nextLocationId, pickWholeLPN);
     }
 
     @BillableEndpoint
