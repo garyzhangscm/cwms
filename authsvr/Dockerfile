@@ -8,6 +8,6 @@ FROM openjdk:20-ea-17-jdk-slim-buster
 
 RUN mkdir -p /usr/local/service
 
-ADD target/authenticationserver-v1.60.jar /usr/local/service/
+ADD target/authenticationserver-v1.61.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/authenticationserver-v1.60.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/authenticationserver-v1.61.jar"]

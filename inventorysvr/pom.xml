@@ -14,7 +14,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>inventoryserver</artifactId>
-	<version>v1.60</version>
+	<version>v1.61</version>
 	<name>Inventory  Server</name>
 	<description>Inventory Server - Item / Inventory / Replenishment / Cycle Count</description>
 
@@ -250,6 +250,14 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
