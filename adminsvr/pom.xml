@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>adminserver</artifactId>
-    <version>v1.60</version>
+    <version>v1.61</version>
     <name>adminserver</name>
     <description>Admin Server - Anything other than warehouse management</description>
 
