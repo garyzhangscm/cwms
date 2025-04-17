@@ -1271,6 +1271,8 @@ public class ReceiptService {
             lpnLabelContent.put("supplier",  "");
         }
 
+
+        lpnLabelContent.put("stockUOM", receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
         if(Boolean.TRUE.equals(ignoreInventoryQuantity)) {
             lpnLabelContent.put("quantity", "");
         }

@@ -415,7 +415,7 @@ public class ReceiptController {
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
             @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
             @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
-    ) throws JsonProcessingException {
+    )   {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
         return receiptService.generatePrePrintLPNLabel(id, lpn, inventoryQuantity, ignoreInventoryQuantity,  locale, printerName);
