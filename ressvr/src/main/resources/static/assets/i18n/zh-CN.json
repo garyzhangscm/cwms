@@ -1262,7 +1262,7 @@
   "printer.name": "打印机名称",
   "REPORT-TYPE-CYCLE_COUNT_SHEET": "盘点单",
   "REPORT-TYPE-AUDIT_COUNT_SHEET": "复盘单",
-  "REPORT-TYPE-LPN_REPORT": "LPN 标签",
+  "REPORT-TYPE-LPN_REPORT": "LPN 报表",
   "REPORT-TYPE-WORK_ORDER_PICK_SHEET": "工单拣货单",
   "page.report-printer-configuration.maintenance.modify": "报表打印机配置维护",
   "steps.report-printer-configuration.info": "配置",

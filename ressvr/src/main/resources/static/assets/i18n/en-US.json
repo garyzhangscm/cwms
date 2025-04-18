@@ -1256,7 +1256,7 @@
   "printer.name": "Printer Name",
   "REPORT-TYPE-CYCLE_COUNT_SHEET": "Cycle Count Sheet",
   "REPORT-TYPE-AUDIT_COUNT_SHEET": "Audit Count Sheet",
-  "REPORT-TYPE-LPN_REPORT": "LPN Label",
+  "REPORT-TYPE-LPN_REPORT": "LPN Report",
   "REPORT-TYPE-WORK_ORDER_PICK_SHEET": "WO Pick Sheet",
   "page.report-printer-configuration.maintenance.modify": "Report Printer Configuration Maintenance",
   "steps.report-printer-configuration.info": "Configuration",
