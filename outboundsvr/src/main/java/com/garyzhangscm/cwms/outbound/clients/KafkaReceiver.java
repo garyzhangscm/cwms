@@ -57,8 +57,8 @@ public class KafkaReceiver {
     @KafkaListener(topics = {"INTEGRATION_ORDER"})
     public void processOrder(@Payload String orderJsonRepresent,
                              @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
-        logger.info("# received integration - order data:\n {}", orderJsonRepresent);
-        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+        // logger.info("# received integration - order data:\n {}", orderJsonRepresent);
+        // logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
         String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
         Long warehouseId = Long.parseLong(key[0]);
@@ -66,7 +66,7 @@ public class KafkaReceiver {
 
         try {
             Order order = objectMapper.readValue(orderJsonRepresent, Order.class);
-            logger.info("order: {}", order);
+            // logger.info("order: {}", order);
 
             integrationService.process(order);
 
@@ -101,9 +101,9 @@ public class KafkaReceiver {
     @KafkaListener(topics = {"ALLOCATION_REQUEST"})
     public void processAllocationRequest(@Payload String allocationRequestJsonRepresent,
                                          @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String oAuth2AccessTokenJsonRepresent)  {
-        logger.info("# received integration - allocation request data:\n {}", allocationRequestJsonRepresent);
+        // logger.info("# received integration - allocation request data:\n {}", allocationRequestJsonRepresent);
 
-        logger.info("# oAuth2AccessTokenJsonRepresent:\n {}", oAuth2AccessTokenJsonRepresent);
+        // logger.info("# oAuth2AccessTokenJsonRepresent:\n {}", oAuth2AccessTokenJsonRepresent);
 
 
     }
@@ -111,7 +111,7 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"order_activity"})
     public void processOrderActivity(@Payload String orderActivityJsonRepresent)  {
-        logger.info("# received  order activity data:\n {}", orderActivityJsonRepresent);
+        // logger.info("# received  order activity data:\n {}", orderActivityJsonRepresent);
 
         try {
             OrderActivity orderActivity = objectMapper.readValue(orderActivityJsonRepresent, OrderActivity.class);
@@ -129,12 +129,12 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"ALLOCATION_TRANSACTION_HISTORY"})
     public void processAllocationTransactionHistory(@Payload String allocationTransactionHistoryJsonRepresent)  {
-        logger.info("# received allocation transaction history data:\n {}", allocationTransactionHistoryJsonRepresent);
+        // logger.info("# received allocation transaction history data:\n {}", allocationTransactionHistoryJsonRepresent);
 
         try {
             AllocationTransactionHistory allocationTransactionHistory
                     = objectMapper.readValue(allocationTransactionHistoryJsonRepresent, AllocationTransactionHistory.class);
-            logger.info("allocationTransactionHistory: \n{}", allocationTransactionHistory);
+            // logger.info("allocationTransactionHistory: \n{}", allocationTransactionHistory);
 
 
             allocationTransactionHistoryService.addAllocationTransactionHistory(allocationTransactionHistory);
@@ -149,8 +149,8 @@ public class KafkaReceiver {
     @KafkaListener(topics = {"INTEGRATION_STOP"})
     public void listenForStop(@Payload String trailerAppointmentJsonRepresent,
                               @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
-        logger.info("# received trailer appointment data: {}", trailerAppointmentJsonRepresent);
-        logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
+        // logger.info("# received trailer appointment data: {}", trailerAppointmentJsonRepresent);
+        // logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
         String[] key = objectMapper.readValue(integrationIdJsonRepresent, String.class).split("-");
         Long companyId = Long.parseLong(key[0]);
@@ -162,7 +162,7 @@ public class KafkaReceiver {
 
             TrailerAppointment trailerAppointment =
                     objectMapper.readValue(trailerAppointmentJsonRepresent, TrailerAppointment.class);
-            logger.info("# trailer appointment data after parsing: {}", trailerAppointment);
+            // logger.info("# trailer appointment data after parsing: {}", trailerAppointment);
             integrationService.process(trailerAppointment);
 
             // SEND the integration result back
@@ -174,7 +174,7 @@ public class KafkaReceiver {
             kafkaSender.send(integrationResult);
         }
         catch (Exception ex) {
-            logger.debug("JsonProcessingException: {}", ex.getMessage());
+            // logger.debug("JsonProcessingException: {}", ex.getMessage());
             ex.printStackTrace();
             // SEND the integration result back
             IntegrationResult integrationResult = new IntegrationResult(

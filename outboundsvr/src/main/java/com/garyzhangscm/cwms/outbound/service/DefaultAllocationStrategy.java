@@ -60,7 +60,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         Long openQuantity = allocationRequest.getQuantity();
         InventoryStatus inventoryStatus = allocationRequest.getInventoryStatus();
 
-        logger.debug("Start to allocate request with FIFO. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
+        logger.debug("Start to allocate request. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
                 item.getId(),
                 allocationRequest.getItem().getName(),
                 allocationRequest.getQuantity(),
