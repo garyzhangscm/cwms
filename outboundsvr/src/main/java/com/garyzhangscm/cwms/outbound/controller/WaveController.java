@@ -59,9 +59,9 @@ public class WaveController {
                                          @RequestParam(name="singleOrderLineOnly", required = false, defaultValue = "") Boolean singleOrderLineOnly,
                                          @RequestParam(name="singleOrderQuantityOnly", required = false, defaultValue = "") Boolean singleOrderQuantityOnly,
                                          @RequestParam(name="singleOrderCaseQuantityOnly", required = false, defaultValue = "") Boolean singleOrderCaseQuantityOnly,
-                                         @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
-                                         @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
-                                         @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCreatedDate,
+                                         @RequestParam(name = "startCreatedTime", required = false, defaultValue = "")   String startCreatedTime,
+                                         @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") String endCreatedTime,
+                                         @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") String specificCreatedDate,
                                          ClientRestriction clientRestriction) {
         return waveService.findWaveableOrdersCandidate(warehouseId,
                 orderNumber,  clientId, customerName, customerId,

@@ -1728,6 +1728,20 @@ public class WorkOrderService implements TestDataInitiableService {
             logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
             lpnLabelContent.put("quantity", lpnQuantity);
 
+            if (Objects.nonNull(workOrder.getItem().getDefaultItemPackageType()) &&
+                    Objects.nonNull(workOrder.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure())) {
+                ItemUnitOfMeasure stockItemUnitOfMeasure = workOrder.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure();
+                if (Objects.isNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+                    stockItemUnitOfMeasure.setUnitOfMeasure(
+                            commonServiceRestemplateClient.getUnitOfMeasureById(
+                                    stockItemUnitOfMeasure.getUnitOfMeasureId()
+                            )
+                    );
+                }
+                lpnLabelContent.put("stockUOM", stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+
+            }
+
         }
         else if (workOrder.getItem().getItemPackageTypes().size() > 0){
             logger.debug("LPN Quantity is not passed in, let's get from the UOM");

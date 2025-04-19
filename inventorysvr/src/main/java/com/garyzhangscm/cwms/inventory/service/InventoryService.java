@@ -99,6 +99,8 @@ public class InventoryService {
     private InventoryConfigurationService inventoryConfigurationService;
     @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
+    @Autowired
+    private LPNLabelFontSizeService lpnLabelFontSizeService;
 
     private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> inventoryFileUploadProgress = new ConcurrentHashMap<>();
@@ -3891,7 +3893,7 @@ public class InventoryService {
 
     }
     public ReportHistory generateLPNLabel(Long warehouseId, String lpn,
-                                          List<Inventory> inventories, String locale) throws JsonProcessingException {
+                                          List<Inventory> inventories, String locale)   {
 
         /***
         // setup parameters
@@ -3944,24 +3946,13 @@ public class InventoryService {
         logger.debug("will find a printer by : \n{}, ",
                 reportData);
          **/
-        // we will print one label per Item with its current quantity in the LPN
-        // key: item id
-        // value: item
-        Map<Long, Item> itemMap = new HashMap<>();
-        // key: item id
-        // value: quantity
-        Map<Long, Long> itemQuantityMap = new HashMap<>();
 
-        for (Inventory inventory : inventories) {
-            Long itemId = inventory.getItem().getId();
-            itemMap.putIfAbsent(itemId, inventory.getItem());
-            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
-            itemQuantityMap.put(itemId, quantity + inventory.getQuantity());
-        }
+        Map<String, Inventory> inventoryMap = getInventoryMapForLPNLabel(inventories);
 
         Report reportData = new Report();
         setupPrePrintLPNLabelData(
-                reportData, lpn, itemMap, itemQuantityMap, 1
+                warehouseId,
+                reportData, lpn, inventoryMap, 1
         );
 
         ReportHistory reportHistory =
@@ -3974,20 +3965,64 @@ public class InventoryService {
         return reportHistory;
     }
 
-    private void setupPrePrintLPNLabelData(Report reportData,
+    private Map<String, Inventory> getInventoryMapForLPNLabel(List<Inventory> inventories) {
+        // key: inventory attributes which we can print on the LPN Label
+        // item_id - receipt_id - color - style - productSize - attribute1 ~ attribute5
+        // value: inventory with total quantity from inventory
+        Map<String, Inventory> inventoryMap = new HashMap<>();
+
+
+        for (Inventory inventory : inventories) {
+            String key = new StringBuilder()
+                    .append(inventory.getItem().getId()).append("-")
+                    .append(inventory.getItemPackageType().getId()).append("-")
+                    .append(Objects.nonNull(inventory.getReceiptId()) ? inventory.getReceiptId() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getColor()) ? inventory.getColor() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getStyle()) ? inventory.getStyle() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getProductSize()) ? inventory.getProductSize() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute1()) ? inventory.getAttribute1() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute2()) ? inventory.getAttribute2() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute3()) ? inventory.getAttribute3() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute4()) ? inventory.getAttribute4() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute5()) ? inventory.getAttribute5() : "NA").append("-")
+                    .toString();
+
+            if (inventoryMap.containsKey(key)) {
+                inventoryMap.get(key).setQuantity(
+                        inventoryMap.get(key).getQuantity() + inventory.getQuantity()
+                );
+            }
+            else {
+                inventoryMap.put(
+                        key,
+                        inventory.copy(inventory.getLpn(), inventory.getQuantity())
+                );
+            }
+        }
+        return inventoryMap;
+    }
+
+    private void setupPrePrintLPNLabelData(Long warehouseId,
+                                           Report reportData,
                                            String lpn,
-                                           Map<Long, Item> itemMap,
-                                           Map<Long, Long> itemQuantityMap,
+                                           Map<String, Inventory> inventoryMap,
                                            Integer copies) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
-        for (Map.Entry<Long, Item> itemEntries : itemMap.entrySet()) {
-            Long itemId = itemEntries.getKey();
-            Item item = itemEntries.getValue();
-            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
+
+
+        LPNLabelFontSize colorFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.COLOR);
+        LPNLabelFontSize styleFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.STYLE);
+        LPNLabelFontSize productSizeFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.PRODUCT_SIZE);
+
+        for (Map.Entry<String, Inventory> inventoryEntry : inventoryMap.entrySet()) {
 
             Map<String, Object> lpnLabelContent =   getLPNLabelContent(
-                    lpn, item, quantity
+                    lpn, inventoryEntry.getValue(),
+                    colorFontSize, styleFontSize, productSizeFontSize
             );
             for (int i = 0; i < copies; i++) {
                 lpnLabelContents.add(lpnLabelContent);
@@ -3998,17 +4033,172 @@ public class InventoryService {
 
     }
 
-    private Map<String, Object> getLPNLabelContent(String lpn, Item item, Long quantity) {
+    private Map<String, Object> getLPNLabelContent(String lpn, Inventory inventory,
+                                                   LPNLabelFontSize colorFontSize,
+                                                   LPNLabelFontSize styleFontSize,
+                                                   LPNLabelFontSize productSizeFontSize) {
 
         Map<String, Object> lpnLabelContent = new HashMap<>();
 
+        StringBuilder qrCode = new StringBuilder();
+        qrCode.append("qrcode:");
+
+        if (Objects.nonNull(inventory.getClient())) {
+
+            lpnLabelContent.put("client", inventory.getClient().getName());
+        }
+
         lpnLabelContent.put("lpn", lpn);
-        lpnLabelContent.put("item_family", Objects.nonNull(item.getItemFamily()) ?
-                item.getItemFamily().getDescription() : "");
-        lpnLabelContent.put("item_name", item.getName());
-        lpnLabelContent.put("quantity", quantity);
+        qrCode.append("lpn=").append(lpn).append(";");
+
+        lpnLabelContent.put("item_family", Objects.nonNull(inventory.getItem().getItemFamily()) ?
+                inventory.getItem().getItemFamily().getDescription() : "");
+        lpnLabelContent.put("item_name", inventory.getItem().getName());
+        qrCode.append("itemName=").append(inventory.getItem().getName()).append(";");
+        qrCode.append("itemId=").append(inventory.getItemId()).append(";");
+        lpnLabelContent.put("item_description", inventory.getItem().getDescription());
+
+        // if item description is too long, split into multiple lines
+        lpnLabelContent.put("item_description_1", inventory.getItem().getDescription());
+
+        if (Strings.isNotBlank(inventory.getItem().getDescription().trim()) &&
+                inventory.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = inventory.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+        }
+
+
+        lpnLabelContent.put("quantity", inventory.getQuantity());
+
+        if (Objects.nonNull(inventory.getItemPackageType().getStockItemUnitOfMeasure())) {
+            if (Objects.isNull(inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure())) {
+                inventory.getItemPackageType().getStockItemUnitOfMeasure().setUnitOfMeasure(
+                        commonServiceRestemplateClient.getUnitOfMeasureById(
+                                inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasureId()
+                        )
+                );
+            }
+            lpnLabelContent.put("stockUOM", inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+
+        }
+        else {
+
+            lpnLabelContent.put("stockUOM", "");
+        }
+
+        lpnLabelContent.put("receipt_number", Objects.nonNull(inventory.getReceipt()) ?
+                inventory.getReceipt().getNumber() : "");
+
+
+        qrCode.append("itemPackageTypeId=").append(inventory.getItemPackageType().getId()).append(";");
+        qrCode.append("itemPackageTypeName=").append(inventory.getItemPackageType().getName()).append(";");
+
+        lpnLabelContent.put("caseQuantity", Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure()) ?
+                inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity() : "0");
+
+
+        lpnLabelContent.put("client", Objects.nonNull(inventory.getClient()) ?
+            inventory.getClient().getName() : "");
+
+        if (Strings.isNotBlank(inventory.getColor())) {
+            // we may need to automatically adjust the font size of the color
+            // so that the label can display all characters when it is too long
+
+            lpnLabelContent.put("color", inventory.getColor().trim().replace(" ", "\\\\&"));
+            lpnLabelContent.put("color_font_size", getLPNLabelFontSize(
+                    inventory.getColor().trim().replace(" ", "\\\\&"),
+                    colorFontSize.getCharactersPerLine(),
+                    colorFontSize.getBaseSize(),
+                    colorFontSize.getBaseSizeLineCount(),
+                    colorFontSize.getStep()));
+
+            qrCode.append("color=").append(inventory.getColor()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getProductSize())) {
+            lpnLabelContent.put("productSize", inventory.getProductSize());
+
+            lpnLabelContent.put("productSize_font_size", getLPNLabelFontSize(
+                    inventory.getProductSize().trim(),
+                    productSizeFontSize.getCharactersPerLine(),
+                    productSizeFontSize.getBaseSize(),
+                    productSizeFontSize.getBaseSizeLineCount(),
+                    productSizeFontSize.getStep()));
+
+            qrCode.append("productSize=").append(inventory.getProductSize()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getStyle())) {
+            lpnLabelContent.put("style", inventory.getStyle());
+            lpnLabelContent.put("style_font_size", getLPNLabelFontSize(
+                    inventory.getStyle().trim(),
+                    styleFontSize.getCharactersPerLine(),
+                    styleFontSize.getBaseSize(),
+                    styleFontSize.getBaseSizeLineCount(),
+                    styleFontSize.getStep()));
+            qrCode.append("style=").append(inventory.getStyle()).append(";");
+        }
+
+        if (Strings.isNotBlank(inventory.getAttribute1())) {
+            lpnLabelContent.put("inventoryAttribute1", inventory.getAttribute1());
+            qrCode.append("inventoryAttribute1=").append(inventory.getAttribute1()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute2())) {
+            lpnLabelContent.put("inventoryAttribute2", inventory.getAttribute2());
+            qrCode.append("inventoryAttribute2=").append(inventory.getAttribute2()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute3())) {
+            lpnLabelContent.put("inventoryAttribute3", inventory.getAttribute3());
+            qrCode.append("inventoryAttribute3=").append(inventory.getAttribute3()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute4())) {
+            lpnLabelContent.put("inventoryAttribute4", inventory.getAttribute4());
+            qrCode.append("inventoryAttribute4=").append(inventory.getAttribute4()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute5())) {
+            lpnLabelContent.put("inventoryAttribute5", inventory.getAttribute5());
+            qrCode.append("inventoryAttribute5=").append(inventory.getAttribute5()).append(";");
+        }
+
+
+        lpnLabelContent.put("barcode", qrCode.toString());
 
         return lpnLabelContent;
+
+    }
+
+    private int getLPNLabelFontSize(String value, int charactersPerLine, int baseSize, int baseSizeLineCount, int step) {
+        if (Strings.isBlank(value)) {
+            return baseSize;
+        }
+        int lineNeeded = (int)Math.ceil(value.length() * 1.0 / charactersPerLine);
+        logger.debug("value: {}, charactersPerLine: {}, lineNeeded: {}",
+                value, charactersPerLine, lineNeeded);
+
+        // if we don't need too many lines to display the value
+        if (lineNeeded <= baseSizeLineCount) {
+            return baseSize;
+        }
+        logger.debug("label font size {}", (baseSize - step * (lineNeeded - baseSizeLineCount)));
+        return baseSize - step * (lineNeeded - baseSizeLineCount);
+
 
     }
 

@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -58,6 +59,8 @@ public class OrderService {
     private OrderLineService orderLineService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private WarehouseConfigurationService warehouseConfigurationService;
     @Autowired
     private KafkaSender kafkaSender;
     @Autowired
@@ -128,12 +131,12 @@ public class OrderService {
                                String number,
                                String numbers,
                                String status,
-                               ZonedDateTime startCompleteTime,
-                               ZonedDateTime endCompleteTime,
-                               LocalDate specificCompleteDate,
-                               ZonedDateTime startCreatedTime,
-                               ZonedDateTime endCreatedTime,
-                               LocalDate specificCreatedDate,
+                               String startCompleteTime,
+                               String endCompleteTime,
+                               String specificCompleteDate,
+                               String startCreatedTime,
+                               String endCreatedTime,
+                               String specificCreatedDate,
                                String category,
                                String customerName,
                                Long customerId,
@@ -193,41 +196,59 @@ public class OrderService {
 
                         predicates.add(criteriaBuilder.equal(root.get("poNumber"), poNumber));
                     }
-                    if (Objects.nonNull(startCompleteTime)) {
+                    if (Strings.isNotBlank(startCompleteTime)) {
+
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, startCompleteTime
+                        );
+
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("completeTime"), startCompleteTime));
+                                root.get("completeTime"), begin));
 
                     }
 
-                    if (Objects.nonNull(endCompleteTime)) {
+                    if (Strings.isNotBlank(endCompleteTime)) {
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, endCompleteTime
+                        );
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("completeTime"), endCompleteTime));
+                                root.get("completeTime"), end));
 
                     }
-                    if (Objects.nonNull(specificCompleteDate)) {
-                        LocalDateTime dateStartTime = specificCompleteDate.atStartOfDay();
-                        LocalDateTime dateEndTime = specificCompleteDate.atStartOfDay().plusDays(1).minusSeconds(1);
-                        predicates.add(criteriaBuilder.between(
-                                root.get("completeTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+                    if (Strings.isNotBlank(specificCompleteDate)) {
+
+                        Pair<ZonedDateTime, ZonedDateTime> zonedDateTimes =
+                                warehouseConfigurationService.getUTCDateTimeRangeFromWarehouseTimeZone(warehouseId, specificCompleteDate);
+                        predicates.add(criteriaBuilder.between(root.get("completeTime"),
+                                zonedDateTimes.getFirst(), zonedDateTimes.getSecond()));
+
 
                     }
 
-                    if (Objects.nonNull(startCreatedTime)) {
+                    if (Strings.isNotBlank(startCreatedTime)) {
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, startCreatedTime
+                        );
+
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("createdTime"), startCreatedTime));
+                                root.get("createdTime"), begin));
 
                     }
 
-                    if (Objects.nonNull(endCreatedTime)) {
+                    if (Strings.isNotBlank(endCreatedTime)) {
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, endCreatedTime
+                        );
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("createdTime"), endCreatedTime));
+                                root.get("createdTime"), end));
 
                     }
-                    if (Objects.nonNull(specificCreatedDate)) {
-                        LocalDateTime dateStartTime = specificCreatedDate.atStartOfDay();
-                        LocalDateTime dateEndTime = specificCreatedDate.atStartOfDay().plusDays(1).minusSeconds(1);
-                        predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+                    if (Strings.isNotBlank(specificCreatedDate)) {
+
+                        Pair<ZonedDateTime, ZonedDateTime> zonedDateTimes =
+                                warehouseConfigurationService.getUTCDateTimeRangeFromWarehouseTimeZone(warehouseId, specificCreatedDate);
+                        predicates.add(criteriaBuilder.between(root.get("createdTime"),
+                                zonedDateTimes.getFirst(), zonedDateTimes.getSecond()));
 
                     }
 
@@ -334,10 +355,10 @@ public class OrderService {
     }
 
     public List<Order> findAll(Long warehouseId, String ids, String number, String numbers, String status,
-                               ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
-                               LocalDate specificCompleteDate,
-                               ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
-                               LocalDate specificCreatedDate,
+                               String startCompleteTime, String endCompleteTime,
+                               String specificCompleteDate,
+                               String startCreatedTime, String endCreatedTime,
+                               String specificCreatedDate,
                                String category, String customerName, Long customerId,
                                Long clientId,
                               Long trailerAppointmentId, String poNumber,
@@ -404,9 +425,9 @@ public class OrderService {
     public List<Order> findWaveableOrdersCandidate(Long warehouseId, String orderNumber,
                                          Long clientId,
                                          String customerName, Long customerId,
-                                         ZonedDateTime startCreatedTime,
-                                         ZonedDateTime endCreatedTime,
-                                         LocalDate specificCreatedDate,
+                                                   String startCreatedTime,
+                                                   String endCreatedTime,
+                                                   String specificCreatedDate,
                                          Boolean singleOrderLineOnly,
                                          Boolean singleOrderQuantityOnly,
                                          Boolean singleOrderCaseQuantityOnly,
@@ -3420,7 +3441,7 @@ public class OrderService {
                 null,
                 null,
                 null,
-                LocalDate.now(),
+                LocalDate.now().toString(),
                 null,
                 null,
                 null,
@@ -3440,7 +3461,7 @@ public class OrderService {
                 null,
                 null,
                 null,
-                LocalDate.now(),
+                LocalDate.now().toString(),
                 null,
                 null,
                 null,

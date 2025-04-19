@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class FIFOAllocationStrategy extends DefaultAllocationStrategy {
+public class AllocateByFIFOAllocationStrategy extends DefaultAllocationStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(AllocationService.class);
 
@@ -43,7 +43,7 @@ public class FIFOAllocationStrategy extends DefaultAllocationStrategy {
     }
     @Override
     public boolean isDefault() {
-        return true;
+        return false;
     }
 
 }
