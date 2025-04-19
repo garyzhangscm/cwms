@@ -2399,5 +2399,6 @@
   "default-report-printer": "Default Report Printer",
   "ALLOCATION-STRATEGY-TYPE-BY_PICK_SEQUENCE":"By Pick Sequence",
   "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"By Allocation Sequence",
-  "ALLOCATION-STRATEGY-TYPE-DEFAULT":"Default"
+  "ALLOCATION-STRATEGY-TYPE-DEFAULT":"Default",
+  "steps.item.attribute-tracking": "Attribute Tracking"
 }

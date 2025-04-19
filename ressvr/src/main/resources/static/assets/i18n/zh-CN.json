@@ -2394,5 +2394,6 @@
   "default-report-printer": "默认纸单打印机",
   "ALLOCATION-STRATEGY-TYPE-BY_PICK_SEQUENCE":"按拣选顺序",
   "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"按分配顺序",
-  "ALLOCATION-STRATEGY-TYPE-DEFAULT":"默认"
+  "ALLOCATION-STRATEGY-TYPE-DEFAULT":"默认",
+  "steps.item.attribute-tracking": "跟踪库存属性"
 }
