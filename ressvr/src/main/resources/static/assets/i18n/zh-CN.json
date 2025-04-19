@@ -2387,5 +2387,12 @@
   "shipment.line": "发货单行",
   "inWarehouseDatetime": "入库时间",
   "manual-pick-sheet": "手动拣货单",
-  "pickToShipStage": "拣货至出库暂存区（不需放置确认）"
+  "pickToShipStage": "拣货至出库暂存区（不需放置确认）",
+  "REPORT-TYPE-ORDER_MANUAL_PICK_SHEET": "订单手工拣货单",
+  "REPORT-TYPE-WORK_ORDER_MANUAL_PICK_SHEET": "加工手工拣货单",
+  "default-label-printer": "默认标签打印机",
+  "default-report-printer": "默认纸单打印机",
+  "ALLOCATION-STRATEGY-TYPE-BY_PICK_SEQUENCE":"按拣选顺序",
+  "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"按分配顺序",
+  "ALLOCATION-STRATEGY-TYPE-DEFAULT":"默认"
 }

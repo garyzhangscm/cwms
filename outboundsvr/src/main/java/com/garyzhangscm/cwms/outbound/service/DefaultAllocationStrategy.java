@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -39,7 +38,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
     @Override
     public AllocationStrategyType getType() {
-        return AllocationStrategyType.FIRST_IN_FIRST_OUT;
+        return AllocationStrategyType.DEFAULT;
     }
 
     @Override

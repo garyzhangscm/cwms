@@ -1119,6 +1119,38 @@ public class ReceiptService {
                 receiptLine.getItem().getItemFamily().getDescription() : "");
         lpnLabelContent.put("item_name", receiptLine.getItem().getName());
         lpnLabelContent.put("item_description", receiptLine.getItem().getDescription());
+
+        // if item description is too long, split into multiple lines
+        lpnLabelContent.put("item_description_1", receiptLine.getItem().getDescription());
+        // logger.debug("item_description_1 passed in: {}", receiptLine.getItem().getDescription());
+
+        if (Strings.isNotBlank(receiptLine.getItem().getDescription().trim()) &&
+                receiptLine.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = receiptLine.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    // logger.debug("item_description_" + lineIndex + " passed in: {}", line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+            // logger.debug("item_description_" + lineIndex + " passed in: {}", line);
+        }
+
         qrCode.append("itemName=").append(receiptLine.getItem().getName()).append(";");
 
         lpnLabelContent.put("item_id", receiptLine.getItemId());
@@ -1273,6 +1305,9 @@ public class ReceiptService {
 
 
         lpnLabelContent.put("stockUOM", receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+        logger.debug("stockUOM is passed in: {}",
+                receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+
         if(Boolean.TRUE.equals(ignoreInventoryQuantity)) {
             lpnLabelContent.put("quantity", "");
         }
