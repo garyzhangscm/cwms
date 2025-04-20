@@ -853,4 +853,19 @@ public class OrderLineService{
         }
         return (long)Math.ceil(quantity * 1.0 / palletQuantity);
     }
+
+
+    public OrderLine changeAllocationStrategyType(Long warehouseId, Long orderLineId, String allocationStrategyType) {
+        OrderLine orderLine = findById(orderLineId);
+        if (Strings.isNotBlank(allocationStrategyType)) {
+
+            orderLine.setAllocationStrategyType(
+                    AllocationStrategyType.valueOf(allocationStrategyType)
+            );
+        }
+        else {
+            orderLine.setAllocationStrategyType(null);
+        }
+        return saveOrUpdate(orderLine);
+    }
 }

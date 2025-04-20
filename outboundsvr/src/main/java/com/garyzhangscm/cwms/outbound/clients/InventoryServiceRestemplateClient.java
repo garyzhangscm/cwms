@@ -361,6 +361,7 @@ public class InventoryServiceRestemplateClient {
         logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
         logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
         logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("color = {}", Strings.isBlank(color) ? "N/A" : color);
         logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
         logger.debug("inventoryAttribute1 = {}", Strings.isBlank(inventoryAttribute1) ? "N/A" : inventoryAttribute1);
         logger.debug("inventoryAttribute2 = {}", Strings.isBlank(inventoryAttribute2) ? "N/A" : inventoryAttribute2);

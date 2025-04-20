@@ -25,6 +25,7 @@ Outbound-Order,clear-cancellation-request,Clear Order Cancellation Request
 Outbound-Order,walmart-shipping-carton-label,Walmart Shipping Carton Label
 Outbound-Order,target-shipping-carton-label,Target Shipping Carton Label
 Outbound-Order,change-order-completed-time,Change Completed Time
+Outbound-Order,change-order-line-allocation-strategy-type,Change Order Line Allocation Strategy Type
 Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory
