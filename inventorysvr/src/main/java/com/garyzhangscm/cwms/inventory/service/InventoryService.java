@@ -3808,7 +3808,8 @@ public class InventoryService {
      * @throws JsonProcessingException
      */
     public ReportHistory generateLPNLabel(Long warehouseId, String lpn, String locale,
-                                                 Long quantity, String printerName) throws JsonProcessingException {
+                                                 Long quantity, String printerName)   {
+
         // see if we can find work order or receipt form the LPN
         // if we can only find one work order, or receipt from it, then we will call
         // the correspodent service to print the LPN label.
@@ -3816,6 +3817,11 @@ public class InventoryService {
         // an plain LPN label
 
         List<Inventory> inventories = findByLpn(warehouseId, lpn);
+
+        return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        // we will always print LPN label, not work order / receiving LPN Labels
+
+        /***
         if (Objects.isNull(quantity)) {
             quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
         }
@@ -3888,6 +3894,7 @@ public class InventoryService {
                     "We don't know whether the LPN comes from receiving or work order production," +
                     " or none of them");
         }
+         **/
 
 
 
@@ -4043,10 +4050,23 @@ public class InventoryService {
         StringBuilder qrCode = new StringBuilder();
         qrCode.append("qrcode:");
 
-        if (Objects.nonNull(inventory.getClient())) {
+        logger.debug("Inventory's client: {} / {}",
+                Objects.isNull(inventory.getClientId()) ? "N/A" : inventory.getClientId(),
+                Objects.isNull(inventory.getClient()) ? "N/A" : inventory.getClient().getName());
 
-            lpnLabelContent.put("client", inventory.getClient().getName());
+
+        if (Objects.nonNull(inventory.getClientId()) &&
+                Objects.isNull(inventory.getClient())) {
+            inventory.setClient(
+                    commonServiceRestemplateClient.getClientById(
+                            inventory.getClientId()
+                    )
+            );
         }
+        lpnLabelContent.put("client", Objects.nonNull(inventory.getClient()) ?
+                inventory.getClient().getName() : "");
+
+
 
         lpnLabelContent.put("lpn", lpn);
         qrCode.append("lpn=").append(lpn).append(";");
@@ -4105,6 +4125,17 @@ public class InventoryService {
             lpnLabelContent.put("stockUOM", "");
         }
 
+        logger.debug("Inventory's receipt: {} / {}",
+                Objects.isNull(inventory.getReceiptId()) ? "N/A" : inventory.getReceiptId(),
+                Objects.isNull(inventory.getReceipt()) ? "N/A" : inventory.getReceipt().getNumber());
+        if (Objects.nonNull(inventory.getReceiptId()) &&
+            Objects.isNull(inventory.getReceipt())) {
+            inventory.setReceipt(
+                    inboundServiceRestemplateClient.getReceiptById(
+                            inventory.getReceiptId()
+                    )
+            );
+        }
         lpnLabelContent.put("receipt_number", Objects.nonNull(inventory.getReceipt()) ?
                 inventory.getReceipt().getNumber() : "");
 
@@ -4116,8 +4147,6 @@ public class InventoryService {
                 inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity() : "0");
 
 
-        lpnLabelContent.put("client", Objects.nonNull(inventory.getClient()) ?
-            inventory.getClient().getName() : "");
 
         if (Strings.isNotBlank(inventory.getColor())) {
             // we may need to automatically adjust the font size of the color
