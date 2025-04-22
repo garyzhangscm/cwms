@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>quickbook</artifactId>
-    <version>v1.61</version>
+    <version>v1.62</version>
     <name>QuickBook</name>
     <description>Quickbook integration service</description>
     <modelVersion>4.0.0</modelVersion>
