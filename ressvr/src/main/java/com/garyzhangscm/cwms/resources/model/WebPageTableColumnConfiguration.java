@@ -1,6 +1,8 @@
 package com.garyzhangscm.cwms.resources.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,7 @@ public class WebPageTableColumnConfiguration extends AuditibleEntity<String> {
 
     @ManyToOne
     @JoinColumn(name="user_id")
+    @JsonIgnore
     private User user;
 
 
