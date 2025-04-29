@@ -145,6 +145,13 @@ public class WebPageTableColumnConfigurationService {
 
     public WebPageTableColumnConfiguration changeWebPageTableColumnConfiguration(Long id,
                                                                                  WebPageTableColumnConfiguration webPageTableColumnConfiguration) {
+        if (Objects.isNull(webPageTableColumnConfiguration.getUser())) {
+            // get the current user
+            webPageTableColumnConfiguration.setUser(userService.getCurrentUser(
+                    webPageTableColumnConfiguration.getCompanyId()
+            ));
+        }
+
         webPageTableColumnConfiguration.setId(id);
         return saveOrUpdate(webPageTableColumnConfiguration);
 

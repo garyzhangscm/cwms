@@ -718,10 +718,20 @@ public class PickService {
     }
     @Transactional
     public List<Pick> cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount,
+                                 boolean reallocate,
+                                 boolean skipOriginalLocation) {
+        return cancelPick(pick, cancelledQuantity,
+                errorLocation, generateCycleCount,
+                reallocate, skipOriginalLocation, true);
+
+    }
+    @Transactional
+    public List<Pick> cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount,
                            boolean reallocate,
-                           boolean skipOriginalLocation) {
+                           boolean skipOriginalLocation,
+                                 boolean validateExistingInventory) {
         logger.debug("start to cancel pick {}", pick.getNumber());
-        validatePickForCancellation(pick);
+        validatePickForCancellation(pick, validateExistingInventory);
 
         // we have nothing left to cancel
         if (cancelledQuantity == 0) {
@@ -824,20 +834,24 @@ public class PickService {
 
     }
 
-    private void validatePickForCancellation(Pick pick) {
+    private void validatePickForCancellation(Pick pick, boolean validateExistingInventory) {
         if (pick.getStatus().equals(PickStatus.COMPLETED)) {
             throw PickingException.raiseException("Can't cancel pick that is already completed!");
         }
-        // make sure there's nothing picked yet. If anything is picked,
-        // we will ask the user to use unpick instead of cancel pick
-        List<Inventory> inventories =  inventoryServiceRestemplateClient.getPickedInventory(
-                pick.getWarehouseId(), Collections.singletonList(pick),
-                false, null, false
-        );
-        if (!inventories.isEmpty()) {
-            throw PickingException.raiseException("Following LPNs has been picked by current pick " + pick.getNumber() +
-                    ", please use unpick instead of cancel pick; LPNs: " +
-                    inventories.stream().map(Inventory::getLpn).distinct().collect(Collectors.joining(",")));
+
+        if (validateExistingInventory) {
+
+            // make sure there's nothing picked yet. If anything is picked,
+            // we will ask the user to use unpick instead of cancel pick
+            List<Inventory> inventories =  inventoryServiceRestemplateClient.getPickedInventory(
+                    pick.getWarehouseId(), Collections.singletonList(pick),
+                    false, null, false
+            );
+            if (!inventories.isEmpty()) {
+                throw PickingException.raiseException("Following LPNs has been picked by current pick " + pick.getNumber() +
+                        ", please use unpick instead of cancel pick; LPNs: " +
+                        inventories.stream().map(Inventory::getLpn).distinct().collect(Collectors.joining(",")));
+            }
         }
     }
 
@@ -1986,7 +2000,9 @@ public class PickService {
      */
     public List<Pick> unpick(Pick pick, Long unpickedQuantity) {
         // Cancel the pick with unpicked quantity
-        return cancelPick(pick, unpickedQuantity, false, false, false, false);
+        return cancelPick(pick, unpickedQuantity, false,
+                false, false,
+                false, false);
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
