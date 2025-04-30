@@ -7,6 +7,6 @@ FROM openjdk:20-ea-13-jdk-slim
 
 RUN mkdir -p /usr/local/service
 
-ADD target/inventoryserver-v1.62.jar /usr/local/service/
+ADD target/inventoryserver-v1.63.jar /usr/local/service/
 
-ENTRYPOINT ["java","-jar","/usr/local/service/inventoryserver-v1.62.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/service/inventoryserver-v1.63.jar"]
