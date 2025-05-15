@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 import com.garyzhangscm.cwms.inventory.CustomRequestScopeAttr;
-import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
@@ -27,19 +26,20 @@ import com.garyzhangscm.cwms.inventory.exception.InventoryException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.LocationUtilizationSnapshotBatchRepository;
-import com.garyzhangscm.cwms.inventory.repository.LocationUtilizationSnapshotRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -68,9 +68,6 @@ public class LocationUtilizationSnapshotBatchService {
 
     @Autowired
     AuthServiceRestemplateClient authServiceRestemplateClient;
-    @Autowired
-    @Qualifier("oauth2ClientContext")
-    OAuth2ClientContext oauth2ClientContext;
 
 
     public LocationUtilizationSnapshotBatch findById(Long id) {
@@ -157,12 +154,15 @@ public class LocationUtilizationSnapshotBatchService {
 
         if (Objects.nonNull(clientLocationUtilizationSnapshotBatch.getClientId()) &&
                 Objects.isNull(clientLocationUtilizationSnapshotBatch.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    clientLocationUtilizationSnapshotBatch.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                clientLocationUtilizationSnapshotBatch.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        clientLocationUtilizationSnapshotBatch.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    clientLocationUtilizationSnapshotBatch.setClient(client);
+                }
             }
+            catch (Exception ex) {}
         }
         clientLocationUtilizationSnapshotBatch.getLocationUtilizationSnapshots().forEach(
                 locationUtilizationSnapshot -> loadAttribute(locationUtilizationSnapshot)
@@ -173,12 +173,15 @@ public class LocationUtilizationSnapshotBatchService {
 
         if (Objects.nonNull(locationUtilizationSnapshot.getClientId()) &&
                 Objects.isNull(locationUtilizationSnapshot.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    locationUtilizationSnapshot.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                locationUtilizationSnapshot.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        locationUtilizationSnapshot.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    locationUtilizationSnapshot.setClient(client);
+                }
             }
+            catch (Exception ex) {}
         }
     }
 
@@ -403,29 +406,6 @@ public class LocationUtilizationSnapshotBatchService {
         return locationUtilizationSnapshotBatch;
     }
 
-    /**
-     * Setup the OAuth2 token for the background job
-     * OAuth2 token will be setup automatically in a web request context
-     * but for a separate thread outside the web context, we will need to
-     * setup the OAuth2 manually
-     * @throws IOException
-     */
-    private void setupOAuth2Context() throws IOException {
-
-        // Setup the request context so we can utilize the OAuth
-        // as if we were in a web request context
-        RequestContextHolder.setRequestAttributes(new CustomRequestScopeAttr());
-
-        // Get token. We will use a default user to login and get
-        // the OAuth2 token by the default user
-        String token = authServiceRestemplateClient.getCurrentLoginUser().getToken();
-        // logger.debug("# start to setup the oauth2 token for background job: {}", token);
-        // Setup the access toke for the current thread
-        // oauth2ClientContext is a scope = request bean that hold
-        // the Oauth2 token
-        oauth2ClientContext.setAccessToken(new DefaultOAuth2AccessToken(token));
-
-    }
     /**
      * Initiate the location utilization snapshot batch with 0 quantity
      * @param warehouseId
@@ -690,6 +670,12 @@ public class LocationUtilizationSnapshotBatchService {
                             locationIds,
                             null,
                             null,
+                            null,null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
                             null,
                             null,
                             null,
@@ -703,7 +689,8 @@ public class LocationUtilizationSnapshotBatchService {
                             null,
                             null,
                             null, null,
-                            false );
+                            false ,
+                            null );
 
                     // add the location utilization details to the result set
                     // the location utilization details is from current inventory list

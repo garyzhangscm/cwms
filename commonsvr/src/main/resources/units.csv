@@ -7,7 +7,7 @@ WEIGHT,lb,pound,1,true
 WEIGHT,g,gram,0.002205,false
 WEIGHT,kg,kilogram,2.205,false
 WEIGHT,oz,ounce,0.0625,false
-VOLUME,cube_inch,cube inch,0.000579,false
-VOLUME,cube_foot,cube foot,1,true
-VOLUME,cube_cm,cube centimeter,0.0000353,false
-VOLUME,cube_m,cube meter,34.96,false
+VOLUME,cube_inch,cube inch,1,true
+VOLUME,cube_foot,cube foot,1728,false
+VOLUME,cube_cm,cube centimeter,0.061,false
+VOLUME,cube_m,cube meter,61023.744,false

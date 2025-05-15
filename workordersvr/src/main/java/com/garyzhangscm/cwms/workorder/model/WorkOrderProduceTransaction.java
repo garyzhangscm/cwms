@@ -2,9 +2,10 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,9 +20,15 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @ManyToOne
     @JoinColumn(name = "work_order_id")
     private WorkOrder workOrder;
+
+    @Transient
+    private String workOrderNumber;
 
     @OneToMany(
             mappedBy = "workOrderProduceTransaction",
@@ -72,6 +79,17 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @JoinColumn(name = "consume_by_bom_id")
     private BillOfMaterial consumeByBom;
 
+
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Column(name = "rf_code")
+    private String rfCode;
+
+    @Transient
+    private ReasonCode reasonCode;
+
+
     @Override
     public String toString() {
         try {
@@ -103,12 +121,28 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
         this.id = id;
     }
 
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
     public WorkOrder getWorkOrder() {
         return workOrder;
     }
 
     public void setWorkOrder(WorkOrder workOrder) {
         this.workOrder = workOrder;
+    }
+
+    public String getWorkOrderNumber() {
+        return workOrderNumber;
+    }
+
+    public void setWorkOrderNumber(String workOrderNumber) {
+        this.workOrderNumber = workOrderNumber;
     }
 
     public List<WorkOrderLineConsumeTransaction> getWorkOrderLineConsumeTransactions() {
@@ -179,5 +213,29 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
 
     public void addWorkOrderReverseProductionInventories(WorkOrderReverseProductionInventory workOrderReverseProductionInventory) {
         this.workOrderReverseProductionInventories.add(workOrderReverseProductionInventory);
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
+    public String getRfCode() {
+        return rfCode;
+    }
+
+    public void setRfCode(String rfCode) {
+        this.rfCode = rfCode;
     }
 }

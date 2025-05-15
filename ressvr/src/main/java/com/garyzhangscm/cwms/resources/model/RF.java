@@ -20,11 +20,8 @@ package com.garyzhangscm.cwms.resources.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -42,6 +39,11 @@ public class RF extends AuditibleEntity<String>  {
 
     @Column(name = "rf_code")
     private String rfCode;
+
+    @Transient
+    private String currentLocationName;
+    @Transient
+    private Location currentLocation;
 
     @Column(name = "current_location_id")
     private Long currentLocationId;
@@ -111,5 +113,21 @@ public class RF extends AuditibleEntity<String>  {
 
     public void setCurrentLocationId(Long currentLocationId) {
         this.currentLocationId = currentLocationId;
+    }
+
+    public Location getCurrentLocation() {
+        return currentLocation;
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+
+    public String getCurrentLocationName() {
+        return currentLocationName;
+    }
+
+    public void setCurrentLocationName(String currentLocationName) {
+        this.currentLocationName = currentLocationName;
     }
 }

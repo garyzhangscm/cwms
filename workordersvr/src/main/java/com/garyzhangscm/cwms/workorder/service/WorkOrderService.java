@@ -22,25 +22,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.*;
-import com.garyzhangscm.cwms.workorder.exception.GenericException;
+import org.apache.commons.lang3.tuple.Triple;
+import com.garyzhangscm.cwms.workorder.exception.MissingInformationException;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -124,37 +126,40 @@ public class WorkOrderService implements TestDataInitiableService {
     @Value("${fileupload.test-data.work-order:work-order}")
     String testDataFile;
 
-    public WorkOrder findById(Long id, boolean loadDetails) {
-        WorkOrder workOrder = workOrderRepository.findById(id)
+    public WorkOrder findById(Long id ) {
+        return workOrderRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.debug("work order not found by id: " + id);
                     return ResourceNotFoundException.raiseException("work order not found by id: " + id);
                 });
-        if (loadDetails) {
-            loadAttribute(workOrder, true, true);
-        }
-        return workOrder;
     }
 
-    public WorkOrder findById(Long id) {
-        return findById(id, true);
-    }
 
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
-                                   String itemName, String statusList, Long productionPlanId,
-                                   boolean genericQuery, boolean loadDetails) {
+                                   String itemName, String statusList, Long productionPlanId) {
 
-        List<WorkOrder> workOrders =  workOrderRepository.findAll(
+        return findAll(warehouseId, number,
+                itemName, statusList, productionPlanId,
+                PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "number")));
+
+    }
+    public List<WorkOrder> findAll(Long warehouseId, String number,
+                                   String itemName, String statusList, Long productionPlanId,
+                                   Pageable pageable) {
+
+        Page<WorkOrder> workOrderPage =  workOrderRepository.findAll(
                 (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(number)) {
-                        if (genericQuery) {
-
+                        if (number.contains("%")) {
                             predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), number.replaceAll("\\*", "%")));
                         }
                         else {
 
@@ -163,14 +168,23 @@ public class WorkOrderService implements TestDataInitiableService {
 
                     }
                     if (!StringUtils.isBlank(itemName)) {
-                        Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId, itemName);
-                        if (item != null) {
-                            predicates.add(criteriaBuilder.equal(root.get("itemId"), item.getId()));
-                        }
-                        else {
+                        List<Item> items = inventoryServiceRestemplateClient.findItemsByName(warehouseId, itemName);
+                        logger.debug("Find {} items by name {}",
+                                items.size(),
+                                itemName);
+                        if (items.isEmpty()) {
+
                             // The client passed in an invalid item name, let's return nothing
                             predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
                         }
+                        else {
+                            CriteriaBuilder.In<Long> inItemIds = criteriaBuilder.in(root.get("itemId"));
+                            for(Item item : items) {
+                                inItemIds.value(item.getId());
+                            }
+                            predicates.add(criteriaBuilder.and(inItemIds));
+                        }
+
                     }
 
 
@@ -193,48 +207,107 @@ public class WorkOrderService implements TestDataInitiableService {
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
                 ,
-                Sort.by(Sort.Direction.DESC, "number")
+                pageable
         );
 
-        if (workOrders.size() > 0 && loadDetails) {
-            loadAttribute(workOrders, true, true);
-        }
-        return workOrders;
+        return workOrderPage.getContent();
+
     }
+
+    public Page <WorkOrder> findAllByPagination(Long warehouseId, String number,
+                                   String itemName, String statusList, Long productionPlanId,
+                                   Pageable pageable) {
+
+        return workOrderRepository.findAll(
+                (Root<WorkOrder> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (!StringUtils.isBlank(number)) {
+                        if (number.contains("%")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number));
+                        }
+                        else if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), number.replaceAll("\\*", "%")));
+                        }
+                        else {
+
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+
+                    }
+                    if (!StringUtils.isBlank(itemName)) {
+                        List<Item> items = inventoryServiceRestemplateClient.findItemsByName(warehouseId, itemName);
+                        logger.debug("Find {} items by name {}",
+                                items.size(),
+                                itemName);
+                        if (items.isEmpty()) {
+
+                            // The client passed in an invalid item name, let's return nothing
+                            predicates.add(criteriaBuilder.equal(root.get("itemId"), -1L));
+                        }
+                        else {
+                            CriteriaBuilder.In<Long> inItemIds = criteriaBuilder.in(root.get("itemId"));
+                            for(Item item : items) {
+                                inItemIds.value(item.getId());
+                            }
+                            predicates.add(criteriaBuilder.and(inItemIds));
+                        }
+
+                    }
+
+
+                    if (StringUtils.isNotBlank(statusList)) {
+                        CriteriaBuilder.In<WorkOrderStatus> inWorkOrderStatuses = criteriaBuilder.in(root.get("status"));
+                        for(String workOrderStatus : statusList.split(",")) {
+                            inWorkOrderStatuses.value(WorkOrderStatus.valueOf(workOrderStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inWorkOrderStatuses));
+                    }
+
+
+                    if (Objects.nonNull(productionPlanId)) {
+                        Join<WorkOrder, ProductionPlanLine> joinProductionPlanLine = root.join("productionPlanLine", JoinType.INNER);
+                        Join<ProductionPlanLine, ProductionPlan> joinProductionPlan = joinProductionPlanLine.join("productionPlan", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionPlan.get("id"), productionPlanId));
+
+                    }
+                    Predicate[] p = new Predicate[predicates.size()];
+                    return criteriaBuilder.and(predicates.toArray(p));
+                }
+                ,
+                pageable
+        );
+
+    }
+
 
     public List<WorkOrder> findAll(Long warehouseId, String number,
                                    String itemName, String statusList, Long productionPlanId,
                                    boolean genericQuery) {
-        return findAll(warehouseId, number, itemName,  statusList, productionPlanId, genericQuery, true);
+        return findAll(warehouseId, number, itemName,  statusList, productionPlanId);
     }
 
 
-    public WorkOrder findByNumber(Long warehouseId, String number, boolean loadDetails) {
-        WorkOrder workOrder = workOrderRepository.findByWarehouseIdAndNumber(warehouseId, number);
-        if (workOrder != null && loadDetails) {
-            loadAttribute(workOrder, true, true);
-        }
-        return workOrder;
-    }
-
-    public WorkOrder findByNumber(Long warehouseId,String number) {
-        return findByNumber(warehouseId, number, true);
+    public WorkOrder findByNumber(Long warehouseId, String number) {
+        return workOrderRepository.findByWarehouseIdAndNumber(warehouseId, number);
     }
 
 
+/**
     public void loadAttribute(List<WorkOrder> workOrders) {
         loadAttribute(workOrders, true, true);
     }
     public void loadAttribute(List<WorkOrder> workOrders, boolean loadPicks, boolean loadShortAllocations) {
         for (WorkOrder workOrder : workOrders) {
-            loadAttribute(workOrder, loadPicks, loadShortAllocations);
+            loadAttribute(workOrder, loadPicks, loadShortAllocations, true);
         }
     }
-
     public void loadAttribute(WorkOrder workOrder) {
-        loadAttribute(workOrder, true, true);
+        loadAttribute(workOrder, true, true, true);
     }
-    public void loadAttribute(WorkOrder workOrder, boolean loadPicks, boolean loadShortAllocations) {
+    public void loadAttribute(WorkOrder workOrder, boolean loadPicks, boolean loadShortAllocations , boolean loadWorkOrderLineDetails) {
 
         if (workOrder.getItemId() != null &&
                 (workOrder.getItem() == null || Objects.isNull(workOrder.getItem().getId()))) {
@@ -254,7 +327,10 @@ public class WorkOrderService implements TestDataInitiableService {
                     if (Objects.isNull(workOrderLine.getWorkOrder())) {
                         workOrderLine.setWorkOrder(workOrder);
                     }
-                    workOrderLineService.loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
+                    if (loadWorkOrderLineDetails) {
+
+                        workOrderLineService.loadAttribute(workOrderLine, loadPicks, loadShortAllocations);
+                    }
                 });
 
         // Load the item and inventory status information for each lines
@@ -270,12 +346,10 @@ public class WorkOrderService implements TestDataInitiableService {
                 });
     }
 
+ **/
 
-    public WorkOrder save(WorkOrder workOrder) {
-        return save(workOrder, true);
-    }
 
-    public WorkOrder save(WorkOrder workOrder, boolean loadDetails) {
+    public WorkOrder save(WorkOrder workOrder ) {
 
         // send alert for new receipt or receipt change
         boolean newWorkOrderFlag = false;
@@ -296,10 +370,6 @@ public class WorkOrderService implements TestDataInitiableService {
         String username = workOrder.getCreatedBy();
 
         WorkOrder newWorkOrder = workOrderRepository.save(workOrder);
-        if (loadDetails) {
-
-            loadAttribute(newWorkOrder, true, true);
-        }
         sendAlertForWorkOrder(newWorkOrder, newWorkOrderFlag,
                 Strings.isBlank(username) ? newWorkOrder.getCreatedBy() : username
         );
@@ -311,9 +381,9 @@ public class WorkOrderService implements TestDataInitiableService {
         return saveOrUpdate(workOrder, true);
     }
     public WorkOrder saveOrUpdate(WorkOrder workOrder, boolean loadDetails) {
-        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), false) != null) {
+        if (workOrder.getId() == null && findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()) != null) {
             workOrder.setId(
-                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber(), false).getId());
+                    findByNumber(workOrder.getWarehouseId(), workOrder.getNumber()).getId());
         }
         if (Objects.isNull(workOrder.getId())) {
             // when we add a new work order, we will setup the QC related information
@@ -321,7 +391,7 @@ public class WorkOrderService implements TestDataInitiableService {
             workOrder.setQcQuantityRequested(0l);
             workOrder.setQcQuantityCompleted(0l);
         }
-        return save(workOrder, loadDetails);
+        return save(workOrder);
     }
 
     private void setupQCQuantity(WorkOrder workOrder) {
@@ -908,12 +978,12 @@ public class WorkOrderService implements TestDataInitiableService {
     }
  **/
 
-    public WorkOrder produce(WorkOrder workOrder, Long producedQuantity) {
+    public WorkOrder produce(WorkOrder workOrder, Long producedQuantity, boolean loadDetails) {
         logger.debug("Will change the work order's produced quantity from {}, to {}",
                 workOrder.getProducedQuantity(),
                 workOrder.getProducedQuantity() + producedQuantity);
         workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
-        return saveOrUpdate(workOrder);
+        return saveOrUpdate(workOrder, loadDetails);
     }
 
 
@@ -1231,7 +1301,7 @@ public class WorkOrderService implements TestDataInitiableService {
     public String validateNewNumber(Long warehouseId, String number) {
 
         WorkOrder workOrder =
-                findByNumber(warehouseId, number, false);
+                findByNumber(warehouseId, number);
 
         return Objects.isNull(workOrder) ? "" : ValidatorResult.VALUE_ALREADY_EXISTS.name();
     }
@@ -1358,7 +1428,7 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     public WorkOrder reverseProduction(Long id, String lpn)   {
-        WorkOrder workOrder = findById(id, false);
+        WorkOrder workOrder = findById(id);
 
         List<Inventory> inventories = inventoryServiceRestemplateClient.findProducedInventoryByLPN(
                 workOrder.getWarehouseId(), workOrder.getId(),
@@ -1439,7 +1509,7 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     public WorkOrder reverseByProduct(Long id, String lpn) {
-        WorkOrder workOrder = findById(id, false);
+        WorkOrder workOrder = findById(id);
 
         List<Inventory> inventories = getProducedByProduct(workOrder.getId(), lpn);
 
@@ -1555,8 +1625,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
     public ReportHistory generatePrePrintLPNLabel(WorkOrder workOrder, String lpnNumber, Long lpnQuantity,
                                                   String productionLineName,
-                                                  String locale, String printerName)
-            throws JsonProcessingException {
+                                                  String locale, String printerName) {
 
         Long warehouseId = workOrder.getWarehouseId();
 
@@ -1607,16 +1676,71 @@ public class WorkOrderService implements TestDataInitiableService {
                                                     Long lpnQuantity, String productionLineName) {
 
         Map<String, Object> lpnLabelContent = new HashMap<>();
+        if (Objects.isNull(workOrder.getItem())) {
+            workOrder.setItem(
+                    inventoryServiceRestemplateClient.getItemById(
+                            workOrder.getItemId()
+                    )
+            );
+        }
+
+        if (Objects.isNull(workOrder.getItem())) {
+            throw MissingInformationException.raiseException("Not able to print LPN label for work order " +
+                    workOrder.getNumber() + ". Fail to get item for this work order");
+        }
+
 
         lpnLabelContent.put("lpn", lpnNumber);
         lpnLabelContent.put("item_family", Objects.nonNull(workOrder.getItem().getItemFamily()) ?
                 workOrder.getItem().getItemFamily().getDescription() : "");
         lpnLabelContent.put("item_name", workOrder.getItem().getName());
+        lpnLabelContent.put("item_description", workOrder.getItem().getDescription());
+        lpnLabelContent.put("item_description_1", workOrder.getItem().getDescription());
+
+        if (Strings.isNotBlank(workOrder.getItem().getDescription().trim()) &&
+                workOrder.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = workOrder.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+        }
+
         lpnLabelContent.put("work_order_number", workOrder.getNumber());
         lpnLabelContent.put("production_line_name", productionLineName);
         if (Objects.nonNull(lpnQuantity)) {
             logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
             lpnLabelContent.put("quantity", lpnQuantity);
+
+            if (Objects.nonNull(workOrder.getItem().getDefaultItemPackageType()) &&
+                    Objects.nonNull(workOrder.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure())) {
+                ItemUnitOfMeasure stockItemUnitOfMeasure = workOrder.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure();
+                if (Objects.isNull(stockItemUnitOfMeasure.getUnitOfMeasure())) {
+                    stockItemUnitOfMeasure.setUnitOfMeasure(
+                            commonServiceRestemplateClient.getUnitOfMeasureById(
+                                    stockItemUnitOfMeasure.getUnitOfMeasureId()
+                            )
+                    );
+                }
+                lpnLabelContent.put("stockUOM", stockItemUnitOfMeasure.getUnitOfMeasure().getName());
+
+            }
 
         }
         else if (workOrder.getItem().getItemPackageTypes().size() > 0){
@@ -1808,6 +1932,291 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
     /**
+     * Process manual pick for lpn, we will move the LPN to the destination first,
+     * then generate the actual asyncronized
+     * @param workOrderId
+     * @param lpn
+     * @param productionLineId
+     * @param pickWholeLPN
+     * @return
+     */
+    public List<Pick> processManualPick(Long warehouseId,
+                                        Long workOrderId,
+                                        String lpn,
+                                        Long productionLineId,
+                                        Long nextLocationId,
+                                        Boolean pickWholeLPN) {
+
+
+        WorkOrder workOrder = findById(workOrderId);
+
+        validateWorkOrderStatusForManualPick(workOrder);
+
+        Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
+        if (Objects.isNull(nextLocation)) {
+            throw WorkOrderException.raiseException("can't find the location. Fail to generate the manual pick");
+        }
+
+
+        // make the work order to be in process
+        workOrder.setStatus(WorkOrderStatus.INPROCESS);
+        workOrder = saveOrUpdate(workOrder, false);
+
+        Triple<Long, Boolean, List<Inventory>> pickableInventory = getPickableInventoryForManualPick(workOrder, lpn, productionLineId, pickWholeLPN);
+
+        // TO -DO!!!
+
+        // moveInventoryForManualPick(warehouseId, lpn, nextLocation, pickableInventory.getLeft(),
+        //        pickableInventory.getMiddle(), pickableInventory.getRight());
+
+        return new ArrayList<>();
+    }
+
+    /**
+     * Move the LPN for manual pick. We will generate a pick work number and return so that
+     * we can create the pick asyncronized.
+     * @param warehouseId
+     * @param lpn
+     * @param nextLocation
+     * @param pickableQuantity
+     * @param moveWholeLpn
+     * @param pickableInventory
+     */
+    private List<Inventory> moveInventoryForManualPick(Long warehouseId, String lpn, Location nextLocation,
+                                                        Long pickableQuantity, Boolean moveWholeLpn, List<Inventory> pickableInventory,
+                                                       Long workOrderId,
+                                                       Long workOrderLineId) {
+        if(!moveWholeLpn) {
+            if (pickableInventory.size() > 1) {
+
+                throw WorkOrderException.raiseException("fail to move LPN " + lpn +
+                        " for the manual pick. The LPN has multiple inventory records but " +
+                        " not whole LPN needs to be picked, which is not allowed");
+            }
+            String newLpn = commonServiceRestemplateClient.getNextNumber(warehouseId, "lpn");
+            List<Inventory> newInventory = inventoryServiceRestemplateClient.split(
+                    pickableInventory.get(0), newLpn, pickableQuantity
+
+            );
+            // we will pick from the new LPN
+            pickableInventory.clear();
+            pickableInventory.add(newInventory.get(1));
+        };
+
+        // at this point, we will either
+        // 1. move the whole LPN, which is everything in the pickableInventory
+        // 2. move partial LPN, which we already split and again still everything is in the pickableInventory
+        // in both case, we will move by the whole LPN at this point
+        lpn = pickableInventory.get(0).getLpn();
+        List<Inventory> movedInventory = moveInventoryForManualPick(warehouseId, lpn, nextLocation);
+
+        String pickedLpn = lpn;
+        new Thread(() -> {
+            // start to create the pick work
+            // and assign to the moved inventory
+            /**
+            Pick pick = outboundServiceRestemplateClient.generateManualPick(
+                    warehouseId,
+                    workOrderId,
+                    workOrderLineId,
+                    pickedLpn,
+                    pickableQuantity,
+                    nextLocation.getId()
+            );
+            logger.debug("Pick {} / {} generated for the lpn {}, let's assign to the inventory",
+                    pick.getId(),
+                    pick.getNumber(),
+                    pickedLpn);
+
+             **/
+
+
+
+        }).start();
+
+        return movedInventory;
+
+
+    }
+
+    private List<Inventory> moveInventoryForManualPick(Long warehouseId, String lpn, Location nextLocation) {
+
+        return inventoryServiceRestemplateClient.moveInventory(
+                warehouseId, lpn, nextLocation
+        );
+    }
+
+    /**
+     * get the pickable inventory from LPN for a work order
+     * 1. pickable quantity from the LPN
+     * 2. whether pick the whole LPN(pickWholeLPN = true, or pickable quantity >= lpn quantity)
+     * 3. pickable inventory from the LPN
+     * @param workOrder
+     * @param lpn
+     * @param productionLineId
+     * @param pickWholeLPN
+     * @return
+     */
+    private Triple<Long, Boolean, List<Inventory>> getPickableInventoryForManualPick(WorkOrder workOrder,
+                                                              String lpn,
+                                                              Long productionLineId,
+                                                              Boolean pickWholeLPN) {
+        // Make sure the production line passed in is valid
+        if (workOrder.getProductionLineAssignments().stream().noneMatch(
+                productionLineAssignment ->
+                        productionLineId.equals(productionLineAssignment.getProductionLine().getId())
+        )) {
+            throw WorkOrderException.raiseException("production line id " + productionLineId +
+                    " is invalid. Fail to process manual pick for the work order " + workOrder.getNumber());
+
+        }
+        // make sure the LPN is valid LPN
+        logger.debug("work order matches with the production line, let's get the inventory from lpn {}",
+                lpn);
+        List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
+                workOrder.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is invalid. Fail to process manual pick for the work order " + workOrder.getNumber());
+        }
+
+        logger.debug("we are able to find inventory with this LPN, let's see if the item matches with the work order");
+
+        // make sure there's only one item in the LPN
+        List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
+        if (itemIdList.size() > 1) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is mixed with different items. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        // get the matched work order line by the item id
+        Long itemId = itemIdList.get(0);
+
+
+        // inventory status required, either from the work order line
+        // or from the work order line's spare part
+        Long inventoryStatusId;
+
+        // total quantity required, either from the work order line
+        // or from the work order line's spare part
+        Long quantityRequiredByWorkOrderLine = 0l;
+
+        // make sure the item matches with the work order line, or any spare part of the work order line
+        Optional<WorkOrderLine> matchedWorkOrderLineOptional = workOrder.getWorkOrderLines().stream().filter(
+                workOrderLine -> workOrderLine.getItemId().equals(itemId)
+        ).findFirst();
+
+        // if there's no matched work order line with the item id, see if this item is a
+        // spare part
+        if (!matchedWorkOrderLineOptional.isPresent()) {
+            logger.debug("can't find the item in the work lines, it may be a spare part");
+            Optional<WorkOrderLineSparePartDetail> matchedWorkOrderLineSparePartDetailOptional =
+                    workOrder.getWorkOrderLines().stream().map(
+                            workOrderLine -> workOrderLine.getWorkOrderLineSpareParts())
+                            .flatMap(List::stream).map(workOrderLineSparePart -> workOrderLineSparePart.getWorkOrderLineSparePartDetails())
+                            .flatMap(List::stream).filter(workOrderLineSparePartDetail -> workOrderLineSparePartDetail.getItemId().equals(itemId))
+                            .findFirst();
+            if (!matchedWorkOrderLineSparePartDetailOptional.isPresent()) {
+
+                throw WorkOrderException.raiseException("Can't find any work order line matched with item id " + itemId +
+                        "Fail to process manual pick");
+            }
+            else {
+                WorkOrderLineSparePartDetail matchedWorkOrderLineSparePartDetail
+                        = matchedWorkOrderLineSparePartDetailOptional.get();
+
+                WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineSparePartDetail.getWorkOrderLineSparePart().getWorkOrderLine();
+
+                // if the open quantity is 0, which means the work order line is fully allocated,
+                // we either have pick or short allocation against the work order line
+                // we will not allow the user to manual pick
+                if (matchedWorkOrderLine.getOpenQuantity() <= 0) {
+                    throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                            ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
+                            "Fail to generate manual pick");
+                }
+
+                inventoryStatusId = matchedWorkOrderLineSparePartDetail.getInventoryStatusId();
+                quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
+                        ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+                // we will need to apply the ratio to the required quantity of the work order line
+                // as we are processing the spare part
+                double ratio = matchedWorkOrderLineSparePartDetail.getQuantity() * 1.0 /
+                        matchedWorkOrderLineSparePartDetail.getWorkOrderLineSparePart().getQuantity();
+                quantityRequiredByWorkOrderLine = (long)(quantityRequiredByWorkOrderLine * ratio);
+            }
+        }
+        else {
+            WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+            logger.debug("found matched work order line {} / {}", workOrder.getNumber(),
+                    matchedWorkOrderLine.getNumber());
+
+            // if the open quantity is 0, which means the work order line is fully allocated,
+            // we either have pick or short allocation against the work order line
+            // we will not allow the user to manual pick
+            if (matchedWorkOrderLine.getExpectedQuantity() > 0 &&
+                    matchedWorkOrderLine.getOpenQuantity() <= 0) {
+                throw WorkOrderException.raiseException("work order " + workOrder.getNumber() +
+                        ", line " + matchedWorkOrderLine.getNumber() + " is fully processed." +
+                        "Fail to generate manual pick");
+            }
+            inventoryStatusId = matchedWorkOrderLine.getInventoryStatusId();
+            quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
+                    ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+            logger.debug("> the line still need {} of the item", quantityRequiredByWorkOrderLine);
+
+        }
+
+
+        // get the pickable inventory
+        List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, inventoryStatusId, inventories.get(0).getLocationId(),
+                lpn
+        );
+        if (pickableInventory.isEmpty()) {
+
+            throw WorkOrderException.raiseException("LPN " + lpn +
+                    " is not pickable. Fail to generate manual pick for the work order " + workOrder.getNumber());
+        }
+
+        // check if how much we can pick from this LPN
+        Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        logger.debug("> we can pick {} from the LPN {}", inventoryQuantity, lpn);
+
+        if (Boolean.TRUE.equals(pickWholeLPN)) {
+            // if the user specify to pick the whole LPN
+            // then return the pickable quantity from this LPN
+            logger.debug("pickWholeLPN is set to true, we will pick the whole LPN regardless of the quantity");
+            return Triple.of(inventoryQuantity, true, pickableInventory);
+        }
+
+
+        // if we don't need the whole LPN and pickWholeLPN is not setup
+        // which means we will need to pick partially from the LPN
+        // > In this case, if we have multiple record in this LPN, then it may be a bit
+        //   difficult to calculate which piece of LPN we will need to pick from
+        //   TO-DO: we may review the logic later on
+        if (inventoryQuantity > quantityRequiredByWorkOrderLine &&
+            !Boolean.TRUE.equals(pickWholeLPN) &&
+            pickableInventory.size() > 1) {
+            throw WorkOrderException.raiseException("can't pick from LPN " + lpn +
+                    " as it has mixed records but pick the whole LPN is not allowed in this case");
+        }
+
+        long quantityToBePicked = Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
+
+
+        return Triple.of(
+                quantityToBePicked,
+                inventoryQuantity <= quantityToBePicked,
+                pickableInventory);
+    }
+
+
+    /**
      * generate manual pick for work order
      * @param workOrderId
      * @param lpn
@@ -1822,7 +2231,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // make the work order to be in process
         workOrder.setStatus(WorkOrderStatus.INPROCESS);
-        workOrder = saveOrUpdate(workOrder);
+        workOrder = saveOrUpdate(workOrder, false);
 
 
         // make sure we can manual pick the LPN for the work order
@@ -1842,6 +2251,8 @@ public class WorkOrderService implements TestDataInitiableService {
                     productionLineId,
                     pickableQuantity
             );
+            logger.debug("We got {} manual picks for this work order {}", picks.size(),
+                    workOrder.getNumber());
             if (picks.size() > 0) {
 
                 // we should only get the picks from the allocation
@@ -1850,8 +2261,10 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 // process the quantity in the work order and work order line
                 // to reflect the allocation
+                logger.debug("let's update the work order's line quantity based on the picks we just generated");
                 processAllocateResult(workOrder, allocationResult);
                 // process the spare part, if needed
+                logger.debug("let's update the work order's spare quantity based on the picks we just generated");
                 processAllocationResultForSpareParts(allocationResult);
 
                 Long pickedQuantity = picks.stream()
@@ -1860,6 +2273,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
                 // only process the production line assignment if the pick is not for spare part
                 if (pickableQuantity > 0) {
+                    logger.debug("we may need to update the production line assignment after we got the picks");
                     processProductionLineAssignment(workOrder, productionLineId, pickedQuantity);
 
                 }
@@ -1871,7 +2285,7 @@ public class WorkOrderService implements TestDataInitiableService {
         catch (Exception ex) {
             ex.printStackTrace();
             throw WorkOrderException.raiseException("Can't do manual pick from LPN " + lpn +
-                    " for the work order " + workOrder.getNumber());
+                    " for the work order " + workOrder.getNumber() + ", error: " + ex.getMessage());
         }
 
         // if the work order is still in PENDING process, then
@@ -1915,6 +2329,8 @@ public class WorkOrderService implements TestDataInitiableService {
 
         }
         // make sure the LPN is valid LPN
+        logger.debug("work order matches with the production line, let's get the inventory from lpn {}",
+                lpn);
         List<Inventory> inventories = inventoryServiceRestemplateClient.findInventoryByLPN(
                 workOrder.getWarehouseId(), lpn
         );
@@ -1923,6 +2339,8 @@ public class WorkOrderService implements TestDataInitiableService {
             throw WorkOrderException.raiseException("LPN " + lpn +
                     " is invalid. Fail to generate manual pick for the work order " + workOrder.getNumber());
         }
+
+        logger.debug("we are able to find inventory with this LPN, let's see if the item matches with the work order");
 
         // make sure there's only one item in the LPN
         List<Long> itemIdList = inventories.stream().map(Inventory::getItem).map(Item::getId).distinct().collect(Collectors.toList());
@@ -1952,6 +2370,7 @@ public class WorkOrderService implements TestDataInitiableService {
         // if there's no matched work order line with the item id, see if this item is a
         // spare part
         if (!matchedWorkOrderLineOptional.isPresent()) {
+            logger.debug("can't find the item in the work lines, it may be a spare part");
             Optional<WorkOrderLineSparePartDetail> matchedWorkOrderLineSparePartDetailOptional =
                     workOrder.getWorkOrderLines().stream().map(
                     workOrderLine -> workOrderLine.getWorkOrderLineSpareParts())
@@ -1960,7 +2379,7 @@ public class WorkOrderService implements TestDataInitiableService {
                     .findFirst();
             if (!matchedWorkOrderLineSparePartDetailOptional.isPresent()) {
 
-                throw WorkOrderException.raiseException("Can't find any work order line matched with item id ." + itemId +
+                throw WorkOrderException.raiseException("Can't find any work order line matched with item id " + itemId +
                         "Fail to generate manual pick");
             }
             else {
@@ -1990,6 +2409,8 @@ public class WorkOrderService implements TestDataInitiableService {
         }
         else {
             WorkOrderLine matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+            logger.debug("found matched work order line {} / {}", workOrder.getNumber(),
+                    matchedWorkOrderLine.getNumber());
 
             // if the open quantity is 0, which means the work order line is fully allocated,
             // we either have pick or short allocation against the work order line
@@ -2003,10 +2424,9 @@ public class WorkOrderService implements TestDataInitiableService {
             inventoryStatusId = matchedWorkOrderLine.getInventoryStatusId();
             quantityRequiredByWorkOrderLine = matchedWorkOrderLine.getOpenQuantity() -
                     ((Objects.isNull(matchedWorkOrderLine.getSparePartQuantity())) ? 0 : matchedWorkOrderLine.getSparePartQuantity());
+            logger.debug("> the line still need {} of the item", quantityRequiredByWorkOrderLine);
 
         }
-
-
 
 
         // get the pickable inventory
@@ -2022,9 +2442,11 @@ public class WorkOrderService implements TestDataInitiableService {
 
         // check if how much we can pick from this LPN
         Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        logger.debug("> we can pick {} from the LPN {}", inventoryQuantity, lpn);
         if (Boolean.TRUE.equals(pickWholeLPN)) {
             // if the user specify to pick the whole LPN
             // then return the pickable quantity from this LPN
+            logger.debug("pickWholeLPN is set to true, we will pick the whole LPN regardless of the quantity");
             return inventoryQuantity;
         }
         return Math.min(inventoryQuantity, quantityRequiredByWorkOrderLine);
@@ -2140,7 +2562,7 @@ public class WorkOrderService implements TestDataInitiableService {
             workOrderByProductService.save(workOrderByProduct);
         }
 
-        return findById(savedWorkOrder.getId(), false);
+        return findById(savedWorkOrder.getId());
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {

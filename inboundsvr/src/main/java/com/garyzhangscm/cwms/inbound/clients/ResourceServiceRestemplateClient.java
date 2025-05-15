@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.inbound.clients;
 
-import com.garyzhangscm.cwms.inbound.model.Report;
-import com.garyzhangscm.cwms.inbound.model.ReportHistory;
-import com.garyzhangscm.cwms.inbound.model.ReportType;
-import com.garyzhangscm.cwms.inbound.model.User;
+import com.garyzhangscm.cwms.inbound.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -47,7 +46,7 @@ public class ResourceServiceRestemplateClient {
                                         String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 
@@ -79,7 +78,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -110,16 +109,20 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    public String validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
+    public String validateCSVFile(Long companyId, Long warehouseId,
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
@@ -139,4 +142,22 @@ public class ResourceServiceRestemplateClient {
 
     }
 
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                  String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 }

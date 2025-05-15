@@ -19,12 +19,13 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
 
 @Entity
 @Table(name = "location_utilization_snapshot")

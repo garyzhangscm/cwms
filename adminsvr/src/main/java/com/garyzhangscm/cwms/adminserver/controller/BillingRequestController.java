@@ -38,11 +38,13 @@ public class BillingRequestController {
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "clientId", required = false, defaultValue = "") Long clientId,
             @RequestParam(name = "number", required = false, defaultValue = "") String number,
-            @RequestParam(name = "serialize", required = false, defaultValue = "") Boolean serialize
+            @RequestParam(name = "serialize", required = false, defaultValue = "") Boolean serialize,
+            @RequestParam(name = "includeDaysSinceInWarehouseForStorageFee", required = false, defaultValue = "false") Boolean includeDaysSinceInWarehouseForStorageFee
     )  {
         return billingRequestService.generateBillingRequest(
                 startTime, endTime,
-                companyId, warehouseId, clientId, number,  serialize
+                companyId, warehouseId, clientId, number,  serialize,
+                includeDaysSinceInWarehouseForStorageFee
         );
     }
 

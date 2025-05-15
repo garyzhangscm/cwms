@@ -23,13 +23,17 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryMixRestrictionRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -167,42 +171,54 @@ public class InventoryMixRestrictionService {
     private void loadAttribute(InventoryMixRestriction inventoryMixRestriction) {
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupTypeId()) &&
             Objects.isNull(inventoryMixRestriction.getLocationGroupType())) {
-            inventoryMixRestriction.setLocationGroupType(
+            try {
+                inventoryMixRestriction.setLocationGroupType(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
-                            inventoryMixRestriction.getLocationGroupTypeId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
+                                inventoryMixRestriction.getLocationGroupTypeId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getLocationGroupId()) &&
                 Objects.isNull(inventoryMixRestriction.getLocationGroup())) {
-            inventoryMixRestriction.setLocationGroup(
+            try {
+                inventoryMixRestriction.setLocationGroup(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                            inventoryMixRestriction.getLocationGroupId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                                inventoryMixRestriction.getLocationGroupId()
+                        )
+                );
+            }
+            catch (Exception ex){}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getLocationId()) &&
                 Objects.isNull(inventoryMixRestriction.getLocation())) {
-            inventoryMixRestriction.setLocation(
+            try {
+                inventoryMixRestriction.setLocation(
 
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            inventoryMixRestriction.getLocationId()
-                    )
-            );
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventoryMixRestriction.getLocationId()
+                        )
+                );
+            }
+            catch (Exception ex){}
         }
 
         if (Objects.nonNull(inventoryMixRestriction.getClientId()) &&
                 Objects.isNull(inventoryMixRestriction.getClient())) {
-            inventoryMixRestriction.setClient(
+            try {
+                inventoryMixRestriction.setClient(
 
-                    commonServiceRestemplateClient.getClientById(
-                            inventoryMixRestriction.getClientId()
-                    )
-            );
+                        commonServiceRestemplateClient.getClientById(
+                                inventoryMixRestriction.getClientId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
 
     }

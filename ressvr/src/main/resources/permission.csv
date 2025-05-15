@@ -23,10 +23,14 @@ Outbound-Order,remove-order-billable-activity-type,Remove Order Billable Activit
 Outbound-Order,cancel-order,Cancel Order
 Outbound-Order,clear-cancellation-request,Clear Order Cancellation Request
 Outbound-Order,walmart-shipping-carton-label,Walmart Shipping Carton Label
+Outbound-Order,target-shipping-carton-label,Target Shipping Carton Label
+Outbound-Order,change-order-completed-time,Change Completed Time
+Outbound-Order,change-order-line-allocation-strategy-type,Change Order Line Allocation Strategy Type
 Util-File-Upload,items,Item
 Util-File-Upload,BOMs,BOM
 Util-File-Upload,inventory,Inventory
 Util-File-Upload,itemUnitOfMeasure,Item Unit of Measure
+Util-File-Upload,item-barcodes,Item Barcode
 Util-File-Upload,locations,Warehouse Locations
 Util-File-Upload,orders,Order
 Util-File-Upload,parcel-packages,Parcel Package
@@ -36,6 +40,8 @@ Util-File-Upload,receiving-inventories,Receiving Inventory
 Util-File-Upload,shipping-trailer-appointment,Shipping Trailer Appointment
 Util-File-Upload,loads,Loads
 Util-File-Upload,walmart-shipping-carton-labels,Walmart Shipping Carton Labels
+Util-File-Upload,target-shipping-carton-labels,Target Shipping Carton Labels
+Util-File-Upload,eulogia-customer-packing-slip,Eulogia Customer Packing Slip
 Inbound-receipt,modify-receipt,Modify Receipt
 Inbound-receipt,check-in-receipt,Check In Receipt
 Inbound-receipt,complete-receipt,Complete Receipt
@@ -48,6 +54,7 @@ Inbound-receipt,add-receipt,Add Receipt
 Inbound-receipt,upload-receipt,Upload Receipt
 Inbound-receipt,upload-receiving-inventory,Upload Receiving Inventory
 Inbound-receipt,upload-putaway-inventory,Upload Put Away Inventory
+Inbound-receipt,modify-receipt-line,Add or Modify Receipt Line
 Inventory-Inventory,adjust-inventory-quantity,Adjust Inventory Quantity
 Inventory-Inventory,change-inventory-attribute,Change Inventory Attribute
 Inventory-Inventory,move-inventory,Move Inventory
@@ -66,6 +73,8 @@ Inventory-Item,remove-item,Remove Item
 Inventory-Item,upload-item,Upload Item
 Inventory-Item,upload-item-unit-of-measure,Upload Item Unit Of Measure
 Inventory-Item,add-item,Add Item
+Inventory-Item,upload-image,Upload Image
+Inventory-Item,upload-workorder-sop,Upload Work Order SOP
 WorkTask-WorkTask,assign-user,Assign User
 WorkTask-WorkTask,assign-role,Assign Role
 WorkTask-WorkTask,assign-working-team,Assign Working Team
@@ -86,3 +95,6 @@ Outbound-Wave,confirm-multiple-pick,Confirm Pick
 Outbound-Wave,allocate-short-allocation,Allocate Short Allocation
 Outbound-Wave,create-work-order,Create Work Order
 Outbound-Wave,cancel-short-allocation,Cancel Short Allocation
+Util-CustomReport,execute-custom-report,Execute Custom Report
+Layout-Location,modify-location,Modify Location
+Layout-Location,copy-location,Copy Location

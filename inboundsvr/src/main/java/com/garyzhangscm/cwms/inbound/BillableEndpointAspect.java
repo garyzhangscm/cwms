@@ -38,11 +38,16 @@ public class BillableEndpointAspect {
     @Before(value = "@annotation(com.garyzhangscm.cwms.inbound.model.BillableEndpoint)")
     public void handle(JoinPoint joinPoint) throws Exception {
 
-        createBillableRequest(httpServletRequest);
+        // Disable the billable request for now. We will do nothing
+        // createBillableRequest(httpServletRequest);
+        logger.debug("We will disable the billable request handler at this moment");
 
     }
 
     private void createBillableRequest(HttpServletRequest httpServletRequest) throws IOException {
+
+
+
 
         // get the request's parameters,
         // normally we will have warehouse id or company id in the url

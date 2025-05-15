@@ -23,9 +23,11 @@ import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.MasterProductionSchedule;
 import com.garyzhangscm.cwms.workorder.service.MasterProductionScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -83,8 +85,8 @@ public class MasterProductionScheduleController {
     public Collection<LocalDateTime> getAvailableDate(
             @RequestParam Long warehouseId,
             @RequestParam Long productionLineId,
-            @RequestParam String beginDateTime,
-            @RequestParam String endDateTime
+            @RequestParam(name = "beginDateTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime beginDateTime,
+            @RequestParam(name = "endDateTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDateTime
             ) {
         return masterProductionScheduleService.getAvailableDate(warehouseId, productionLineId, beginDateTime, endDateTime);
     }
@@ -93,8 +95,8 @@ public class MasterProductionScheduleController {
     public Collection<MasterProductionSchedule> getExistingMPSs(
             @RequestParam Long warehouseId,
             @RequestParam Long productionLineId,
-            @RequestParam String beginDateTime,
-            @RequestParam String endDateTime
+            @RequestParam(name = "beginDateTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime beginDateTime,
+            @RequestParam(name = "endDateTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endDateTime
     ) {
         return masterProductionScheduleService.getExistingMPSs(warehouseId, productionLineId, beginDateTime, endDateTime);
     }

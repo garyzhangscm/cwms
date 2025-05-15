@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,12 +50,14 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     private Long clientId;
 
     @Transient
+    @JsonIgnore
     private Client client;
 
     @Column(name = "supplier_id")
     private Long supplierId;
 
     @Transient
+    @JsonIgnore
     private Supplier supplier;
 
     @JsonIgnore
@@ -91,7 +93,11 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
     @Column(name = "default_flag")
     private Boolean defaultFlag = false;
 
+    @Column(name = "case_per_tier")
+    private Integer casePerTier;
+
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @JsonIgnore
@@ -247,6 +253,14 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
         this.itemUnitOfMeasures.add(itemUnitOfMeasure);
     }
 
+    public Integer getCasePerTier() {
+        return casePerTier;
+    }
+
+    public void setCasePerTier(Integer casePerTier) {
+        this.casePerTier = casePerTier;
+    }
+
     public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
@@ -260,6 +274,27 @@ public class ItemPackageType extends AuditibleEntity<String> implements Serializ
         }
         return stockItemUnitOfMeasure;
     }
+
+    public ItemUnitOfMeasure getCaseItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
+    }
+
+    public ItemUnitOfMeasure getPackItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getPackFlag())
+        ).findFirst().orElse(null);
+    }
+
 
     public ItemUnitOfMeasure getDisplayItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {

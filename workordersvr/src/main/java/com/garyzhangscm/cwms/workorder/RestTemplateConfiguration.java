@@ -5,7 +5,6 @@ import com.garyzhangscm.cwms.workorder.usercontext.UserContextInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -25,25 +24,17 @@ public class RestTemplateConfiguration {
      */
 
     @Autowired
-    RequestInterceptor requestInterceptor;
+    UserContextInterceptor userContextInterceptor;
 
-    // Rest Template when executing http request outside
-    // a DispatcherServlet web request
-    // it will fill in the pre-defined user's credential
-    // to initiate the http request
     @Bean
-    @Qualifier("autoLoginRestTemplate")
-    public RestTemplate autoLoginRestTemplate() {
+    public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.setInterceptors(
                 Arrays.asList(new ClientHttpRequestInterceptor[]{
                         new JsonMimeInterceptor(),
-                        new UserContextInterceptor(),
-                        requestInterceptor}));
+                        userContextInterceptor}));
         return restTemplate;
     }
-
-
 
 }

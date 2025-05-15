@@ -1,9 +1,6 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 

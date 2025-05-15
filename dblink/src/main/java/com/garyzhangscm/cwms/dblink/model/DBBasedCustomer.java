@@ -76,6 +76,14 @@ public class DBBasedCustomer implements Serializable {
     @Column(name = "address_postcode")
     private String addressPostcode;
 
+    // whether the customer will be used by
+    // FAY or Colton.
+    // Note: FAY and Colton are using 2 different MES server but
+    //    share the same integration table in Oracle side
+    @Column(name = "location_name")
+    private String locationName;
+
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -221,6 +229,14 @@ public class DBBasedCustomer implements Serializable {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 
     public IntegrationStatus getStatus() {

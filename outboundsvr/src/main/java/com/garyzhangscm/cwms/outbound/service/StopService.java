@@ -226,11 +226,14 @@ public class StopService {
         Stop stop = new Stop();
         stop.setNumber(commonServiceRestemplateClient.getNextNumber(shipment.getWarehouseId(), "stop"));
 
-        List<Shipment> shipments = new ArrayList<>();
-        shipments.add(shipment);
-        stop.setShipments(shipments);
+        stop.setShipments(new ArrayList<>());
         stop.setWarehouseId(shipment.getWarehouseId());
-        return saveAndFlush(stop);
+        stop = saveAndFlush(stop);
+
+        shipment.setStop(stop);
+        shipmentService.save(shipment);
+
+        return findById(stop.getId());
     }
 
     public boolean isAllShipmentLoaded(Stop stop) {

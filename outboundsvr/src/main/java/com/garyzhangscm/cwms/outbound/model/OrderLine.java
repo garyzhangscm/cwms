@@ -21,13 +21,15 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Entity
 @Table(name = "outbound_order_line")
@@ -157,6 +159,18 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Column(name="style")
     private String style;
 
+    // required inventory attribute
+    @Column(name="inventory_attribute_1")
+    private String inventoryAttribute1;
+    @Column(name="inventory_attribute_2")
+    private String inventoryAttribute2;
+    @Column(name="inventory_attribute_3")
+    private String inventoryAttribute3;
+    @Column(name="inventory_attribute_4")
+    private String inventoryAttribute4;
+    @Column(name="inventory_attribute_5")
+    private String inventoryAttribute5;
+
     // only allocate inventory that received by certain receipt
     @Column(name = "allocate_by_receipt_number")
     private String allocateByReceiptNumber;
@@ -171,6 +185,36 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     // insure the package
     @Column(name = "parcel_signature_required")
     private Boolean parcelSignatureRequired;
+
+
+    // Right now we will get the client information from
+    // the order, which means the order can
+    // only allocate the inventory from the same owner of
+    // the order. We may consider to change logic to allow
+    // different owner for order and order line so that
+    // the owner of the order is who get paid from the customer
+    // while the owner of the order line ships the inventory
+    // this may requires support from ERP as well
+    @Transient
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
+    // for report purpose
+    @Transient
+    private Long quantity;
+    @Transient
+    private Long quantityPerCase;
+    @Transient
+    private Double caseQuantity;
+
+    @Transient
+    // for display inventory in the manual pick report
+    private List<String> manualPickableInventoryForDisplay = new ArrayList<>();
+
+    @Transient
+    private List<String> requiredInventoryAttributes = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -199,6 +243,105 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     @Override
     public int hashCode() {
         return Objects.hash(id, order, number);
+    }
+
+
+    public void setupManualPickableInventoryForDisplay(List<Inventory> inventories) {
+
+
+        Collections.sort(inventories, Comparator.comparing(Inventory::getInWarehouseDatetime));
+
+        // key: location name
+        // value: triple
+        //        1. location name
+        //        2. earliest in warehouse date in the location
+        //        3. latest in warehouse date in the location
+        Map<String, Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateMap = new HashMap<>();
+
+        // group inventory with locatin name
+        // key: location name;
+        // value: inventory in the location
+        Map<String, List<Inventory>> inventoryInLocation = new HashMap<>();
+        for(Inventory inventory : inventories) {
+            String locationName = inventory.getLocation().getName();
+            if (locationsWithInWarehouseDateMap.containsKey(locationName)) {
+                Triple<String, ZonedDateTime, ZonedDateTime> locationInWarehouseDate = locationsWithInWarehouseDateMap.get(locationName);
+                if (inventory.getInWarehouseDatetime().isBefore(locationInWarehouseDate.getMiddle())) {
+                    locationsWithInWarehouseDateMap.put(locationName,
+                            Triple.of(locationName, inventory.getInWarehouseDatetime(), locationInWarehouseDate.getRight()));
+                }
+                else if (inventory.getInWarehouseDatetime().isAfter(locationInWarehouseDate.getRight())) {
+                    locationsWithInWarehouseDateMap.put(locationName,
+                            Triple.of(locationName,  locationInWarehouseDate.getMiddle(), inventory.getInWarehouseDatetime()));
+
+                }
+            }
+            else {
+                locationsWithInWarehouseDateMap.put(locationName,
+                        Triple.of(locationName, inventory.getInWarehouseDatetime(), inventory.getInWarehouseDatetime()));
+            }
+            inventoryInLocation.computeIfAbsent(locationName, key -> new ArrayList<>()).add(inventory);
+
+        }
+
+        // sort the location based on the earliest in warehouse date
+
+        List<Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateList
+                = new ArrayList<>(locationsWithInWarehouseDateMap.values());
+
+
+        Collections.sort(locationsWithInWarehouseDateList, Comparator.comparing(Triple::getMiddle));
+
+        manualPickableInventoryForDisplay = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
+        locationsWithInWarehouseDateList.forEach(
+                locationWithInWarehouseDate -> {
+                    // show the location summary first
+                    manualPickableInventoryForDisplay.add(
+                            locationWithInWarehouseDate.getLeft() + ": " +
+                                    locationWithInWarehouseDate.getMiddle().format(formatter) + " ~ " +
+                                    locationWithInWarehouseDate.getRight().format(formatter)
+                    );
+
+                    // show each inventory in the location
+                    inventoryInLocation.get(locationWithInWarehouseDate.getLeft()).forEach(
+                            inventory ->
+                                    manualPickableInventoryForDisplay.add("    # " +
+                                            inventory.getLpn() + ", " +
+                                            inventory.getQuantity() + ", " +
+                                            inventory.getInWarehouseDatetime().format(formatter))
+                    );
+
+                }
+        );
+    }
+    public void setupRequiredInventoryAttributes() {
+        requiredInventoryAttributes = new ArrayList<>();
+        if (Strings.isNotBlank(getColor())) {
+            requiredInventoryAttributes.add(getColor());
+        }
+        if (Strings.isNotBlank(getProductSize())) {
+            requiredInventoryAttributes.add(getProductSize());
+        }
+        if (Strings.isNotBlank(getStyle())) {
+            requiredInventoryAttributes.add(getStyle());
+        }
+        if (Strings.isNotBlank(getInventoryAttribute1())) {
+            requiredInventoryAttributes.add(getInventoryAttribute1());
+        }
+        if (Strings.isNotBlank(getInventoryAttribute2())) {
+            requiredInventoryAttributes.add(getInventoryAttribute2());
+        }
+        if (Strings.isNotBlank(getInventoryAttribute3())) {
+            requiredInventoryAttributes.add(getInventoryAttribute3());
+        }
+        if (Strings.isNotBlank(getInventoryAttribute4())) {
+            requiredInventoryAttributes.add(getInventoryAttribute4());
+        }
+        if (Strings.isNotBlank(getInventoryAttribute5())) {
+            requiredInventoryAttributes.add(getInventoryAttribute5());
+        }
     }
 
     public Long getId() {
@@ -299,6 +442,46 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 
     public Warehouse getWarehouse() {
@@ -488,4 +671,78 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
     public void setParcelSignatureRequired(Boolean parcelSignatureRequired) {
         this.parcelSignatureRequired = parcelSignatureRequired;
     }
+
+    public Long getClientId() {
+        if (Objects.isNull(clientId) && Objects.nonNull(order)) {
+            return order.getClientId();
+        }
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        if (Objects.isNull(client) && Objects.nonNull(order)) {
+            return order.getClient();
+        }
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public long getQuantity() {
+        if(Objects.nonNull(quantity)) {
+            return quantity;
+        }
+
+        long quantity = 0;
+        if (Objects.isNull(getShipmentLines()) || getShipmentLines().isEmpty()) {
+            return 0;
+        }
+        for (ShipmentLine shipmentLine : shipmentLines) {
+            quantity += shipmentLine.getPicks().stream().mapToLong(Pick::getQuantity).sum();
+        }
+        return quantity;
+    }
+
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+
+    public long getQuantityPerCase() {
+        return Objects.isNull(quantityPerCase) ? 0l : quantityPerCase;
+    }
+
+    public void setQuantityPerCase(Long quantityPerCase) {
+        this.quantityPerCase = quantityPerCase;
+    }
+
+    public Double getCaseQuantity() {
+        return Objects.isNull(caseQuantity) ? 0.0 : caseQuantity;
+    }
+
+    public void setCaseQuantity(Double caseQuantity) {
+        this.caseQuantity = caseQuantity;
+    }
+
+    public List<String> getManualPickableInventoryForDisplay() {
+        return manualPickableInventoryForDisplay;
+    }
+
+    public void setManualPickableInventoryForDisplay(List<String> manualPickableInventoryForDisplay) {
+        this.manualPickableInventoryForDisplay = manualPickableInventoryForDisplay;
+    }
+
+    public List<String> getRequiredInventoryAttributes() {
+        return requiredInventoryAttributes;
+    }
+
+    public void setRequiredInventoryAttributes(List<String> requiredInventoryAttributes) {
+        this.requiredInventoryAttributes = requiredInventoryAttributes;
+    }
+
 }

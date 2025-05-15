@@ -117,6 +117,18 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
     @Column(name="style")
     private String style;
 
+    // required inventory attribute
+    @Column(name="inventory_attribute_1")
+    private String inventoryAttribute1;
+    @Column(name="inventory_attribute_2")
+    private String inventoryAttribute2;
+    @Column(name="inventory_attribute_3")
+    private String inventoryAttribute3;
+    @Column(name="inventory_attribute_4")
+    private String inventoryAttribute4;
+    @Column(name="inventory_attribute_5")
+    private String inventoryAttribute5;
+
     // the user that current working on this pick
     @Column(name = "acknowledged_username")
     private String acknowledgedUsername;
@@ -129,7 +141,7 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
         if (item == null) {
             return 0.0;
         }
-        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasure();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()
@@ -466,5 +478,45 @@ public class BulkPick extends AuditibleEntity<String> implements Serializable  {
 
     public void setAcknowledgedUsername(String acknowledgedUsername) {
         this.acknowledgedUsername = acknowledgedUsername;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 }

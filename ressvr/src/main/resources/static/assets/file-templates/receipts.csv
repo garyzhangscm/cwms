@@ -1,1 +1,1 @@
-client,supplier,receipt,line,item,expectedQuantity,unitOfMeasure,inventoryStatus,overReceivingQuantity,overReceivingPercent
+client,supplier,receipt,line,item,expectedQuantity,unitOfMeasure,inventoryStatus,overReceivingQuantity,overReceivingPercent,color,productSize,style,itemPackageType,cubicMeter,inventoryAttribute1,inventoryAttribute2,inventoryAttribute3,inventoryAttribute4,inventoryAttribute5

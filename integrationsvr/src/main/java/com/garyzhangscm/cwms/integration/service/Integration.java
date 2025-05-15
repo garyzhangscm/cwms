@@ -135,7 +135,7 @@ public interface Integration {
     List<? extends IntegrationWorkOrderData> getWorkOrderData(
             String companyCode,
             Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date, String statusList,
-            Long id);
+            Long id, String workOrderNumber);
     IntegrationWorkOrderData getWorkOrderData(Long id);
     IntegrationWorkOrderData addWorkOrderData(WorkOrder workOrder);
 

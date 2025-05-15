@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.workorder;
 import com.garyzhangscm.cwms.workorder.exception.ExceptionResponse;
 import com.garyzhangscm.cwms.workorder.exception.GenericException;
 import com.garyzhangscm.cwms.workorder.exception.SystemFatalException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.List;
 

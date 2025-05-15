@@ -52,7 +52,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies/{id}");
 /**
         ResponseBodyWrapper<Company> responseBodyWrapper
@@ -77,7 +77,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<Company> getAllCompanies() {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies");
 
         return restTemplateProxy.exchangeList(
@@ -92,7 +92,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<Warehouse> getWarehouseByCompany(Long companyId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyId", companyId);
 
@@ -112,7 +112,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         logger.debug("Will get location by id {}", id);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}");
 /**
         ResponseBodyWrapper<Location> responseBodyWrapper
@@ -138,7 +138,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -172,13 +172,34 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    @Cacheable(cacheNames = "InventoryService_Location", unless="#result == null")
+    public List<Location> getLocationsByName(Long warehouseId, String name) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("name", name)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+    }
+
+
     @Cacheable(cacheNames = "InventoryService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name)   {
 
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
@@ -224,7 +245,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         logger.debug("start to get warehouse by id {}", warehouseId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{id}");
 /**
         ResponseBodyWrapper<Warehouse> responseBodyWrapper
@@ -255,7 +276,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouse-configuration/by-warehouse/{id}");
 /**
         ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
@@ -285,7 +306,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouse-configuration");
 /**
         ResponseBodyWrapper<List<WarehouseConfiguration>> responseBodyWrapper
@@ -311,7 +332,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/lock")
                         .queryParam("locked", true);
 /**
@@ -338,7 +359,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/lock")
                         .queryParam("locked", false);
 /**
@@ -363,7 +384,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<LocationGroup> getStorageLocationGroups(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups/storage")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -389,7 +410,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<LocationGroup> getQCLocationGroups(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups/qc")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -424,7 +445,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<Long> getLocationIdsByLocationGroups(Long warehouseId, String locationGroupIds) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/location-ids")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("locationGroupIds", locationGroupIds);
@@ -452,7 +473,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<Location> getLocationByLocationGroups(Long warehouseId, String locationGroupIds) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("locationGroupIds", locationGroupIds);
@@ -474,11 +495,28 @@ public class WarehouseLayoutServiceRestemplateClient {
         );
 
     }
+
+    public List<Location> getLocationByPickZones(Long warehouseId, String pickZoneIds) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/locations")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("pickZoneIds", pickZoneIds); 
+        return restTemplateProxy.exchangeList(
+                Location.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
     public List<Location> getLocationsByRange(Long warehouseId, Long beginSequence, Long endSequence, String sequenceType, Boolean includeEmptyLocation) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("beginSequence", beginSequence)
@@ -508,7 +546,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public List<Location> getLocationByAisle(Long warehouseId, String aisle, boolean includeEmptyLocation) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("aisle", aisle)
@@ -538,7 +576,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("beginAisle", beginValue)
@@ -633,7 +671,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}")
                         .queryParam("inventoryQuantity", totalQuantity)
                         .queryParam("inventorySize", totalSize);
@@ -662,7 +700,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         logger.debug("Start to get default removed inventory location by warehouse id {}", warehouseId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/logic/default-removed-inventory-location")
                 .queryParam("warehouseId", warehouseId);
 /**
@@ -689,7 +727,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLocationForAuditCount(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/logic/audit-count")
                         .queryParam("warehouseId", warehouseId);
 
@@ -716,7 +754,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLocationForCount(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/logic/count")
                         .queryParam("warehouseId", warehouseId);
 
@@ -743,7 +781,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Location getLocationForInventoryAdjustment(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/logic/inventory-adjust")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -769,7 +807,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/logic/receiving")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -825,7 +863,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public LocationGroupType getLocationGroupTypeById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgrouptypes/{id}");
 /**
         ResponseBodyWrapper<LocationGroupType> responseBodyWrapper
@@ -850,7 +888,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public LocationGroup getLocationGroupById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups/{id}");
 /**
         ResponseBodyWrapper<LocationGroup> responseBodyWrapper
@@ -875,7 +913,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -914,7 +952,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups/{locationGroupId}/reserve")
                         .queryParam("reservedCode", reservedCode)
                         .queryParam("pendingSize", pendingSize)
@@ -947,7 +985,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 id, pendingVolumeReduced);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/pending-volume")
                         .queryParam("reduce", pendingVolumeReduced);
 /**
@@ -976,7 +1014,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/volume")
                         .queryParam("reduce", volumeReduced);
 
@@ -1008,7 +1046,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/volume")
                         .queryParam("increase", volumeIncreased)
                         .queryParam("fromPendingVolume", true);
@@ -1045,7 +1083,7 @@ public class WarehouseLayoutServiceRestemplateClient {
                 locationGroupId);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups/{id}/inventory-consolidation-strategy");
 /**
         ResponseBodyWrapper<InventoryConsolidationStrategy> responseBodyWrapper
@@ -1072,7 +1110,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Map<String, String> getUtilizationTrackingLocations( Long warehouseId)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/utilization-tracking")
                 .queryParam("warehouseId", warehouseId);
 
@@ -1116,7 +1154,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout//locations/{id}/pending-volume")
                         .queryParam("reduce", inventorySize);
 /**
@@ -1153,7 +1191,7 @@ public class WarehouseLayoutServiceRestemplateClient {
         }
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}/allocate")
                         .queryParam("inventorySize", inventorySize);
 

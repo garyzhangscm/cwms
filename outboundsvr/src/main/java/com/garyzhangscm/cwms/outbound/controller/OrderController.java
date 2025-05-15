@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.*;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -50,12 +52,15 @@ public class OrderController {
     @Autowired
     FileService fileService;
     @Autowired
+    private UploadFileService uploadFileService;
+    @Autowired
     private OrderBillableActivityService orderBillableActivityService;
 
 
     @ClientValidationEndpoint
     @RequestMapping(value="/orders", method = RequestMethod.GET)
     public List<Order> findAllOrders(@RequestParam Long warehouseId,
+                                     @RequestParam(name="ids", required = false, defaultValue = "") String ids,
                                      @RequestParam(name="number", required = false, defaultValue = "") String number,
                                      @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                      @RequestParam(name="status", required = false, defaultValue = "") String status,
@@ -65,18 +70,46 @@ public class OrderController {
                                      @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                      @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
                                      @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
-                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCompleteTime,
-                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCompleteTime,
-                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate specificCompleteDate,
-                                     @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startCreatedTime,
-                                     @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endCreatedTime,
-                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate specificCreatedDate,
+                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") String startCompleteTime,
+                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") String endCompleteTime,
+                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") String specificCompleteDate,
+                                     @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") String startCreatedTime,
+                                     @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") String endCreatedTime,
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") String specificCreatedDate,
+                                     @RequestParam(name = "poNumber", required = false, defaultValue = "") String poNumber,
                                      ClientRestriction clientRestriction) {
         logger.debug("Start to find order by number {}", number);
-        return orderService.findAll(warehouseId, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+        return orderService.findAll(warehouseId, ids, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
-                category,  customerName, customerId, clientId, trailerAppointmentId, loadDetails,
+                category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
                 clientRestriction);
+    }
+    @ClientValidationEndpoint
+    @RequestMapping(value="/orders/count", method = RequestMethod.GET)
+    public Integer getOrderCount(@RequestParam Long warehouseId,
+                                 @RequestParam(name="ids", required = false, defaultValue = "") String ids,
+                                     @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                     @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
+                                     @RequestParam(name="status", required = false, defaultValue = "") String status,
+                                     @RequestParam(name="category", required = false, defaultValue = "") String category,
+                                     @RequestParam(name="customerName", required = false, defaultValue = "") String customerName,
+                                     @RequestParam(name="customerId", required = false, defaultValue = "") Long customerId,
+                                     @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                     @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
+                                     @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                     @RequestParam(name = "startCompleteTime", required = false, defaultValue = "") String startCompleteTime,
+                                     @RequestParam(name = "endCompleteTime", required = false, defaultValue = "") String endCompleteTime,
+                                     @RequestParam(name = "specificCompleteDate", required = false, defaultValue = "") String specificCompleteDate,
+                                     @RequestParam(name = "startCreatedTime", required = false, defaultValue = "") String startCreatedTime,
+                                     @RequestParam(name = "endCreatedTime", required = false, defaultValue = "") String endCreatedTime,
+                                     @RequestParam(name = "specificCreatedDate", required = false, defaultValue = "") String specificCreatedDate,
+                                     @RequestParam(name = "poNumber", required = false, defaultValue = "") String poNumber,
+                                     ClientRestriction clientRestriction) {
+        logger.debug("Start to find order by number {}", number);
+        return orderService.findAll(warehouseId, ids, number, numbers, status, startCompleteTime, endCompleteTime, specificCompleteDate,
+                startCreatedTime, endCreatedTime, specificCreatedDate,
+                category,  customerName, customerId, clientId, trailerAppointmentId, poNumber, loadDetails,
+                clientRestriction).size();
     }
 
     @BillableEndpoint
@@ -129,9 +162,10 @@ public class OrderController {
                     @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
             }
     )
-    public Order allocateOrder(@PathVariable Long id){
+    public Order allocateOrder(@PathVariable Long id,
+                               @RequestParam(name = "asynchronous", required = false, defaultValue = "") Boolean asynchronous){
 
-        return orderService.allocate(id);
+        return orderService.allocate(id, asynchronous);
     }
 
     @BillableEndpoint
@@ -224,6 +258,17 @@ public class OrderController {
     }
 
     @BillableEndpoint
+    @RequestMapping(value="/orders/{id}/manual-pick-report", method = RequestMethod.POST)
+    public ReportHistory generateOrderManualPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale) throws JsonProcessingException {
+
+        logger.debug("start print manual pick sheet for order with id: {}", id);
+        return orderService.generateManualPickReportByOrder(id, locale);
+    }
+
+
+    @BillableEndpoint
     @RequestMapping(value="/orders/{id}/packing-list-report", method = RequestMethod.POST)
     public ReportHistory generatePackingListReport(
             @PathVariable Long id,
@@ -287,12 +332,36 @@ public class OrderController {
     public List<Pick> generateManualPick(@PathVariable  Long orderId,
                                          @RequestParam String lpn,
                                          @RequestParam Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to generateManualPick pick   ========");
         logger.debug("=> orderId: {}", orderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return orderService.generateManualPick(orderId, lpn, pickWholeLPN);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/orders/process-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
+    public List<Pick> processManualPick(@RequestParam String lpn,
+                                        @RequestParam Long warehouseId,
+                                        @RequestParam String orderNumber,
+                                        @RequestParam(required = false, defaultValue = "", name = "clientId") Long clientId,
+                                        @RequestParam(required = false, defaultValue = "true", name = "pickWholeLPN") Boolean pickWholeLPN) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> warehouseId: {}", warehouseId);
+        logger.debug("=> clientId: {}", clientId);
+        logger.debug("=> orderNumber: {}", orderNumber);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return orderService.processManualPick(warehouseId, clientId, orderNumber, lpn, pickWholeLPN);
+    }
+
 
 
     @BillableEndpoint
@@ -304,19 +373,26 @@ public class OrderController {
                     @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadOrders(Long warehouseId,
-                                            @RequestParam("file") MultipartFile file) throws IOException {
+
+    public ResponseBodyWrapper uploadOrders(Long companyId, Long warehouseId,
+                                            @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
+                                            @RequestParam(name = "createCustomer", defaultValue = "false", required = false) Boolean createCustomer,
+                                            @RequestParam(name = "modifyCustomer", defaultValue = "false", required = false) Boolean modifyCustomer,
+                                            @RequestParam("file") MultipartFile file)  {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "orders", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "orders", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile,createCustomer, modifyCustomer);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = orderService.saveOrderData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
     @RequestMapping(method=RequestMethod.GET, value="/orders/upload/progress")
     public ResponseBodyWrapper getOrderFileUploadProgress(Long warehouseId,
@@ -400,12 +476,20 @@ public class OrderController {
                                    @RequestParam(name = "color", required = false, defaultValue = "") String color,
                                    @RequestParam(name = "productSize", required = false, defaultValue = "") String productSize,
                                    @RequestParam(name = "style", required = false, defaultValue = "") String style,
+                                   @RequestParam(name = "inventoryAttribute1", required = false, defaultValue = "") String inventoryAttribute1,
+                                   @RequestParam(name = "inventoryAttribute2", required = false, defaultValue = "") String inventoryAttribute2,
+                                   @RequestParam(name = "inventoryAttribute3", required = false, defaultValue = "") String inventoryAttribute3,
+                                   @RequestParam(name = "inventoryAttribute4", required = false, defaultValue = "") String inventoryAttribute4,
+                                   @RequestParam(name = "inventoryAttribute5", required = false, defaultValue = "") String inventoryAttribute5,
                                    boolean exactMatch, ClientRestriction clientRestriction) {
 
 
         return orderService.getQuantityInOrder(
                 warehouseId, clientId, itemId,
-                inventoryStatusId, color, productSize, style, exactMatch,
+                inventoryStatusId, color, productSize, style,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3,
+                inventoryAttribute4,inventoryAttribute5,
+                exactMatch,
                 clientRestriction);
 
     }
@@ -447,7 +531,7 @@ public class OrderController {
 
     @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/walmart-shipping-carton-labels/generate")
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,
-                                                            @PathVariable Long id,
+                                                             @PathVariable Long id,
                                                              @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
                                                              @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
@@ -458,16 +542,136 @@ public class OrderController {
                 id, itemName, copies, locale);
 
     }
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/walmart-shipping-carton-labels/generate-with-pallet-label")
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId,
+                                                             @PathVariable Long id,
+                                                             @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                             @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+                                                                                   @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
+
+
+        return orderService.generateWalmartShippingCartonLabelsWithPalletLabels(
+                warehouseId,
+                id, copies, locale,
+                regeneratePalletLabels);
+
+    }
+
+
     @RequestMapping(method=RequestMethod.GET, value="/orders/{id}/walmart-shipping-carton-labels")
     public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId,
                                                              @PathVariable Long id,
-                                                             @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName)   {
+                                                             @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                           @RequestParam(name = "nonAssignedOnly", defaultValue = "true", required = false) Boolean nonAssignedOnly,
+                                                                           @RequestParam(name = "nonPrintedOnly", defaultValue = "true", required = false) Boolean nonPrintedOnly)   {
 
 
         return orderService.getWalmartShippingCartonLabels(
                 warehouseId,
-                id, itemName );
+                id, itemName,
+                nonAssignedOnly, nonPrintedOnly);
 
     }
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/target-shipping-carton-labels/generate-with-pallet-label/combined")
+    public ReportHistory generateCombinedTargetShippingCartonLabelsWithPalletLabels(Long warehouseId,
+                                                                                  @PathVariable Long id,
+                                                                                  @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                                  @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                                                  @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+                                                                                  @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
+
+
+        return orderService.generateCombinedTargetShippingCartonLabelsWithPalletLabels(
+                warehouseId,
+                id, copies, locale,
+                regeneratePalletLabels);
+
+    }
+
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/target-shipping-carton-labels/generate-with-pallet-label")
+    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId,
+                                                                                  @PathVariable Long id,
+                                                                                  @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                                  @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                                                  @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+                                                                                  @RequestParam(name = "regeneratePalletLabels", defaultValue = "false", required = false) Boolean regeneratePalletLabels)   {
+
+
+        return orderService.generateTargetShippingCartonLabelsWithPalletLabels(
+                warehouseId,
+                id, copies, locale,
+                regeneratePalletLabels);
+
+    }
+
+    @RequestMapping(method=RequestMethod.POST, value="/orders/{id}/target-shipping-carton-labels/generate")
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId,
+                                                                  @PathVariable Long id,
+                                                                  @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                  @RequestParam(name = "copies", defaultValue = "1", required = false) int copies,
+                                                                  @RequestParam(name = "locale", defaultValue = "", required = false) String locale)   {
+
+
+        return orderService.generateTargetShippingCartonLabels(
+                warehouseId,
+                id, itemName, copies, locale);
+
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/orders/{id}/target-shipping-carton-labels")
+    public List<TargetShippingCartonLabel> getTargetShippingCartonLabels(Long warehouseId,
+                                                                           @PathVariable Long id,
+                                                                           @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+                                                                           @RequestParam(name = "nonAssignedOnly", defaultValue = "true", required = false) Boolean nonAssignedOnly,
+                                                                           @RequestParam(name = "nonPrintedOnly", defaultValue = "true", required = false) Boolean nonPrintedOnly)   {
+
+
+        return orderService.getTargetShippingCartonLabels(
+                warehouseId,
+                id, itemName,
+                nonAssignedOnly, nonPrintedOnly);
+
+    }
+
+
+    @RequestMapping(value="/orders/{id}/get-manual-pick-quantity", method = RequestMethod.GET)
+    public Long getPickableQuantityForManualPick(@PathVariable  Long id,
+                                                 @RequestParam String lpn,
+                                                 @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
+        logger.debug("======        Start to getPickableQuantityForManualPick pick   ========");
+        logger.debug("=> orderId: {}", id);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        return orderService.getPickableQuantityForManualPick(id, lpn, pickWholeLPN);
+    }
+
+    @RequestMapping(value="/orders/picked-inventories", method = RequestMethod.GET)
+    public List<Inventory> getPickedInventoriesByOrderIds(@PathVariable  Long warehouseId,
+                                                 @RequestParam String orderIds) {
+        return orderService.getPickedInventoriesByOrderIds(warehouseId, orderIds);
+    }
+
+    @RequestMapping(value="/orders/picked-inventory-summary", method = RequestMethod.GET)
+    public List<Inventory> getPickedInventorySummaryByOrderIds(@RequestParam  Long warehouseId,
+                                                          @RequestParam String orderIds) {
+        if (Strings.isBlank(orderIds)) {
+            return new ArrayList<>();
+        }
+        return orderService.getPickedInventorySummaryByOrderIds(warehouseId, orderIds);
+    }
+
+    @RequestMapping(value="/orders/{id}/change-completed-time", method = RequestMethod.POST)
+    public Order changeCompletedTime(@PathVariable  Long id,
+                                     @RequestParam Long warehouseId,
+                                     @RequestParam(name = "completedTime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime completedTime) {
+
+        return orderService.changeCompletedTime(id, completedTime);
+    }
+
+
 
 }

@@ -28,19 +28,18 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,9 +63,10 @@ public class AllocationTransactionHistoryService   {
 
     @Autowired
     private UserService userService;
-
+/**
     @Autowired
     private HttpSession httpSession;
+ **/
     @Autowired
     private KafkaSender kafkaSender;
 
@@ -208,15 +208,27 @@ public class AllocationTransactionHistoryService   {
     }
     private String getTransactionGroupId(Long warehouseId) {
         String transactionGroupId;
-        if (Objects.isNull(httpSession.getAttribute("allocation-transaction-history-group-id"))) {
-            logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
-            transactionGroupId = getNextTransactionGroupId(warehouseId);
-            httpSession.setAttribute("allocation-transaction-history-group-id", transactionGroupId);
-            logger.debug(">> {}", transactionGroupId);
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes instanceof NativeWebRequest) {
+            logger.debug("we are in the http request, let's get the http session from the request");
+            HttpServletRequest request = (HttpServletRequest) ((NativeWebRequest) requestAttributes).getNativeRequest();
+
+            HttpSession httpSession = request.getSession();
+
+            if (Objects.isNull(httpSession.getAttribute("allocation-transaction-history-group-id"))) {
+                logger.debug("Current session doesn't have any transaction id yet, let's get a new one");
+                transactionGroupId = getNextTransactionGroupId(warehouseId);
+                httpSession.setAttribute("allocation-transaction-history-group-id", transactionGroupId);
+                logger.debug(">> {}", transactionGroupId);
+            }
+            else {
+                transactionGroupId = httpSession.getAttribute("allocation-transaction-history-group-id").toString();
+                logger.debug("Get transaction ID {} from current session", transactionGroupId);
+            }
         }
         else {
-            transactionGroupId = httpSession.getAttribute("allocation-transaction-history-group-id").toString();
-            logger.debug("Get transaction ID {} from current session", transactionGroupId);
+            logger.debug("we are NOT in the http request ");
+            transactionGroupId = getNextTransactionGroupId(warehouseId);
         }
         return transactionGroupId;
     }
@@ -266,6 +278,15 @@ public class AllocationTransactionHistoryService   {
                             shipmentLine.getWarehouseId() :
                             workOrderLine.getWarehouseId();
 
+        String username = "";
+        try {
+            username = userService.getCurrentUserName();
+        }
+        catch (IllegalStateException ex) {
+            // if the current session is not in a http session
+            // let's user anonymous
+            username = "Anonymous";
+        }
 
 
 
@@ -306,7 +327,7 @@ public class AllocationTransactionHistoryService   {
                 .isSkippedFlag(isSkippedFlag)
                 .isAllocatedByLPNFlag(isAllocatedByLPNFlag)
                 .isRoundUpFlag(isRoundUpFlag)
-                .username(userService.getCurrentUserName())
+                .username(username)
                 .message(message);
         AllocationTransactionHistory allocationTransactionHistory =
                 builder.build();

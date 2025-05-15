@@ -20,8 +20,10 @@ package com.garyzhangscm.cwms.outbound.repository;
 
 
 import com.garyzhangscm.cwms.outbound.model.WalmartShippingCartonLabel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,5 +35,19 @@ public interface WalmartShippingCartonLabelRepository extends JpaRepository<Walm
 
     WalmartShippingCartonLabel findBySSCC18(String SSCC18);
 
-    List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber);
+    List<WalmartShippingCartonLabel> findByWarehouseIdAndPoNumber(Long warehouseId, String poNumber, Pageable pageable);
+/**
+    @Query("select carton from WalmartShippingCartonLabel carton inner join carton.palletPickLabelContent pallet " +
+            " where pallet.id = :palletPickLabelContentId ")
+**/
+    @Query(value = "SELECT * FROM  walmart_shipping_carton_label WHERE pallet_pick_label_content_id = :palletPickLabelContentId" ,
+            nativeQuery = true )
+    List<WalmartShippingCartonLabel> findByPalletPickLabelContentId(Long palletPickLabelContentId);
+
+    @Query(value = "SELECT max(t.pieceCarton) FROM  WalmartShippingCartonLabel t" +
+            " WHERE t.warehouseId = :warehouseId " +
+            "  and t.poNumber = :poNumber " +
+            "  and t.itemNumber = :itemNumber " +
+            "  and t.pieceCarton is not null and t.pieceCarton > 0 ")
+    String getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemNumber);
 }

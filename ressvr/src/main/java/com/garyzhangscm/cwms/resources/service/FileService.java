@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FileService {
@@ -169,8 +170,17 @@ public class FileService {
         logger.debug("start to copy directory from absolute path {} to {}",
                 sourceDirectory.getAbsolutePath(),
                 destinationDirectory.getAbsolutePath());
+        if (!sourceDirectory.exists()) {
+            sourceDirectory.mkdir();
+        }
         if (!destinationDirectory.exists()) {
             destinationDirectory.mkdir();
+        }
+        if (Objects.isNull(sourceDirectory) || Objects.isNull(sourceDirectory.list())) {
+            // if the source direction is null or the director is empty,
+            // return here since we already created the 2 empty folder
+            logger.debug("Source directory is empty, we don't need to copy anything to the destination");
+            return;
         }
         for (String f : sourceDirectory.list()) {
             logger.debug(">> copy file(directory) {}", f);

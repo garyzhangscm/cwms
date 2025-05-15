@@ -9,11 +9,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +44,12 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     private Long workOrderId;
     @Transient
     private String workOrderNumber;
+    @Transient
+    private String itemName;
+    @Transient
+    private String itemDescription;
+    @Transient
+    private String itemFamilyName;
     @Transient
     private Long workOrderItemId;
 
@@ -98,6 +105,23 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
     @Column(name = "estimated_reserved_timespan")
     private Long estimatedReservedTimespan;
 
+
+    @Column(name = "assigned_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    // @JsonFormat(pattern="dd/MM/yyyy hh:mm")
+    private ZonedDateTime assignedTime;
+
+    @Column(name = "deassigned_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime deassignedTime;
+
+    @Column(name = "deassigned")
+    private Boolean deassigned;
+
     public ProductionLineAssignment(){}
 
     public ProductionLineAssignment(WorkOrder workOrder,
@@ -129,6 +153,10 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getProductionLineName() {
+        return Objects.nonNull(productionLine) ?  productionLine.getName() : "";
     }
 
     public ProductionLine getProductionLine() {
@@ -261,5 +289,71 @@ public class ProductionLineAssignment extends AuditibleEntity<String>{
             return workOrder.getItemId();
         }
         return null;
+    }
+
+    public String getItemName() {
+        if (Strings.isNotBlank(itemName)) {
+            return itemName;
+        }
+        else if (Objects.nonNull(workOrder) && Objects.nonNull(workOrder.getItem())) {
+            return workOrder.getItem().getName();
+        }
+        return null;
+    }
+    public String getItemDescription() {
+        if (Strings.isNotBlank(itemDescription)) {
+            return itemDescription;
+        }
+        else if (Objects.nonNull(workOrder) && Objects.nonNull(workOrder.getItem())) {
+            return workOrder.getItem().getDescription();
+        }
+        return null;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public ZonedDateTime getAssignedTime() {
+        return assignedTime;
+    }
+
+    public void setAssignedTime(ZonedDateTime assignedTime) {
+        this.assignedTime = assignedTime;
+    }
+
+    public ZonedDateTime getDeassignedTime() {
+        return deassignedTime;
+    }
+
+    public void setDeassignedTime(ZonedDateTime deassignedTime) {
+        this.deassignedTime = deassignedTime;
+    }
+
+    public void setWorkOrderItemId(Long workOrderItemId) {
+        this.workOrderItemId = workOrderItemId;
+    }
+
+    public Boolean getDeassigned() {
+        return deassigned;
+    }
+
+    public void setDeassigned(Boolean deassigned) {
+        this.deassigned = deassigned;
+    }
+
+    public String getItemFamilyName() {
+        if (Strings.isNotBlank(itemFamilyName)) {
+            return itemFamilyName;
+        }
+        else if (Objects.nonNull(workOrder) && Objects.nonNull(workOrder.getItem())
+                && Objects.nonNull(workOrder.getItem().getItemFamily())) {
+            return workOrder.getItem().getItemFamily().getName();
+        }
+        return null;
+    }
+
+    public void setItemFamilyName(String itemFamilyName) {
+        this.itemFamilyName = itemFamilyName;
     }
 }

@@ -28,6 +28,7 @@ import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAdjustmentThresholdRepository;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -38,8 +39,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -430,7 +429,7 @@ public class InventoryAdjustmentThresholdService implements TestDataInitiableSer
         try {
             username = userService.getCurrentUserName();
         }
-        catch (NullPointerException ex) {
+        catch (Exception ex) {
             logger.debug("Can't get user from the context, by default allow the inventory adjust");
             return false;
         }

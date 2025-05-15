@@ -18,7 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.commons.lang.StringUtils;
@@ -26,14 +26,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -55,7 +52,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/items/{id}");
 /**
         ResponseBodyWrapper<Item> responseBodyWrapper
@@ -76,17 +73,37 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+
+    public ItemPackageType getItemPackageTypeById(Long id) {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/itemPackageTypes/{id}");
+        return restTemplateProxy.exchange(
+                ItemPackageType.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
     @Cacheable(cacheNames = "OutboundService_Item", unless="#result == null")
      public Item getItemByName(Long warehouseId, Long clientId,  String name) {
 
         try {
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/inventory/items")
                             .queryParam("name", URLEncoder.encode(name, "UTF-8"))
+                            // .queryParam("name", name)
                             .queryParam("warehouseId", warehouseId);
 
+            logger.debug("start to query item with name {}",
+                    URLEncoder.encode(name, "UTF-8"));
 
             if (Objects.nonNull(clientId)) {
                 builder = builder.queryParam("clientIds", String.valueOf(clientId));
@@ -105,6 +122,7 @@ public class InventoryServiceRestemplateClient {
             List<Item> items = restTemplateProxy.exchangeList(
                     Item.class,
                     builder.build(true).toUriString(),
+                    // builder.build().toUriString(),
                     HttpMethod.GET,
                     null
             );
@@ -128,7 +146,7 @@ public class InventoryServiceRestemplateClient {
     public ItemFamily getItemFamilyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/item-family/{id}");
         /**
         ResponseBodyWrapper<ItemFamily> responseBodyWrapper
@@ -153,7 +171,7 @@ public class InventoryServiceRestemplateClient {
     public ItemFamily getItemFamilyByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/item-families")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -187,7 +205,7 @@ public class InventoryServiceRestemplateClient {
     public InventoryStatus getInventoryStatusById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory-status/{id}");
 /**
         ResponseBodyWrapper<InventoryStatus> responseBodyWrapper
@@ -212,7 +230,7 @@ public class InventoryServiceRestemplateClient {
     public InventoryStatus getInventoryStatusByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory-statuses")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
@@ -243,22 +261,38 @@ public class InventoryServiceRestemplateClient {
 
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId,
                                                 String color, String productSize,
-                                                String style, String allocateByReceiptNumber) {
+                                                String style,
+                                                String inventoryAttribute1,
+                                                String inventoryAttribute2,
+                                                String inventoryAttribute3,
+                                                String inventoryAttribute4,
+                                                String inventoryAttribute5,
+                                                String allocateByReceiptNumber,
+                                                String skipLocationIds)  {
         return getPickableInventory(itemId, inventoryStatusId, locationId, "",
-                color, productSize, style, allocateByReceiptNumber);
+                color, productSize, style, inventoryAttribute1,
+                inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
+                inventoryAttribute5, allocateByReceiptNumber, skipLocationIds);
     }
     public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId,
                                                 Long locationId, String lpn,
                                                 String color, String productSize,
                                                 String style,
-                                                String allocateByReceiptNumber) {
+                                                String inventoryAttribute1,
+                                                String inventoryAttribute2,
+                                                String inventoryAttribute3,
+                                                String inventoryAttribute4,
+                                                String inventoryAttribute5,
+                                                String allocateByReceiptNumber,
+                                                String skipLocationIds)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories/pickable")
                         .queryParam("includeDetails", false)
                         .queryParam("itemId", itemId)
-                        .queryParam("inventoryStatusId", inventoryStatusId);
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("lpnLimit", 500);
 
         if (Objects.nonNull(locationId)) {
             builder = builder.queryParam("locationId", locationId);
@@ -266,14 +300,38 @@ public class InventoryServiceRestemplateClient {
         if (Strings.isNotBlank(lpn)) {
             builder = builder.queryParam("lpn", lpn);
         }
-        if (Strings.isNotBlank(color)) {
-            builder = builder.queryParam("color", color);
+        if (Strings.isNotBlank(skipLocationIds)) {
+            builder = builder.queryParam("skipLocationIds", skipLocationIds);
+
         }
-        if (Strings.isNotBlank(productSize)) {
-            builder = builder.queryParam("productSize", productSize);
-        }
-        if (Strings.isNotBlank(style)) {
-            builder = builder.queryParam("style", style);
+        try {
+            if (Strings.isNotBlank(color)) {
+                builder = builder.queryParam("color", URLEncoder.encode(color, "UTF-8"));
+            }
+            if (Strings.isNotBlank(productSize)) {
+                builder = builder.queryParam("productSize", URLEncoder.encode(productSize, "UTF-8"));
+            }
+            if (Strings.isNotBlank(style)) {
+                builder = builder.queryParam("style", URLEncoder.encode(style, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute1)) {
+                builder = builder.queryParam("attribute1", URLEncoder.encode(inventoryAttribute1, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute2)) {
+                builder = builder.queryParam("attribute2", URLEncoder.encode(inventoryAttribute2, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute3)) {
+                builder = builder.queryParam("attribute3", URLEncoder.encode(inventoryAttribute3, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute4)) {
+                builder = builder.queryParam("attribute4", URLEncoder.encode(inventoryAttribute4, "UTF-8"));
+            }
+            if (Strings.isNotBlank(inventoryAttribute5)) {
+                builder = builder.queryParam("attribute5", URLEncoder.encode(inventoryAttribute5, "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw OrderOperationException.raiseException("Can't get the pickable inventory. Fail to construct the query for inventory");
         }
         if (Strings.isNotBlank(allocateByReceiptNumber)) {
             builder = builder.queryParam("receiptNumber", allocateByReceiptNumber);
@@ -289,6 +347,53 @@ public class InventoryServiceRestemplateClient {
         return responseBodyWrapper.getData();
  **/
 
+        List<Inventory> pickableInventory = restTemplateProxy.exchangeList(
+                Inventory.class,
+                builder.build(true).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+        logger.debug("return {} pickable inventory with criteria ",
+                pickableInventory.size());
+        logger.debug("itemId = {}", itemId);
+        logger.debug("inventoryStatusId = {}", inventoryStatusId);
+        logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
+        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
+        logger.debug("style = {}", Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("color = {}", Strings.isBlank(color) ? "N/A" : color);
+        logger.debug("productSize = {}", Strings.isBlank(productSize) ? "N/A" : productSize);
+        logger.debug("inventoryAttribute1 = {}", Strings.isBlank(inventoryAttribute1) ? "N/A" : inventoryAttribute1);
+        logger.debug("inventoryAttribute2 = {}", Strings.isBlank(inventoryAttribute2) ? "N/A" : inventoryAttribute2);
+        logger.debug("inventoryAttribute3 = {}", Strings.isBlank(inventoryAttribute3) ? "N/A" : inventoryAttribute3);
+        logger.debug("inventoryAttribute4 = {}", Strings.isBlank(inventoryAttribute4) ? "N/A" : inventoryAttribute4);
+        logger.debug("inventoryAttribute5 = {}", Strings.isBlank(inventoryAttribute5) ? "N/A" : inventoryAttribute5);
+        logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        logger.debug("=========   Pickable   Inventory   ===============");
+        pickableInventory.forEach(
+                inventory -> logger.debug(">> id: {}, LPN : {}", inventory.getId(), inventory.getLpn())
+        );
+        return pickableInventory;
+
+    }
+
+    public List<Inventory> getPickableInventory(Long itemId, Long inventoryStatusId, Long locationId, String lpn) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/inventories/pickable")
+                        .queryParam("includeDetails", false)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId);
+
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+
+        if (Strings.isNotBlank(lpn)) {
+            builder = builder.queryParam("lpn", lpn);
+
+        }
         return restTemplateProxy.exchangeList(
                 Inventory.class,
                 builder.toUriString(),
@@ -298,10 +403,11 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+
     public List<Inventory> getInventoryByLocationAndItemName(Location location, String itemName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("locationId", location.getId())
                         .queryParam("warehouseId", location.getWarehouse().getId())
@@ -327,7 +433,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> getInventoryByLpn(Long warehouseId, String lpn) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("lpn", lpn)
                         .queryParam("warehouseId", warehouseId);
@@ -352,7 +458,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> getInventoryByLocation(Location location) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("locationId", location.getId())
                         .queryParam("warehouseId", location.getWarehouse().getId());
@@ -377,7 +483,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> getPendingInventoryByLocation(Location location) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories/pending")
                         .queryParam("locationId", location.getId());
 /**
@@ -403,18 +509,38 @@ public class InventoryServiceRestemplateClient {
     }
 
     public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks, Boolean includeVirturalInventory) {
+
+        return getPickedInventory(warehouseId, picks, includeVirturalInventory, null);
+    }
+
+
+    public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks, Boolean includeVirturalInventory,
+                                              Long locationId) {
+
+        return getPickedInventory(warehouseId, picks, includeVirturalInventory,
+                locationId, true);
+    }
+    public List<Inventory> getPickedInventory(Long warehouseId, List<Pick> picks, Boolean includeVirturalInventory,
+                                              Long locationId, Boolean includeDetails) {
         // Convert a list of picks into a list of pick ids and join them into a single string with comma
         // Then we can call the inventory service endpoint to get all the picked inventory with those picks
         String pickIds =  picks.stream().map(Pick::getId).map(String::valueOf).collect(Collectors.joining(","));
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("pickIds", pickIds)
                         .queryParam("warehouseId", warehouseId);
         if (Objects.nonNull(includeVirturalInventory)) {
             builder = builder.queryParam("includeVirturalInventory", includeVirturalInventory);
+        }
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
+        }
+        if (Objects.nonNull(includeDetails)) {
+            builder = builder.queryParam("includeDetails", includeDetails);
+
         }
 /**
         ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
@@ -438,7 +564,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemName", item.getName())
@@ -471,7 +597,7 @@ public class InventoryServiceRestemplateClient {
     public List<MovementPath> getPickMovementPath(Long warehouseId, Location sourceLocation, Location destinationLocation) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/movement-path/match")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("fromLocationId", sourceLocation.getId())
@@ -514,7 +640,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> split(Inventory inventory, String newLpn, Long newQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory/{id}/split")
                         .queryParam("newLpn", newLpn)
                         .queryParam("newQuantity", newQuantity);
@@ -539,7 +665,7 @@ public class InventoryServiceRestemplateClient {
     public Inventory moveInventory(Inventory inventory, Pick pick, Location nextLocation )   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory/{id}/move")
                         .queryParam("pickId", pick.getId());
 
@@ -572,35 +698,51 @@ public class InventoryServiceRestemplateClient {
         return getInventoryForPick(pick, "");
     }
     public List<Inventory> getInventoryForPick(Pick pick, String lpn)   {
+        return getInventoryForPick(pick, lpn, true);
+    }
+    public List<Inventory> getInventoryForPick(Pick pick, String lpn, boolean includeDetails)   {
         try {
 
             UriComponentsBuilder builder =
                     UriComponentsBuilder.newInstance()
-                            .scheme("http").host("zuulserver").port(5555)
+                            .scheme("http").host("apigateway").port(5555)
                             .path("/api/inventory/inventories")
                             .queryParam("itemName",  URLEncoder.encode(pick.getItem().getName(), "UTF-8") )
                             .queryParam("location", URLEncoder.encode(pick.getSourceLocation().getName(), "UTF-8") )
-                            .queryParam("warehouseId", pick.getWarehouseId());
+                            .queryParam("maxLPNCount", 2)
+                            .queryParam("inventoryStatusId", pick.getInventoryStatusId())
+                            .queryParam("warehouseId", pick.getWarehouseId())
+                                    .queryParam("includeDetails", includeDetails);
             if (Strings.isNotBlank(lpn)) {
                 builder.queryParam("lpn", lpn);
             }
 
-            // If this is a allocated by LPN, then only pick the specific LPN
-            if (StringUtils.isNotBlank(pick.getLpn())) {
-                builder = builder.queryParam("lpn", pick.getLpn());
-            }
-
             if (StringUtils.isNotBlank(pick.getColor())) {
-                builder = builder.queryParam("color", pick.getColor());
+                builder = builder.queryParam("color", URLEncoder.encode(pick.getColor(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getProductSize())) {
-                builder = builder.queryParam("productSize", pick.getProductSize());
+                builder = builder.queryParam("productSize", URLEncoder.encode(pick.getProductSize(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getStyle())) {
-                builder = builder.queryParam("style", pick.getStyle());
+                builder = builder.queryParam("style", URLEncoder.encode(pick.getStyle(), "UTF-8"));
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute1())) {
+                builder = builder.queryParam("attribute1", URLEncoder.encode(pick.getInventoryAttribute1(), "UTF-8"));
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute2())) {
+                builder = builder.queryParam("attribute2", URLEncoder.encode(pick.getInventoryAttribute2(), "UTF-8"));
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute3())) {
+                builder = builder.queryParam("attribute3", URLEncoder.encode(pick.getInventoryAttribute3(), "UTF-8"));
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute4())) {
+                builder = builder.queryParam("attribute4", URLEncoder.encode(pick.getInventoryAttribute4(), "UTF-8"));
+            }
+            if (StringUtils.isNotBlank(pick.getInventoryAttribute5())) {
+                builder = builder.queryParam("attribute5", URLEncoder.encode(pick.getInventoryAttribute5(), "UTF-8"));
             }
             if (StringUtils.isNotBlank(pick.getAllocateByReceiptNumber())) {
-                builder = builder.queryParam("style", pick.getStyle());
+                builder = builder.queryParam("receiptNumber", URLEncoder.encode(pick.getAllocateByReceiptNumber(), "UTF-8"));
             }
 /**
             ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
@@ -627,13 +769,25 @@ public class InventoryServiceRestemplateClient {
 
     }
 
-    public Inventory moveInventory(Inventory inventory, Location nextLocation) throws IOException {
+    public Inventory shipInventory(Inventory inventory, Location nextLocation) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/inventory/{id}/ship");
+        return restTemplateProxy.exchange(
+                Inventory.class,
+                builder.buildAndExpand(inventory.getId()).toUriString(),
+                HttpMethod.POST,
+                nextLocation
+        );
+    }
+    public Inventory moveInventory(Inventory inventory, Location nextLocation){
         return moveInventory(inventory, nextLocation, "");
     }
     public Inventory moveInventory(Inventory inventory, Location nextLocation, String destinationLpn)  {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory/{id}/move")
                 .queryParam("destinationLpn", destinationLpn);
 /**
@@ -658,7 +812,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory/mark-lpn-allocated")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("lpn", lpn)
@@ -685,7 +839,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory/release-lpn-allocated")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("lpn", lpn)
@@ -711,7 +865,7 @@ public class InventoryServiceRestemplateClient {
     public InventoryStatus getAvailableInventoryStatus(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventory-statuses/available")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -741,7 +895,7 @@ public class InventoryServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/cycle-count-requests")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("cycleCountRequestType", CycleCountRequestType.BY_LOCATION_RANGE)
@@ -769,7 +923,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> processBulkPick(BulkPick bulkPick, Location nextLocation, String lpn) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories/process-bulk-pick")
                         .queryParam("warehouseId", bulkPick.getWarehouseId())
                         .queryParam("nextLocationId", nextLocation.getId())
@@ -802,7 +956,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> relabelInventory(Long warehouseId, String lpn, String newLPN, boolean mergeWithExistingInventory)   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories/relabel-lpn")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("lpn", lpn)
@@ -819,7 +973,7 @@ public class InventoryServiceRestemplateClient {
     public Inventory relabelInventory(Long warehouseId, Long inventoryId, String newLPN, boolean mergeWithExistingInventory)   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/inventories/{id}/relabel")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("newLPN", newLPN)
@@ -833,15 +987,20 @@ public class InventoryServiceRestemplateClient {
         );
     }
 
-    /**
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
-    }
-     **/
 
+    public InventoryConfiguration getInventoryConfiguration(Long warehouseId)   {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/inventory_configuration")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                InventoryConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
 
 }

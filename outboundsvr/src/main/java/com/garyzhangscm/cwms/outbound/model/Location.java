@@ -27,7 +27,7 @@ public class Location {
 
     private Long id;
 
-    private String name;
+    private String name = "";
 
     private Double currentVolume;
 
@@ -40,6 +40,8 @@ public class Location {
     private Warehouse warehouse;
 
     private Long pickSequence;
+
+    private PickZone pickZone;
 
     @Override
     public String toString() {
@@ -113,5 +115,14 @@ public class Location {
 
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
+    }
+
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
     }
 }

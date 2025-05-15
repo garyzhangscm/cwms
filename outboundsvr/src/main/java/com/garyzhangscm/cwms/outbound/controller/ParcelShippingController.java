@@ -51,6 +51,8 @@ public class ParcelShippingController {
     @Autowired
     private FileService fileService;
     @Autowired
+    private UploadFileService uploadFileService;
+    @Autowired
     private OrderDocumentService orderDocumentService;
 
     @RequestMapping(value="/parcel/ship-engine/rate", method = RequestMethod.GET)
@@ -108,19 +110,23 @@ public class ParcelShippingController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/parcel/packages/upload")
-    public ResponseBodyWrapper uploadParcelPackage(Long warehouseId,
+    public ResponseBodyWrapper uploadParcelPackage(Long companyId,
+                                                   Long warehouseId,
+                                                   @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                          @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "parcel-packages", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "parcel-packages", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = parcelPackageService.saveParcelPackageData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
     @RequestMapping(method=RequestMethod.GET, value="/parcel/packages/upload/progress")
     public ResponseBodyWrapper getParcelPackageFileUploadProgress(Long warehouseId,

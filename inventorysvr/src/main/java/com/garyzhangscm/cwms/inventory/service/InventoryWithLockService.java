@@ -18,24 +18,17 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.Inventory;
 import com.garyzhangscm.cwms.inventory.model.InventoryLock;
 import com.garyzhangscm.cwms.inventory.model.InventoryWithLock;
-import com.garyzhangscm.cwms.inventory.repository.InventoryLockRepository;
+
 import com.garyzhangscm.cwms.inventory.repository.InventoryWithLockRepository;
-import org.apache.commons.lang.StringUtils;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

@@ -59,7 +59,7 @@ public class ResourceServiceRestemplateClient {
         logger.debug("Start to init data for {}", dataName);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/test-data/init/" + dataName)
                         .queryParam("warehouseName", warehouseName);
 /**
@@ -83,7 +83,7 @@ public class ResourceServiceRestemplateClient {
     private List<String> getDataNames() {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/test-data");
 /**
         ResponseBodyWrapper<List<String>> responseBodyWrapper
@@ -108,7 +108,7 @@ public class ResourceServiceRestemplateClient {
         Long warehouseId = warehouseLayoutServiceRestemplateClient.getWarehouseByName(warehouseName).getId();
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -135,7 +135,7 @@ public class ResourceServiceRestemplateClient {
     public Boolean validateSystemAdminUser(String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/is-system-admin")
                         .queryParam("username", username);
 /**
@@ -161,7 +161,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users");
 /**
         ResponseBodyWrapper<User> responseBodyWrapper
@@ -186,7 +186,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsernameAndToken(String username, String token) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users-by-token")
                         .queryParam("username", username)
                         .queryParam("token", token);
@@ -214,7 +214,7 @@ public class ResourceServiceRestemplateClient {
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{id}");
 /**
         ResponseBodyWrapper<Warehouse> responseBodyWrapper

@@ -19,17 +19,17 @@
 package com.garyzhangscm.cwms.auth;
 
 
-public class ResponseBodyWrapper<T> {
+import java.io.Serializable;
+
+public class ResponseBodyWrapper<T> implements Serializable {
     private int result;
     private String message;
     private T data;
-
 
     public ResponseBodyWrapper() {
         this.result = 0;
         this.message = "";
     }
-
     public ResponseBodyWrapper(int result, String message, T data) {
         this.result = result;
         this.message = message;

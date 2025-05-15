@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.common.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.common.model.*;
 import com.garyzhangscm.cwms.common.repository.ReasonCodeRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -62,14 +63,17 @@ public class ReasonCodeService implements  TestDataInitiableService{
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("reason code not found by id: " + id));
     }
 
-    public List<ReasonCode> findAll( Long warehouseId) {
+    public List<ReasonCode> findAll( Long warehouseId, String type) {
         return reasonCodeRepository.findAll(
                 (Root<ReasonCode> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
-                    if (Objects.nonNull(warehouseId)) {
-                        predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+                    if (Strings.isNotBlank(type)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("type"),
+                                ReasonCodeType.valueOf(type)));
                     }
 
 
@@ -180,5 +184,13 @@ public class ReasonCodeService implements  TestDataInitiableService{
         reasonCode.setWarehouseId(warehouse.getId());
         return reasonCode;
 
+    }
+
+    public void removeReasonCode(Long id) {
+        reasonCodeRepository.deleteById(id);
+    }
+
+    public ReasonCode addReasonCode(ReasonCode reasonCode) {
+        return saveOrUpdate(reasonCode);
     }
 }

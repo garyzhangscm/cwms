@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.garyzhangscm.cwms</groupId>
     <artifactId>dblink</artifactId>
-    <version>v1.16</version>
+    <version>v1.63</version>
     <name>DBlink</name>
     <description>DBLink</description>
     <modelVersion>4.0.0</modelVersion>
@@ -101,6 +101,10 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>3.25.0-GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
         </dependency>
     </dependencies>
 

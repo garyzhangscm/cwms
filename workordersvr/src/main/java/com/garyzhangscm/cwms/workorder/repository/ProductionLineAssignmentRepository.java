@@ -18,14 +18,13 @@
 
 package com.garyzhangscm.cwms.workorder.repository;
 
-import com.garyzhangscm.cwms.workorder.model.ProductionLine;
 import com.garyzhangscm.cwms.workorder.model.ProductionLineAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -34,4 +33,11 @@ public interface ProductionLineAssignmentRepository extends JpaRepository<Produc
     @Query("select a from ProductionLineAssignment a where a.workOrder.id = :workOrderId and a.productionLine.id = :productionLineId")
     ProductionLineAssignment findByWorkOrderAndProductionLine(Long workOrderId, Long productionLineId);
 
+    @Query("select a from ProductionLineAssignment a where a.workOrder.warehouseId = :warehouseId " +
+            " and (" +
+            "        (a.assignedTime <= :startTime and (a.deassigned = null or a.deassigned = false or a.deassignedTime > :startTime))" + // assigned before start time and still assigned at start time
+            "        or " +
+            "        (a.assignedTime >= :startTime and a.assignedTime < :endTime)   " + // assigned between the start and end time
+            "     ) ")
+    List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId, ZonedDateTime startTime, ZonedDateTime endTime);
 }

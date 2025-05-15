@@ -98,6 +98,11 @@ public class LocationFileUpload extends FileUploadType {
                 String.class, 100, false
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "pickZone", "Pick Zone",
+                String.class, 100, true
+        ));
+
 
         addColumn(new FileUploadTemplateColumn(
                 "enabled",  "Location is enabled or not",

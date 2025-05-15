@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.exception.ItemException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -38,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +52,8 @@ public class ItemService {
 
     @Autowired
     private ItemRepository itemRepository;
+    @Autowired
+    private ItemBarcodeService itemBarcodeService;
     @Autowired
     ItemFamilyService itemFamilyService;
     @Autowired
@@ -97,6 +99,8 @@ public class ItemService {
     @Autowired
     private KafkaSender kafkaSender;
 
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
@@ -115,6 +119,9 @@ public class ItemService {
     String itemImageFolder;
     @Value("${fileupload.directory.upload.item.thumbnail:images/item/thumbnail/}")
     String itemThumbnailFolder;
+
+    @Value("${fileupload.directory.upload.item.workordersop:sop/item/work-order-sop/}")
+    String workOrderSOPFolder;
 
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
@@ -137,6 +144,7 @@ public class ItemService {
     public List<Item> findAll(Long companyId,
                               Long warehouseId,
                               String name,
+                              String names,
                               String quickbookListId,
                               String clientIds,
                               String itemFamilyIds,
@@ -173,6 +181,14 @@ public class ItemService {
                     }
                 }
 
+                if (Strings.isNotBlank(names)) {
+
+                    CriteriaBuilder.In<String> in = criteriaBuilder.in(root.get("name"));
+                    for(String itemName : names.split(",")) {
+                        in.value(itemName);
+                    }
+                    predicates.add(criteriaBuilder.and(in));
+                }
                 if (StringUtils.isNotBlank(quickbookListId)) {
                     if (quickbookListId.contains("*")) {
                         predicates.add(criteriaBuilder.like(root.get("quickbookListId"), quickbookListId.replaceAll("\\*", "%")));
@@ -236,6 +252,12 @@ public class ItemService {
                 }
 
                 // special handing for client id
+
+                return clientRestrictionUtil.addClientRestriction(root,
+                        predicates,
+                        clientRestriction,
+                        criteriaBuilder);
+                /**
                 if (Objects.isNull(clientRestriction) ||
                         !Boolean.TRUE.equals(clientRestriction.getThreePartyLogisticsFlag()) ||
                         Boolean.TRUE.equals(clientRestriction.getAllClientAccess())) {
@@ -277,6 +299,7 @@ public class ItemService {
                                     criteriaBuilder.isNotNull(root.get("clientId")),
                                     accessibleClientListPredicate));
                 }
+                 **/
             }
             ,
             // we may get duplicated record from the above query when we pass in the warehouse id
@@ -326,25 +349,57 @@ public class ItemService {
     private void loadAttribute(Item item) {
 
         if (item.getClientId() != null && item.getClient() == null) {
-            item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+            try {
+                item.setClient(commonServiceRestemplateClient.getClientById(item.getClientId()));
+            }
+            catch (Exception ex) {}
         }
         if (item.getAbcCategoryId() != null && item.getAbcCategory() == null) {
-            item.setAbcCategory(commonServiceRestemplateClient.getABCCategoryById(item.getAbcCategoryId()));
+            try {
+                item.setAbcCategory(commonServiceRestemplateClient.getABCCategoryById(item.getAbcCategoryId()));
+            }
+            catch (Exception ex) {}
         }
         if (item.getVelocityId() != null && item.getVelocity() == null) {
-            item.setVelocity(commonServiceRestemplateClient.getVelocityById(item.getVelocityId()));
+            try {
+                item.setVelocity(commonServiceRestemplateClient.getVelocityById(item.getVelocityId()));
+            }
+            catch (Exception ex) {}
         }
         // Setup the unit of measure information for each item package type
         item.getItemPackageTypes().stream().forEach(itemPackageType -> {
             itemPackageType.getItemUnitOfMeasures()
                     .stream().filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure() == null)
                     .forEach(itemUnitOfMeasure -> {
-                itemUnitOfMeasure.setUnitOfMeasure(
-                        commonServiceRestemplateClient.getUnitOfMeasureById(
-                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        try {
+                            itemUnitOfMeasure.setUnitOfMeasure(
+                                    commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        }
+                        catch (Exception ex) {}
+
             });
 
         });
+
+        // for kit item, we may need to load inner items as well
+        if (Boolean.TRUE.equals(item.getKitItemFlag()) && Objects.nonNull(item.getBillOfMaterialId())) {
+            BillOfMaterial billOfMaterial =
+                    Objects.nonNull(item.getBillOfMaterial()) ?
+                            item.getBillOfMaterial() :
+                    workOrderServiceRestemplateClient.getBillOfMaterialById(item.getBillOfMaterialId(), false);
+            item.setBillOfMaterial(billOfMaterial);
+            for (BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
+                Item kitInnerItem = billOfMaterialLine.getItem();
+                if (Objects.isNull(kitInnerItem)) {
+                    kitInnerItem = findById(billOfMaterialLine.getItemId());
+                    billOfMaterialLine.setItem(kitInnerItem);
+                }
+                item.addKitInnerItem(kitInnerItem);
+            }
+        }
+
+
 
     }
 
@@ -649,12 +704,13 @@ public class ItemService {
 
 
     public Item addItem(Item item) {
-
+/**
+        if(Objects.isNull(item.getItemFamily().getId())) {
+            item.setItemFamily(getOrCreateItemFamily(item.getItemFamily()));
+        }
+ **/
         item.getItemPackageTypes().forEach(itemPackageType -> {
             itemPackageType.setItem(item);
-            if(Objects.isNull(item.getItemFamily().getId())) {
-                item.setItemFamily(getOrCreateItemFamily(item.getItemFamily()));
-            }
             itemPackageType.getItemUnitOfMeasures().forEach(
                     itemUnitOfMeasure -> {
                         itemUnitOfMeasure.setItemPackageType(
@@ -997,9 +1053,10 @@ public class ItemService {
                 findAll(item.getWarehouseId(), null, item.getName(), null, null,
                         null,null,null,null,null, null,
                         null,null,null,null,null,
-                        null,null,null,null, null,null,null,
+                        null,null,null,null, null, null,null,null, null,
+                        null,null,null,null,null,
                         null,null,null,
-                        false, null)
+                        false, null, null )
                 .stream().filter(
                         existingInventory -> Objects.equals(item.getClientId(), existingInventory.getClientId())
                 ).collect(Collectors.toList());
@@ -1185,11 +1242,11 @@ public class ItemService {
 
         logger.debug("start to get item by name equals to the keyword");
         List<Item> items = findAll(companyId, warehouseId,
-                "*" + keyword + "*",null,  null, null,null,
+                "*" + keyword + "*",null,  null,null, null,null,
                 null,null, null, loadDetails, clientRestriction);
         // query by description
         logger.debug("start to get item by description equals to the keyword");
-        items.addAll(findAll(companyId, warehouseId, null,null,null, null,null,
+        items.addAll(findAll(companyId, warehouseId, null,null,null,null, null,null,
                 null,null, keyword, loadDetails, clientRestriction));
 
         return items;
@@ -1451,13 +1508,16 @@ public class ItemService {
         logger.debug("find {} existing inventory in the location {}",
                 inventories.size(), locationName);
         // ok , there's inventory in the silo location, let's get the latest one based on the inventory activity
-        InventoryActivity latestInventoryActivity =
+        List<InventoryActivity> latestInventoryActivityList =
                 inventories.stream().map(Inventory::getItem).distinct()
                 .map(item -> inventoryActivityService.findLatestActivity(location.getId(), item))
-                .sorted((o1, o2) -> o2.getActivityDateTime().compareTo(o1.getActivityDateTime()))
-                .findFirst().orElse(null);
+                        .filter(inventoryActivity -> Objects.nonNull(inventoryActivity))
+                        .collect(Collectors.toList());
 
-        if (Objects.isNull(latestInventoryActivity)) {
+        Collections.sort(latestInventoryActivityList,
+                (o1, o2) -> o2.getActivityDateTime().compareTo(o1.getActivityDateTime())) ;
+
+        if (latestInventoryActivityList.isEmpty()) {
             logger.debug("Fail to get the latest activity from location {}",
                     locationName);
             return null;
@@ -1465,9 +1525,9 @@ public class ItemService {
         else {
             logger.debug("Get the latest activity from location {}, for item {}, at {}",
                     locationName,
-                    latestInventoryActivity.getItem().getName(),
-                    latestInventoryActivity.getActivityDateTime());
-            return latestInventoryActivity.getItem();
+                    latestInventoryActivityList.get(0).getItem().getName(),
+                    latestInventoryActivityList.get(0).getActivityDateTime());
+            return latestInventoryActivityList.get(0).getItem();
 
         }
     }
@@ -1523,5 +1583,122 @@ public class ItemService {
                     "", alertParameters.toString());
             kafkaSender.send(alert);
         }
+    }
+
+    public File getThumbnail(Long id) {
+
+        Item item = findById(id);
+        if (Strings.isBlank(item.getThumbnailUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a thumbnail yet");
+        }
+
+        String thumbnailDestination =  uploadFolder +  item.getThumbnailUrl();
+        logger.debug("Will get thumbnail file from {}", thumbnailDestination);
+        return new File(thumbnailDestination);
+    }
+
+    public File getImage(Long id) {
+
+        Item item = findById(id);
+        if (Strings.isBlank(item.getImageUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a image yet");
+        }
+
+        String imageDestination =  uploadFolder +  item.getImageUrl();
+        logger.debug("Will get image file from {}", imageDestination);
+        return new File(imageDestination);
+    }
+
+    public File getWorkOrderSOP(Long id) {
+        Item item = findById(id);
+        if (Strings.isBlank(item.getWorkOrderSOPUrl())) {
+            throw ItemException.raiseException("The item " + item.getName() + " doesn't have a work order SOP yet");
+        }
+
+        String workOrderSOPDestination =  uploadFolder +  item.getWorkOrderSOPUrl();
+        logger.debug("Will get work order SOP file from {}", workOrderSOPDestination);
+        return new File(workOrderSOPDestination);
+    }
+
+
+    public Item uploadItemWorkOrderSOP(Long id, MultipartFile file) throws IOException {
+        Item item = findById(id);
+        logger.debug("Start to save item image: name: {} original fle name:  {} , content type: {}",
+                file.getName(), file.getOriginalFilename(), file.getContentType());
+
+
+        String newFileName  = item.getName() + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String workOrderSOPDestination =   uploadFolder + workOrderSOPFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName;
+
+
+        logger.debug("start to save item {}'s work order SOP to destination: {}",
+                item.getName(), workOrderSOPDestination);
+        fileService.saveFile(file, workOrderSOPDestination);
+
+        logger.debug("item {}'s work order SOP is saved to destination: {}",
+                item.getName(), workOrderSOPDestination);
+        item.setWorkOrderSOPUrl(workOrderSOPFolder  + item.getWarehouseId() + "/" + item.getId() + "/" + newFileName);
+
+
+        return saveOrUpdate(item);
+
+    }
+
+    /**
+     * Add item barcode to the item
+     * @param id
+     * @param warehouseId
+     * @param itemBarcode
+     * @return
+     */
+    public ItemBarcode addItemBarcode(Long id, Long warehouseId, ItemBarcode itemBarcode) {
+        itemBarcode.setWarehouseId(warehouseId);
+
+        Item item = findById(id, false);
+        itemBarcode.setItem(item);
+
+        return itemBarcodeService.save(itemBarcode);
+    }
+
+    /**
+     * Find item by barcode
+     * barcode can be an item name or item barcode
+     * @param companyId
+     * @param warehouseId
+     * @param barcode
+     * @param loadDetails
+     * @param clientRestriction
+     * @return
+     */
+    public List<Item> findByBarcode(Long companyId, Long warehouseId, String barcode, Boolean loadDetails, ClientRestriction clientRestriction) {
+        List<Item> items = findAll(companyId,
+                warehouseId, barcode, null,null,
+                null,null,null,null,null,null,
+          loadDetails, clientRestriction);
+
+        items.addAll(
+                itemBarcodeService.findAll(warehouseId, null, null, barcode).stream().map(
+                        itemBarcode -> itemBarcode.getItem()
+                ).collect(Collectors.toSet())
+        );
+
+        return items;
+    }
+
+    /**
+     * Mark the item as kit item
+     * @param warehouseId
+     * @param id
+     * @param billOfMaterialId
+     * @return
+     */
+    public Item createKitItem(Long warehouseId, Long id,
+                              Long billOfMaterialId) {
+        Item item = findById(id, false);
+
+        item.setBillOfMaterialId(billOfMaterialId);
+        item.setKitItemFlag(true);
+
+        return saveOrUpdate(item);
     }
 }

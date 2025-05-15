@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.resources.clients;
 
 import com.garyzhangscm.cwms.resources.PrinterConfiguration;
 import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.resources.model.Printer;
 import com.garyzhangscm.cwms.resources.model.ReportType;
 import com.garyzhangscm.cwms.resources.service.ReportHistoryService;
 import net.sf.jasperreports.engine.json.expression.filter.FilterExpression;
@@ -27,19 +28,17 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,26 +51,43 @@ public class PrintingServiceRestemplateClient  {
     @Autowired
     private PrinterConfiguration printerConfiguration;
 
-    public List<String> getPrinters() {
+    public List<Printer> getPrinters(String name, String printerType) throws URISyntaxException {
 
         String url = printerConfiguration.getUrl() + "/printers";
 
-        logger.debug("Start to get printers from {}", url);
+        logger.debug("start to get printers from the server {}, \n filter by name: {}, type {}",
+                url,
+                Strings.isBlank(name) ? "N/A" : name,
+                Strings.isBlank(printerType) ? "N/A" : name);
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .uri(new URI(url));
+        if (Strings.isNotBlank(name)) {
+            builder = builder.queryParam("name", name);
+        }
+        if (Strings.isNotBlank(printerType)) {
+            builder = builder.queryParam("printerType", printerType);
+        }
+
+        logger.debug("start to get printers from URL {}",
+                builder.toUriString());
 
         RestTemplate restTemplate = new RestTemplate();
 
 
-        List<String> printers
+        List<Printer> printers
                 = restTemplate.exchange(
-                url,
+                builder.toUriString(),
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<String>>() {}).getBody();
+                new ParameterizedTypeReference<List<Printer>>() {}).getBody();
         return printers;
 
 
     }
-    public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies) {
+    public void sendPrintingRequest(File file, ReportType reportType, String printer, int copies,
+                                    Boolean collated) {
         logger.debug("Start to send file {} to printing server: {}, copies: {}",
                 file.getName(), printerConfiguration.getUrl(), copies);
 
@@ -83,6 +99,14 @@ public class PrintingServiceRestemplateClient  {
         // if printer is specified, add printer to the parameters
         if (Strings.isNotBlank(printer)) {
             url +="&printer=" + printer;
+        }
+
+        if (Boolean.TRUE.equals(collated)) {
+            url +="&collated=true";
+        }
+        else {
+
+            url +="&collated=false";
         }
 
         HttpHeaders headers = new HttpHeaders();

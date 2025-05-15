@@ -11,6 +11,7 @@ public class UserContext {
     public static final String RF_CODE = "rfCode";
     public static final String COMPANY_ID = "companyId";
     public static final String WAREHOUSE_ID = "warehouseId";
+    public static final String USERNAME = "username";
 
     private String correlationId = new String();
     private String authToken = new String();
@@ -19,6 +20,7 @@ public class UserContext {
     private String rfCode = new String();
     private String companyId = new String();
     private String warehouseId = new String();
+    private String username = new String();
 
     public String getCorrelationId() {
         return correlationId;
@@ -74,5 +76,13 @@ public class UserContext {
 
     public void setWarehouseId(String warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

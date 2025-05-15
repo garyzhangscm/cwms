@@ -18,10 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.controller;
 
-import com.garyzhangscm.cwms.outbound.model.AllocationResult;
-import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
-import com.garyzhangscm.cwms.outbound.model.OrderLine;
-import com.garyzhangscm.cwms.outbound.model.Shipment;
+import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.service.ShipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +32,7 @@ public class ShipmentController {
 
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/shipments", method = RequestMethod.GET)
     public List<Shipment> findAllShipments(@RequestParam Long warehouseId,
                                            @RequestParam(name="number", required = false, defaultValue = "") String number,
@@ -42,8 +40,10 @@ public class ShipmentController {
                                            @RequestParam(name="stopId", required = false, defaultValue = "") Long stopId,
                                            @RequestParam(name="trailerId", required = false, defaultValue = "") Long trailerId,
                                            @RequestParam(name="withoutStopOnly", required = false, defaultValue = "") Boolean withoutStopOnly,
-                                           @RequestParam(name="shipmentStatusList", required = false, defaultValue = "") String shipmentStatusList) {
-        return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly, shipmentStatusList);
+                                           @RequestParam(name="shipmentStatusList", required = false, defaultValue = "") String shipmentStatusList,
+                                           ClientRestriction clientRestriction) {
+        return shipmentService.findAll(warehouseId, number, orderNumber, stopId, trailerId, withoutStopOnly,
+                shipmentStatusList, clientRestriction);
     }
 
     @BillableEndpoint
@@ -62,6 +62,13 @@ public class ShipmentController {
     @RequestMapping(value="/shipments/{id}", method = RequestMethod.PUT)
     public Shipment changeShipment(@RequestBody Shipment shipment){
         return shipmentService.save(shipment);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/shipments/{id}", method = RequestMethod.DELETE)
+    public Shipment cancelShipment(@RequestParam Long warehouseId,
+                                   @PathVariable Long id){
+        return shipmentService.cancelShipment(id);
     }
 
     @BillableEndpoint

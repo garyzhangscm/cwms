@@ -25,7 +25,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -36,24 +35,21 @@ import java.util.List;
 public class LayoutServiceRestemplateClient implements  InitiableServiceRestemplateClient{
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     @Cacheable(cacheNames = "ResourceService_Company", unless="#result == null")
     public Company getCompanyById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies/{id}");
 
-        ResponseBodyWrapper<Company> responseBodyWrapper
-                = restTemplate.exchange(
+        return restTemplateProxy.exchange(
+                Company.class,
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Company>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
 
     }
 
@@ -62,20 +58,20 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/companies")
                         .queryParam("code", companyCode);
 
 
-        ResponseBodyWrapper<List<Company>> responseBodyWrapper
-                = restTemplate.exchange(
+
+        List<Company> companies
+                = restTemplateProxy.exchangeList(
+                Company.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {
-                }).getBody();
+                null);
 
-        List<Company> companies = responseBodyWrapper.getData();
+
         if (companies.size() != 1) {
             return null;
         }
@@ -83,41 +79,26 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
             return companies.get(0);
         }
     }
-    public List<Company> getCompanies() {
 
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/layout/companies");
-
-        ResponseBodyWrapper<List<Company>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Company>>>() {}).getBody();
-        return responseBodyWrapper.getData();
-    }
 
     @Cacheable(cacheNames = "ResourceService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                         .queryParam("name", name);
 
 
-        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
-                = restTemplate.exchange(
+
+        List<Warehouse> warehouses
+                = restTemplateProxy.exchangeList(
+                Warehouse.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {}).getBody();
+                null);
 
-
-        List<Warehouse> warehouses = responseBodyWrapper.getData();
 
         if (warehouses.size() != 1) {
             return null;
@@ -132,21 +113,18 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Warehouse getWarehouseByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses")
                         .queryParam("companyId", companyId)
                         .queryParam("name", name);
 
 
-        ResponseBodyWrapper<List<Warehouse>> responseBodyWrapper
-                = restTemplate.exchange(
+        List<Warehouse> warehouses
+                = restTemplateProxy.exchangeList(
+                Warehouse.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Warehouse>>>() {}).getBody();
-
-
-        List<Warehouse> warehouses = responseBodyWrapper.getData();
+                null);
 
         if (warehouses.size() != 1) {
             return null;
@@ -160,54 +138,51 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Warehouse getWarehouseById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{id}");
 
-        ResponseBodyWrapper<Warehouse> responseBodyWrapper
-                = restTemplate.exchange(
+        return restTemplateProxy.exchange(
+                Warehouse.class,
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Warehouse>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
+                null
+        );
     }
 
     public String initTestData(Long companyId, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String initTestData(Long companyId, String name, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.buildAndExpand(name).toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(name).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String[] getTestDataNames() {
@@ -215,17 +190,16 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data");
 
-        ResponseBodyWrapper<String[]> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<String[]>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+        return restTemplateProxy.exchange(
+                String[].class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
 
     }
 
@@ -234,20 +208,19 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
 
-
-        ResponseBodyWrapper<Location[]> responseBodyWrapper
-                = restTemplate.exchange(
+        Location[] locations =  restTemplateProxy.exchange(
+                Location[].class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Location[]>>() {}).getBody();
+                null
+        );
 
-        Location[] locations = responseBodyWrapper.getData();
+
         if (locations.length != 1) {
             return null;
         }
@@ -259,19 +232,19 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public LocationGroup getLocationGroupByName(Long warehouseId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgroups")
                         .queryParam("name", name)
                         .queryParam("warehouseId", warehouseId);
 
-        ResponseBodyWrapper<LocationGroup[]> responseBodyWrapper
-                = restTemplate.exchange(
+
+        LocationGroup[] locationGroups =  restTemplateProxy.exchange(
+                LocationGroup[].class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroup[]>>() {}).getBody();
+                null
+        );
 
-        LocationGroup[] locationGroups = responseBodyWrapper.getData();
 
         if (locationGroups.length != 1) {
             return null;
@@ -286,18 +259,17 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public LocationGroupType getLocationGroupTypeByName(String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locationgrouptypes")
                         .queryParam("name", name);
 
-        ResponseBodyWrapper<LocationGroupType[]> responseBodyWrapper
-                = restTemplate.exchange(
+        LocationGroupType[] locationGroupTypes =  restTemplateProxy.exchange(
+                LocationGroupType[].class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<LocationGroupType[]>>() {}).getBody();
+                null
+        );
 
-        LocationGroupType[] locationGroupTypes = responseBodyWrapper.getData();
 
         if (locationGroupTypes.length != 1) {
             return null;
@@ -314,17 +286,16 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
     public Location getLocationById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/{id}");
 
-        ResponseBodyWrapper<Location> responseBodyWrapper
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                Location.class,
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Location>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
 
     }
 
@@ -336,35 +307,35 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                String.class);
-        return restExchange.getBody();
+                null
+        );
     }
 
     public Location createRFLocation(Long warehouseId, String rfCode) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/rf")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
 
-        ResponseEntity<Location> restExchange
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                Location.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                Location.class);
-        return restExchange.getBody();
+                null
+        );
     }
 
 
@@ -372,18 +343,19 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/locations/rf")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("rfCode", rfCode);
 
-        ResponseEntity<Location> restExchange
-                = restTemplate.exchange(
+
+
+        return restTemplateProxy.exchange(
+                Location.class,
                 builder.toUriString(),
                 HttpMethod.DELETE,
-                null,
-                Location.class);
-        return restExchange.getBody();
+                null
+        );
     }
 
 
@@ -392,16 +364,16 @@ public class LayoutServiceRestemplateClient implements  InitiableServiceRestempl
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouse-configuration/by-warehouse/{warehouseId}") ;
 
-        ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
-                = restTemplate.exchange(
+
+
+        return restTemplateProxy.exchange(
+                WarehouseConfiguration.class,
                 builder.buildAndExpand(warehouseId).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
     }
 }

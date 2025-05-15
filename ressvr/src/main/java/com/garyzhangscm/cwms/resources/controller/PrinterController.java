@@ -45,19 +45,22 @@ public class PrinterController {
      * Return the printers that already installed in the server
      * @return a list of printer name return from the server
      */
+    /**
     @RequestMapping(value="/server-printers", method = RequestMethod.GET)
-    public List<String> getServerPrinters(Long warehouseId,
+    public List<Printer> getServerPrinters(Long warehouseId,
                                           @RequestParam(name="printingStrategy", required = false, defaultValue = "") String printingStrategy) {
 
-        return printerService.getServerPrinters(warehouseId, printingStrategy);
+        return printerService.getPrinters(warehouseId, printingStrategy);
     }
+     **/
 
 
     @RequestMapping(value="/printers", method = RequestMethod.GET)
     public List<Printer> findAllPrinters(Long warehouseId,
+                                         @RequestParam(name="printingStrategy", required = false, defaultValue = "") String printingStrategy,
                                          @RequestParam(name="name", required = false, defaultValue = "") String name,
                                          @RequestParam(name="printerType", required = false, defaultValue = "") String printerType) {
-        return printerService.findAll(warehouseId, name, printerType);
+        return printerService.getPrinters(warehouseId, printingStrategy, name, printerType);
     }
 
     @BillableEndpoint

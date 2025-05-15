@@ -18,32 +18,17 @@
 
 package com.garyzhangscm.cwms.inventory.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.service.InventoryService;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 public class ResourceServiceRestemplateClient {
@@ -53,11 +38,11 @@ public class ResourceServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
-    @Cacheable(cacheNames = "InventoryService_User")
+    @Cacheable(cacheNames = "InventoryService_User", unless="#result == null")
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/{id}");
 /**
         ResponseBodyWrapper<User> responseBodyWrapper
@@ -78,11 +63,11 @@ public class ResourceServiceRestemplateClient {
         );
 
     }
-    @Cacheable(cacheNames = "InventoryService_User")
+    @Cacheable(cacheNames = "InventoryService_User", unless="#result == null")
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -117,7 +102,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles/{id}");
 /**
         ResponseBodyWrapper<Role> responseBodyWrapper
@@ -145,7 +130,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles")
                         .queryParam("name", name)
                         .queryParam("companyId", companyId);
@@ -183,7 +168,7 @@ public class ResourceServiceRestemplateClient {
                                         Report reportData, String locale ) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 /**
@@ -205,17 +190,47 @@ public class ResourceServiceRestemplateClient {
         );
     }
 
-
-    public String validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
+    public String printReport(Long companyId,
+                            Long warehouseId,
+                            ReportType type,
+                            String fileName,
+                            String printerName) {
+        logger.debug("start to print report with ");
+        logger.debug("# company id: {}", companyId);
+        logger.debug("# warehouse id: {}", warehouseId);
+        logger.debug("# type: {}", type);
+        logger.debug("# file name: {}", fileName);
+        logger.debug("# printer name: {}", printerName);
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/report-histories/print/{companyId}/{warehouseId}/{type}/{fileName}")
+                        .queryParam("printerName", printerName)
+                        .queryParam("copies", 1);
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(companyId, warehouseId, type, fileName).toUriString(),
+                HttpMethod.POST,
+                null
+        );
+    }
+    public String validateCSVFile(Long companyId, Long warehouseId,
+                                  String type, String headers, Boolean ignoreUnknownFields) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
@@ -230,6 +245,43 @@ public class ResourceServiceRestemplateClient {
                 String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
+                null
+        );
+
+    }
+
+
+    @Cacheable(cacheNames = "InventoryService_ArchiveConfiguration", unless="#result == null")
+    public ArchiveConfiguration getArchiveConfiguration(Long warehouseId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/archive-configuration")
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                ArchiveConfiguration.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                            String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
                 null
         );
 

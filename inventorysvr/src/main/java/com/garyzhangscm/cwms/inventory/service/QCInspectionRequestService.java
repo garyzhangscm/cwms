@@ -25,6 +25,7 @@ import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.QCInspectionRequestRepository;
 import com.garyzhangscm.cwms.inventory.repository.QCRuleConfigurationRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -231,20 +231,31 @@ public class QCInspectionRequestService {
 
         if (Objects.nonNull(qcInspectionRequest.getWorkOrderQCSampleId()) &&
                 Objects.isNull(qcInspectionRequest.getWorkOrderQCSample())) {
-            qcInspectionRequest.setWorkOrderQCSample(
-                    workOrderServiceRestemplateClient.getWorkOrderQCSampleById(
-                            qcInspectionRequest.getWorkOrderQCSampleId()
-                    )
-            );
+            try {
+                qcInspectionRequest.setWorkOrderQCSample(
+                        workOrderServiceRestemplateClient.getWorkOrderQCSampleById(
+                                qcInspectionRequest.getWorkOrderQCSampleId()
+                        )
+                );
+            }
+            catch(Exception ex) {
+                // ignore the exception
+            }
         }
 
         if (Objects.nonNull(qcInspectionRequest.getWorkOrderId()) &&
                 Objects.isNull(qcInspectionRequest.getWorkOrder())) {
-            qcInspectionRequest.setWorkOrder(
-                    workOrderServiceRestemplateClient.getWorkOrderById(
-                            qcInspectionRequest.getWorkOrderId()
-                    )
-            );
+
+            try {
+                qcInspectionRequest.setWorkOrder(
+                        workOrderServiceRestemplateClient.getWorkOrderById(
+                                qcInspectionRequest.getWorkOrderId()
+                        )
+                );
+            }
+            catch(Exception ex) {
+                // ignore the exception
+            }
         }
     }
 
@@ -290,11 +301,11 @@ public class QCInspectionRequestService {
             logger.debug("We found a qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
             // assign each rule into this inventory
-             save(setupInboundQCInspectionRequest(inventory, qcRuleConfiguration, QCInspectionRequestType.BY_INVENTORY));
+             save(setupInboundQCInspectionRequest(inventory, qcRuleConfiguration, QCInspectionRequestType.INBOUND_BY_INVENTORY));
         }
         else {
 
-            save(setupInboundQCInspectionRequest(inventory, null, QCInspectionRequestType.BY_INVENTORY));
+            save(setupInboundQCInspectionRequest(inventory, null, QCInspectionRequestType.INBOUND_BY_INVENTORY));
             logger.debug("We can't find any qc rule configuration for this inventory {} / {}",
                     inventory.getId(), inventory.getLpn());
         }
@@ -405,25 +416,27 @@ public class QCInspectionRequestService {
                 }
         );
         // change the result according
-        changeInventoryStatus(newQCInspectionRequests);
+        changeInventoryAttributeAfterQC(newQCInspectionRequests);
         return newQCInspectionRequests;
     }
 
-    private void changeInventoryStatus(List<QCInspectionRequest> qcInspectionRequests) {
+    private void changeInventoryAttributeAfterQC(List<QCInspectionRequest> qcInspectionRequests) {
         qcInspectionRequests.forEach(
                 qcInspectionRequest -> {
 
-                    changeInventoryStatus(qcInspectionRequest);
+                    changeInventoryAttributeAfterQC(qcInspectionRequest);
                 }
         );
     }
 
-    private void changeInventoryStatus(QCInspectionRequest qcInspectionRequest) {
+
+    private void changeInventoryAttributeAfterQC(QCInspectionRequest qcInspectionRequest) {
         Inventory inventory = qcInspectionRequest.getInventory();
         if (Objects.isNull(inventory)) {
             // the result is not for inventory, it may be for work order
             return;
         }
+        inventory.setLastQCTime(ZonedDateTime.now());
         if (qcInspectionRequest.getQcInspectionResult().equals(QCInspectionResult.FAIL) &&
                 Objects.nonNull(getInventoryStatusForQCFail(inventory.getWarehouseId()))) {
             inventory.setInventoryStatus(
@@ -759,5 +772,30 @@ public class QCInspectionRequestService {
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
         qcInspectionRequestRepository.processItemOverride(warehouseId,
                 oldItemId, newItemId);
+    }
+
+    public List<QCInspectionRequest> generateManualQCInspectionRequests(Inventory inventory) {
+        List<QCInspectionRequest> qcInspectionRequests = new ArrayList<>();
+
+
+        QCRuleConfiguration qcRuleConfiguration =
+                qcRuleConfigurationService.findBestMatchedQCRuleConfiguration(
+                        null, inventory
+                );
+        if (Objects.nonNull(qcRuleConfiguration)) {
+            logger.debug("We found a qc rule configuration for this inventory {} / {}",
+                    inventory.getId(), inventory.getLpn());
+            // assign each rule into this inventory
+            qcInspectionRequests.add(
+                    save(
+                            setupInboundQCInspectionRequest(inventory, qcRuleConfiguration, QCInspectionRequestType.MANUAL_BY_INVENTORY)));
+        }
+        else {
+
+            logger.debug("We can't find any qc rule configuration for this inventory {} / {}",
+                    inventory.getId(), inventory.getLpn());
+            // return save(setupInboundQCInspectionRequest(inventory, null, QCInspectionRequestType.MANUAL_BY_INVENTORY));
+        }
+        return qcInspectionRequests;
     }
 }

@@ -1,8 +1,8 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "silo_configuration")

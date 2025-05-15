@@ -20,14 +20,14 @@ package com.garyzhangscm.cwms.inventory.repository;
 
 
 import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentRequest;
-import com.garyzhangscm.cwms.inventory.model.InventoryAdjustmentThreshold;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 
 @Repository

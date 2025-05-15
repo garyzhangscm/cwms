@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.Transient;
+
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkOrderLine {
@@ -14,7 +14,7 @@ public class WorkOrderLine {
 
     private Long itemId;
 
-    @Transient
+
     private Item item;
 
     private Long expectedQuantity;

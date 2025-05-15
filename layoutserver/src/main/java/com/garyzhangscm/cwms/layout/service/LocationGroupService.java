@@ -521,4 +521,36 @@ public class LocationGroupService implements TestDataInitiableService {
                 partialLocation, fullLocation);
 
     }
+
+
+    public LocationGroup getProductionLineLocationGroup(Long warehouseId) {
+        List<LocationGroup> locationGroups = locationGroupRepository.getProductionLineLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
+
+
+    public LocationGroup getProductionLineInboundLocationGroup(Long warehouseId) {
+        List<LocationGroup> locationGroups = locationGroupRepository.getProductionLineInboundLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public LocationGroup getProductionLineOutboundLocationGroup(Long warehouseId) {
+        List<LocationGroup> locationGroups = locationGroupRepository.getProductionLineOutboundLocationGroup(warehouseId);
+        if (locationGroups.size() > 0) {
+            return locationGroups.get(0);
+        }
+        else {
+            return null;
+        }
+    }
 }

@@ -20,18 +20,12 @@ package com.garyzhangscm.cwms.inventory.model;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "inventory_configuration")
@@ -68,6 +62,29 @@ public class InventoryConfiguration extends AuditibleEntity<String> implements S
     private String newItemDefaultPackageTypeName;
     @Column(name = "new_item_default_package_type_description")
     private String newItemDefaultPackageTypeDescription;
+
+    // we will display some meaningful name in web / mobile device
+    @Column(name = "inventory_attribute_1_display_name")
+    private String inventoryAttribute1DisplayName;
+    @Column(name = "inventory_attribute_1_enabled")
+    private Boolean inventoryAttribute1Enabled;
+    @Column(name = "inventory_attribute_2_display_name")
+    private String inventoryAttribute2DisplayName;
+    @Column(name = "inventory_attribute_2_enabled")
+    private Boolean inventoryAttribute2Enabled;
+    @Column(name = "inventory_attribute_3_display_name")
+    private String inventoryAttribute3DisplayName;
+    @Column(name = "inventory_attribute_3_enabled")
+    private Boolean inventoryAttribute3Enabled;
+    @Column(name = "inventory_attribute_4_display_name")
+    private String inventoryAttribute4DisplayName;
+    @Column(name = "inventory_attribute_4_enabled")
+    private Boolean inventoryAttribute4Enabled;
+    @Column(name = "inventory_attribute_5_display_name")
+    private String inventoryAttribute5DisplayName;
+    @Column(name = "inventory_attribute_5_enabled")
+    private Boolean inventoryAttribute5Enabled;
+
 
 
     @OneToMany(
@@ -157,5 +174,85 @@ public class InventoryConfiguration extends AuditibleEntity<String> implements S
 
     public void setItemDefaultPackageUOMS(List<ItemDefaultPackageUOM> itemDefaultPackageUOMS) {
         this.itemDefaultPackageUOMS = itemDefaultPackageUOMS;
+    }
+
+    public String getInventoryAttribute1DisplayName() {
+        return inventoryAttribute1DisplayName;
+    }
+
+    public void setInventoryAttribute1DisplayName(String inventoryAttribute1DisplayName) {
+        this.inventoryAttribute1DisplayName = inventoryAttribute1DisplayName;
+    }
+
+    public String getInventoryAttribute2DisplayName() {
+        return inventoryAttribute2DisplayName;
+    }
+
+    public void setInventoryAttribute2DisplayName(String inventoryAttribute2DisplayName) {
+        this.inventoryAttribute2DisplayName = inventoryAttribute2DisplayName;
+    }
+
+    public String getInventoryAttribute3DisplayName() {
+        return inventoryAttribute3DisplayName;
+    }
+
+    public void setInventoryAttribute3DisplayName(String inventoryAttribute3DisplayName) {
+        this.inventoryAttribute3DisplayName = inventoryAttribute3DisplayName;
+    }
+
+    public String getInventoryAttribute4DisplayName() {
+        return inventoryAttribute4DisplayName;
+    }
+
+    public void setInventoryAttribute4DisplayName(String inventoryAttribute4DisplayName) {
+        this.inventoryAttribute4DisplayName = inventoryAttribute4DisplayName;
+    }
+
+    public String getInventoryAttribute5DisplayName() {
+        return inventoryAttribute5DisplayName;
+    }
+
+    public void setInventoryAttribute5DisplayName(String inventoryAttribute5DisplayName) {
+        this.inventoryAttribute5DisplayName = inventoryAttribute5DisplayName;
+    }
+
+    public Boolean getInventoryAttribute1Enabled() {
+        return inventoryAttribute1Enabled;
+    }
+
+    public void setInventoryAttribute1Enabled(Boolean inventoryAttribute1Enabled) {
+        this.inventoryAttribute1Enabled = inventoryAttribute1Enabled;
+    }
+
+    public Boolean getInventoryAttribute2Enabled() {
+        return inventoryAttribute2Enabled;
+    }
+
+    public void setInventoryAttribute2Enabled(Boolean inventoryAttribute2Enabled) {
+        this.inventoryAttribute2Enabled = inventoryAttribute2Enabled;
+    }
+
+    public Boolean getInventoryAttribute3Enabled() {
+        return inventoryAttribute3Enabled;
+    }
+
+    public void setInventoryAttribute3Enabled(Boolean inventoryAttribute3Enabled) {
+        this.inventoryAttribute3Enabled = inventoryAttribute3Enabled;
+    }
+
+    public Boolean getInventoryAttribute4Enabled() {
+        return inventoryAttribute4Enabled;
+    }
+
+    public void setInventoryAttribute4Enabled(Boolean inventoryAttribute4Enabled) {
+        this.inventoryAttribute4Enabled = inventoryAttribute4Enabled;
+    }
+
+    public Boolean getInventoryAttribute5Enabled() {
+        return inventoryAttribute5Enabled;
+    }
+
+    public void setInventoryAttribute5Enabled(Boolean inventoryAttribute5Enabled) {
+        this.inventoryAttribute5Enabled = inventoryAttribute5Enabled;
     }
 }

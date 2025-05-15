@@ -18,21 +18,15 @@
 
 package com.garyzhangscm.cwms.layout.clients;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.layout.model.FileUploadType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Objects;
 
 
 @Component
@@ -41,43 +35,52 @@ public class ResourceServiceRestemplateClient {
     private static final Logger logger = LoggerFactory.getLogger(ResourceServiceRestemplateClient.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
-
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private RestTemplateProxy restTemplateProxy;
 
 
-    public String validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
+    public String validateCSVFile(Long companyId, Long warehouseId,
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplateProxy.getRestTemplate().exchange(
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
+
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
 
     }
 
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
+
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                            String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
     }
 
 }

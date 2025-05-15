@@ -20,9 +20,11 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.repository.WaveRepository;
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -39,6 +42,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -73,11 +77,16 @@ public class WaveService {
     private ShipmentLineService shipmentLineService;
 
     @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
+
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     @Autowired
     private BulkPickConfigurationService bulkPickConfigurationService;
@@ -107,10 +116,11 @@ public class WaveService {
                               ZonedDateTime endTime,
                               LocalDate date,
                               Boolean includeCompletedWave,
-                              Boolean includeCancelledWave) {
+                              Boolean includeCancelledWave,
+                              String ids ) {
         return findAll(warehouseId, number, waveStatus,
                 startTime, endTime, date, includeCompletedWave,
-                includeCancelledWave,
+                includeCancelledWave, ids,
                 true);
     }
 
@@ -122,6 +132,7 @@ public class WaveService {
                               LocalDate date,
                               Boolean includeCompletedWave,
                               Boolean includeCancelledWave,
+                              String ids,
                               boolean loadAttribute) {
         List<Wave> waves
             = waveRepository.findAll(
@@ -130,6 +141,14 @@ public class WaveService {
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inWaveIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : ids.split(",")) {
+                            inWaveIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inWaveIds));
+                    }
                     if (Strings.isNotBlank(number)) {
                         if (number.contains("*")) {
 
@@ -297,7 +316,7 @@ public class WaveService {
                 shipmentLine -> {
                     List<Long> pickIds = shipmentLine.getPicks().stream().map(pick -> pick.getId()).collect(Collectors.toList());
                     pickIds.forEach(
-                            pickId -> pickService.cancelPick(pickId, false, false)
+                            pickId -> pickService.cancelPick(pickId, false, false, false, false)
                     );
                     logger.debug("picks for the shipment line {} / {} has been cancelled",
                             shipmentLine.getShipment().getNumber(),
@@ -366,7 +385,7 @@ public class WaveService {
 
     // Plan a list of order lines into a wave
     @Transactional
-    public Wave planWave(Long warehouseId, String waveNumber, List<Long> orderLineIds) {
+    public Wave planWaveByOrderLines(Long warehouseId, String waveNumber, List<Long> orderLineIds, String comment) {
 
         if (StringUtils.isBlank(waveNumber)) {
             waveNumber = getNextWaveNumber(warehouseId);
@@ -378,6 +397,7 @@ public class WaveService {
         if (Objects.isNull(wave)) {
             wave = new Wave();
             wave.setNumber(waveNumber);
+            wave.setComment(comment);
             wave.setStatus(WaveStatus.PLANED);
             wave.setWarehouseId(warehouseId);
             wave = save(wave);
@@ -396,6 +416,46 @@ public class WaveService {
         logger.debug(">> The wave has {} shipment lines", wave.getShipmentLines().size());
 
         return wave;
+
+    }
+
+    @Transactional
+    public Wave planWaveByShipmentLines(Long warehouseId, String waveNumber, List<Long> shipmentLineIds, String comment) {
+
+        if (StringUtils.isBlank(waveNumber)) {
+            waveNumber = getNextWaveNumber(warehouseId);
+            logger.debug(">> wave number is not passed in during plan wave, auto generated number: {}", waveNumber);
+        }
+
+        logger.debug(">> Start to plan {} shipment lines into wave # {}", shipmentLineIds.size(), waveNumber);
+        Wave wave = findByNumber(warehouseId, waveNumber);
+        if (Objects.isNull(wave)) {
+            wave = new Wave();
+            wave.setNumber(waveNumber);
+            wave.setComment(comment);
+            wave.setStatus(WaveStatus.PLANED);
+            wave.setWarehouseId(warehouseId);
+            wave = save(wave);
+        }
+        List<ShipmentLine> shipmentLines = shipmentLineService.findByShipmentLineIds(warehouseId,
+                shipmentLineIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+        // make sure non of the shipment has been planned into any wave yet
+        for(ShipmentLine shipmentLine : shipmentLines) {
+            if (Objects.nonNull(shipmentLine.getWave()) &&
+                    !shipmentLine.getWave().getNumber().equals(waveNumber)) {
+                throw ShippingException.raiseException("shipment line " + shipmentLine.getShipment() +
+                        " / " + shipmentLine.getNumber() + " already planned into wave " +
+                        shipmentLine.getWave().getNumber() + ", can't plan it into another wave " + waveNumber);
+            }
+        }
+        for(ShipmentLine shipmentLine : shipmentLines) {
+            shipmentLineService.planShipmentLineIntoWave(shipmentLine, wave);
+        }
+
+
+        // refresh the wave with new shipment lines
+        return findById(wave.getId());
 
     }
 
@@ -450,50 +510,141 @@ public class WaveService {
         }
     }
 
-    public List<Order> findWaveCandidate(Long warehouseId, String orderNumber,
+    public List<Order> findWaveableOrdersCandidate(Long warehouseId, String orderNumber,
                                          Long clientId,
                                          String customerName, Long customerId,
-                                         ZonedDateTime startCreatedTime,
-                                         ZonedDateTime endCreatedTime,
-                                         LocalDate specificCreatedDate,
+                                                   String startCreatedTime,
+                                                   String endCreatedTime,
+                                                   String specificCreatedDate,
                                          Boolean singleOrderLineOnly,
                                          Boolean singleOrderQuantityOnly,
                                          Boolean singleOrderCaseQuantityOnly,
                                          ClientRestriction clientRestriction
     ) {
 
-        return orderService.findWavableOrders(warehouseId, orderNumber, clientId,
+        return orderService.findWaveableOrdersCandidate(warehouseId, orderNumber, clientId,
                 customerName, customerId, startCreatedTime, endCreatedTime,
                 specificCreatedDate,
                 singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
                 clientRestriction, MAX_ORDER_PER_WAVE);
     }
 
-    public Wave allocateWave(Long id) {
-        return allocateWave(findById(id));
-    }
-    public Wave allocateWave(Wave wave) {
+    public List<Shipment> findWaveableShipmentsCandidate(Long warehouseId, String orderNumber,
+                                                  Long clientId,
+                                                  String customerName, Long customerId,
+                                                  ZonedDateTime startCreatedTime,
+                                                  ZonedDateTime endCreatedTime,
+                                                  LocalDate specificCreatedDate,
+                                                  Boolean singleOrderLineOnly,
+                                                  Boolean singleOrderQuantityOnly,
+                                                  Boolean singleOrderCaseQuantityOnly,
+                                                  ClientRestriction clientRestriction
+    ) {
 
-        // Allocate each open shipment line
+        return shipmentService.findWaveableShipmentsCandidate(warehouseId, orderNumber, clientId,
+                customerName, customerId, startCreatedTime, endCreatedTime,
+                specificCreatedDate,
+                singleOrderLineOnly, singleOrderQuantityOnly, singleOrderCaseQuantityOnly,
+                clientRestriction, MAX_ORDER_PER_WAVE);
+    }
+
+    public Wave allocateWave(Long id, Boolean asynchronous) {
+        return allocateWave(findById(id), asynchronous);
+    }
+    public Wave allocateWave(Wave wave, Boolean asynchronous) {
+
+
+        logger.debug(">>>    Start to allocate wave  {} ,asynchronous? : {}  <<<",
+                wave.getNumber(), asynchronous);
+
+        if (wave.getStatus().equals(WaveStatus.ALLOCATING)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is allocating, please wait for it to complete");
+        }
+        if (wave.getStatus().equals(WaveStatus.CANCELLED)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is already cancelled, can't allocate it");
+        }
+        if (wave.getStatus().equals(WaveStatus.COMPLETED)) {
+
+            throw OrderOperationException.raiseException("Wave " + wave.getNumber() + " is already completed, can't allocate it");
+        }
+
+        List<ShipmentLine> allocatableShipmentLines =
+                wave.getShipmentLines().stream().filter(
+                        shipmentLine -> shipmentLineService.isAllocatable(shipmentLine) && shipmentLine.getOpenQuantity() > 0 )
+                        .collect(Collectors.toList());
+
+        wave.setStatus(WaveStatus.ALLOCATING);
+        saveOrUpdate(wave);
+
+        // check if we will need to allocate asynchronously
+        // 1. if the client explicitly want asynchronous
+        // 2. if the warehouse is configured to allocate asynchronously
+        if (Objects.isNull(asynchronous)) {
+            // TO-DO: Will need to use pallet quantity instead of quantity
+            long totalPalletQuantity = allocatableShipmentLines.stream().map(
+                    shipmentLine -> orderLineService.getPalletQuantityEstimation(
+                            shipmentLine.getOrderLine(), shipmentLine.getOpenQuantity()
+                    )
+            ).mapToLong(Long::longValue).sum();
+
+            asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
+                    wave.getWarehouseId(), totalPalletQuantity);
+        }
+
+
+        logger.debug("allocate wave {} Asynchronously or Synchronously? {}",
+                wave.getNumber(),
+                Boolean.TRUE.equals(asynchronous) ? "Asynchronously" : "Synchronously");
+
+        if (Boolean.TRUE.equals(asynchronous)) {
+            new Thread(() -> {
+
+                logger.debug("start to allocate the wave asynchronously");
+                Wave finalWave = findById(wave.getId());
+                allocateWave(finalWave, allocatableShipmentLines);
+
+                logger.debug("Asynchronously wave allocation for {} is done",
+                        finalWave.getNumber());
+
+
+            }).start();
+        }
+        else {
+            // Allocate each open shipment line
+            allocateWave(wave, allocatableShipmentLines);
+            logger.debug("Synchronously wave allocation for {} is done",
+                    wave.getNumber());
+
+        }
+        return saveOrUpdate(wave);
+
+    }
+
+    private Wave allocateWave(Wave wave, List<ShipmentLine> allocatableShipmentLines) {
+
         List<AllocationResult> allocationResults = new ArrayList<>();
-        wave.getShipmentLines().forEach(shipmentLine -> {
+        allocatableShipmentLines.forEach(shipmentLine -> {
             allocationResults.add(shipmentLineService.allocateShipmentLine(shipmentLine));
         });
 
         wave.setStatus(WaveStatus.ALLOCATED);
 
         // return the latest information
-        wave = save(wave);
+        wave = saveOrUpdate(wave);
 
         // post allocation process
         // 1. bulk pick
         // 2. list pick
         // 3. release picks into work task
+        logger.debug("wave is allocated and picks are generated, let's see if we need to group them into" +
+                " bulk or list and release");
         postAllocationProcess(wave.getWarehouseId(),
                 wave.getNumber(),  allocationResults);
 
-        logger.debug("Wave {} is allocated", wave.getNumber());
-        return wave;
+        logger.debug("wave is allocated!");
+        return saveOrUpdate(wave);
     }
 
     /**
@@ -506,10 +657,12 @@ public class WaveService {
                                        String waveNumber,
                                        List<AllocationResult> allocationResults) {
         // we will always try bulk pick first
+        logger.debug("Let's see if we will need to group the picks into bulk");
         requestBulkPick(warehouseId, waveNumber, allocationResults);
 
         // for anything that not fall in the bulk pick, see if we can group them into
         // a list pick
+        logger.debug("Let's see if we will need to group the picks into list");
         processListPick(warehouseId, waveNumber, allocationResults);
 
         releaseSinglePicks(warehouseId, waveNumber, allocationResults);
@@ -541,7 +694,7 @@ public class WaveService {
                             Objects.isNull(pick.getBulkPick()) &&
                             Objects.isNull(pick.getCartonization()) &&
                             Objects.isNull(pick.getWorkTaskId()) &&
-                            !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
+                            // !Boolean.TRUE.equals(pick.getWholeLPNPick()) &&
                             pick.getPickedQuantity() == 0
                  )
                 .forEach(
@@ -661,4 +814,1063 @@ public class WaveService {
         return wave;
     }
 
+    public ReportHistory generateWavePickReport(Long waveId, String locale) {
+        return generateWavePickReport(findById(waveId), locale);
+}
+    public ReportHistory generateWavePickReport(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWavePickReportParameters(
+                reportData, wave
+        );
+        setupWavePickReportData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PICK_SHEET_BY_LOCATION, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+
+    private void setupWavePickReportParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+
+    private void setupWavePickReportData(Report report, Wave wave) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByWave(wave);
+
+        // sort the pick so that we can group picks with same attribute from same location
+        // together for manual bulk pick
+        Collections.sort(picks, (a, b) -> {
+
+            String inventoryAttributeA = new StringBuilder()
+                    .append(a.getSourceLocation().getPickSequence()).append("-")
+                    .append(a.getItemId()).append("-")
+                    .append(Strings.isBlank(a.getStyle()) ? "____" : a.getStyle()).append("-")
+                    .append(Strings.isBlank(a.getColor()) ? "____" : a.getColor()).append("-")
+                    .append(Strings.isBlank(a.getProductSize()) ? "____" : a.getProductSize()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute1()) ? "____" : a.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute2()) ? "____" : a.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute3()) ? "____" : a.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute4()) ? "____" : a.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(a.getInventoryAttribute5()) ? "____" : a.getInventoryAttribute5()).append("-")
+                    .toString();
+
+            String inventoryAttributeB = new StringBuilder()
+                    .append(b.getSourceLocation().getPickSequence()).append("-")
+                    .append(b.getItemId()).append("-")
+                    .append(Strings.isBlank(b.getStyle()) ? "____" : b.getStyle()).append("-")
+                    .append(Strings.isBlank(b.getColor()) ? "____" : b.getColor()).append("-")
+                    .append(Strings.isBlank(b.getProductSize()) ? "____" : b.getProductSize()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute1()) ? "____" : b.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute2()) ? "____" : b.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute3()) ? "____" : b.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute4()) ? "____" : b.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(b.getInventoryAttribute5()) ? "____" : b.getInventoryAttribute5()).append("-")
+                    .toString();
+            return inventoryAttributeA.compareTo(inventoryAttributeB);
+        });
+
+        // whether we add an empty line between pick groups
+        // pick groups are group of picks that can be bulk picked
+        boolean addSummeryLineBetweenPickGroup = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, String> quantityPerCaseMap = new HashMap<>();
+        Map<String, String> quantityPerPackMap = new HashMap<>();
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        List<Pick> results = new ArrayList<>();
+        String lastKey = "";
+        // Setup display field
+        for (Pick pick : picks) {
+            totalUnitQuantity += pick.getQuantity();
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = new StringBuilder()
+                    .append(pick.getSourceLocationId()).append("-")
+                    .append(pick.getItemId()).append("-")
+                    .append(Strings.isBlank(pick.getStyle()) ? "____" : pick.getStyle()).append("-")
+                    .append(Strings.isBlank(pick.getColor()) ? "____" : pick.getColor()).append("-")
+                    .append(Strings.isBlank(pick.getProductSize()) ? "____" : pick.getProductSize()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "____" : pick.getInventoryAttribute1()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "____" : pick.getInventoryAttribute2()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "____" : pick.getInventoryAttribute3()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "____" : pick.getInventoryAttribute4()).append("-")
+                    .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "____" : pick.getInventoryAttribute5()).append("-");
+
+            // get the value of quantity per case by the pickable inventory from the source location
+            // and save it temporary
+            String key = inventoryAttribute.toString();
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                Long totalQuantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+
+                if (addSummeryLineBetweenPickGroup) {
+                    // everytime we started a new pick group, add a empty line
+                    Pick summeryPick = getSummeryPickDataForWavePickSheet(totalQuantity,
+                            quantityPerCaseMap.getOrDefault(lastKey, ""),
+                            quantityPerPackMap.getOrDefault(lastKey, ""),
+                            decimalFormat
+                            );
+
+                    results.add(summeryPick);
+                    // emptyPick.setQuantity(0l);
+
+                    lastKey = key;
+                }
+            }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            totalQuantityMap.put(key, quantity + pick.getQuantity());
+
+
+            String quantityPerCase = quantityPerCaseMap.getOrDefault(key, "");
+            String quantityPerPack = quantityPerPackMap.getOrDefault(key, "");
+
+            if (Strings.isBlank(quantityPerCase) || Strings.isBlank(quantityPerPack)) {
+                // get the case and pack quantity from the inventory
+
+                Pair<String, String> casePackQuantity
+                        = getQuantityPerCaseAndQuantityPerPackForWavePickSheet(pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
+                        pick.getColor(), pick.getProductSize(),
+                        pick.getStyle(),
+                        pick.getInventoryAttribute1(),
+                        pick.getInventoryAttribute2(),
+                        pick.getInventoryAttribute3(),
+                        pick.getInventoryAttribute4(),
+                        pick.getInventoryAttribute5());
+
+                quantityPerCase = casePackQuantity.getFirst();
+                quantityPerPack = casePackQuantity.getSecond();
+
+            }
+            quantityPerCaseMap.put(key, quantityPerCase);
+            quantityPerPackMap.put(key, quantityPerPack);
+
+            pick.setQuantityPerCase(quantityPerCase);
+            pick.setQuantityPerPack(quantityPerPack);
+            logger.debug("key {}'s quantity per case: {}, quantity per pack: {}",
+                    key, quantityPerCase, quantityPerPack);
+            int quantityPerCaseNumber = 0;
+            int quantityPerPackNumber = 0;
+            try {
+
+                quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
+                if (pick.getQuantity() % quantityPerCaseNumber == 0) {
+
+                    pick.setCaseQuantity(String.valueOf(pick.getQuantity() / quantityPerCaseNumber));
+                } else {
+
+                    pick.setCaseQuantity(decimalFormat.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerCase)));
+                }
+                totalCaseQuantity += (pick.getQuantity() * 1.0 / quantityPerCaseNumber);
+            } catch (NumberFormatException ex) {
+                // if we can't pass the quantityPerCase to number, it normally means the location is
+                // mixed of different case quantity , so we can't calculate how many cases we will need
+                // for the pick
+                pick.setCaseQuantity("");
+            }
+            try {
+
+                quantityPerPackNumber = Integer.parseInt(quantityPerPack);
+                if (pick.getQuantity() % quantityPerPackNumber == 0) {
+
+                    pick.setPackQuantity(String.valueOf(pick.getQuantity() / quantityPerPackNumber));
+                } else {
+
+                    pick.setPackQuantity(decimalFormat.format(pick.getQuantity() * 1.0 / Integer.parseInt(quantityPerPack)));
+                }
+                logger.debug("pick {}'s pack quantity is setup to {}",
+                        pick.getNumber(), pick.getPackQuantity());
+
+            } catch (NumberFormatException ex) {
+                // if we can't pass the quantityPerPack to number, it normally means the location is
+                // mixed of different Pack quantity , so we can't calculate how many packs we will need
+                // for the pick
+                pick.setPackQuantity("");
+            }
+
+            if (quantityPerCaseNumber > 0 && quantityPerPackNumber > 0) {
+
+                if (quantityPerCaseNumber % quantityPerPackNumber == 0) {
+
+                    pick.setPackPerCase(String.valueOf(quantityPerCaseNumber / quantityPerPackNumber));
+                }
+                else {
+                    pick.setPackPerCase(decimalFormat.format(quantityPerCaseNumber * 1.0 / quantityPerPackNumber));
+                }
+            }
+            results.add(pick);
+
+
+        }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLineBetweenPickGroup) {
+
+            Long totalQuantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+
+            // everytime we started a new pick group, add a empty line
+            Pick summeryPick = getSummeryPickDataForWavePickSheet(totalQuantity,
+                    quantityPerCaseMap.getOrDefault(lastKey, ""),
+                    quantityPerPackMap.getOrDefault(lastKey, ""),
+                    decimalFormat
+            );
+
+            results.add(summeryPick);
+        }
+
+
+        report.setData(results);
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
+    }
+
+    /**
+     * Get the summeray of the picks from a list pick and fill in the report
+     * @param totalQuantity
+     * @param quantityPerCase
+     * @param quantityPerPack
+     * @return
+     */
+    private Pick getSummeryPickDataForWavePickSheet(Long totalQuantity, String quantityPerCase, String quantityPerPack,
+                                                    DecimalFormat decimalFormat) {
+
+        Pick summeryPick = new Pick();
+        summeryPick.setSourceLocation(new Location());
+        summeryPick.setQuantity(totalQuantity);
+        try {
+
+            int quantityPerCaseNumber = Integer.parseInt(quantityPerCase);
+            if (totalQuantity % quantityPerCaseNumber == 0) {
+
+                summeryPick.setCaseQuantity(String.valueOf(totalQuantity / quantityPerCaseNumber));
+            } else {
+
+                summeryPick.setCaseQuantity(decimalFormat.format(totalQuantity * 1.0 / quantityPerCaseNumber));
+            }
+        } catch (NumberFormatException ex) {
+            // if we can't pass the quantityPerCase to number, it normally means the location is
+            // mixed of different case quantity , so we can't calculate how many cases we will need
+            // for the pick
+            summeryPick.setCaseQuantity("");
+        }
+        try {
+
+            int quantityPerPackNumber = Integer.parseInt(quantityPerPack);
+            if (totalQuantity % quantityPerPackNumber == 0) {
+
+                summeryPick.setPackQuantity(String.valueOf(totalQuantity / quantityPerPackNumber));
+            } else {
+
+                summeryPick.setPackQuantity(decimalFormat.format(totalQuantity * 1.0 / quantityPerPackNumber));
+            }
+        } catch (NumberFormatException ex) {
+            // if we can't pass the quantityPerCase to number, it normally means the location is
+            // mixed of different case quantity , so we can't calculate how many cases we will need
+            // for the pick
+            summeryPick.setPackQuantity("");
+        }
+        return summeryPick;
+    }
+
+    private Pair<String, String> getQuantityPerCaseAndQuantityPerPackForWavePickSheet(
+            Long itemId, Long inventoryStatusId, Long sourceLocationId, String color, String productSize, String style,
+            String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3, String inventoryAttribute4,
+            String inventoryAttribute5) {
+
+        List<Inventory> inventoryList = inventoryServiceRestemplateClient.getPickableInventory(
+                itemId, inventoryStatusId, sourceLocationId, color, productSize, style,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3, inventoryAttribute4,
+                inventoryAttribute5,
+                "", null);
+        logger.debug("Get a list of pickable inventory for printing wave pick sheet with item id {} and location id {}",
+                itemId, sourceLocationId);
+
+        if (inventoryList.isEmpty()) {
+            return Pair.of("", "");
+        }
+        Long caseQuantity = 0l;
+        Long packQuantity = 0l;
+
+        String caseQuantityString = "";
+        String packQuantityString = "";
+
+        for (Inventory inventory : inventoryList) {
+            logger.debug(inventory.toString());
+
+            if (Objects.nonNull(inventory.getItemPackageType())){
+                if (Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure())) {
+                    if (caseQuantity.equals(0l)) {
+                        caseQuantity = inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+                        caseQuantityString = String.valueOf(caseQuantity);
+                    } else if (!caseQuantity.equals(inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity())) {
+                        caseQuantityString = "MIXED";
+                    }
+                }
+
+                if (Objects.nonNull(inventory.getItemPackageType().getPackItemUnitOfMeasure())) {
+                    logger.debug("item {} / {}, item package type {} / {}'s pack unit of measure is {}",
+                            inventory.getItem().getId(),
+                            inventory.getItem().getName(),
+                            inventory.getItemPackageType().getId(),
+                            inventory.getItemPackageType().getName(),
+                            inventory.getItemPackageType().getPackItemUnitOfMeasure().getId());
+                    if (packQuantity.equals(0l)) {
+                        packQuantity = inventory.getItemPackageType().getPackItemUnitOfMeasure().getQuantity();
+                        packQuantityString = String.valueOf(packQuantity);
+                    } else if (!packQuantity.equals(inventory.getItemPackageType().getPackItemUnitOfMeasure().getQuantity())) {
+                        packQuantityString = "MIXED";
+                    }
+                }
+            }
+        }
+        return Pair.of(caseQuantityString, packQuantityString);
+    }
+
+
+    public ReportHistory generateWavePackingSlip(Long waveId, String locale) {
+        return generateWavePackingSlip(findById(waveId), locale);
+    }
+    public ReportHistory generateWavePackingSlip(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWavePackingSlipParameters(
+                reportData, wave
+        );
+        setupWavePackingSlipData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the Packing Slip report with locale: {}",
+                locale);
+        logger.debug("####  Packing Slip Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PACKING_SLIP, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+    public ReportHistory generatePrePrintWavePackingSlip(Long waveId, String locale) {
+        return generatePrePrintWavePackingSlip(findById(waveId), locale);
+    }
+    public ReportHistory generatePrePrintWavePackingSlip(Wave wave, String locale){
+        Long warehouseId = wave.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupPrePrintWavePackingSlipParameters(
+                reportData, wave
+        );
+        setupPrePrintWavePackingSlipData(
+                reportData, wave
+        );
+
+        logger.debug("will call resource service to print the Packing Slip report with locale: {}",
+                locale);
+        logger.debug("####  Packing Slip Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WAVE_PACKING_SLIP, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+    }
+
+
+    private void setupWavePackingSlipParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+    private void setupPrePrintWavePackingSlipParameters(
+            Report report, Wave wave) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("waveNumber", wave.getNumber());
+
+
+    }
+
+    public List<Inventory> getStagedInventory(Long id) {
+        return getStagedInventory(findById(id));
+    }
+    private List<Inventory> getStagedInventory(Wave wave) {
+
+        List<Inventory> pickedInventories =
+                getPickedInventory(wave);
+
+        // load the location since we will need to check if the location
+        // is a staging location
+        pickedInventories.forEach(
+                inventory -> {
+                    if(Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+                        inventory.setLocation(
+                                warehouseLayoutServiceRestemplateClient.getLocationById(
+                                        inventory.getLocationId()
+                                )
+                        );
+                    }
+                }
+        );
+        // only return the picked inventory that is already in stage
+        return pickedInventories.stream()
+                .filter(inventory -> inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())
+                .collect(Collectors.toList());
+
+
+    }
+    public List<Inventory> getPickedInventory(Wave wave) {
+
+        return getPickedInventory(wave, null);
+
+    }
+    public List<Inventory> getPickedInventory(Wave wave, Long locationId) {
+
+        // set data to be all picks
+        List<Pick> picks = pickService.findByWave(wave).stream().filter(
+                pick -> pick.getPickedQuantity() > 0
+        ).collect(Collectors.toList());
+
+        if (picks.size() == 0) {
+            return new ArrayList<>();
+        }
+        return inventoryServiceRestemplateClient.getPickedInventory(wave.getWarehouseId(), picks, null, locationId);
+
+    }
+    private void setupWavePackingSlipData(Report report, Wave wave) {
+        List<Inventory> stagedInventories = getStagedInventory(wave);
+        if (stagedInventories.isEmpty()) {
+            throw OrderOperationException.raiseException("There's nothing staged yet for wave " +
+                    wave.getNumber() + ", please pick and stage first");
+        }
+
+        List<Pick> picks = pickService.findByWave(wave);
+        // save the mapping between pick and order number so that we can show
+        // order number in the packing slip report
+        // KEY: pick id
+        // value: order number
+        Map<Long, String> pickOrderNumberMap = new HashMap<>();
+        picks.forEach(
+                pick -> pickOrderNumberMap.put(pick.getId(), pick.getOrderNumber())
+        );
+
+        // setup the order number so we can group and sum the quantity by order and attribute
+        for (Inventory inventory : stagedInventories) {
+            // setup the order number for display
+            if (Objects.nonNull(inventory.getPickId())) {
+                inventory.setOrderNumber(pickOrderNumberMap.getOrDefault(inventory.getPickId(), ""));
+            }
+        }
+
+        // group the inventory quantity by order and inventory attribute
+        Map<String, Inventory> groupedInventoryMap = new HashMap<>();
+        for (Inventory inventory : stagedInventories) {
+
+            String key = new StringBuilder()
+                    .append(Strings.isBlank(inventory.getOrderNumber()) ? "____" : inventory.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(inventory))
+                    .toString();
+            Inventory groupedInventory = groupedInventoryMap.getOrDefault(key, new Inventory());
+            groupedInventory.copyAttribute(inventory);
+            groupedInventory.setQuantity(groupedInventory.getQuantity() + inventory.getQuantity());
+            groupedInventory.setCaseQuantity(groupedInventory.getCaseQuantity() + inventory.getCaseQuantity());
+            groupedInventory.setPackQuantity(groupedInventory.getPackQuantity() + inventory.getPackQuantity());
+            groupedInventory.setOrderNumber(inventory.getOrderNumber());
+
+            // if the groupped inventory's quantity per case is empty
+            // or is smaller than the currnet inventory, then reset it with current inventory's quantity per case
+            if (Objects.nonNull(inventory.getQuantityPerCase()) &&
+                    (Objects.isNull(groupedInventory.getQuantityPerCase()) ||
+                            groupedInventory.getQuantityPerCase() < inventory.getQuantityPerCase())) {
+                groupedInventory.setQuantityPerCase(inventory.getQuantityPerCase());
+            }
+
+            groupedInventoryMap.put(key, groupedInventory);
+        }
+        List<Inventory> groupedInventoryList = new ArrayList<>(groupedInventoryMap.values());
+
+
+        // sort the pick so that we can group inventory
+        // picked   with same attribute
+        Collections.sort(groupedInventoryList, (a, b) -> {
+
+            String inventoryAttributeA = new StringBuilder()
+                    .append(Strings.isBlank(a.getOrderNumber()) ? "____" : a.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(a))
+                    .toString();
+
+            String inventoryAttributeB = new StringBuilder()
+                    .append(Strings.isBlank(b.getOrderNumber()) ? "____" : b.getOrderNumber()).append("-")
+                    .append(getInventoryAttributeKey(b))
+                    .toString();
+            return inventoryAttributeA.compareTo(inventoryAttributeB);
+        });
+        logger.debug("===== after sort, we have groupped inventory   =======");
+        for (Inventory inventory : groupedInventoryList) {
+            logger.debug("=> order = {}, po = {}, style = {}, color = {}, case quantity = {}",
+                    inventory.getOrderNumber(),
+                    inventory.getAttribute1(),
+                    inventory.getStyle(),
+                    inventory.getColor(),
+                    inventory.getCaseQuantity());
+
+
+        }
+
+
+        // whether we add an empty line between pick groups
+        // pick groups are group of picks that can be bulk picked
+        boolean addSummeryLineBetweenPickGroup = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+        Map<String, Double> totalCaseQuantityMap = new HashMap<>();
+        Map<String, Double> totalPackQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        List<Inventory> results = new ArrayList<>();
+        String lastKey = "";
+        // Setup display field
+        for (Inventory inventory : groupedInventoryList) {
+            // total unit quantity and case quantity for all inventory
+            totalUnitQuantity += inventory.getQuantity();
+            totalCaseQuantity += inventory.getCaseQuantity();
+            // setup the order number for display
+            if (Objects.nonNull(inventory.getPickId())) {
+                inventory.setOrderNumber(pickOrderNumberMap.getOrDefault(inventory.getPickId(), ""));
+            }
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = getInventoryAttributeKey(inventory);
+
+            // get the value of quantity per case by the inventory from
+            String key = inventoryAttribute.toString();
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+                Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+                Double packQuantity = totalPackQuantityMap.getOrDefault(lastKey, 0.0);
+
+                if (addSummeryLineBetweenPickGroup) {
+                    // everytime we started a new pick group, add a empty line
+                    Inventory summeryInventory = new Inventory();
+                    summeryInventory.setQuantity(quantity);
+                    summeryInventory.setCaseQuantity(caseQuantity);
+                    summeryInventory.setPackQuantity(packQuantity);
+                    summeryInventory.setItemPackageType(new ItemPackageType());
+
+                    results.add(summeryInventory);
+
+                    lastKey = key;
+                }
+            }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(key, 0.0);
+            Double packQuantity = totalPackQuantityMap.getOrDefault(key, 0.0);
+
+            totalQuantityMap.put(key, quantity + inventory.getQuantity());
+            totalCaseQuantityMap.put(key, caseQuantity + inventory.getCaseQuantity());
+            totalPackQuantityMap.put(key, packQuantity + inventory.getPackQuantity());
+
+            results.add(inventory);
+
+
+        }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLineBetweenPickGroup) {
+
+            Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+            Double packQuantity = totalPackQuantityMap.getOrDefault(lastKey, 0.0);
+
+            Inventory summeryInventory = new Inventory();
+            summeryInventory.setQuantity(quantity);
+            summeryInventory.setCaseQuantity(caseQuantity);
+            summeryInventory.setPackQuantity(packQuantity);
+            summeryInventory.setItemPackageType(new ItemPackageType());
+
+            results.add(summeryInventory);
+        }
+
+
+        report.setData(results);
+
+        // add statistics data as well
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
+    }
+
+
+    private void setupPrePrintWavePackingSlipData(Report report, Wave wave) {
+
+
+        // get the orders into a set that sorted by inventory attribute
+        Set<OrderLine> orderLines = new TreeSet<>(
+                Comparator.comparing(this::getInventoryAttributeKey)
+        );
+        for (ShipmentLine shipmentLine : wave.getShipmentLines()) {
+            orderLines.add(shipmentLine.getOrderLine());
+        }
+        // get the biggest unit per carton for each item
+        // that is required by order line
+        // key: item id
+        // value: unit per case
+        Map<Long, Long> itemUnitPerCaseMap = new HashMap<>();
+        for (OrderLine orderLine : orderLines) {
+            if (itemUnitPerCaseMap.containsKey(orderLine.getItemId())) {
+                continue;
+            }
+
+            Item item = Objects.isNull(orderLine.getItem()) ?
+                    inventoryServiceRestemplateClient.getItemById(orderLine.getItemId()) :
+                    orderLine.getItem();
+
+            Long unitPerCase = item.getItemPackageTypes().stream().mapToLong(
+                    itemPackageType -> Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure()) ?
+                            1 : itemPackageType.getCaseItemUnitOfMeasure().getQuantity()
+            ).max().orElse(1);
+            itemUnitPerCaseMap.put(orderLine.getItemId(), unitPerCase);
+        }
+
+
+        // whether we add an empty line between order lines
+
+        boolean addSummeryLine = true;
+
+        // map to save the case quantity of the inventory form the
+        // location
+        // key: locationID-ItemId-style-color-productSize-inventoryAttribute1 - 5
+        // value: case quantity of the inventory in the location. If the location is mixed
+        //       of inventory with the item, then show MIXED
+        Map<String, Long> totalQuantityMap = new HashMap<>();
+        Map<String, Long> quantityPerCaseMap = new HashMap<>();
+        Map<String, Double> totalCaseQuantityMap = new HashMap<>();
+
+        double totalCaseQuantity = 0.0;
+        long totalUnitQuantity = 0l;
+
+        // decimal format to format the case quantity in case of picking partial cases
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        List<OrderLine> results = new ArrayList<>();
+        String lastKey = "";
+        // Setup display field
+        for (OrderLine orderLine : orderLines) {
+
+            // setup the field needed for report purpose
+
+            orderLine.setQuantity(orderLine.getExpectedQuantity());
+            orderLine.setQuantityPerCase(itemUnitPerCaseMap.getOrDefault(
+                    orderLine.getItemId(), 1l
+            ));
+            orderLine.setCaseQuantity(
+                    orderLine.getQuantity() * 1.0 / orderLine.getQuantityPerCase()
+            );
+
+
+
+            // total unit quantity and case quantity for all inventory
+            totalUnitQuantity += orderLine.getQuantity();
+            totalCaseQuantity += orderLine.getCaseQuantity();
+
+            // set the inventory attribute in one string
+            StringBuilder inventoryAttribute = getInventoryAttributeKey(orderLine);
+
+            // get the value of quantity per case by the inventory from
+            String key = inventoryAttribute.toString();
+
+            quantityPerCaseMap.put(key, orderLine.getQuantityPerCase());
+
+            // used to check if we just start with a new pick group. If so, we may want to
+            // add a empty line between different pick groups so that to make the picker clear
+            if (Strings.isBlank(lastKey)) {
+                lastKey = key;
+            }
+            else if (!lastKey.equals(key)) {
+                logger.debug("lastkey: {}, key: {}" ,
+                        lastKey, key);
+                // we just started a new group
+                Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+                Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+
+                if (addSummeryLine) {
+                    // everytime we started a new pick group, add a empty line
+                    OrderLine summeryOrderLine = new OrderLine();
+                    summeryOrderLine.setQuantity(quantity);
+                    summeryOrderLine.setCaseQuantity(caseQuantity);
+                    summeryOrderLine.setQuantityPerCase(
+                            quantityPerCaseMap.getOrDefault(lastKey, 1l)
+                    );
+
+
+                    results.add(summeryOrderLine);
+
+                    lastKey = key;
+                }
+            }
+            Long quantity = totalQuantityMap.getOrDefault(key, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(key, 0.0);
+
+            totalQuantityMap.put(key, quantity + orderLine.getQuantity());
+            totalCaseQuantityMap.put(key, caseQuantity + orderLine.getCaseQuantity());
+
+            results.add(orderLine);
+
+
+        }
+        // we may need to add a line for the last group
+        if (Strings.isNotBlank(lastKey) && addSummeryLine) {
+
+            Long quantity = totalQuantityMap.getOrDefault(lastKey, 0l);
+            Double caseQuantity = totalCaseQuantityMap.getOrDefault(lastKey, 0.0);
+
+            OrderLine summeryOrderLine = new OrderLine();
+            summeryOrderLine.setQuantity(quantity);
+            summeryOrderLine.setCaseQuantity(caseQuantity);
+
+            summeryOrderLine.setQuantityPerCase(
+                    quantityPerCaseMap.getOrDefault(lastKey, 1l)
+            );
+            results.add(summeryOrderLine);
+
+        }
+
+
+        report.setData(results);
+
+        // add statistics data as well
+        report.addParameter("totalCaseQuantity", decimalFormat.format(totalCaseQuantity));
+        report.addParameter("totalUnitQuantity", totalUnitQuantity);
+    }
+
+
+    private StringBuilder getInventoryAttributeKey(Inventory inventory) {
+
+        return new StringBuilder()
+                .append(Strings.isBlank(inventory.getStyle()) ? "____" : inventory.getStyle()).append("-")
+                .append(Strings.isBlank(inventory.getColor()) ? "____" : inventory.getColor()).append("-")
+                .append(Strings.isBlank(inventory.getProductSize()) ? "____" : inventory.getProductSize()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute1()) ? "____" : inventory.getAttribute1()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute2()) ? "____" : inventory.getAttribute2()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute3()) ? "____" : inventory.getAttribute3()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute4()) ? "____" : inventory.getAttribute4()).append("-")
+                .append(Strings.isBlank(inventory.getAttribute5()) ? "____" : inventory.getAttribute5()).append("-");
+    }
+    private StringBuilder getInventoryAttributeKey(OrderLine orderline) {
+
+        return new StringBuilder()
+                .append(Strings.isBlank(orderline.getStyle()) ? "____" : orderline.getStyle()).append("-")
+                .append(Strings.isBlank(orderline.getColor()) ? "____" : orderline.getColor()).append("-")
+                .append(Strings.isBlank(orderline.getProductSize()) ? "____" : orderline.getProductSize()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute1()) ? "____" : orderline.getInventoryAttribute1()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute2()) ? "____" : orderline.getInventoryAttribute2()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute3()) ? "____" : orderline.getInventoryAttribute3()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute4()) ? "____" : orderline.getInventoryAttribute4()).append("-")
+                .append(Strings.isBlank(orderline.getInventoryAttribute5()) ? "____" : orderline.getInventoryAttribute5()).append("-");
+    }
+
+    public Wave completeWave(Long id) {
+        return completeWave(findById(id));
+    }
+    public Wave completeWave(Wave wave) {
+        validateWaveReadyForComplete(wave);
+        // check if we will need to automatically complete the shipment
+        // and orders that attached to this wave.
+        // in some simple scenario when there's no outbund truck, we allow
+        // the user to complete all orders and shipments in the wave
+        OutboundConfiguration outboundConfiguration =
+                outboundConfigurationService.findByWarehouse(wave.getWarehouseId());
+        if (Objects.nonNull(outboundConfiguration) &&
+            Boolean.TRUE.equals(outboundConfiguration.getCompleteOrderAndShipmentWhenCompleteWave())) {
+            completeOrderAndShipmentWhenCompleteWave(wave);
+        }
+        // after we complete the orders. let's complete the wave
+        wave.setStatus(WaveStatus.COMPLETED);
+
+        // release the reserved ship stage locations
+
+        warehouseLayoutServiceRestemplateClient.releaseLocations(wave.getWarehouseId(), wave);
+
+        return save(wave);
+    }
+
+    private void completeOrderAndShipmentWhenCompleteWave(Wave wave) {
+
+        logger.debug("start to complete orders and shipment when we complete the wave {}",
+                wave.getNumber());
+        Set<Long> orderIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getOrderLine().getOrder().getId()
+        ).collect(Collectors.toSet());
+        logger.debug("Found {} orders in the wave {}, we will only complete the order if all the lines are in the wave",
+                orderIds.size(), wave.getNumber());
+
+        // see if the order is ready for complete only if all the order
+        // lines are in the wave
+
+        Set<Long> validOrders = orderIds.stream().filter(
+                orderId -> orderLineAllInWave(orderId, wave)
+        ).collect(Collectors.toSet());
+        logger.debug("Found {} orders in the wave {}, that all lines are in this wave",
+                validOrders.size(), wave.getNumber());
+
+
+        validOrders.forEach(
+                orderId -> {
+                    Order orderToBeComplete = orderService.findById(orderId);
+                    logger.debug("start to complete order {} when we complete the wave {}",
+                            orderToBeComplete.getNumber(), wave.getNumber());
+                    // complete order should complete the shipment that attached to it
+                    // TO-DO: when we have multiple shipment
+                    if (!orderToBeComplete.getStatus().equals(OrderStatus.COMPLETE) &&
+                        !orderToBeComplete.getStatus().equals(OrderStatus.CANCELLED)) {
+                        logger.debug("Complete the order {} as it is not completed or cancelled");
+
+                        orderService.completeOrder(orderId, orderToBeComplete);
+                    }
+                }
+        );
+    }
+
+    /**
+     * Check if we can complete the wave
+     * @param wave
+     */
+    private void validateWaveReadyForComplete(Wave wave) {
+        List<Pick> picks = pickService.findByWave(wave);
+        // make sure all the picks are done
+        if (picks.stream().anyMatch(pick -> pick.getQuantity() > pick.getPickedQuantity())) {
+            throw OrderOperationException.raiseException("can't complete wave " + wave.getNumber() +
+                    " as there's still open pick");
+        }
+        List<ShortAllocation> shortAllocations = shortAllocationService.findByWave(wave);
+        // make sure all the picks are done
+        if (!shortAllocations.isEmpty()) {
+            throw OrderOperationException.raiseException("can't complete wave " + wave.getNumber() +
+                    " as there's still short allocation");
+        }
+    }
+
+    private boolean orderLineAllInWave(Long orderId, Wave wave) {
+        Order order = orderService.findById(orderId);
+        for (OrderLine orderLine : order.getOrderLines()) {
+            boolean orderLineInWave = false;
+            logger.debug("start to check if the order line {} / {} is in the wave {}",
+                    order.getNumber(), orderLine.getNumber(), wave.getNumber());
+
+            for (ShipmentLine shipmentLine : wave.getShipmentLines()) {
+                logger.debug("check if the existing shipment line {} / {} 's order line id {} matches with this line 's id {}",
+                        shipmentLine.getShipmentNumber(),
+                        shipmentLine.getNumber(),
+                        shipmentLine.getOrderLineId(),
+                        orderLine.getId());
+                if (orderLine.getId().equals(shipmentLine.getOrderLineId())) {
+                    logger.debug("!!! Match found!");
+                    orderLineInWave = true;
+                }
+            }
+            if (!orderLineInWave) {
+                logger.debug("Order {}, order line {} is not wave {}",
+                        order.getNumber(), orderLine.getNumber(), wave.getNumber());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Wave deassignShipmentLine(Long id, Long shipmentLineId) {
+        return deassignShipmentLine(findById(id), shipmentLineId);
+    }
+
+    /**
+     * Deassign a shipment from the wave
+     * @param wave
+     * @param shipmentLineId
+     * @return
+     */
+    public Wave deassignShipmentLine(Wave wave, Long shipmentLineId) {
+
+        shipmentLineService.deassignShipmentLineFromWave(wave, shipmentLineId);
+
+        return findById(wave.getId());
+
+    }
+
+    public void removeWave(Long id) {
+        // cancel the wave and then remove it from the system
+        cancelWave(id);
+
+
+        delete(findById(id, false));
+    }
+
+    public Wave changeWave(Wave wave) {
+        // we will only allow the user to change the comment of the wave
+        Wave existingWave = findById(wave.getId());
+        existingWave.setComment(wave.getComment());
+        return saveOrUpdate(wave);
+    }
+
+    public Wave changeWaveComment(Long id, String comment) {
+        Wave wave = findById(id);
+        wave.setComment(comment);
+        return saveOrUpdate(wave);
+    }
+
+    /**
+     * change the load number for all shipment in the wave
+     */
+    public Wave changeWaveLoadNumber(Long id, String loadNumber) {
+
+        Wave wave = findById(id, false);
+        Set<Long> shipmentIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getShipment().getId()
+        ).collect(Collectors.toSet());
+
+        shipmentIds.forEach(
+                shipmentId -> shipmentService.changeLoadNumber(shipmentId, loadNumber)
+        );
+
+        return findById(id);
+    }
+    /**
+     * change the BOL number for all shipment in the wave
+     */
+    public Wave changeWaveBillOfLadingNumber(Long id, String billOfLadingNumber) {
+
+        Wave wave = findById(id, false);
+        Set<Long> shipmentIds = wave.getShipmentLines().stream().map(
+                shipmentLine -> shipmentLine.getShipment().getId()
+        ).collect(Collectors.toSet());
+
+        shipmentIds.forEach(
+                shipmentId -> shipmentService.changeBillOfLadingNumber(shipmentId, billOfLadingNumber)
+        );
+
+        return findById(id);
+    }
+
+    /**
+     * Get all the sortation locations for the wave
+     * it will list all the locations that in the movement path of the picked inventory
+     * of the wave, then find locations that allow sortation
+     * @param id
+     * @return
+     */
+    public List<Location> getSortationLocations(Long id) {
+        Wave wave = findById(id, false);
+        List<Pick> picks = pickService.findByWave(wave);
+        // get all the locations from
+        // 1. pick's destination
+        // 2. pick's movement
+        Set<Long> locationIdSet = new HashSet<>();
+        picks.forEach(
+                pick -> {
+                    locationIdSet.add(pick.getDestinationLocationId());
+                    if (Objects.nonNull(pick.getPickMovements())) {
+                        pick.getPickMovements().forEach(
+                                pickMovement -> locationIdSet.add(pickMovement.getLocationId())
+                        );
+                    }
+                }
+        );
+        if (locationIdSet.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // get all the locations by id
+        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                wave.getWarehouseId(), locationIdSet.stream().map(String::valueOf).collect(Collectors.joining(","))
+        );
+
+        // only return the locations in a group that allow outbound sortation
+        return locations.stream().filter(location -> Boolean.TRUE.equals(location.getLocationGroup().getAllowOutboundSort()))
+                .collect(Collectors.toList());
+
+
+    }
+
+    public List<Pair<Long, Long>> getStagedInventoryQuantity(Long warehouseId, String waveIds) {
+        List<Pair<Long, Long>> result = new ArrayList<>();
+        if (Strings.isBlank(waveIds)) {
+            return result;
+        }
+        List<Wave> waves = findAll(warehouseId, null, null, null, null, null, 
+                true, true, waveIds, false);
+
+        for (Wave wave : waves) {
+            Long stagedQuantity = getStagedInventory(wave).stream().map(Inventory::getQuantity)
+                    .mapToLong(Long::longValue).sum();
+            result.add(
+                    Pair.of(wave.getId(), stagedQuantity)
+            );
+
+        }
+        return result;
+    }
 }

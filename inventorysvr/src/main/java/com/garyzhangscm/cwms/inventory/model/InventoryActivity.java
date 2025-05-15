@@ -24,11 +24,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
@@ -50,7 +48,6 @@ import java.time.ZonedDateTime;
 @Table(name = "inventory_activity")
 public class InventoryActivity extends AuditibleEntity<String> implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(InventoryActivity.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -116,6 +113,13 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     @Transient
     private Client client;
 
+
+    @Column(name = "reason_code_id")
+    private Long reasonCodeId;
+
+    @Transient
+    private ReasonCode reasonCode;
+
     /**
      * Activity type: Movement / Adjustment / Receiving / Picking / etc
      */
@@ -155,6 +159,26 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
     @Column(name = "to_value")
     private String toValue;
 
+    @Column(name="color")
+    private String color;
+
+    @Column(name="product_size")
+    private String productSize;
+
+    @Column(name="style")
+    private String style;
+
+    @Column(name="attribute_1")
+    private String attribute1;
+    @Column(name="attribute_2")
+    private String attribute2;
+    @Column(name="attribute_3")
+    private String attribute3;
+    @Column(name="attribute_4")
+    private String attribute4;
+    @Column(name="attribute_5")
+    private String attribute5;
+
     /**
      * In case it is a document related activity, save the number here
      * For example, if it is a pick, this will be the pick number.
@@ -174,7 +198,7 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
                              ZonedDateTime activityDateTime, String username,
                              String valueType, String fromValue, String toValue,
                              String documentNumber, String comment,
-                             String rfCode) {
+                             String rfCode, Long reasonCodeId) {
         setLpn(inventory.getLpn());
         setClientId(inventory.getClientId());
         setTransactionId(transactionId);
@@ -191,6 +215,15 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
         setInventoryStatus(inventory.getInventoryStatus());
         setWarehouseId(inventory.getWarehouseId());
         setWarehouse(inventory.getWarehouse());
+
+        setColor(inventory.getColor());
+        setStyle(inventory.getStyle());
+        setProductSize(inventory.getProductSize());
+        setAttribute1(inventory.getAttribute1());
+        setAttribute2(inventory.getAttribute2());
+        setAttribute3(inventory.getAttribute3());
+        setAttribute4(inventory.getAttribute4());
+        setAttribute5(inventory.getAttribute5());
         this.rfCode = rfCode;
 
         this.inventoryActivityType = inventoryActivityType;
@@ -201,6 +234,8 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
         this.toValue = toValue;
         this.documentNumber = documentNumber;
         this.comment = comment;
+
+        this.reasonCodeId = reasonCodeId;
     }
 
     @Override
@@ -427,5 +462,85 @@ public class InventoryActivity extends AuditibleEntity<String> implements Serial
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public Long getReasonCodeId() {
+        return reasonCodeId;
+    }
+
+    public void setReasonCodeId(Long reasonCodeId) {
+        this.reasonCodeId = reasonCodeId;
+    }
+
+    public ReasonCode getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(ReasonCode reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getProductSize() {
+        return productSize;
+    }
+
+    public void setProductSize(String productSize) {
+        this.productSize = productSize;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
+
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
     }
 }

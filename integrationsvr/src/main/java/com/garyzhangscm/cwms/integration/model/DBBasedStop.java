@@ -8,7 +8,7 @@ import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestempla
 import com.garyzhangscm.cwms.integration.exception.MissingInformationException;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -95,6 +95,14 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
     private List<DBBasedShipment> shipments = new ArrayList<>();
 
 
+    @OneToMany(
+            mappedBy = "stop",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<DBBasedTrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -160,6 +168,13 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
                     outbuondServiceRestemplateClient
             ));
         }
+        for(DBBasedTrailerOrderLineAssignment dbBasedTrailerOrderLineAssignment : getTrailerOrderLineAssignments()) {
+            stop.addTrailerOrderLineAssignment(
+                    dbBasedTrailerOrderLineAssignment.convertToTrailerOrderLineAssignment(
+                            warehouseLayoutServiceRestemplateClient
+                    )
+            );
+        }
 
         return stop;
     }
@@ -216,6 +231,14 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
         this.warehouseName = warehouseName;
     }
 
+
+    public List<DBBasedTrailerOrderLineAssignment> getTrailerOrderLineAssignments() {
+        return trailerOrderLineAssignments;
+    }
+
+    public void setTrailerOrderLineAssignments(List<DBBasedTrailerOrderLineAssignment> trailerOrderLineAssignments) {
+        this.trailerOrderLineAssignments = trailerOrderLineAssignments;
+    }
 
     public Long getWarehouseId() {
         return warehouseId;

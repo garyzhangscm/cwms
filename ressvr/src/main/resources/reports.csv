@@ -10,11 +10,18 @@ company,warehouse,type,description,fileName,orientation
 , ,PACKING_SLIP,Packing Slip,packing_slip,PORTRAIT
 , ,BILL_OF_LADING,bill_of_lading,bill_of_lading,PORTRAIT
 , ,LPN_LABEL,lpn label,lpn_label.prn,PORTRAIT
-, ,PRODUCTION_LINE_ASSIGNMENT_LABEL,Production Line Assignment Label,ecotech_production_line_assignment_label.prn,PORTRAIT
-, ,RECEIVING_LPN_LABEL,Receiving LPN Label,ecotech_receiving_lpn_label.prn,PORTRAIT
+, ,PRODUCTION_LINE_ASSIGNMENT_LABEL,Production Line Assignment Label,work_order_produced_lpn_label.prn,PORTRAIT
+, ,RECEIVING_LPN_LABEL,Receiving LPN Label,receiving_lpn_label.prn,PORTRAIT
 , ,QC_INSPECTION_REQUEST_REPORT,QC Inspection Request Report,qc_inspection_request_report,PORTRAIT
 , ,RECEIVING_LPN_REPORT,Receiving LPN Report,ecotech_receiving_lpn,PORTRAIT
 , ,BULK_PICK_SHEET,Bulk Pick Sheet,bulk_pick_sheet,PORTRAIT
 , ,PICK_SHEET,Pick Sheet,pick_sheet,PORTRAIT
+, ,ORDER_MANUAL_PICK_SHEET,Order Manual Pick Sheet,order_manual_pick_sheet,PORTRAIT
+, ,WORK_ORDER_MANUAL_PICK_SHEET,Work Order Manual Pick Sheet,work_order_manual_pick_sheet,PORTRAIT
 , ,PICK_LIST_SHEET,List Pick Sheet,list_pick_sheet,PORTRAIT
 , ,WALMART_SHIPPING_CARTON_LABEL,Walmart Shipping Carton Label,walmart_shipping_carton_label.prn,PORTRAIT
+, ,PALLET_PICK_LABEL,Pallet Pick Label,pallet_pick_label.prn,PORTRAIT
+, ,TARGET_SHIPPING_CARTON_LABEL,Target Shipping Carton Label,target_shipping_carton_label.prn,PORTRAIT
+, ,PALLET_PICK_SUMMARY_LABEL,Pallet Pick Summary Label,pallet_pick_summary_label.prn,PORTRAIT
+, ,WAVE_PICK_SHEET_BY_LOCATION,Wave pick sheet grouped by location,wave_pick_sheet_by_location,LANDSCAPE
+, ,WAVE_PACKING_SLIP,Wave Packing Slip,wave_packing_slip,LANDSCAPE

@@ -34,6 +34,9 @@ public class UserContextFilter implements Filter {
         UserContextHolder.getContext().setWarehouseId(
                 httpServletRequest.getHeader(UserContext.WAREHOUSE_ID));
 
+        UserContextHolder.getContext().setUsername(
+                httpServletRequest.getHeader(UserContext.USERNAME));
+
         filterChain.doFilter(httpServletRequest, servletResponse);
     }
 

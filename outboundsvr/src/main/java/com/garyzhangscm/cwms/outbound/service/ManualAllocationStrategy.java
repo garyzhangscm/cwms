@@ -38,6 +38,7 @@ public class ManualAllocationStrategy implements AllocationStrategy {
     protected InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
 
+
     @Override
     public AllocationStrategyType getType() {
         return AllocationStrategyType.MANUAL_ALLOCATION;
@@ -59,6 +60,15 @@ public class ManualAllocationStrategy implements AllocationStrategy {
         // let's validate if the LPN is a pickable LPN and then we will directly generate the
         // pick
 
+
+        logger.debug("Start to allocate request with Manual Strategy. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
+                allocationRequest.getItem().getId(),
+                allocationRequest.getItem().getName(),
+                allocationRequest.getQuantity(),
+                Objects.isNull(allocationRequest.getInventoryStatus()) ?
+                        allocationRequest.getInventoryStatusId() : allocationRequest.getInventoryStatus().getName(),
+                Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
+
         AllocationResult allocationResult = new AllocationResult();
 
         if (Strings.isBlank(allocationRequest.getLpn())) {
@@ -76,7 +86,12 @@ public class ManualAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getColor(),
                 allocationRequest.getProductSize(),
                 allocationRequest.getStyle(),
-                allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getInventoryAttribute1(),
+                allocationRequest.getInventoryAttribute2(),
+                allocationRequest.getInventoryAttribute3(),
+                allocationRequest.getInventoryAttribute4(),
+                allocationRequest.getInventoryAttribute5(),
+                allocationRequest.getAllocateByReceiptNumber(), null);
 
         logger.debug("We have {} pickable inventory of this item, location specified? {}",
                 pickableInventory.size(),
@@ -141,14 +156,23 @@ public class ManualAllocationStrategy implements AllocationStrategy {
 
     @Transactional(dontRollbackOn = GenericException.class)
     private Pick tryCreatePickForManualAllocation(AllocationRequest allocationRequest, Inventory inventory) {
-        if (allocationRequest.getShipmentLines().size() > 0) {
-            throw PickingException.raiseException("manual pick for shipment is not supported");
+        long pickQuantity = Math.min(allocationRequest.getQuantity(), inventory.getQuantity());
+
+        if (allocationRequest.getShipmentLines().size() > 1) {
+
+            throw PickingException.raiseException("We can't only proceed manual pick for order, one line at a time");
+        }
+        else if (allocationRequest.getShipmentLines().size() == 1) {
+            return pickService.generatePick(allocationRequest.getShipmentLines().get(0),
+                    inventory,
+                    pickQuantity, inventory.getItemPackageType().getStockItemUnitOfMeasure(),
+                    false);
         }
         else if(allocationRequest.getWorkOrder() != null &&
                 allocationRequest.getWorkOrderLines().size() > 0) {
             return pickService.generatePick(allocationRequest.getWorkOrder() ,
                     inventory, allocationRequest.getWorkOrderLines().get(0),
-                    inventory.getQuantity(), inventory.getItemPackageType().getStockItemUnitOfMeasures(),
+                    pickQuantity, inventory.getItemPackageType().getStockItemUnitOfMeasure(),
                     allocationRequest.getDestinationLocationId(), false);
         }
         else {

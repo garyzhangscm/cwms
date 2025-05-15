@@ -19,7 +19,6 @@
 package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
@@ -29,25 +28,16 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentLineRepository;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineAssignmentRepository;
-import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
-import org.apache.commons.lang.StringUtils;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -84,36 +74,39 @@ public class ProductionLineAssignmentService   {
 
 
 
-    public ProductionLineAssignment findById(Long id) {
-        return findById(id, true);
-    }
-    public ProductionLineAssignment findById(Long id, boolean loadDetail ) {
-        ProductionLineAssignment productionLineAssignment = productionLineAssignmentRepository.findById(id)
+    public ProductionLineAssignment findById(Long id ) {
+        return productionLineAssignmentRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("production line assignment not found by id: " + id));
-        if (loadDetail) {
-            loadAttribute(productionLineAssignment);
-        }
-        return productionLineAssignment;
+    }
+    /**
+    public void loadAttribute(List<ProductionLineAssignment> productionLineAssignments) {
+        productionLineAssignments.forEach(
+                productionLineAssignment -> loadAttribute(productionLineAssignment)
+        );
     }
 
-    private void loadAttribute(ProductionLineAssignment productionLineAssignment) {
+    public void loadAttribute(ProductionLineAssignment productionLineAssignment) {
         if (Objects.nonNull(productionLineAssignment.getWorkOrder())) {
-            productionLineAssignment.setWorkOrderId(
-                    productionLineAssignment.getWorkOrder().getId()
-            );
-            productionLineAssignment.setWorkOrderNumber(
-                    productionLineAssignment.getWorkOrder().getNumber()
-            );
+                productionLineAssignment.setWorkOrderId(
+                        productionLineAssignment.getWorkOrder().getId()
+                );
+                productionLineAssignment.setWorkOrderNumber(
+                        productionLineAssignment.getWorkOrder().getNumber()
+                );
+                workOrderService.loadAttribute(productionLineAssignment.getWorkOrder());
         }
     }
+     **/
 
 
     public List<ProductionLineAssignment> findAll(Long warehouseId,
                                                   Long productionLineId,
                                                   String productionLineIds,
                                                   Long workOrderId,
-                                                  String productionLineNames) {
-        return productionLineAssignmentRepository.findAll(
+                                                  String productionLineNames,
+                                                  Boolean includeDeassigned) {
+        List<ProductionLineAssignment> productionLineAssignments =
+                productionLineAssignmentRepository.findAll(
                         (Root<ProductionLineAssignment> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                             List<Predicate> predicates = new ArrayList<Predicate>();
 
@@ -149,11 +142,19 @@ public class ProductionLineAssignmentService   {
                                 predicates.add(criteriaBuilder.equal(joinWorkOrder.get("id"), workOrderId));
 
                             }
+
                             Predicate[] p = new Predicate[predicates.size()];
                             return criteriaBuilder.and(predicates.toArray(p));
                         }
                 );
 
+        if (!Boolean.TRUE.equals(includeDeassigned)) {
+            productionLineAssignments = productionLineAssignments.stream().filter(
+                    productionLineAssignment ->
+                        Objects.isNull(productionLineAssignment.getDeassigned()) || productionLineAssignment.getDeassigned().equals(false))
+                    .collect(Collectors.toList());
+        }
+        return productionLineAssignments;
     }
 
     public ProductionLineAssignment findByWorkOrderAndProductionLine(Long productionLineId,
@@ -196,7 +197,7 @@ public class ProductionLineAssignmentService   {
 
     public void removeProductionLineAssignmentForWorkOrder(Long warehouseId, Long workOrderId) {
         List<ProductionLineAssignment> productionLineAssignments = findAll(
-                warehouseId, null, null, workOrderId, null
+                warehouseId, null, null, workOrderId, null, false
         );
         productionLineAssignments.forEach(productionLineAssignment -> {
             delete(productionLineAssignment);
@@ -209,6 +210,10 @@ public class ProductionLineAssignmentService   {
         WorkOrder workOrder = workOrderService.findById(workOrderId);
 
         for (ProductionLineAssignment productionLineAssignment : productionLineAssignments) {
+
+            productionLineAssignment.setAssignedTime(ZonedDateTime.now(ZoneOffset.UTC));
+            productionLineAssignment.setDeassignedTime(null);
+            productionLineAssignment.setDeassigned(false);
 
             assignWorkOrderToProductionLines(workOrder,productionLineAssignment);
 
@@ -225,9 +230,11 @@ public class ProductionLineAssignmentService   {
             workOrderService.save(workOrder);
         }
 
-        return findAll(workOrder.getWarehouseId(), null, null, workOrderId, null);
+        return findAll(workOrder.getWarehouseId(), null, null, workOrderId, null, false);
 
     }
+
+    /**
     public List<ProductionLineAssignment> assignWorkOrderToProductionLines(Long warehouseId, Long workOrderId, String productionLineIds, String quantities) {
         // remove the assignment for the work order first
 
@@ -262,7 +269,7 @@ public class ProductionLineAssignmentService   {
 
         return findAll(warehouseId, null, null, workOrderId, null);
     }
-
+**/
 
 
 
@@ -331,16 +338,13 @@ public class ProductionLineAssignmentService   {
 
     public List<WorkOrder> getAssignedWorkOrderByProductionLine(Long warehouseId, Long productionLineId) {
         List<ProductionLineAssignment> productionLineAssignments =
-                findAll(warehouseId, productionLineId, null, null, null);
+                findAll(warehouseId, productionLineId, null, null, null, false);
 
         logger.debug("get {} assignment from production line {}, warehouse id {}",
             productionLineAssignments.size(), productionLineId, warehouseId);
         return productionLineAssignments.stream().map(
                 productionLineAssignment -> productionLineAssignment.getWorkOrder()
-        ).map(workOrder -> {
-            workOrderService.loadAttribute(workOrder, false, false);
-            return workOrder;
-        }).collect(Collectors.toList());
+        ).collect(Collectors.toList());
     }
 
     private void processReturnableMaterial(
@@ -429,15 +433,22 @@ public class ProductionLineAssignmentService   {
     }
 
     @Transactional
-    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
+            Long workOrderId, Long productionLineId) {
+        return deassignWorkOrderFromProductionLines(workOrderId,
+                productionLineId, new ArrayList<>());
+    }
+    @Transactional
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
             Long workOrderId, Long productionLineId, List<Inventory> returnableMaterial) {
 
         logger.debug("Start to deassign work order {} from production line {}",
                 workOrderId, productionLineId);
-        WorkOrder workOrder = workOrderService.findById(workOrderId, false);
+        WorkOrder workOrder = workOrderService.findById(workOrderId);
         ProductionLineAssignment productionLineAssignment =
                 workOrder.getProductionLineAssignments().stream().filter(
                         existingProductionLineAssignment -> existingProductionLineAssignment.getProductionLine().getId().equals(productionLineId)
+                            && (Objects.isNull(existingProductionLineAssignment.getDeassigned()) || existingProductionLineAssignment.getDeassigned().equals(false))
                 ).findFirst()
                         .orElseThrow(() ->
                                 WorkOrderException.raiseException(
@@ -452,11 +463,18 @@ public class ProductionLineAssignmentService   {
         workOrderQCSampleService.removeQCSamples(productionLineAssignment);
 
         // remove the produdction line assignment
-        delete(productionLineAssignment);
+        productionLineAssignment.setDeassignedTime(ZonedDateTime.now(ZoneOffset.UTC));
+        productionLineAssignment.setDeassigned(true);
+        productionLineAssignment = saveOrUpdate(productionLineAssignment);
+
+        // delete(productionLineAssignment);
         logger.debug("production line assignment removed, let's start to process the material");
 
-        processReturnableMaterial(
-                workOrder, productionLineAssignment.getProductionLine(), returnableMaterial);
+        if (Objects.nonNull(returnableMaterial) && !returnableMaterial.isEmpty()) {
+            logger.debug("start to return material");
+            processReturnableMaterial(
+                    workOrder, productionLineAssignment.getProductionLine(), returnableMaterial);
+        }
 
         // we will cancell all the existsing picks that will come into this production line
         logger.debug("Start to cancel pick that will go into the production line {}",
@@ -617,4 +635,141 @@ public class ProductionLineAssignmentService   {
             return 0L;
         }
     }
+
+    /**
+     * Get all production line assignment that was assigned between start time and end time
+     * @param warehouseId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId,
+                                                                              ZonedDateTime startTime,
+                                                                              ZonedDateTime endTime,
+                                                                             Boolean loadDetails) {
+        logger.debug("start to get production line assignment between [{}, {}] for warehouse {}",
+                startTime, endTime, warehouseId);
+        return productionLineAssignmentRepository.getProductionAssignmentByTimeRange(
+                        warehouseId, startTime, endTime
+                );
+    }
+
+    public List<ProductionLineAssignment> getProductionAssignmentByTimeRange(Long warehouseId,
+                                                                             ZonedDateTime startTime,
+                                                                             ZonedDateTime endTime) {
+        return getProductionAssignmentByTimeRange(
+                warehouseId, startTime, endTime, true
+        );
+    }
+
+
+    public ReportHistory generateManualPickReportByWorkOrder(Long productionLineAssignmentId, String locale, String printerName)  {
+
+        return generateManualPickReportByWorkOrder(findById(productionLineAssignmentId), locale, printerName);
+    }
+    public ReportHistory generateManualPickReportByWorkOrder(ProductionLineAssignment productionLineAssignment,
+                                                             String locale,
+                                                             String printerName)  {
+
+        Long warehouseId = productionLineAssignment.getProductionLine().getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupWorkOrderManualPickReportParameters(
+                reportData, productionLineAssignment
+        );
+        setupWorkOrderManualPickReportData(
+                reportData, productionLineAssignment
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.WORK_ORDER_MANUAL_PICK_SHEET,
+                        reportData, locale,
+                        printerName
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupWorkOrderManualPickReportParameters(
+            Report report, ProductionLineAssignment productionLineAssignment) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("work_order_number", productionLineAssignment.getWorkOrderNumber());
+        report.addParameter("production_line", productionLineAssignment.getProductionLine().getName());
+
+    }
+
+    private void setupWorkOrderManualPickReportData(Report report, ProductionLineAssignment productionLineAssignment) {
+
+
+        productionLineAssignment.getWorkOrder().getWorkOrderLines().forEach(
+                workOrderLine -> {
+                    if (Objects.isNull(workOrderLine.getItem())) {
+                        workOrderLine.setItem(
+                                inventoryServiceRestemplateClient.getItemById(
+                                        workOrderLine.getItemId()
+                                )
+                        );
+                    }
+
+                    List<Inventory> inventories =
+                            inventoryServiceRestemplateClient.getPickableInventory(
+                                    workOrderLine.getItemId(),
+                                    workOrderLine.getInventoryStatusId(),
+                                    null,
+                                    null
+                            );
+                    // setup the locations for the inventory as we will need to
+                    // show the location as well
+                    Set<Long> locationIds = new HashSet<>();
+                    Map<Long, List<Inventory>> inventoryInLocation = new HashMap<>();
+                    for (Inventory inventory : inventories) {
+                        if (Objects.isNull(inventory.getLocation())) {
+                            locationIds.add(inventory.getLocationId());
+                            inventoryInLocation.computeIfAbsent(
+                                    inventory.getLocationId(),  key -> new ArrayList<>()).add(inventory);
+
+                        }
+                    }
+
+                    // setup the location for each inventory
+                    if (!locationIds.isEmpty()) {
+                        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                                productionLineAssignment.getWorkOrder().getWarehouseId(),
+                                Strings.join(locationIds, ',')
+                        );
+                        locations.stream().filter(location -> inventoryInLocation.containsKey(location.getId()))
+                                .forEach(
+                                        location -> {
+                                            inventoryInLocation.get(location.getId()).forEach(
+                                                    inventory -> inventory.setLocation(location)
+                                            );
+                                        }
+                                );
+                    }
+
+                    workOrderLine.setupManualPickableInventoryForDisplay(inventories );
+
+
+
+                    logger.debug("get {} pickable inventory for display for order line # {}",
+                            workOrderLine.getManualPickableInventoryForDisplay().size(),
+                            workOrderLine.getNumber());
+                }
+        );
+
+        report.setData(productionLineAssignment.getWorkOrder().getWorkOrderLines());
+    }
+
 }

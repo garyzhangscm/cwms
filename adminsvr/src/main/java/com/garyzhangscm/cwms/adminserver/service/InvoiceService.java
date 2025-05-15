@@ -202,7 +202,7 @@ public class InvoiceService {
         List<BillingRequest> billingRequests = billingServices.stream().map(
                 billingService -> billingService.generateBillingRequest(
                         startTime, endTime, companyId, warehouseId, clientId,
-                        "", true
+                        "", true, false
                 )
         ).collect(Collectors.toList());
 

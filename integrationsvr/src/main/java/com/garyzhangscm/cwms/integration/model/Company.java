@@ -3,6 +3,8 @@ package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.Column;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Company   {
 
@@ -26,6 +28,10 @@ public class Company   {
     private String addressLine1;
     private String addressLine2;
     private String addressPostcode;
+
+    private String apiKey;
+    private String apiSecret;
+
 
     public Long getId() {
         return id;
@@ -137,5 +143,21 @@ public class Company   {
 
     public void setAddressPostcode(String addressPostcode) {
         this.addressPostcode = addressPostcode;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiSecret() {
+        return apiSecret;
+    }
+
+    public void setApiSecret(String apiSecret) {
+        this.apiSecret = apiSecret;
     }
 }

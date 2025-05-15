@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -42,25 +43,41 @@ public class WorkOrderServiceRestemplateClient {
     private RestTemplateProxy restTemplateProxy;
 
 
-    @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
     public WorkOrder getWorkOrderById(Long id) {
+        return getWorkOrderById(id, true, true);
+
+    }
+    @Cacheable(cacheNames = "InventoryService_WorkOrder", unless="#result == null")
+    public WorkOrder getWorkOrderById(Long id, boolean loadDetails, boolean loadWorkOrderDetails) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/workorder/work-orders/{id}");
-/**
-        ResponseBodyWrapper<WorkOrder> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(id).toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<WorkOrder>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-**/
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/workorder/work-orders/{id}")
+                .queryParam("loadDetails", loadDetails)
+                        .queryParam("loadWorkOrderDetails", loadWorkOrderDetails);
 
         return restTemplateProxy.exchange(
                 WorkOrder.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
+
+
+    @Cacheable(cacheNames = "InventoryService_BillOfMaterial", unless="#result == null")
+    public BillOfMaterial getBillOfMaterialById(Long id,  Boolean loadDetails) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/workorder/bill-of-materials/{id}");
+        if (Objects.nonNull(loadDetails)) {
+            builder = builder.queryParam("loadDetails", loadDetails);
+        }
+
+        return restTemplateProxy.exchange(
+                BillOfMaterial.class,
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.GET,
                 null
@@ -74,7 +91,7 @@ public class WorkOrderServiceRestemplateClient {
                                                           String number) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/qc-samples")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("number", number);
@@ -107,7 +124,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrderQCSample getWorkOrderQCSampleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/qc-samples/{id}");
 /**
         ResponseBodyWrapper<WorkOrderQCSample> responseBodyWrapper
@@ -145,7 +162,7 @@ public class WorkOrderServiceRestemplateClient {
                                                                              Long inventoryId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/lines/{id}/inventory-being-delivered")
                         .queryParam("quantityBeingDelivered", quantityBeingPicked)
                         .queryParam("deliveredLocationId", deliveredLocationId);
@@ -177,7 +194,7 @@ public class WorkOrderServiceRestemplateClient {
     public WorkOrder addQCQuantity(Long workOrderId, Long qcQuantity) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{id}/add-qc-quantity")
                         .queryParam("qcQuantity", qcQuantity);
 /**
@@ -203,7 +220,7 @@ public class WorkOrderServiceRestemplateClient {
     public ReportHistory printLPNLabel(Long workOrderId, String lpn, Long quantity, String printerName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/{workOrderId}/pre-print-lpn-label")
                         .queryParam("lpn", lpn);
         if (Objects.nonNull(quantity)) {
@@ -236,7 +253,7 @@ public class WorkOrderServiceRestemplateClient {
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/workorder/work-orders/item-override")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
@@ -261,4 +278,5 @@ public class WorkOrderServiceRestemplateClient {
 
 
     }
+
 }

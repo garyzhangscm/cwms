@@ -150,10 +150,13 @@ public class GridConfigurationService implements TestDataInitiableService {
     private void loadAttribute(GridConfiguration gridConfiguration) {
 
         // Load the location group for the grid
-        LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupById(
-                gridConfiguration.getLocationGroupId()
-        );
-        gridConfiguration.setLocationGroup(locationGroup);
+        try {
+            LocationGroup locationGroup = warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                    gridConfiguration.getLocationGroupId()
+            );
+            gridConfiguration.setLocationGroup(locationGroup);
+        }
+        catch (Exception ex) {}
     }
 
     public List<GridConfigurationCSVWrapper> loadData(InputStream inputStream) throws IOException {

@@ -19,12 +19,13 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.workorder.service.UnitService;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class Pick implements Serializable {
@@ -68,37 +69,54 @@ public class Pick implements Serializable {
 
     private PickList pickList;
 
+    private Long itemPackageTypeId;
+
+    private ItemPackageType itemPackageType;
+
     @JsonIgnore
-    public Double getSize() {
+    public Double getSize(UnitService unitService) {
+        return getSize(unitService, true, false);
+    }
+
+    @JsonIgnore
+    public Double getSize(UnitService unitService, boolean caseUOMFirst, boolean caseUOMOnly) {
 
         if (item == null) {
             return 0.0;
         }
-        ItemUnitOfMeasure stockItemUnitOfMeasure = item.getItemPackageTypes().get(0).getStockItemUnitOfMeasure();
+        if (caseUOMOnly || caseUOMFirst) {
+            // we will calculate the size by case UOM
+            // first of all, see if we have a case UOM defined
+            ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                    item.getDefaultItemPackageType() : getItemPackageType();
+            ItemUnitOfMeasure caseUnitOfMeasure = itemPackageType.getCaseItemUnitOfMeasure();
+            if (Objects.nonNull(caseUnitOfMeasure)) {
+                return getSize(unitService, caseUnitOfMeasure, getQuantity() / caseUnitOfMeasure.getQuantity());
+            }
+            // case unit of measure if not defined, raise error if the client only
+            // want to try with case unit of measure
+            if (caseUOMOnly) {
+                throw ResourceNotFoundException.raiseException("can't find case UOM for item " + item.getName() +
+                        " on pick   " + getNumber() + ", fail to calculate the size");
+            }
+        }
+        // ok, the user is good with calculate the size by stock UOM and there's no case UOM defined
 
-        return (quantity / stockItemUnitOfMeasure.getQuantity())
-                * stockItemUnitOfMeasure.getLength()
-                * stockItemUnitOfMeasure.getWidth()
-                * stockItemUnitOfMeasure.getHeight();
+        ItemPackageType itemPackageType = Objects.isNull(getItemPackageType()) ?
+                item.getDefaultItemPackageType() : getItemPackageType();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        return getSize(unitService, stockItemUnitOfMeasure, getQuantity() );
     }
 
-    @Override
-    public String toString() {
-        return new StringBuilder()
-                .append("{ id: ").append(id).append(",")
-                .append("number: ").append(number).append(",")
-                .append("sourceLocationId: ").append(sourceLocationId).append(",")
-                .append("sourceLocation: ").append(sourceLocation).append(",")
-                .append("destinationLocationId: ").append(destinationLocationId).append(",")
-                .append("destinationLocation: ").append(destinationLocation).append(",")
-                .append("itemId: ").append(itemId).append(",")
-                .append("item: ").append(item).append(",")
 
-                .append("quantity: ").append(quantity).append(",")
-                .append("pickedQuantity: ").append(pickedQuantity).append(",")
-                .append("status: ").append(status).append("}").toString();
+    @JsonIgnore
+    public Double getSize(UnitService unitService,  ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
 
+
+        return unitService.getVolumeByUOM(getWarehouseId(),
+                itemUnitOfMeasure, quantityOfUOM);
     }
+
 
     public Long getId() {
         return id;
@@ -171,6 +189,22 @@ public class Pick implements Serializable {
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 
     public Long getPickedQuantity() {

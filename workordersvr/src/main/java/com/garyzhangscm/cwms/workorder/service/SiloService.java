@@ -70,6 +70,7 @@ public class SiloService {
                 if (Objects.isNull(siloLoginResponseWrapper)) {
                     throw WorkOrderException.raiseException("Can't login SILO system");
                 }
+                refreshToken(siloLoginResponseWrapper.getToken());
                 return siloLoginResponseWrapper.getToken();
 
             }

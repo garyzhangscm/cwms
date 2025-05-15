@@ -76,6 +76,27 @@ public class InventoryFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
 
+        addColumn(new FileUploadTemplateColumn(
+                "attribute1", "Attribute 1",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "attribute2", "Attribute 2",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "attribute3", "Attribute 3",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "attribute4", "Attribute 4",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "attribute5", "Attribute 5",
+                String.class, 200, true
+        ));
+
 
     }
 

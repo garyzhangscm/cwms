@@ -43,6 +43,8 @@ public class ReceiptLineBillableActivityService {
     private static final Logger logger = LoggerFactory.getLogger(ReceiptLineBillableActivityService.class);
 
     @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
+    @Autowired
     private ReceiptLineBillableActivityRepository receiptLineBillableActivityRepository;
 
     @Autowired
@@ -80,6 +82,11 @@ public class ReceiptLineBillableActivityService {
                         predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
                     }
 
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -126,6 +133,7 @@ public class ReceiptLineBillableActivityService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
+ **/
 
                 }
         );

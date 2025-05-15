@@ -20,13 +20,20 @@ package com.garyzhangscm.cwms.inbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inbound.ResponseBodyWrapper;
+import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.service.*;
+import org.apache.coyote.Request;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -50,6 +58,8 @@ public class ReceiptController {
     @Autowired
     ReceiptLineBillableActivityService receiptLineBillableActivityService;
 
+    @Autowired
+    UploadFileService uploadFileService;
     @Autowired
     FileService fileService;
 
@@ -69,14 +79,46 @@ public class ReceiptController {
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
                                          @RequestParam(name = "checkInDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
                                          @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
+                                         @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                          @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                          ClientRestriction clientRestriction) {
         return receiptService.findAll(warehouseId, number, receiptStatusList,
                 supplierId, supplierName,
                 clientId, clientName,
-                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, loadDetails, clientRestriction);
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, ids, loadDetails, clientRestriction);
     }
 
+    @ClientValidationEndpoint
+    @RequestMapping(value="/paginated-receipts", method = RequestMethod.GET)
+    public Page<Receipt> findPaginatedReceipts(@RequestParam Long warehouseId,
+                                               @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                               @RequestParam(name="supplierName", required = false, defaultValue = "") String supplierName,
+                                               @RequestParam(name="supplierId", required = false, defaultValue = "") Long supplierId,
+                                               @RequestParam(name="clientName", required = false, defaultValue = "") String clientName,
+                                               @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                               @RequestParam(name="receipt_status_list", required = false, defaultValue = "") String receiptStatusList,
+                                               @RequestParam(name = "checkInStartTime", required = false, defaultValue = "")
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime checkInStartTime,
+                                               @RequestParam(name = "checkInEndTime", required = false, defaultValue = "")
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime checkInEndTime,
+                                               @RequestParam(name = "checkInDate", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
+                                               @RequestParam(name = "purchaseOrderId", required = false, defaultValue = "") Long purchaseOrderId,
+                                               @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
+                                               @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                               @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                               @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize,
+                                               ClientRestriction clientRestriction) {
+
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number"));
+        //return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+        return receiptService.findAllByPagination(warehouseId, number, receiptStatusList,
+                supplierId, supplierName,
+                clientId, clientName,
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId,
+                ids, loadDetails, clientRestriction,
+                paging);
+    }
 
     @RequestMapping(value="/receipts/count-by-supplier", method = RequestMethod.GET)
     public Integer getReceiptCountBySupplier(@RequestParam Long warehouseId,
@@ -94,8 +136,17 @@ public class ReceiptController {
 
 
     @RequestMapping(value="/receipts/{id}", method = RequestMethod.GET)
-    public Receipt findReceipt(@PathVariable Long id) {
-        return receiptService.findById(id);
+    public Receipt findReceipt(@PathVariable Long id,
+                               @RequestParam(name="ignoreNotFoundError", required = false, defaultValue = "false") Boolean ignoreNotFoundError) {
+        try {
+            return receiptService.findById(id);
+        }
+        catch (ResourceNotFoundException ex) {
+            if (Boolean.TRUE.equals(ignoreNotFoundError)) {
+                return null;
+            }
+            throw ResourceNotFoundException.raiseException(ex.getMessage());
+        }
     }
 
     @RequestMapping(value="/receipts/receipt-lines/{id}", method = RequestMethod.GET)
@@ -147,7 +198,7 @@ public class ReceiptController {
     }
 
     @BillableEndpoint
-    @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.POST)
+    @RequestMapping(value="/receipts/{id}/lines", method = RequestMethod.PUT)
     @Caching(
             evict = {
                     @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
@@ -157,6 +208,20 @@ public class ReceiptController {
     public ReceiptLine addReceiptLine(@PathVariable Long id,
                                       @RequestBody ReceiptLine receiptLine) {
         return receiptLineService.addReceiptLine(id, receiptLine);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/{receiptId}/lines/{receiptLineId}", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Receipt", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
+            }
+    )
+    public ReceiptLine changeReceiptLine(@PathVariable Long receiptId,
+                                         @PathVariable Long receiptLineId,
+                                      @RequestBody ReceiptLine receiptLine) {
+        return receiptLineService.changeReceiptLine(receiptId, receiptLineId, receiptLine);
     }
 
     /**
@@ -175,11 +240,46 @@ public class ReceiptController {
             }
     )
     public Inventory receive(@PathVariable Long receiptId,
-                               @PathVariable Long receiptLineId,
-                               @RequestBody Inventory inventory,
+                             @PathVariable Long receiptLineId,
+                             @RequestBody Inventory inventory,
+                             @RequestParam(name = "rfCode", defaultValue = "", required = false) String rfCode,
                              @RequestParam(name = "receiveToStage", defaultValue = "false", required = false) Boolean receiveToStage,
                              @RequestParam(name = "stageLocation", defaultValue = "", required = false) String stageLocation) {
-            return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation);
+        logger.debug("start to receive with attribute:");
+        logger.debug("color: {}", Strings.isBlank(inventory.getColor()) ? "N/A" : inventory.getColor());
+        logger.debug("Product Size: {}", Strings.isBlank(inventory.getProductSize()) ? "N/A" : inventory.getProductSize());
+        logger.debug("Style: {}", Strings.isBlank(inventory.getStyle()) ? "N/A" : inventory.getStyle());
+        logger.debug("Attribute 1: {}", Strings.isBlank(inventory.getAttribute1()) ? "N/A" : inventory.getAttribute1());
+        logger.debug("Attribute 2: {}", Strings.isBlank(inventory.getAttribute2()) ? "N/A" : inventory.getAttribute2());
+        logger.debug("Attribute 3: {}", Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3());
+        logger.debug("Attribute 4: {}", Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4());
+        logger.debug("Attribute 5: {}", Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5());
+
+        if (Boolean.TRUE.equals(inventory.getKitInventoryFlag())) {
+            logger.debug("start to receive a kit inventory");
+            for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
+                logger.debug(">> inner inventory: item = {}, quantity = {}",
+                        kitInnerInventory.getItem().getName(), kitInnerInventory.getQuantity());
+
+                logger.debug(">>>> inner inventory color: {}",
+                        Strings.isBlank(kitInnerInventory.getColor()) ? "N/A" : kitInnerInventory.getColor());
+                logger.debug(">>>> inner inventory Product Size: {}",
+                        Strings.isBlank(kitInnerInventory.getProductSize()) ? "N/A" : kitInnerInventory.getProductSize());
+                logger.debug(">>>> inner inventory Style: {}",
+                        Strings.isBlank(kitInnerInventory.getStyle()) ? "N/A" : kitInnerInventory.getStyle());
+                logger.debug(">>>> inner inventory Attribute 1: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute1()) ? "N/A" : kitInnerInventory.getAttribute1());
+                logger.debug(">>>> inner inventory Attribute 2: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute2()) ? "N/A" : kitInnerInventory.getAttribute2());
+                logger.debug(">>>> inner inventory Attribute 3: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute3()) ? "N/A" : kitInnerInventory.getAttribute3());
+                logger.debug(">>>> inner inventory Attribute 4: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute4()) ? "N/A" : kitInnerInventory.getAttribute4());
+                logger.debug(">>>> inner inventory Attribute 5: {}",
+                        Strings.isBlank(kitInnerInventory.getAttribute5()) ? "N/A" : kitInnerInventory.getAttribute5());
+            }
+        }
+        return receiptLineService.receive(receiptId, receiptLineId, inventory, receiveToStage, stageLocation, rfCode);
     }
 
 
@@ -222,8 +322,9 @@ public class ReceiptController {
     )
     public List<Inventory> receive(@PathVariable Long receiptId,
                              @PathVariable Long receiptLineId,
-                             @RequestBody List<Inventory> inventoryList) {
-        return receiptLineService.receive(receiptId, receiptLineId, inventoryList);
+                             @RequestBody List<Inventory> inventoryList,
+                                   @RequestParam(name = "rfCode", defaultValue = "", required = false) String rfCode) {
+        return receiptLineService.receive(receiptId, receiptLineId, inventoryList, rfCode);
     }
 
     @BillableEndpoint
@@ -257,6 +358,15 @@ public class ReceiptController {
     @RequestMapping(value="/receipts/{id}/inventories", method = RequestMethod.GET)
     public List<Inventory> findInventoryByReceipt(@PathVariable Long id){
         return receiptService.findInventoryByReceipt(id);
+    }
+
+    @RequestMapping(value="/receipts/inventories", method = RequestMethod.GET)
+    public List<Inventory> findInventoryByReceipts(@RequestParam Long warehouseId,
+                                                   @RequestParam String receiptIds){
+        if (Strings.isBlank(receiptIds)) {
+            return new ArrayList<>();
+        }
+        return receiptService.findInventoryByReceipts(warehouseId, receiptIds);
     }
 
 
@@ -301,13 +411,14 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNLabel(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
-    ) throws JsonProcessingException {
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
+    )   {
 
         logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabel(id, lpn, quantity, locale, printerName);
+        return receiptService.generatePrePrintLPNLabel(id, lpn, inventoryQuantity, ignoreInventoryQuantity,  locale, printerName);
     }
 
     @BillableEndpoint
@@ -315,13 +426,14 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNReport(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long quantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
-    ) throws JsonProcessingException {
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
+    )  {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReport(id, lpn, quantity, locale, printerName);
+        return receiptService.generatePrePrintLPNReport(id, lpn, inventoryQuantity, ignoreInventoryQuantity, locale, printerName);
     }
 
 
@@ -330,31 +442,52 @@ public class ReceiptController {
     public ReportHistory generatePrePrintLPNLabelInBatch(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "inventoryQuantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
-            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
-    ) throws JsonProcessingException {
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
+    )   {
 
-        logger.debug("start generate pre-printed lpn label with id: {}", id);
-        return receiptService.generatePrePrintLPNLabelInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
+        logger.debug("start generate pre-printed lpn label with receipt line id: {}", id);
+        return receiptService.generateReceiptLinePrePrintLPNLabelInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,
+                locale, printerName);
     }
+
+    @BillableEndpoint
+    @RequestMapping(value="/receipts/{id}/pre-print-lpn-label/batch", method = RequestMethod.POST)
+    public ReportHistory generateReceiptPrePrintLPNLabelInBatch(
+            @PathVariable Long id,
+            @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestBody PrintingLPNByReceiptParameters printingLPNByReceiptParameters
+    )  {
+
+        logger.debug("start generate pre-printed lpn label with receipt id: {}", id);
+        logger.debug("lpn : {}", lpn);
+        logger.debug("printerName : {}", printerName);
+        logger.debug("printingLPNByReceiptParameters : {}", printingLPNByReceiptParameters.toString());
+        return receiptService.generateReceiptPrePrintLPNLabelInBatch(id, lpn, printingLPNByReceiptParameters, locale, printerName);
+    }
+
 
     @BillableEndpoint
     @RequestMapping(value="/receipts/receipt-lines/{id}/pre-print-lpn-report/batch", method = RequestMethod.POST)
     public ReportHistory generatePrePrintLPNReportInBatch(
             @PathVariable Long id,
             @RequestParam String lpn,
-            @RequestParam(name = "quantity", defaultValue = "", required = false) Long lpnQuantity,
+            @RequestParam(name = "quantity", defaultValue = "", required = false) Long inventoryQuantity,
             @RequestParam(name = "count", defaultValue = "1", required = false) Integer count,
-            @RequestParam(name = "copies", defaultValue = "1", required = false) Integer copies,
             @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
-            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
-    ) throws JsonProcessingException {
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName,
+            @RequestParam(name = "ignoreInventoryQuantity", defaultValue = "false", required = false) Boolean ignoreInventoryQuantity
+    )  {
 
         logger.debug("start generate pre-printed lpn report with id: {}", id);
-        return receiptService.generatePrePrintLPNReportInBatch(id, lpn, lpnQuantity, count, copies, locale, printerName);
+        return receiptService.generateReceiptLinePrePrintLPNReportInBatch(id, lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,   locale, printerName);
     }
 
 
@@ -375,19 +508,21 @@ public class ReceiptController {
                     @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadReceipts(Long warehouseId,
-                                            @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper uploadReceipts(Long companyId,
+                                              Long warehouseId,
+                                              @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
+                                              @RequestParam("file") MultipartFile file) {
 
-
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "receipts", localFile);
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "receipts", fileService.saveFile(file), ignoreUnknownFields);
+            // fileService.validateCSVFile(companyId, warehouseId, "receipts", localFile);
+            String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = receiptService.saveReceiptData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/receipts/upload/progress")
@@ -416,20 +551,25 @@ public class ReceiptController {
                     @CacheEvict(cacheNames = "InventoryService_Receipt", allEntries = true),
             }
     )
-    public ResponseBodyWrapper updateReceivingInventory(Long warehouseId,
-                                              @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseBodyWrapper updateReceivingInventory(Long companyId, Long warehouseId,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
+                                                        @RequestParam(name = "removeExistingInventoryWithSameLPN", defaultValue = "true", required = false) Boolean removeExistingInventoryWithSameLPN,
+                                                        @RequestParam(name = "emptyLocation", defaultValue = "true", required = false) Boolean emptyLocation,
+                                                        @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "receiving-inventories", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "receiving-inventories", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile, removeExistingInventoryWithSameLPN, emptyLocation);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
 
-        String fileUploadProgressKey = receiptService.saveReceivingInventoryData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/receipts/receiving-inventory/upload/progress")

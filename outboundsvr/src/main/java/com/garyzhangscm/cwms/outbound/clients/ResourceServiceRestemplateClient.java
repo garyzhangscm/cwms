@@ -19,27 +19,20 @@
 package com.garyzhangscm.cwms.outbound.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -54,7 +47,7 @@ public class ResourceServiceRestemplateClient {
                                  Report reportData, String locale) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/reports/{warehouseId}/{type}")
                         .queryParam("locale", locale);
 /**
@@ -87,7 +80,7 @@ public class ResourceServiceRestemplateClient {
                 + companyId + "/" + warehouseId + "/" + type + "/" + filename;
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path(url);
         if (Strings.isNotBlank(findPrinterBy)) {
             builder = builder.queryParam("findPrinterBy", URLEncoder.encode(findPrinterBy, "UTF-8") );
@@ -119,7 +112,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -149,16 +142,21 @@ public class ResourceServiceRestemplateClient {
 
     }
 
-    public String validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
+    public String validateCSVFile(Long companyId, Long warehouseId,
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 /**
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplateProxy.getRestTemplate().exchange(
@@ -180,11 +178,27 @@ public class ResourceServiceRestemplateClient {
     }
 
 
+    public FileUploadType getFileUploadType(String typename) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/file-upload/types/{typename}");
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(typename).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+
+    }
+
     public WorkTask addWorkTask(Long warehouseId, WorkTask workTask)  {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -217,7 +231,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}")
                         .queryParam("warehouseId", warehouseId);
 /**
@@ -244,7 +258,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}")
                         .queryParam("warehouseId", warehouseId);
 
@@ -259,7 +273,7 @@ public class ResourceServiceRestemplateClient {
     public WorkTask completeWorkTask(Long warehouseId, Long workTaskId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/complete")
                         .queryParam("warehouseId", warehouseId);
 
@@ -275,7 +289,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/assign-user")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("userId", userId);
@@ -303,7 +317,7 @@ public class ResourceServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/work-tasks/{id}/unassign-user")
                         .queryParam("warehouseId", warehouseId);
 
@@ -334,5 +348,43 @@ public class ResourceServiceRestemplateClient {
         return new HttpEntity<String>(requestBody, headers);
     }
      **/
+
+    public ReportHistory combineLabels(Long companyId,
+                                       Long warehouseId,
+                                       List<ReportHistory> reportHistories) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/report-histories/labels/combine")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                ReportHistory.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                reportHistories
+        );
+
+    }
+
+    public FileUploadType getFileUploadType(Long companyId, Long warehouseId,
+                                            String type) {
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/resource/file-upload/types/{type}")
+                        .queryParam("companyId", companyId)
+                        .queryParam("warehouseId", warehouseId);
+
+        return restTemplateProxy.exchange(
+                FileUploadType.class,
+                builder.buildAndExpand(type).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 
 }

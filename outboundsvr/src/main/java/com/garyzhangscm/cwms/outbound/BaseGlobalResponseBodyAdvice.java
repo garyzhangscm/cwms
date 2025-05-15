@@ -131,6 +131,7 @@ public class BaseGlobalResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         // After this method(beforeBodyWrite) returns, spring will still call
         // the @ExceptionHandler marked method to process the exceptions.
         if (obj == null || !(obj instanceof ResponseBodyWrapper)) {
+            logger.debug("the current response is not wrapped yet, let's wrap the object");
             obj = new ResponseBodyWrapper(0, "", obj);
         }
         return obj;

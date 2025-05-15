@@ -30,15 +30,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.io.IOException;
+import java.net.URLEncoder;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 
 @Service
@@ -73,10 +76,17 @@ public class PickService {
     private PickConfirmStrategyService pickConfirmStrategyService;
     @Autowired
     private OrderActivityService orderActivityService;
+    @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private PickConfirmTransactionService pickConfirmTransactionService;
+
+    @Autowired
+    private PalletPickLabelContentService palletPickLabelContentService;
 
     @Autowired
     private AllocationService allocationService;
@@ -98,6 +108,12 @@ public class PickService {
     private BulkPickService bulkPickService;
     @Autowired
     private PickReleaseService pickReleaseService;
+    @Autowired
+    private UnitService unitService;
+
+    // syncronized key for picks to make sure
+    // picks from same location and same item will be executed syncronized
+    private Interner<String> pickKeyPool = Interners.newWeakInterner();
 
     public Pick findById(Long id, boolean loadDetails) {
         Pick pick = pickRepository.findById(id)
@@ -113,7 +129,8 @@ public class PickService {
     }
 
 
-    public List<Pick> findAll(Long warehouseId, Long clientId, String number, Long orderId, String orderNumber,
+    public List<Pick> findAll(Long warehouseId, Long clientId, String number,
+                              Long orderId, String orderIds, String orderNumber,
                               Long shipmentId, Long waveId,
                               Long  listId, Long cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
@@ -156,6 +173,18 @@ public class PickService {
                         Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinOrder.get("id"), orderId));
 
+                    }
+                    if (Strings.isNotBlank(orderIds)) {
+                        Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
+                        Join<ShipmentLine, OrderLine> joinOrderLine= joinShipmentLine.join("orderLine", JoinType.INNER);
+                        Join<OrderLine, Order> joinOrder = joinOrderLine.join("order", JoinType.INNER);
+
+
+                        CriteriaBuilder.In<Long> inOrderIds = criteriaBuilder.in(joinOrder.get("id"));
+                        for(String id : orderIds.split(",")) {
+                            inOrderIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderIds));
                     }
                     if (Strings.isNotBlank(orderNumber)) {
                         Join<Pick, ShipmentLine> joinShipmentLine = root.join("shipmentLine", JoinType.INNER);
@@ -332,7 +361,9 @@ public class PickService {
         return picks;
     }
 
-    public List<Pick> findAll(Long warehouseId, Long clientId, String number, Long orderId, String orderNumber, Long shipmentId,Long waveId,
+    public List<Pick> findAll(Long warehouseId, Long clientId, String number,
+                              Long orderId, String orderIds, String orderNumber,
+                              Long shipmentId,Long waveId,
                               Long  listId, Long  cartonizationId,  String ids,
                               Long itemId, Long sourceLocationId, Long destinationLocationId,
                               Long workOrderLineId, String workOrderLineIds,
@@ -349,7 +380,8 @@ public class PickService {
                               Boolean includeCompletedPick,
                               Boolean includeCancelledPick,
                               ClientRestriction clientRestriction) {
-        return findAll(warehouseId, clientId,  number, orderId, orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
+        return findAll(warehouseId, clientId,  number, orderId, orderIds,
+                orderNumber, shipmentId, waveId, listId, cartonizationId, ids,
                 itemId, sourceLocationId, destinationLocationId,
                 workOrderLineId, workOrderLineIds, shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber,
@@ -368,14 +400,27 @@ public class PickService {
     }
 
     public List<Pick> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, null, order.getId(), null, null,
+        return findAll(order.getWarehouseId(), null, null, order.getId(), null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
     }
 
+    public List<Pick> findByOrders(Long warehouseId, String orderIds) {
+        return findAll(warehouseId, null, null, null, orderIds, null, null,
+                null, null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null, null, null, null, null, null, null, null, null);
+
+    }
+    public List<Pick> findByOrders(Long warehouseId, List<Order> orders) {
+
+        String orderIds =  orders.stream().map(Order::getId).map(String::valueOf).collect(Collectors.joining(","));
+        return findByOrders(warehouseId, orderIds);
+    }
+
     public List<Pick> findByShipment(Shipment shipment) {
-        return findAll(shipment.getWarehouseId(),null, null, null, null, shipment.getId(),
+        return findAll(shipment.getWarehouseId(),null, null, null, null, null, shipment.getId(),
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, null);
@@ -386,28 +431,37 @@ public class PickService {
                         map(WorkOrderLine::getId).
                         map(Object::toString).
                         collect( Collectors.joining( "," ) );
-        return findAll(workOrder.getWarehouseId(), null, null, null, null,  null,
+        return findAll(workOrder.getWarehouseId(), null, null, null,null, null,  null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, workOrderLineIds, null,null, null, null, null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 
-        return findAll(wave.getWarehouseId(), null, null, null, null, null,
+        return findAll(wave.getWarehouseId(), null, null, null, null,null, null,
                 wave.getId(), null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
     }
+    public List<Pick> findByWave(Wave wave, boolean loadDetails) {
+
+        return findAll(wave.getWarehouseId(), null, null, null, null,null, null,
+                wave.getId(), null,  null,null, null, null, null,
+                null, null,  null,null, null, null, null,
+                null,
+                null, null, null,null, null, null,
+                null, null, loadDetails);
+    }
     public List<Pick> findByPickList(PickList pickList) {
 
-        return findAll(pickList.getWarehouseId(), null, null, null, null,  null,
+        return findAll(pickList.getWarehouseId(), null, null, null, null,null,  null,
                 null, pickList.getId(),  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
     }
     public List<Pick> findByCartonization(Cartonization cartonization) {
 
-        return findAll(cartonization.getWarehouseId(), null, null, null, null, null,
+        return findAll(cartonization.getWarehouseId(), null, null, null, null,null, null,
                 null, null,  cartonization.getId(),null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null,null, null, null, null, null);
@@ -446,6 +500,10 @@ public class PickService {
             pick.setItem(inventoryServiceRestemplateClient.getItemById(pick.getItemId()));
         }
 
+        // Load the item and inventory status information for each lines
+        if (pick.getItemPackageTypeId() != null && pick.getItemPackageType() == null) {
+            pick.setItemPackageType(inventoryServiceRestemplateClient.getItemPackageTypeById(pick.getItemPackageTypeId()));
+        }
         // load pick's inventory status for
         if (pick.getInventoryStatusId() != null &&
                 pick.getInventoryStatus() == null) {
@@ -545,6 +603,7 @@ public class PickService {
 
     @Transactional
     public void delete(Pick pick) {
+
         pickRepository.delete(pick);
     }
 
@@ -552,6 +611,11 @@ public class PickService {
         pickRepository.deleteById(id);
     }
 
+    @Transactional
+    public void removePick(Pick pick) {
+        palletPickLabelContentService.onPickRemove(pick);
+        delete(pick);
+    }
 
 
     public List<Pick> getOpenPicksByItemIdAndSourceLocation(Long itemId, Location sourceLocation){
@@ -617,15 +681,18 @@ public class PickService {
 
     public List<Pick> cancelPicks(String pickIds,
                                   boolean errorLocation,
-                                  boolean generateCycleCount) {
+                                  boolean generateCycleCount,
+                                  boolean reallocate,
+                                  boolean skipOriginalLocation) {
 
         List<Pick> picks = new ArrayList<>();
 
         Arrays.stream(pickIds.split(",")).forEach(
                 pickIdString -> {
                     Long pickId = Long.parseLong(pickIdString);
-                    picks.add(findById(pickId));
-                    cancelPick(pickId, errorLocation, generateCycleCount);
+                    // picks.add(findById(pickId));
+                    picks.addAll(cancelPick(pickId, errorLocation, generateCycleCount, reallocate,
+                            skipOriginalLocation));
                 }
         );
 
@@ -633,26 +700,42 @@ public class PickService {
 
     }
 
-    public Pick cancelPick(Long id, boolean errorLocation, boolean generateCycleCount) {
-        return cancelPick(findById(id), errorLocation, generateCycleCount);
+    public List<Pick> cancelPick(Long id, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation) {
+        return cancelPick(findById(id), errorLocation, generateCycleCount, reallocate,
+                skipOriginalLocation);
     }
 
     @Transactional
-    public Pick cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount) {
+    public List<Pick> cancelPick(Pick pick, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation) {
         return cancelPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
-                errorLocation, generateCycleCount);
+                errorLocation, generateCycleCount, reallocate,
+                skipOriginalLocation);
 
     }
     @Transactional
-    public Pick cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount) {
+    public List<Pick> cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount,
+                                 boolean reallocate,
+                                 boolean skipOriginalLocation) {
+        return cancelPick(pick, cancelledQuantity,
+                errorLocation, generateCycleCount,
+                reallocate, skipOriginalLocation, true);
+
+    }
+    @Transactional
+    public List<Pick> cancelPick(Pick pick, Long cancelledQuantity, boolean errorLocation, boolean generateCycleCount,
+                           boolean reallocate,
+                           boolean skipOriginalLocation,
+                                 boolean validateExistingInventory) {
         logger.debug("start to cancel pick {}", pick.getNumber());
-        if (pick.getStatus().equals(PickStatus.COMPLETED)) {
-            throw PickingException.raiseException("Can't cancel pick that is already completed!");
-        }
+        validatePickForCancellation(pick, validateExistingInventory);
 
         // we have nothing left to cancel
         if (cancelledQuantity == 0) {
-            return pick;
+            return new ArrayList<>();
         }
 
         // return the open quantity back to the shipment line
@@ -663,22 +746,6 @@ public class PickService {
         OrderActivity orderActivity = orderActivityService.createOrderActivity(
                 pick.getWarehouseId(), pick.getShipmentLine(), pick, OrderActivityType.PICK_CALCELLATION
         );
-        if (pick.getShipmentLine() != null) {
-            ShipmentLine newShipmentLine = shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
-            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
-        }
-        else if (pick.getShortAllocation() != null) {
-            ShortAllocation newShortAllocation =
-                    shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
-            orderActivity.setQuantityByNewShortAllocation(newShortAllocation);
-        }
-        else if (pick.getWorkOrderLineId() != null) {
-            workOrderServiceRestemplateClient.registerPickCancelled(
-                    pick.getWorkOrderLineId(),
-                    cancelledQuantity,
-                    pick.getDestinationLocationId());
-        }
-
         // If this is a pick that allocates a whole LPN, release the LPN
         if (Objects.nonNull(pick.getLpn())) {
 
@@ -713,13 +780,17 @@ public class PickService {
         orderActivity.setQuantityByNewPick(pick);
         orderActivityService.sendOrderActivity(orderActivity);
 
+        pick = saveOrUpdate(pick);
+
+
         logger.debug("after we cancelled the quantity {}, there's still {} quantity left",
                 cancelledQuantity, pick.getQuantity());
+
         if (pick.getQuantity() == 0) {
             // There's nothing left on the picks, let's remove it.
             // We can find the history in the cancelled pick table
             logger.debug("Remove the pick as there's nothing left for this pick {}", pick.getNumber());
-            delete(pick);
+            removePick(pick);
 
             // when we remove the pick, we may need to remove the work task, if there's any
             if (Objects.nonNull(pick.getWorkTaskId())) {
@@ -728,13 +799,60 @@ public class PickService {
                         pick.getWorkTaskId()
                 );
             }
-
-            return pick;
-        }
-        else {
-            return saveOrUpdate(pick);
         }
 
+        // return the new picks in case of reallocate
+        List<Pick> newPicks = new ArrayList<>();
+
+        // reflect the quantity on shipment / work order/ short allocation about the cancelled pick
+        if (pick.getShipmentLine() != null) {
+            ShipmentLine newShipmentLine = shipmentLineService.registerPickCancelled(pick.getShipmentLine(), cancelledQuantity);
+            orderActivity.setQuantityByNewShipmentLine(newShipmentLine);
+            if (reallocate) {
+                Set<Long> skipLocationIDs = new HashSet<>();
+                if (skipOriginalLocation) {
+                    skipLocationIDs.add(pick.getSourceLocationId());
+                }
+                AllocationResult allocationResult =
+                        shipmentLineService.allocateShipmentLine(newShipmentLine, skipLocationIDs);
+                newPicks.addAll(allocationResult.getPicks());
+            }
+        }
+        else if (pick.getShortAllocation() != null) {
+            ShortAllocation newShortAllocation =
+                    shortAllocationService.registerPickCancelled(pick.getShortAllocation(), cancelledQuantity);
+            orderActivity.setQuantityByNewShortAllocation(newShortAllocation);
+        }
+        else if (pick.getWorkOrderLineId() != null) {
+            workOrderServiceRestemplateClient.registerPickCancelled(
+                    pick.getWorkOrderLineId(),
+                    cancelledQuantity,
+                    pick.getDestinationLocationId());
+        }
+
+        return newPicks;
+
+    }
+
+    private void validatePickForCancellation(Pick pick, boolean validateExistingInventory) {
+        if (pick.getStatus().equals(PickStatus.COMPLETED)) {
+            throw PickingException.raiseException("Can't cancel pick that is already completed!");
+        }
+
+        if (validateExistingInventory) {
+
+            // make sure there's nothing picked yet. If anything is picked,
+            // we will ask the user to use unpick instead of cancel pick
+            List<Inventory> inventories =  inventoryServiceRestemplateClient.getPickedInventory(
+                    pick.getWarehouseId(), Collections.singletonList(pick),
+                    false, null, false
+            );
+            if (!inventories.isEmpty()) {
+                throw PickingException.raiseException("Following LPNs has been picked by current pick " + pick.getNumber() +
+                        ", please use unpick instead of cancel pick; LPNs: " +
+                        inventories.stream().map(Inventory::getLpn).distinct().collect(Collectors.joining(",")));
+            }
+        }
     }
 
 
@@ -752,6 +870,13 @@ public class PickService {
                                              ItemUnitOfMeasure pickableUnitOfMeasure,
                                              String lpn,
                                              boolean wholeLPNPick) {
+        if (Objects.isNull(inventory.getLocation()) && Objects.nonNull(inventory.getLocationId())) {
+            inventory.setLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            inventory.getLocationId()
+                    )
+            );
+        }
         return generateBasicPickInformation(warehouseId,
                 inventory.getItem(),
                 inventory.getLocation(),
@@ -767,6 +892,13 @@ public class PickService {
                                              String lpn,
                                              boolean wholeLPNPick) {
 
+        if (Objects.isNull(inventorySummary.getLocation()) && Objects.nonNull(inventorySummary.getLocationId())) {
+            inventorySummary.setLocation(
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            inventorySummary.getLocationId()
+                    )
+            );
+        }
         return generateBasicPickInformation(warehouseId,
                 inventorySummary.getItem(),
                 inventorySummary.getLocation(),
@@ -787,7 +919,7 @@ public class PickService {
         return generateBasicPickInformation(warehouseId,
                 item, sourceLocation, inventoryStatus,
                 quantity, pickableUnitOfMeasure, lpn,
-                "", "", "", wholeLPNPick);
+                "", "", "", "","","","","", wholeLPNPick);
 
     }
     public Pick generateBasicPickInformation(Long warehouseId,
@@ -800,6 +932,11 @@ public class PickService {
                                              String color,
                                              String productSize,
                                              String style,
+                                             String inventoryAttribute1,
+                                             String inventoryAttribute2,
+                                             String inventoryAttribute3,
+                                             String inventoryAttribute4,
+                                             String inventoryAttribute5,
                                              boolean wholeLPNPick) {
 
         Pick pick = new Pick();
@@ -818,6 +955,12 @@ public class PickService {
         pick.setColor(color);
         pick.setProductSize(productSize);
         pick.setStyle(style);
+
+        pick.setInventoryAttribute1(inventoryAttribute1);
+        pick.setInventoryAttribute2(inventoryAttribute2);
+        pick.setInventoryAttribute3(inventoryAttribute3);
+        pick.setInventoryAttribute4(inventoryAttribute4);
+        pick.setInventoryAttribute5(inventoryAttribute5);
 
 
         if (Objects.nonNull(pickableUnitOfMeasure)) {
@@ -838,7 +981,7 @@ public class PickService {
             logger.debug("No strategy found. Setup confirm flag for all fields");
             pick.setConfirmItemFlag(true);
             pick.setConfirmLocationFlag(true);
-            pick.setConfirmLocationCodeFlag(true);
+            pick.setConfirmLocationCodeFlag(false);
 
             pick.setConfirmLpnFlag(true);
         }
@@ -896,6 +1039,13 @@ public class PickService {
         pick.setColor(shipmentLine.getOrderLine().getColor());
         pick.setProductSize(shipmentLine.getOrderLine().getProductSize());
         pick.setStyle(shipmentLine.getOrderLine().getStyle());
+
+        pick.setInventoryAttribute1(shipmentLine.getOrderLine().getInventoryAttribute1());
+        pick.setInventoryAttribute2(shipmentLine.getOrderLine().getInventoryAttribute2());
+        pick.setInventoryAttribute3(shipmentLine.getOrderLine().getInventoryAttribute3());
+        pick.setInventoryAttribute4(shipmentLine.getOrderLine().getInventoryAttribute4());
+        pick.setInventoryAttribute5(shipmentLine.getOrderLine().getInventoryAttribute5());
+
         pick.setAllocateByReceiptNumber(shipmentLine.getOrderLine().getAllocateByReceiptNumber());
 
         // Setup the destination, get from ship staging area
@@ -973,6 +1123,27 @@ public class PickService {
 
         return processPick(pick);
     }
+
+    @Transactional
+    public Pick generateMnaualPick(InventorySummary inventorySummary,
+                             ShipmentLine shipmentLine, long quantity,
+                             String lpn,
+                             boolean wholeLPNPick) {
+        logger.debug("create picks for:");
+        logger.debug("inventory summary: {}",
+                Objects.isNull(inventorySummary.getLocation()) ? inventorySummary.getLocationId() :
+                        inventorySummary.getLocation().getName());
+        logger.debug("shipment line: {}", shipmentLine);
+        logger.debug("quantity: {}", quantity);
+        logger.debug("lpn: {}", lpn);
+        Pick pick = generateBasicPickInformation(shipmentLine.getWarehouseId(), inventorySummary, quantity, lpn, wholeLPNPick);
+        logger.debug("will need to setup shipment line information for the pick: {}", pick.getNumber());
+        pick = setupShipmentInformation(pick, shipmentLine);
+        logger.debug("start to process the pick: {}", pick.getNumber());
+
+        return processPick(pick);
+    }
+
     @Transactional(dontRollbackOn = GenericException.class)
     public Pick generatePick(InventorySummary inventorySummary,
                              ShipmentLine shipmentLine, long quantity,
@@ -985,6 +1156,26 @@ public class PickService {
     }
 
 
+    @Transactional
+    public Pick generatePick(ShipmentLine shipmentLine, Inventory inventory,
+                             Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean wholeLPNPick) {
+        return generatePick(shipmentLine, inventory,
+                quantity, pickableUnitOfMeasure, true,
+                wholeLPNPick);
+    }
+    @Transactional
+    public Pick generatePick(ShipmentLine shipmentLine, Inventory inventory,
+                             Long quantity,
+                             ItemUnitOfMeasure pickableUnitOfMeasure,
+                             boolean loadDetails,
+                             boolean wholeLPNPick) {
+        Pick pick = generateBasicPickInformation(
+                shipmentLine.getWarehouseId(), inventory, quantity, pickableUnitOfMeasure, wholeLPNPick);
+        pick = setupShipmentInformation(pick, shipmentLine);
+        return processPick(pick, loadDetails);
+    }
 
     @Transactional
     private Pick setupWorkOrderInformation(Pick pick, WorkOrder workOrder,
@@ -1152,11 +1343,11 @@ public class PickService {
         // with empty reserve code so
         // it will update the pending volume only
         logger.debug("=> Will update the pending volume of location {}, SIZE {}, quantity {}",
-                pick.getDestinationLocationId(), pick.getSize(), pick.getQuantity());
+                pick.getDestinationLocationId(), pick.getSize(unitService), pick.getQuantity());
         warehouseLayoutServiceRestemplateClient.reserveLocation(
                 pick.getDestinationLocationId(),
                 "",
-                pick.getSize(),
+                pick.getSize(unitService).getFirst(),
                 pick.getQuantity(),
                 1
         );
@@ -1191,7 +1382,7 @@ public class PickService {
                     pick, shipmentLine.getOrderLine().getOrder().getStageLocationGroupId());
         }
 
-        logger.debug("OK, we find the ship stage configuration: {}", shippingStageAreaConfiguration.getSequence());
+        logger.debug("OK, we find the ship stage configuration: {}", shippingStageAreaConfiguration);
 
         Location stagingLocation = shippingStageAreaConfigurationService.reserveShippingStageLocation(shippingStageAreaConfiguration, pick);
 
@@ -1292,7 +1483,7 @@ public class PickService {
                     movementPathDetail.getHopLocationId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocation(movementPathDetail.getHopLocationId(),
-                    getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+                    getReserveCode(pick, movementPathDetail), pick.getSize(unitService).getFirst(), pick.getQuantity(), 1);
             logger.debug("## we get location {}",
                     hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
@@ -1304,7 +1495,7 @@ public class PickService {
                     movementPathDetail.getHopLocationGroupId() );
 
             Location hopLocation = warehouseLayoutServiceRestemplateClient.reserveLocationFromGroup(movementPathDetail.getHopLocationGroupId(),
-                    getReserveCode(pick, movementPathDetail), pick.getSize(), pick.getQuantity(), 1);
+                    getReserveCode(pick, movementPathDetail), pick.getSize(unitService).getFirst(), pick.getQuantity(), 1);
             logger.debug("## we get location {}",
                     hopLocation);
             return new PickMovement(pick, hopLocation, movementPathDetail.getSequence());
@@ -1332,15 +1523,16 @@ public class PickService {
      * @param quantity The quantity that will be picked
      * @return
      */
-    public Pick confirmPick(Pick pick, Long quantity) {
-        return confirmPick(pick, quantity, "", "");
+    public Pick confirmPick(Pick pick, Long quantity, String sessionId) {
+
+        return confirmPick(pick, quantity, "", "", sessionId);
     }
-    public Pick confirmPick(Pick pick, Long quantity, String lpn, String destinationLpn) {
+    public Pick confirmPick(Pick pick, Long quantity, String lpn, String destinationLpn, String sessionId) {
         if (pick.getPickMovements().size() == 0) {
 
             logger.debug("There's no movement for this pick: {}",
                     pick.getNumber());
-            return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn, destinationLpn);
+            return confirmPick(pick, quantity, pick.getDestinationLocation(), lpn, destinationLpn, sessionId);
         }
         else {
             Location nextLocation = pick.getPickMovements().get(0).getLocation();
@@ -1359,21 +1551,35 @@ public class PickService {
 
             logger.debug("we get the next location {} from movement for this pick: {}",
                     nextLocation.getName(), pick.getNumber());
-            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
+            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn, sessionId);
         }
     }
 
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
-                            boolean pickToContainer, String containerId) {
+                            boolean pickToContainer, String containerId,
+                            String sessionId) {
         return confirmPick(pickId, quantity, nextLocationId, nextLocationName,
-                pickToContainer, containerId, "", "");
+                pickToContainer, containerId, "", "", sessionId);
     }
+
     public Pick confirmPick(Long pickId, Long quantity, Long nextLocationId,
                             String nextLocationName,
                             boolean pickToContainer, String containerId,
-                            String lpn, String destinationLpn)  {
-        Pick pick = findById(pickId);
+                            String lpn, String destinationLpn,
+                            String sessionId)  {
+        return confirmPick(findById(pickId), quantity, nextLocationId,
+                nextLocationName, pickToContainer, containerId,
+                lpn, destinationLpn, sessionId);
+    }
+
+
+    public Pick confirmPick(Pick pick, Long quantity, Long nextLocationId,
+                            String nextLocationName,
+                            boolean pickToContainer, String containerId,
+                            String lpn, String destinationLpn,
+                            String sessionId)  {
+
 
         if (Objects.nonNull(pick.getShipmentLine())) {
             Order order = pick.getShipmentLine().getOrderLine().getOrder();
@@ -1401,13 +1607,13 @@ public class PickService {
             // on the fly.
             Location nextLocation =
                     warehouseLayoutServiceRestemplateClient.getLocationByContainerId(pick.getWarehouseId(), containerId);
-            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
+            return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn, sessionId);
 
         }
         if (Objects.nonNull(nextLocationId)) {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationById(nextLocationId);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
+                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn, sessionId);
             }
             else {
                 throw PickingException.raiseException(
@@ -1418,7 +1624,7 @@ public class PickService {
             Location nextLocation = warehouseLayoutServiceRestemplateClient.getLocationByName(
                     pick.getWarehouseId(), nextLocationName);
             if (Objects.nonNull(nextLocation)) {
-                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn);
+                return confirmPick(pick, quantity, nextLocation, lpn, destinationLpn, sessionId);
             }
             else {
                 logger.debug("Can't confirm the pick to destination location with id: " + nextLocationId + ", The id is an invalid location id");
@@ -1427,14 +1633,19 @@ public class PickService {
             }
         }
         else {
-            return confirmPick(pick, quantity, lpn, destinationLpn);
+            return confirmPick(pick, quantity, lpn, destinationLpn, sessionId);
         }
     }
 
-    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation)   {
-        return confirmPick(pick, quantity, nextLocation, "", "");
+    public Pick confirmPick(Pick pick, Long quantity, String lpn, String sessionId)   {
+        return confirmPick(pick, quantity, lpn, "",   sessionId);
     }
-    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation, String lpn, String destinationLpn)   {
+
+    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation, String sessionId)   {
+        return confirmPick(pick, quantity, nextLocation, "", "", sessionId);
+    }
+    public Pick confirmPick(Pick pick, Long quantity, Location nextLocation,
+                            String lpn, String destinationLpn, String sessionId)   {
 
         logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
@@ -1452,14 +1663,25 @@ public class PickService {
                     ", Quantity left: " + (pick.getQuantity() - pick.getPickedQuantity()));
         }
 
+
+        // If this is a allocated by LPN, then only pick the specific LPN
+        if (Strings.isNotBlank(pick.getLpn())) {
+            if (Strings.isBlank(lpn)) {
+                lpn = pick.getLpn();
+            }
+            else if (!pick.getLpn().equals(lpn)) {
+                throw PickingException.raiseException("The pick is allocated to LPN " + pick.getLpn());
+            }
+        }
+
         // we will use synchronized to prevent multiple users picking the same item from the
         // location;
         // key is the location id and item id
         String key =  pick.getSourceLocationId() + "-" + pick.getItemId();
 
 
-        synchronized (key) {
-            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn);
+        synchronized (pickKeyPool.intern(key)) {
+            List<Inventory> pickableInventories = inventoryServiceRestemplateClient.getInventoryForPick(pick, lpn, false);
             logger.debug(" Get {} valid inventory for pick {}",
                     pickableInventories.size(), pick.getNumber());
             if (pickableInventories.size() == 0) {
@@ -1480,7 +1702,7 @@ public class PickService {
                 if(match(inventory, pick)) {
                     logger.debug(" pick from inventory {}, quantity {},  into locaiton {}",
                             inventory.getLpn(), quantityToBePicked,  nextLocation.getName());
-                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation, destinationLpn);
+                    Long pickedQuantity = confirmPick(inventory, pick, quantityToBePicked, nextLocation, destinationLpn, sessionId);
                     logger.debug(" >> we actually picked {} from the inventory", pickedQuantity);
                     quantityToBePicked -= pickedQuantity;
                     totalQuantityPicked += pickedQuantity;
@@ -1567,11 +1789,14 @@ public class PickService {
         return pickRepository.getPicksByShipmentLineId(shipmentLineId);
     }
 
-    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation)   {
-        return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "");
+    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation,
+                            String sessionId)   {
+        return confirmPick(inventory, pick, quantityToBePicked, nextLocation, "", sessionId);
     }
     @Transactional
-    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked, Location nextLocation, String destinationLpn)  {
+    public Long confirmPick(Inventory inventory, Pick pick, Long quantityToBePicked,
+                            Location nextLocation, String destinationLpn,
+                            String sessionId)  {
 
         if (Strings.isNotBlank(destinationLpn)) {
             validatePickDestinationLpn(pick.getWarehouseId(), nextLocation, destinationLpn);
@@ -1634,7 +1859,13 @@ public class PickService {
         logger.debug(" change the picked quantity from {} to {}",
                 pick.getPickedQuantity(), (pick.getPickedQuantity() + quantityToBePicked));
         pick.setPickedQuantity(pick.getPickedQuantity() + quantityToBePicked);
+        pick.setPickedTime(ZonedDateTime.now());
+        pick.setPickedByUsername(userService.getCurrentUserName());
         saveOrUpdate(pick);
+
+        pickConfirmTransactionService.addConfirmation(null, pick.getWarehouseId(),
+                pick, userService.getCurrentUserName(),
+                quantityToBePicked, inventoryToBePicked.getLpn(), sessionId);
 
         // Let's update the list if the pick belongs to any list
         pickListService.processPickConfirmed(pick);
@@ -1665,6 +1896,83 @@ public class PickService {
                     inventory.getInventoryStatus().getName(), pick.getInventoryStatus().getName());
             return false;
         }
+
+
+        // make sure the inventory attribute matches
+        if (Objects.nonNull(pick.getItemPackageTypeId()) &&
+                 !pick.getItemPackageTypeId().equals(inventory.getItemPackageType().getId())) {
+            logger.debug("Inventory's Item package type doesn't match with Pick. \n " +
+                            ">> Inventory's Item package type: {} \n " +
+                            ">> Pick's Item package type: {}",
+                    inventory.getItemPackageType().getId(), pick.getItemPackageTypeId());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getColor()) &&
+                !pick.getColor().equalsIgnoreCase(inventory.getColor())) {
+            logger.debug("Inventory's color doesn't match with Pick. \n " +
+                            ">> Inventory's color: {} \n " +
+                            ">> Pick's color: {}",
+                    inventory.getColor(), pick.getColor());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getStyle()) &&
+                !pick.getStyle().equalsIgnoreCase(inventory.getStyle())) {
+            logger.debug("Inventory's style doesn't match with Pick. \n " +
+                            ">> Inventory's style: {} \n " +
+                            ">> Pick's style: {}",
+                    inventory.getStyle(), pick.getStyle());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getProductSize()) &&
+                !pick.getProductSize().equalsIgnoreCase(inventory.getProductSize())) {
+            logger.debug("Inventory's product size doesn't match with Pick. \n " +
+                            ">> Inventory's product size: {} \n " +
+                            ">> Pick's product size: {}",
+                    inventory.getProductSize(), pick.getProductSize());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute1()) &&
+                !pick.getInventoryAttribute1().equalsIgnoreCase(inventory.getAttribute1())) {
+            logger.debug("Inventory's attribute 1 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 1: {} \n " +
+                            ">> Pick's attribute 1: {}",
+                    inventory.getAttribute1(), pick.getInventoryAttribute1());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute2()) &&
+                !pick.getInventoryAttribute2().equalsIgnoreCase(inventory.getAttribute2())) {
+            logger.debug("Inventory's attribute 2 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 2: {} \n " +
+                            ">> Pick's attribute 2: {}",
+                    inventory.getAttribute2(), pick.getInventoryAttribute2());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute3()) &&
+                !pick.getInventoryAttribute3().equalsIgnoreCase(inventory.getAttribute3())) {
+            logger.debug("Inventory's attribute 3 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 3: {} \n " +
+                            ">> Pick's attribute 3: {}",
+                    inventory.getAttribute3(), pick.getInventoryAttribute3());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute4()) &&
+                !pick.getInventoryAttribute4().equalsIgnoreCase(inventory.getAttribute4())) {
+            logger.debug("Inventory's attribute 4 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 4: {} \n " +
+                            ">> Pick's attribute 4: {}",
+                    inventory.getAttribute4(), pick.getInventoryAttribute4());
+            return false;
+        }
+        if (Strings.isNotBlank(pick.getInventoryAttribute5()) &&
+                !pick.getInventoryAttribute5().equalsIgnoreCase(inventory.getAttribute5())) {
+            logger.debug("Inventory's attribute 5 doesn't match with Pick. \n " +
+                            ">> Inventory's attribute 5: {} \n " +
+                            ">> Pick's attribute 5: {}",
+                    inventory.getAttribute5(), pick.getInventoryAttribute5());
+            return false;
+        }
+
+
         return true;
     }
 
@@ -1676,7 +1984,7 @@ public class PickService {
      * @return pick that being cancelled
      */
     //
-    public Pick unpick(Long id, Long unpickedQuantity) {
+    public List<Pick> unpick(Long id, Long unpickedQuantity) {
         return unpick(findById(id), unpickedQuantity);
     }
 
@@ -1690,9 +1998,11 @@ public class PickService {
      * @param unpickedQuantity: quantity of the inventory being unpicked
      * @return pick that being cancelled
      */
-    public Pick unpick(Pick pick, Long unpickedQuantity) {
+    public List<Pick> unpick(Pick pick, Long unpickedQuantity) {
         // Cancel the pick with unpicked quantity
-        return cancelPick(pick, unpickedQuantity, false, false);
+        return cancelPick(pick, unpickedQuantity, false,
+                false, false,
+                false, false);
     }
 
     public void handleItemOverride(Long warehouseId, Long oldItemId, Long newItemId) {
@@ -1712,7 +2022,7 @@ public class PickService {
     @Transactional
     public List<Pick> generateManualPickForWorkOrder(Long warehouseId, Long workOrderId, Long productionLineId,
                                                     String lpn, Long pickableQuantity) {
-        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId);
+        WorkOrder workOrder = workOrderServiceRestemplateClient.getWorkOrderById(workOrderId, false, false);
         return generateManualPickForWorkOrder(warehouseId, workOrder, productionLineId, lpn, pickableQuantity);
     }
     /**
@@ -1757,7 +2067,12 @@ public class PickService {
         Item itemToBeAllocated = null;
         if (matchedWorkOrderLineOptional.isPresent()) {
             matchedWorkOrderLine = matchedWorkOrderLineOptional.get();
+
             itemToBeAllocated = matchedWorkOrderLine.getItem();
+            if (Objects.isNull(itemToBeAllocated) && Objects.nonNull(matchedWorkOrderLine.getItemId())) {
+                itemToBeAllocated = inventoryServiceRestemplateClient.getItemById(matchedWorkOrderLine.getItemId());
+                matchedWorkOrderLine.setItem(itemToBeAllocated);
+            }
         }
         else {
             // let's see if we may need to pick spare part
@@ -1772,6 +2087,11 @@ public class PickService {
                                     workOrderLine.getId());
                             matchedWorkOrderLine = workOrderLine;
                             itemToBeAllocated = workOrderLineSparePartDetail.getItem();
+
+                            if (Objects.isNull(itemToBeAllocated) && Objects.nonNull(workOrderLineSparePartDetail.getItemId())) {
+                                itemToBeAllocated = inventoryServiceRestemplateClient.getItemById(workOrderLineSparePartDetail.getItemId());
+                                workOrderLineSparePartDetail.setItem(itemToBeAllocated);
+                            }
                             break  outerLoop;
                         }
                     }
@@ -1784,7 +2104,7 @@ public class PickService {
         }
 
         logger.debug("we will pick item {} for work order line {} / {}",
-                itemToBeAllocated.getName(),
+                matchedWorkOrderLine.getItem().getName(),
                 workOrder.getNumber(),
                 matchedWorkOrderLine.getNumber());
 
@@ -1812,7 +2132,7 @@ public class PickService {
                     shortAllocation -> shortAllocationService.delete(shortAllocation)
             );
             allocationResult.getPicks().forEach(
-                    pick -> delete(pick)
+                    pick -> removePick(pick)
             );
             throw PickingException.raiseException("Error! can't allocate from this LPN " + lpn);
         }
@@ -1823,6 +2143,28 @@ public class PickService {
         return allocationResult.getPicks();
 
 
+
+    }
+
+    @Transactional
+    public AllocationResult generateManualPickForOutboundShipment(ShipmentLine shipmentLine,
+                                                                  Location sourceLocation,
+                                                                  String lpn, Long pickableQuantity) {
+
+        // we will need to make sure there's only one production line assigned to the work order
+        // so that we can know the destination for the pick
+
+        logger.debug("Start to allocate the shipment line {} to get a manual pick " +
+                        " from location {} and lpn {}, with quantity {}",
+                shipmentLine.getId(),
+                sourceLocation.getName(),
+                lpn, pickableQuantity);
+        
+        AllocationResult allocationResult
+                = allocationService.allocate(shipmentLine, sourceLocation, true, lpn, pickableQuantity);
+
+
+        return allocationResult;
 
     }
 
@@ -1915,7 +2257,13 @@ public class PickService {
                 Objects.isNull(sourceLocation) ?  null : sourceLocation.getId(),
                 null,
                 allocationRequest.getColor(), allocationRequest.getProductSize(),
-                allocationRequest.getStyle(), allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getStyle(),
+                allocationRequest.getInventoryAttribute1(),
+                allocationRequest.getInventoryAttribute2(),
+                allocationRequest.getInventoryAttribute3(),
+                allocationRequest.getInventoryAttribute4(),
+                allocationRequest.getInventoryAttribute5(),
+                allocationRequest.getAllocateByReceiptNumber());
 
         long pickableInventoryQuantity = pickableInventory.stream().map(inventory -> inventory.getQuantity())
                 .filter(quantity -> quantity >=0 ).mapToLong(Long::longValue).sum();
@@ -1996,10 +2344,13 @@ public class PickService {
     }
 
     public Long getQuantityInOrderPick(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
-                                   String color, String productSize, String style, boolean exactMatch,
+                                   String color, String productSize, String style,
+                                       String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3,
+                                       String inventoryAttribute4, String inventoryAttribute5,
+                                       boolean exactMatch,
                                    ClientRestriction clientRestriction) {
         List<Pick> picks = findAll(
-                warehouseId, clientId, null, null, null,
+                warehouseId, clientId, null, null, null,null,
                 null, null,
                 null, null,  null,
                 itemId, null, null,
@@ -2013,7 +2364,12 @@ public class PickService {
         picks = picks.stream().filter(
                 pick -> matchPickAttributeWithInventoryAttribute(pick.getColor(), color, exactMatch) &&
                         matchPickAttributeWithInventoryAttribute(pick.getProductSize(), productSize, exactMatch) &&
-                        matchPickAttributeWithInventoryAttribute(pick.getStyle(), style, exactMatch)
+                        matchPickAttributeWithInventoryAttribute(pick.getStyle(), style, exactMatch)&&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute1(), inventoryAttribute1, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute2(), inventoryAttribute2, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute3(), inventoryAttribute3, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute4(), inventoryAttribute4, exactMatch) &&
+                        matchPickAttributeWithInventoryAttribute(pick.getInventoryAttribute5(), inventoryAttribute5, exactMatch)
         ).collect(Collectors.toList());
 
         return picks.stream().map(pick -> pick.getQuantity() > pick.getPickedQuantity() ?
@@ -2226,7 +2582,8 @@ public class PickService {
 
 
     public ReportHistory generatePickReport(Long warehouseId, String ids, String locale) throws JsonProcessingException {
-        List<Pick> picks = findAll(warehouseId, null,  null, null, null, null, null, null, null, ids,
+        List<Pick> picks = findAll(warehouseId, null,  null, null, null,
+                null, null, null, null, null, ids,
                 null, null, null,
                 null, null, null, null, null,
                 null, null, null, null,
@@ -2286,7 +2643,7 @@ public class PickService {
             // has the same item UOM information. If the location is mixed with
             // different package type, the warehouse may have some difficulty for picking
             ItemUnitOfMeasure stockItemUnitOfMeasure =
-                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                    pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasure();
             ItemUnitOfMeasure caseItemUnitOfMeasure =
                     pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
 
@@ -2340,7 +2697,13 @@ public class PickService {
                     List<Inventory> pickableInventory =  pickableInventoryMap.getOrDefault(key,
                                 inventoryServiceRestemplateClient.getPickableInventory(
                                         pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(),
-                                        pick.getColor(), pick.getProductSize(), pick.getStyle(), null)
+                                        pick.getColor(), pick.getProductSize(), pick.getStyle(),
+                                        pick.getInventoryAttribute1(),
+                                        pick.getInventoryAttribute2(),
+                                        pick.getInventoryAttribute3(),
+                                        pick.getInventoryAttribute4(),
+                                        pick.getInventoryAttribute5(),
+                                        null, null)
                             );
                     pickableInventoryMap.putIfAbsent(key, pickableInventory);
 
@@ -2348,7 +2711,12 @@ public class PickService {
                     StringBuilder inventoryAttribute = new StringBuilder()
                             .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
                             .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
-                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "" : pick.getInventoryAttribute1()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "" : pick.getInventoryAttribute2()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "" : pick.getInventoryAttribute3()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "" : pick.getInventoryAttribute4()).append("    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "" : pick.getInventoryAttribute5()).append("    ")
                             .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
@@ -2361,15 +2729,16 @@ public class PickService {
 
     }
 
-    public Pick acknowledgePick(Long warehouseId, Long id) {
+    public Pick acknowledgePick(Long warehouseId, Long id, String rfCode) {
         Pick pick = findById(id);
         String currentUserName = userService.getCurrentUserName();
-        if (Strings.isNotBlank(pick.getAcknowledgedUsername()) &&
-                !pick.getAcknowledgedUsername().equalsIgnoreCase(currentUserName)) {
+        if (!isPickAcknowledgeableByUser(id, currentUserName, rfCode)) {
             throw PickingException.raiseException("pick  " + pick.getNumber() +
-                    " is already acknowledged by " + pick.getAcknowledgedUsername());
+                    " is already acknowledged by " + pick.getAcknowledgedUsername() +
+                    " by  " + pick.getAcknowledgedRFCode());
         }
         pick.setAcknowledgedUsername(currentUserName);
+        pick.setAcknowledgedRFCode(rfCode);
 
         return saveOrUpdate(pick);
 
@@ -2377,6 +2746,7 @@ public class PickService {
     public Pick unacknowledgePick(Long warehouseId, Long id) {
         Pick pick = findById(id);
         pick.setAcknowledgedUsername(null);
+        pick.setAcknowledgedRFCode(null);
 
         return saveOrUpdate(pick);
 
@@ -2384,7 +2754,7 @@ public class PickService {
 
     public Integer getPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null,null,
                 null, null,  null,null, null, null, null,
                 null, null,  null,null, null, null, null,
                 null, null, null, null, null, null, null, null, clientRestriction, false);
@@ -2393,29 +2763,35 @@ public class PickService {
 
     }
 
-    public Integer getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+    public Long getOpenPickCount(Long warehouseId, ClientRestriction clientRestriction) {
+
         List<Pick> picks =
                 findAll(warehouseId, null, null, null, null, null,
+                        null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,true, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
 
-        return picks.size();
+        return picks.stream().filter(
+                pick -> !pick.getStatus().equals(PickStatus.CANCELLED) && !pick.getStatus().equals(PickStatus.COMPLETED)
+        ).filter(pick -> pick.getPickedQuantity() < pick.getQuantity()).count();
 
     }
     public Long getCompletedPickCount(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
 
-        return picks.stream().filter(pick -> pick.getPickedQuantity() >= pick.getQuantity()).count();
+        return picks.stream().filter(
+                pick -> !pick.getStatus().equals(PickStatus.CANCELLED) && !pick.getStatus().equals(PickStatus.COMPLETED)
+        ).filter(pick -> pick.getPickedQuantity() >= pick.getQuantity()).count();
 
     }
     public Map<String, Integer[]> getPickCountByLocationGroup(Long warehouseId, ClientRestriction clientRestriction) {
         List<Pick> picks =
-                findAll(warehouseId, null, null, null, null, null,
+                findAll(warehouseId, null, null, null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null,  null,null, null, null, null,
                         null, null, null, null, null, null, null, null, clientRestriction, false);
@@ -2487,5 +2863,119 @@ public class PickService {
         return result;
 
 
+    }
+
+    /**
+     * See if the pick is a full pallet pick
+     * @param pick
+     * @return
+     */
+    public boolean isFullPalletPick(Pick pick) {
+        if (Objects.isNull(pick.getItem())) {
+            pick.setItem(
+                    inventoryServiceRestemplateClient.getItemById(
+                            pick.getItemId()
+                    )
+            );
+        }
+        ItemPackageType itemPackageType = pick.getItemPackageType();
+        if (Objects.isNull(itemPackageType) && Objects.nonNull(pick.getItemPackageTypeId())) {
+            itemPackageType = inventoryServiceRestemplateClient.getItemPackageTypeById(
+                    pick.getItemPackageTypeId()
+            );
+        }
+        if (Objects.isNull(itemPackageType)) {
+            itemPackageType = pick.getItem().getDefaultItemPackageType();
+        }
+        logger.debug("see if we can find the tracking LPN UOM for item {}, item package type {}",
+                pick.getItem().getName(),
+                Objects.isNull(itemPackageType) ? "N/A" : itemPackageType.getName());
+        logger.debug("Tracking LPN UOM: {}",
+                Objects.isNull(itemPackageType.getTrackingLpnUOM()) ? "N/A" :
+                    itemPackageType.getTrackingLpnUOM().getUnitOfMeasure().getName());
+        // see if the pick's quantity is more than the LPN quantity
+        if (Objects.isNull(itemPackageType.getTrackingLpnUOM())) {
+            // there's no tracking LPN uom defined, let's see if there's
+            // maximun pallet size defined for outbound
+            OutboundConfiguration outboundConfiguration = outboundConfigurationService.findByWarehouse(pick.getWarehouseId());
+            if (Objects.nonNull(outboundConfiguration) && Objects.nonNull(outboundConfiguration.getMaxPalletSize())
+                && outboundConfiguration.getMaxPalletSize() > 0) {
+                logger.debug("the max pallet size is defined for this warehouse, " +
+                                "see if the pick's size {} is greater than the pallet size {}",
+                        pick.getSize(unitService),
+                        outboundConfiguration.getMaxPalletSize());
+                return pick.getSize(unitService).getFirst() >= outboundConfiguration.getMaxPalletSize();
+            }
+            logger.debug("the item doesn't have a tracking LPN uom defined and there's no max pallet size defined for the outbound, " +
+                    "let's always assume that the pick is a full pallet pick");
+            return true;
+        }
+        return pick.getQuantity() >= itemPackageType.getTrackingLpnUOM().getQuantity();
+    }
+
+    public void confirmManualPickForOrder(
+            Long warehouseId,
+            Long clientId,
+            String orderNumber,
+            String lpn,
+            boolean completeOrderAfterFullyPicked,
+            ClientRestriction clientRestriction)  {
+
+        Order order = orderService.findByNumber(warehouseId, clientId, orderNumber, false);
+        if (Objects.isNull(order)) {
+            throw OrderOperationException.raiseException("Can't find order by number " + orderNumber);
+        }
+        List<Pick> picks = orderService.generateManualPick(order, lpn, true);
+
+        if (picks.isEmpty()) {
+            throw OrderOperationException.raiseException("Fail to generate picks for number " + orderNumber +
+                    ", from LPN " + lpn);
+        }
+
+        logger.debug("We generated {} picks for manual pick from order {}, lpn {}, " +
+                "let's confirm all of them",
+                picks.size(), orderNumber, lpn);
+
+
+        picks.forEach(
+                pick -> {
+                    confirmPick(pick.getId(), pick.getQuantity(),
+                            null, null,
+                            false,null,
+                            lpn, null, UUID.randomUUID().toString());
+                    logger.debug("Pick with number {} is confirmed with quantity {}",
+                            pick.getNumber(), pick.getQuantity());
+                }
+        );
+
+        // see if the order is fully picked
+        logger.debug("do we need to check if we can complete the order after the pick? {}",
+                completeOrderAfterFullyPicked);
+        if (completeOrderAfterFullyPicked && orderService.validateOrderIsFullyStaged(order.getId())) {
+            orderService.completeOrder(order.getId(), order);
+        }
+
+    }
+
+    public Boolean isPickAcknowledgeableByCurrentUser(Long warehouseId, Long id, String rfCode) {
+
+        String currentUserName = userService.getCurrentUserName();
+        // make sure the pick is either no one is acknowledged yet,
+        // or already acknowledged by the same user with same rf device
+
+        return isPickAcknowledgeableByUser(id, currentUserName, rfCode);
+    }
+
+    public Boolean isPickAcknowledgeableByUser(Long id, String username,  String rfCode) {
+
+        Pick pick = findById(id);
+        // make sure the pick is either no one is acknowledged yet,
+        // or already acknowledged by the same user with same rf device
+
+        return (pick.getQuantity() > pick.getPickedQuantity()) &&
+                    (Strings.isBlank(pick.getAcknowledgedUsername()) ||
+                    pick.getAcknowledgedUsername().equalsIgnoreCase(username)) &&
+                    (Strings.isBlank(pick.getAcknowledgedRFCode()) ||
+                            pick.getAcknowledgedRFCode().equalsIgnoreCase(rfCode)) ;
     }
 }

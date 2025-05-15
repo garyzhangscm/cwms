@@ -3,14 +3,13 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -274,7 +273,7 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
     }
 
     public OrderActivity withShipment(Shipment shipment) {
-        setShipment(shipment);
+        // setShipment(shipment);
         setClientId(shipment.getClientId());
 
         if (Objects.isNull(shipment)) {
@@ -284,7 +283,13 @@ public class OrderActivity extends AuditibleEntity<String> implements Serializab
         return this;
     }
     public OrderActivity withShipmentLine(ShipmentLine shipmentLine) {
-        setShipmentLine(shipmentLine);
+        // we will not setup the shipment line here. instead we will
+        // use the information from the shipment line.
+        // as the shipment line contains information of picks,
+        // setup the shipment line in the order activity history may
+        // contains too many unnecessary information
+
+        // setShipmentLine(shipmentLine);
 
         if (Objects.isNull(shipmentLine)) {
             return this;

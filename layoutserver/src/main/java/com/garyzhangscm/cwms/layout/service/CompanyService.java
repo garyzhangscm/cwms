@@ -22,7 +22,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.layout.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.layout.model.Company;
 import com.garyzhangscm.cwms.layout.repository.CompanyRepository;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -169,6 +172,19 @@ public class CompanyService implements TestDataInitiableService{
     }
 
     public Company addCompany(Company company) {
+
+        // setup the API key and secret
+        if (Strings.isBlank(company.getApiKey())) {
+            company.setApiKey(
+                    generateAPIKey()
+            );
+        }
+        if (Strings.isBlank(company.getApiSecret())) {
+            company.setApiSecret(
+                    generateAPISecret()
+            );
+        }
+
         return saveOrUpdate(company);
     }
 
@@ -191,5 +207,12 @@ public class CompanyService implements TestDataInitiableService{
 
     public Boolean isCompanyEnabled(long id) {
         return Boolean.TRUE.equals(findById(id).getEnabled());
+    }
+
+    public String generateAPIKey() {
+        return RandomStringUtils.random(13, 0, 0, true, false, null, new SecureRandom());
+    }
+    public String generateAPISecret() {
+        return RandomStringUtils.random(40, 0, 0, true, false, null, new SecureRandom());
     }
 }

@@ -175,4 +175,22 @@ public class OrderLineController {
         return orderLineBillableActivityService.changeOrderLineBillableActivity(orderLineBillableActivity);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/orders/lines/{orderLineId}/change-allocation-strategy-type", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Order", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_OrderLine", allEntries = true),
+            }
+    )
+    public OrderLine changeAllocationStrategyType(
+            @RequestParam Long warehouseId,
+            @PathVariable Long orderLineId,
+            @RequestParam String allocationStrategyType) {
+
+        return orderLineService.changeAllocationStrategyType(warehouseId, orderLineId,
+                allocationStrategyType);
+    }
+
 }

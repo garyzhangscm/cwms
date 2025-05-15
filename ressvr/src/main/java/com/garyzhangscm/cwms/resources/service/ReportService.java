@@ -642,8 +642,23 @@ public class ReportService implements TestDataInitiableService{
             labelContent = labelContent.replaceAll("\\$" + parameterName + "\\$", value);
             logger.debug("label template after replace: {}", labelContent);
         }
+        // for any place holder in the label file that has no value
+        // passed in , let's just clear the place holder($parameter_name$)
+        labelContent = processEmptyValueForLabel(labelContent);
+
+        logger.debug("label template after clear all place holder: {}", labelContent);
         return labelContent;
 
+    }
+
+    /**
+     * Remove all place holder that has no value passed in , in the
+     * label file
+     * @param labelContent
+     * @return
+     */
+    private String processEmptyValueForLabel(String labelContent) {
+        return labelContent.replaceAll("\\$\\b\\S+?\\b\\$", "");
     }
 
 
@@ -732,7 +747,9 @@ public class ReportService implements TestDataInitiableService{
 
 
         JasperPrint jasperPrint = JasperFillManager.fillReport(
-                jasperReport, reportData.getParameters(), dataSource
+                jasperReport,
+                reportData.getParameters() ,
+                dataSource
         );
 
         logger.debug("Report filled!");
@@ -773,9 +790,11 @@ public class ReportService implements TestDataInitiableService{
 
             logger.debug("Report file stream returned!");
 
+
             // if the file is a pre-compiled,
             jasperReport =
                     JasperCompileManager.compileReport(reportStream);
+
 
             logger.debug("Report file compiled!");
             return jasperReport;
@@ -838,6 +857,15 @@ public class ReportService implements TestDataInitiableService{
         String reportResultAbsoluteFileName =
                 getReportResultFolder(companyId, warehouseId)
                         + reportFileName;
+
+        return writeResultFile( reportFileName,
+                reportResultAbsoluteFileName, labelContent);
+
+    }
+
+    public String writeResultFile(String reportFileName,
+                                   String reportResultAbsoluteFileName, String labelContent) throws IOException {
+
 
         File reportResultFile = new File(reportResultAbsoluteFileName);
 

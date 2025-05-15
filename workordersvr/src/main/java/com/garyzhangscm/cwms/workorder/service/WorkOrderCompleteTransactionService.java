@@ -24,14 +24,13 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderCompleteTransactionRepository;
-import com.garyzhangscm.cwms.workorder.repository.WorkOrderProduceTransactionRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
 import java.util.*;
 
 
@@ -180,7 +179,8 @@ public class WorkOrderCompleteTransactionService {
             // the user didn't specify any location, choose any production
             List<ProductionLineAssignment> productionLineAssignments =
                     productionLineAssignmentService.findAll(warehouseId,
-                            null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null);
+                            null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null,
+                            false);
             logger.debug("We get {} production line assignment for work order {} when closing this work order",
                     productionLineAssignments.size(), workOrderCompleteTransaction.getWorkOrder().getNumber());
             logger.debug("We will choose the first production line to complete the work order and receive returned material");
@@ -236,7 +236,14 @@ public class WorkOrderCompleteTransactionService {
     private void deassignProductLine(WorkOrder workOrder) {
         logger.debug("Remove production line assignment for work order {} as it is closed",
                 workOrder.getNumber());
-        productionLineAssignmentService.removeProductionLineAssignmentForWorkOrder(workOrder.getWarehouseId(), workOrder.getId());
+        for (ProductionLineAssignment productionLineAssignment : workOrder.getProductionLineAssignments()) {
+
+            logger.debug("let's deassign work order {} from production line {}",
+                    workOrder.getNumber(),
+                    productionLineAssignment.getProductionLine().getName());
+            productionLineAssignmentService.deassignWorkOrderFromProductionLines(
+                    workOrder.getId(), productionLineAssignment.getProductionLine().getId());
+        }
 
     }
 

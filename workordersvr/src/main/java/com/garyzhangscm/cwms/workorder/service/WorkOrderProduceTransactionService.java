@@ -20,26 +20,30 @@ package com.garyzhangscm.cwms.workorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import com.garyzhangscm.cwms.workorder.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderProduceTransactionRepository;
+import com.garyzhangscm.cwms.workorder.repository.WorkOrderProducedInventoryResultRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -59,6 +63,8 @@ public class WorkOrderProduceTransactionService  {
     @Autowired
     private BillOfMaterialService billOfMaterialService;
     @Autowired
+    private WorkOrderProducedInventoryResultRepository workOrderProducedInventoryResultRepository;
+    @Autowired
     private BillOfMaterialLineService billOfMaterialLineService;
     @Autowired
     private WorkOrderService workOrderService;
@@ -72,6 +78,8 @@ public class WorkOrderProduceTransactionService  {
     private ProductionLineService productionLineService;
     @Autowired
     private WorkOrderConfigurationService workOrderConfigurationService;
+    @Autowired
+    private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
         WorkOrderProduceTransaction workOrderProduceTransaction
@@ -227,46 +235,113 @@ public class WorkOrderProduceTransactionService  {
      */
     @Transactional
     public WorkOrderProduceTransaction startNewTransaction(
-            WorkOrderProduceTransaction workOrderProduceTransaction) {
+            WorkOrderProduceTransaction workOrderProduceTransaction, String rfCode) {
+
+        logger.debug("1. startNewTransaction / start new work order product transaction @{}", System.currentTimeMillis());
 
         setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
+        logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
 
         // get the latest information
         WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
+        if (Objects.isNull(workOrder.getWarehouse())) {
+            workOrder.setWarehouse(
+                    warehouseLayoutServiceRestemplateClient.getWarehouseById(
+                            workOrder.getWarehouseId()
+                    )
+            );
+        }
         workOrderProduceTransaction.setWorkOrder(workOrder);
+
+        logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
         // make sure
         // 1. we are not over produce
         // 2. we are not over consume
         validateWorkOrderProduceTransaction(workOrderProduceTransaction);
+        logger.debug("4. startNewTransaction / new product transaction passed the validation @{}", System.currentTimeMillis());
 
 
         // save the transaction first
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
+        logger.debug("5. startNewTransaction / new product transaction persist in DB @{}", System.currentTimeMillis());
 
         // total work order produced quantity
         Long totalProducedQuantity = 0L;
+        int index = 0;
+        logger.debug("6. startNewTransaction / start to produce each inventory @{}", System.currentTimeMillis());
         for(WorkOrderProducedInventory workOrderProducedInventory :
                 newWorkOrderProduceTransaction.getWorkOrderProducedInventories()) {
+            index++;
+
+            logger.debug("6.{}.1 startNewTransaction / produce inventory {} of {} @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
+
             // skip the record with incorrect value
             if (StringUtils.isBlank(workOrderProducedInventory.getLpn()) ||
                     Objects.isNull(workOrderProducedInventory.getInventoryStatus()) ||
                     Objects.isNull(workOrderProducedInventory.getItemPackageType()) ||
                     Objects.isNull(workOrderProducedInventory.getQuantity())  ) {
+
+                logger.debug("6.{}.2 startNewTransaction / inventory record is not correct, skip this inventory @{}",
+                        index,
+                        System.currentTimeMillis());
+
                 continue;
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
             // Let's create the inventory
-            receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction);
+
+            logger.debug("6.{}.3 startNewTransaction / start receive the inventory {} of {} @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
+
+            // logger.debug("===  1. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+            logger.debug("===  1. newWorkOrderProduceTransaction  ===");
+            // asynchronously receive the inventory to increase the productivity
+            new Thread(() -> {
+                logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
+                try {
+                    // logger.debug("===  2. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+                    logger.debug("start to receive inventory from the work order {}", workOrder.getNumber());
+                    receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
+                    workOrderProducedInventoryResultRepository.save(
+                            new WorkOrderProducedInventoryResult(
+                                    newWorkOrderProduceTransaction.getWarehouseId(),
+                                    workOrderProducedInventory,
+                                    true, ""
+                            )
+                    );
+                    logger.debug("inventory {} saved from the work order", workOrderProducedInventory.getLpn());
+                }
+                catch (Exception exception) {
+                    logger.debug("Error while receive inventory \n {}", exception.getMessage());
+                    // logger.debug("===  3. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
+                    workOrderProducedInventoryResultRepository.save(
+                            new WorkOrderProducedInventoryResult(
+                                    newWorkOrderProduceTransaction.getWarehouseId(),
+                                    workOrderProducedInventory,
+                                    false, exception.getMessage()
+                            )
+                    );
+                }
+
+            }).start();
+            logger.debug("6.{}.4 startNewTransaction / inventory {} of {} received @{}",
+                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
+                    System.currentTimeMillis());
 
         }
         // Change the produced quantity of the work order
-        workOrderService.produce(workOrder, totalProducedQuantity);
+        workOrderService.produce(workOrder, totalProducedQuantity, false);
+        logger.debug("7. startNewTransaction / quantity on work order updated @{}", System.currentTimeMillis());
 
         // change each work order line's consumed quantity
         for (WorkOrderLine workOrderLine : workOrder.getWorkOrderLines()) {
             consumeQuantity(workOrderLine, workOrderProduceTransaction, totalProducedQuantity);
         }
+        logger.debug("8. startNewTransaction / quantity on work order line updated @{}", System.currentTimeMillis());
 
         // produce the byproduct if there's any
         workOrderProduceTransaction.getWorkOrderByProductProduceTransactions().forEach(
@@ -276,6 +351,7 @@ public class WorkOrderProduceTransactionService  {
                                 workOrderProduceTransaction.getProductionLine().getOutboundStageLocation()
                         )
         );
+        logger.debug("9. startNewTransaction / by product received @{}", System.currentTimeMillis());
 
         // save the transaction itself
         // before we save everything, we will need to setup some missing information so
@@ -292,6 +368,7 @@ public class WorkOrderProduceTransactionService  {
         );
 
         processWorkOrderKPI(newWorkOrderProduceTransaction, totalProducedQuantity);
+        logger.debug("10. startNewTransaction / work order KPI saved @{}", System.currentTimeMillis());
 
 
         return newWorkOrderProduceTransaction;
@@ -300,6 +377,33 @@ public class WorkOrderProduceTransactionService  {
 
     private void setupNewWorkOrderProduceTransactionData(WorkOrderProduceTransaction workOrderProduceTransaction) {
 
+        if (Objects.isNull(workOrderProduceTransaction.getWorkOrder())) {
+            // work order information is not passed in, let's see if we can get the work order from
+            // the warehouse id and work order number that passed in
+            logger.debug("Work order is not setup in the produce transaction yet, let's see if we can get from the other parameters");
+            logger.debug("work order number: {}\nwarehouse id: {}",
+                    workOrderProduceTransaction.getWorkOrderNumber(),
+                    workOrderProduceTransaction.getWarehouseId());
+
+            if (Strings.isBlank(workOrderProduceTransaction.getWorkOrderNumber()) ||
+                Objects.isNull(workOrderProduceTransaction.getWarehouseId())) {
+
+                throw WorkOrderException.raiseException("can't get work order information for this produce transaction");
+            }
+            else {
+                WorkOrder workOrder = workOrderService.findByNumber(
+                        workOrderProduceTransaction.getWarehouseId(),
+                        workOrderProduceTransaction.getWorkOrderNumber()
+                );
+                if (Objects.isNull(workOrder)) {
+
+                    throw WorkOrderException.raiseException("can't get work order information from the value passed in ");
+                }
+                else {
+                    workOrderProduceTransaction.setWorkOrder(workOrder);
+                }
+            }
+        }
         // setup the location for later use
         if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
             workOrderProduceTransaction.getProductionLine().setInboundStageLocation(
@@ -768,7 +872,8 @@ public class WorkOrderProduceTransactionService  {
 
     private Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder,
                                                     WorkOrderProducedInventory workOrderProducedInventory,
-                                                    WorkOrderProduceTransaction workOrderProduceTransaction)   {
+                                                    WorkOrderProduceTransaction workOrderProduceTransaction,
+                                                    String rfCode)   {
         logger.debug("Start to receive inventory from work order: \n{}", workOrder.getNumber());
         logger.debug("Inventory's item package typ is setup to \n{}",
                 workOrderProducedInventory.getItemPackageType());
@@ -778,27 +883,31 @@ public class WorkOrderProduceTransactionService  {
                                 workOrder.getWarehouseId(),
                                 workOrderProducedInventory.getLpn()).size() == 0;
 
+        logger.debug("The LPN is new LPN? {}", newLPN);
         Inventory inventory = workOrderProducedInventory.createInventory(workOrder, workOrderProduceTransaction);
 
+        logger.debug("Inventory structure created, sent to inventory service for persist");
 
-        inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder,inventory);
+        inventory = inventoryServiceRestemplateClient.receiveInventoryFromWorkOrder(workOrder, inventory);
+        logger.debug("Inventory persisted");
 
         if (newLPN) {
             logger.debug("We are producing a new LPN, let's see if we will need to print a LPN label for it");
-            // try {
-                // printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine());
+            try {
+                printNEWLPNLabel(inventory, workOrder, workOrderProduceTransaction.getProductionLine(), rfCode);
 
-            // } catch (JsonProcessingException e) {
-            //     e.printStackTrace();
-            // }
-            logger.debug("Print LPN Label is disabled from server right now. ");
+            } catch (JsonProcessingException e) {
+                logger.debug("Print LPN Label error ");
+                 e.printStackTrace();
+            }
         }
         return inventory;
     }
 
     private void printNEWLPNLabel(Inventory inventory,
                                   WorkOrder workOrder,
-                                  ProductionLine productionLine) throws JsonProcessingException {
+                                  ProductionLine productionLine,
+                                  String rfCode) throws JsonProcessingException {
 
 
         WarehouseConfiguration warehouseConfiguration
@@ -807,19 +916,145 @@ public class WorkOrderProduceTransactionService  {
             logger.debug("The warehouse is configured to not print LPN label for new LPN from work order");
             return;
         }
-        String printerName = getPrinterName(productionLine);
-        logger.debug("We will print LPN label for new LPN ");
+        // if we have rfCode passed in , then try get the printer that attached to the RF first
+        String printerName = "";
+        if (Strings.isNotBlank(rfCode)) {
+            logger.debug("RF code {} is passed, let's see if there's print setup for this RF",rfCode);
+            RF rf = resourceServiceRestemplateClient.getRFByCode(workOrder.getWarehouseId(), rfCode);
+            if (Objects.nonNull(rf)) {
+                printerName = rf.getPrinterName();
+                logger.debug("We got printer {} from the RF {}", printerName, rfCode);
+            }
+        }
+        if (Strings.isBlank(printerName)) {
+            // if we can't get printer from the rf, let's try if there's printer attached to the production line
+            printerName = getPrinterNameFromProductionLine(productionLine);
+        }
+
+        if (Strings.isBlank(printerName)) {
+            logger.debug("No printer is setup for production line {}, we will not print labels",
+                    productionLine.getName());
+            return;
+        }
+        logger.debug("We will print LPN label for new LPN from printer {}", printerName);
 
         // warehouse is configured to print new lpn label when producing
-        workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
-                productionLine.getName(), "", printerName);
+        ReportHistory reportHistory =
+                workOrderService.generatePrePrintLPNLabel(workOrder, inventory.getLpn(), inventory.getQuantity(),
+                    productionLine.getName(), "", printerName);
+
+
+        logger.debug("Get the label files {}, let's print it from printer {}",
+                reportHistory.getFileName(), printerName);
+
+        Long companyId = warehouseLayoutServiceRestemplateClient.getWarehouseById(workOrder.getWarehouseId())
+                .getCompanyId();
+        String result = resourceServiceRestemplateClient.printReport(companyId, workOrder.getWarehouseId(),
+                ReportType.PRODUCTION_LINE_ASSIGNMENT_LABEL, reportHistory.getFileName(),
+                printerName, 2);
+        logger.debug("print label result: {}", result);
+
     }
 
-    private String getPrinterName(ProductionLine productionLine) {
-        return "";
+    private String getPrinterNameFromProductionLine(ProductionLine productionLine) {
+        return productionLine.getLabelPrinterName();
     }
 
 
 
+    private List<WorkOrderProduceTransaction> findByTimeRange(Long warehouseId, String workOrderNumber,
+                                                              Long productionLineId,
+                                                              ZonedDateTime startTime, ZonedDateTime endTime) {
+        return findByTimeRange(warehouseId, workOrderNumber, productionLineId,
+                startTime, endTime, true);
+
+    }
+    private List<WorkOrderProduceTransaction> findByTimeRange(Long warehouseId, String workOrderNumber,
+                                                              Long productionLineId,
+                                                              ZonedDateTime startTime, ZonedDateTime endTime,
+                                                              boolean loadDetails) {
+        return findAll(warehouseId, workOrderNumber,
+                productionLineId, false,
+                    startTime, endTime, null, loadDetails);
+    }
+
+    /**
+     * Get the total produced quantity,
+     * key: production line id - work order id
+     * value: Pair of LPN quantity and total quantity within the time range
+     * @param warehouseId
+     * @param workOrderNumber
+     * @param productionLineId
+     * @param startTime
+     * @param endTime
+     * @param loadDetails
+     * @return
+     */
+    public Map<String, Pair<Integer, Long>> getProducedQuantityByTimeRange(Long warehouseId, String workOrderNumber,
+                                                                 Long productionLineId,
+                                                                 ZonedDateTime startTime, ZonedDateTime endTime,
+                                                                 Boolean includeNonAvailableQuantity,
+                                                                 boolean loadDetails) {
+        List<WorkOrderProduceTransaction> workOrderProduceTransactions = findAll(warehouseId, workOrderNumber,
+                productionLineId, false,
+                startTime, endTime, null, loadDetails);
+        logger.debug("get {} work order produce transactions between the time [{}, {}]",
+                workOrderProduceTransactions.size(),
+                startTime, endTime);
+
+        Map<String, Pair<Integer, Long>> producedQuantityMap = new HashMap<>();
+
+        // in case the user only want to count the available quantity
+        InventoryStatus availableInventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(warehouseId);
+
+        workOrderProduceTransactions.forEach(
+                workOrderProduceTransaction -> {
+                    // get the produced LPN count and total quantity from this production transaction
+                    String key = workOrderProduceTransaction.getProductionLine().getId() + "-" +
+                            workOrderProduceTransaction.getWorkOrder().getId();
+                    Pair<Integer, Long> quantities = producedQuantityMap.getOrDefault(key, Pair.of(0, 0l));
+
+                    List<WorkOrderProducedInventory> workOrderProducedInventories =
+                            workOrderProduceTransaction.getWorkOrderProducedInventories();
+                    // see if we will need to include non available inventories
+                    if (Objects.nonNull(availableInventoryStatus) && !Boolean.TRUE.equals(includeNonAvailableQuantity)) {
+                        // we don't want to include the non available status
+                        workOrderProducedInventories = workOrderProducedInventories.stream().filter(
+                                workOrderProducedInventory ->
+                                        availableInventoryStatus.getId().equals(workOrderProducedInventory.getInventoryStatusId())
+                        ).collect(Collectors.toList());
+                    }
+
+                    // get all the reversed LPN as we will need to deduct the quantity and LPN count
+                    Map<String, Long> reversedLPNs = new HashMap<>();
+                    Long totalReversedQuantity = 0l;
+                    for (WorkOrderReverseProductionInventory workOrderReverseProductionInventory :
+                        workOrderProduceTransaction.getWorkOrderReverseProductionInventories()) {
+
+                        long lpnAlreadyReversedQuantity = reversedLPNs.getOrDefault(
+                                workOrderReverseProductionInventory.getLpn(), 0l
+                        );
+                        reversedLPNs.put(workOrderReverseProductionInventory.getLpn(),
+                                    lpnAlreadyReversedQuantity + workOrderReverseProductionInventory.getQuantity());
+
+                        totalReversedQuantity += workOrderReverseProductionInventory.getQuantity();
+                    }
+
+                    Integer lpnQuantity = quantities.getFirst() +
+                            // filter out the reversed inventory
+                            (int)workOrderProducedInventories.stream()
+                                    .filter(workOrderProducedInventory ->
+                                                    workOrderProducedInventory.getQuantity() >
+                                                            reversedLPNs.getOrDefault(workOrderProducedInventory.getLpn(), 0l)
+                                            ).map(WorkOrderProducedInventory::getLpn).distinct().count();
+
+                    Long quantity = quantities.getSecond() +
+                            workOrderProducedInventories.stream().mapToLong(WorkOrderProducedInventory::getQuantity).sum()
+                            - totalReversedQuantity;
+                    producedQuantityMap.put(key, Pair.of(lpnQuantity, quantity));
+                }
+        );
+        return producedQuantityMap;
+    }
 
 }

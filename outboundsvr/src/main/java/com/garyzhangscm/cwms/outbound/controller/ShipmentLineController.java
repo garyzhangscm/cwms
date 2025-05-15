@@ -38,8 +38,10 @@ public class ShipmentLineController {
                                                    @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                                    @RequestParam(name="orderLineId", required = false, defaultValue = "") Long orderLineId,
                                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
-                                                   @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId) {
-        return shipmentLineService.findAll(warehouseId, number, orderNumber, orderLineId, orderId, waveId);
+                                                   @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
+                                                   @RequestParam(name="orderLineIds", required = false, defaultValue = "") String orderLineIds,
+                                                   @RequestParam(name="shipmentLineIds", required = false, defaultValue = "") String shipmentLineIds) {
+        return shipmentLineService.findAll(warehouseId, number, orderNumber, orderLineId, orderId, waveId, orderLineIds, shipmentLineIds);
     }
 
 

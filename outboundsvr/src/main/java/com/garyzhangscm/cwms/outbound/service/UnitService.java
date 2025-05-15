@@ -1,5 +1,5 @@
 /**
- * Copyright 2018
+ * Copyright 2019
  *
  * @author gzhang
  * <p>
@@ -19,39 +19,247 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.outbound.clients.HualeiRestemplateClient;
-import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.outbound.model.Order;
+import com.garyzhangscm.cwms.outbound.model.ItemUnitOfMeasure;
 import com.garyzhangscm.cwms.outbound.model.Unit;
 import com.garyzhangscm.cwms.outbound.model.UnitType;
-import com.garyzhangscm.cwms.outbound.model.hualei.*;
-import com.garyzhangscm.cwms.outbound.repository.HualeiShipmentRequestRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @Service
 public class UnitService {
-    private static final Logger logger = LoggerFactory.getLogger(UnitService.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
 
     public List<Unit> getAllUnits(Long warehouseId) {
+        List<Unit> units =
+                commonServiceRestemplateClient.getUnitsByWarehouse(warehouseId);
 
-        return commonServiceRestemplateClient.getAllUnits(warehouseId);
+        // logger.debug("we get {} units from warehouse {}",
+        //        units.size(), warehouseId);
+        // for (Unit unit : units) {
+        //     logger.debug("unit {}, type {}, ratio: {}",
+        //             unit.getName(),
+        //             unit.getType(),
+        //             unit.getRatio());
+        // }
+        return units;
+    }
+
+    public Unit getUnitByName(Long warehouseId, String name) {
+        // logger.debug("start to get unit by name {}", name);
+        return getAllUnits(warehouseId).stream().filter(
+                unit -> {
+                    // logger.debug("unit: {} compare to name {}, match? {}",
+                    //         unit.getName(),
+                    //         name,
+                    //         unit.getName().equalsIgnoreCase(name)
+                    //         );
+                    return unit.getName().equalsIgnoreCase(name);
+                }
+        ).findFirst().orElse(null);
+    }
+
+
+    public double convert(Long warehouseId,
+                          double quantity,
+                          String sourceUnitName,
+                          String destinationUnitName) {
+
+        Unit sourceUnit = getUnitByName(warehouseId, sourceUnitName);
+        Unit destinationUnit = getUnitByName(warehouseId, destinationUnitName);
+
+        if (Objects.isNull(sourceUnit)) {
+            throw ResourceNotFoundException.raiseException("source unit " + sourceUnitName +
+                    " is invalid");
+        }
+        if (Objects.isNull(destinationUnit)) {
+            throw ResourceNotFoundException.raiseException("destination unit " + destinationUnitName +
+                    " is invalid");
+        }
+
+        return convert(quantity, sourceUnit, destinationUnit);
+    }
+
+    public double convert(double quantity,
+                          Unit sourceUnit,
+                          Unit destinationUnit) {
+
+        // quantity * sourceUnit.getRatio() will convert the quantity into
+        // the quantity of base unit
+        return quantity * sourceUnit.getRatio() / destinationUnit.getRatio();
+    }
+
+    public Unit getCubeFoot(Long warehouseId) {
+        return getUnitByName(warehouseId, "cube_foot");
+    }
+
+    public Unit getFoot(Long warehouseId) {
+        return getUnitByName(warehouseId, "foot");
+    }
+    public Unit getInch(Long warehouseId) {
+        return getUnitByName(warehouseId, "inch");
+    }
+    public Unit getCubeInch(Long warehouseId) {
+        return getUnitByName(warehouseId, "cube_inch");
+    }
+    public Unit getLB(Long warehouseId) {
+        return getUnitByName(warehouseId, "lb");
+    }
+
+
+    public Unit getBaseUnit(Long warehouseId, UnitType type) {
+        return getAllUnits(warehouseId).stream().filter(
+                unit -> (Boolean.TRUE.equals(unit.getBaseUnitFlag()) ||
+                            unit.getRatio() == 1.0
+                        )
+                        && type.equals(unit.getType())
+        ).findFirst().orElse(null);
+    }
+
+
+    /**
+     * Get the weight based on the item unit of measure's weight and the quantity of this item UOM
+     * (item UOM's weight) * quantity of UOM
+     * then convert to the base unit (if defined) or lb(by default)
+     * @param warehouseId
+     * @param itemUnitOfMeasure
+     * @param quantityOfUOM
+     * @return
+     */
+    public Pair<Double, Unit> getWeightByUOM(Long warehouseId, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
+
+        // convert the inventory UOM weight to  lb
+        // by default we will display at lb
+        Unit baseUnit = getBaseUnit(warehouseId, UnitType.WEIGHT);
+
+        Unit unit = baseUnit;
+        if (Objects.isNull(unit)) {
+            unit = getLB(warehouseId);
+        }
+        if (Objects.isNull(unit)) {
+            throw ResourceNotFoundException.raiseException("can't convert the weight as we are not able to load the unit information");
+        }
+        logger.debug("we will use the  unit  {} to calculate the weight, base unit if {}",
+                unit.getName(), baseUnit.getName());
+        // make sure we can get the unit for length / width / height
+        if (Strings.isBlank(itemUnitOfMeasure.getWeightUnit()) &
+                Objects.isNull(baseUnit)) {
+
+            throw ResourceNotFoundException.raiseException("unit is not setup for the inventory item unit of measure " +
+                    + itemUnitOfMeasure.getId() +
+                    " and there's no base unit setup");
+        }
+
+        logger.debug("start to get weight from [{} {}]",
+                itemUnitOfMeasure.getWeight(),
+                Strings.isBlank(itemUnitOfMeasure.getWeightUnit()) ?
+                        baseUnit.getName() : itemUnitOfMeasure.getWeightUnit());
+
+        double weight =  convert(warehouseId,
+                                    itemUnitOfMeasure.getWeight(),
+                                    Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ?
+                                            baseUnit.getName() : itemUnitOfMeasure.getWidthUnit(),
+                                    unit.getName())
+                                    *
+                                    quantityOfUOM;
+
+        logger.debug("the weight is {} {}",
+                weight, unit.getName());
+        return Pair.of(weight, unit);
+    }
+
+    /**
+     * Get the volume based on the item unit of measure's size and the quantity of this item UOM
+     * (item UOM's length * item UOM's width * item UOM's height) * quantity of UOM
+     * then convert to the base unit (if defined) or cubic inch(by default)
+     * @param warehouseId
+     * @param itemUnitOfMeasure
+     * @param quantityOfUOM
+     * @return
+     */
+    public Pair<Double, Unit> getVolumeByUOM(Long warehouseId, ItemUnitOfMeasure itemUnitOfMeasure, Long quantityOfUOM) {
+
+        // convert the inventory UOM size to  foot
+        // by default we will display at cube inch
+        Unit baseUnit = getBaseUnit(warehouseId, UnitType.LENGTH);
+
+        Unit unit = baseUnit;
+        if (Objects.isNull(unit)) {
+            unit = getCubeInch(warehouseId);
+        }
+        if (Objects.isNull(unit)) {
+            throw ResourceNotFoundException.raiseException("can't convert the length as we are not able to load the unit information");
+        }
+        logger.debug("we will use the  unit  {} to calculate the length, base unit if {}",
+                unit.getName(), baseUnit.getName());
+        // make sure we can get the unit for length / width / height
+        if (( Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ||
+                Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ||
+                Strings.isBlank(itemUnitOfMeasure.getHeightUnit())) &
+                Objects.isNull(baseUnit)) {
+
+            throw ResourceNotFoundException.raiseException("unit is not setup for the inventory item unit of measure " +
+                    + itemUnitOfMeasure.getId() +
+                    " and there's no base unit setup");
+        }
+
+        logger.debug("start to get size from [{} {}, {} {}, {} {}]",
+                itemUnitOfMeasure.getLength(),
+                Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ?
+                        baseUnit.getName() : itemUnitOfMeasure.getLengthUnit(),
+                itemUnitOfMeasure.getWidth(),
+                Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ?
+                        baseUnit.getName() : itemUnitOfMeasure.getWidthUnit(),
+                itemUnitOfMeasure.getHeight(),
+                Strings.isBlank(itemUnitOfMeasure.getHeightUnit()) ?
+                        baseUnit.getName() : itemUnitOfMeasure.getHeightUnit());
+
+        double size =  convert(warehouseId,
+                itemUnitOfMeasure.getLength(),
+                Strings.isBlank(itemUnitOfMeasure.getLengthUnit()) ?
+                        baseUnit.getName() : itemUnitOfMeasure.getLengthUnit(),
+                unit.getName()
+        ) *
+                convert(warehouseId,
+                        itemUnitOfMeasure.getWidth(),
+                        Strings.isBlank(itemUnitOfMeasure.getWidthUnit()) ?
+                                baseUnit.getName() : itemUnitOfMeasure.getWidthUnit(),
+                        unit.getName()
+                ) *
+                convert(warehouseId,
+                        itemUnitOfMeasure.getHeight(),
+                        Strings.isBlank(itemUnitOfMeasure.getHeightUnit()) ?
+                                baseUnit.getName() : itemUnitOfMeasure.getHeightUnit(),
+                        unit.getName()
+                ) *
+                quantityOfUOM;
+
+        logger.debug("the size is {} {}3",
+                size, unit.getName());
+        // note: the unit is length unit, we may need to find the corrependant
+        // volume unit
+        Unit volumeUnit = getVolumeUnitFromLengthUnit(warehouseId, unit);
+        if (Objects.isNull(volumeUnit)) {
+            logger.debug("we can't find the volume unit for length unit {}, let's return the length unit for now",
+                    unit.getName());
+            return Pair.of(size, unit);
+        }
+        logger.debug("successfully convert the length's unit {}3 to volume unit {}",
+                unit.getName(), Objects.isNull(volumeUnit));
+        return Pair.of(size, volumeUnit);
     }
 
     public double convertLength(Long warehouseId,
@@ -71,8 +279,29 @@ public class UnitService {
                 length,
                 Strings.isBlank(sourceUnitName) ? "N/A" : sourceUnitName,
                 Strings.isBlank(destinationUnitName) ? "N/A" : destinationUnitName);
-        return convert(warehouseId, length, UnitType.LENGTH, sourceUnitName, destinationUnitName);
+        return convert(warehouseId, length,  sourceUnitName, destinationUnitName);
     }
+
+    public double convertVolume(Long warehouseId,
+                                double volume,
+                                String sourceUnitName) {
+        Unit volumeBaseUnit = getVolumeBaseUnit(warehouseId);
+        if (Objects.isNull(volumeBaseUnit)) {
+            return volume;
+        }
+        return convertVolume(warehouseId, volume, sourceUnitName, volumeBaseUnit.getName());
+    }
+    public double convertVolume(Long warehouseId,
+                                double volume,
+                                String sourceUnitName,
+                                String destinationUnitName) {
+        logger.debug("Start to convert volume {} from unit {} to unit {}",
+                volume,
+                Strings.isBlank(sourceUnitName) ? "N/A" : sourceUnitName,
+                Strings.isBlank(destinationUnitName) ? "N/A" : destinationUnitName);
+        return convert(warehouseId, volume,  sourceUnitName, destinationUnitName);
+    }
+
     public double convertWeight(Long warehouseId,
                                 double weight,
                                 String sourceUnitName) {
@@ -90,48 +319,7 @@ public class UnitService {
                 weight,
                 Strings.isBlank(sourceUnitName) ? "N/A" : sourceUnitName,
                 Strings.isBlank(destinationUnitName) ? "N/A" : destinationUnitName);
-        return convert(warehouseId, weight, UnitType.WEIGHT, sourceUnitName, destinationUnitName);
-    }
-    public double convertVolume(Long warehouseId,
-                                double volume,
-                                String sourceUnitName,
-                                String destinationUnitName) {
-        logger.debug("Start to convert volume {} from unit {} to unit {}",
-                volume,
-                Strings.isBlank(sourceUnitName) ? "N/A" : sourceUnitName,
-                Strings.isBlank(destinationUnitName) ? "N/A" : destinationUnitName);
-        return convert(warehouseId, volume, UnitType.VOLUME, sourceUnitName, destinationUnitName);
-    }
-    public double convert(Long warehouseId, double value, UnitType type,
-                          String sourceUnitName, String destinationUnitName) {
-        List<Unit> units = getAllUnits(warehouseId).stream().filter(
-                unit -> unit.getType().equals(type)
-        ).collect(Collectors.toList());
-
-        return convert(value, sourceUnitName, destinationUnitName, units);
-    }
-
-
-    public double convert(double sourceValue,
-                          String sourceUnitName,
-                          String destinationUnitName,
-                          List<Unit> units) {
-
-        Unit baseUnit = getBaseUnit(units);
-        Unit sourceUnit = Strings.isBlank(sourceUnitName) ?
-                baseUnit : getUnitByName(units, sourceUnitName);
-
-        Unit destinationUnit = Strings.isBlank(destinationUnitName) ?
-                baseUnit : getUnitByName(units, destinationUnitName);
-
-        double result = sourceValue * sourceUnit.getRatio() / destinationUnit.getRatio();
-        BigDecimal resultBigDecimal = new BigDecimal(result).setScale(2, RoundingMode.HALF_UP);
-
-        logger.debug("value {} is convert from source unit {} to destination unit {}, result is {}",
-                sourceValue, sourceUnit.getName(), destinationUnit.getName(),
-                result);
-        return resultBigDecimal.doubleValue();
-
+        return convert(warehouseId, weight, sourceUnitName, destinationUnitName);
     }
 
     public Unit getLengthBaseUnit(Long warehouseId) {
@@ -143,35 +331,20 @@ public class UnitService {
     public Unit getVolumeBaseUnit(Long warehouseId) {
         return getBaseUnit(warehouseId, UnitType.VOLUME);
     }
-    public Unit getBaseUnit(Long warehouseId, UnitType unitType) {
-        List<Unit> units = getAllUnits(warehouseId).stream().filter(
-                unit -> unit.getType().equals(unitType)
-        ).collect(Collectors.toList());
 
-        return getBaseUnit(units);
-    }
+
     /**
-     * Get the base unit from a list of unit of same type
-     * @param units
+     * Get the correspondent volume unit from the length unit, suppose the volume
+     * is calculated by the 3-D length with same unit
+     * @param warehouseId
      * @return
      */
-    public Unit getBaseUnit(List<Unit> units) {
-
-        Unit baseLengthUnit = units.stream().filter(
-                unit -> Boolean.TRUE.equals(unit.getBaseUnitFlag())
-        ).findFirst().orElse(null);
-
-        if (Objects.nonNull(baseLengthUnit)) {
-            return  baseLengthUnit;
-        }
-        return units.stream().filter(
-                unit -> unit.getRatio() == 1
+    public Unit getVolumeUnitFromLengthUnit(Long warehouseId, Unit lengthUnit) {
+        return getAllUnits(warehouseId).stream().filter(
+                unit ->  unit.getType().equals(UnitType.VOLUME) &&
+                            unit.getName().toUpperCase(Locale.ROOT).contains(
+                                    lengthUnit.getName().toUpperCase(Locale.ROOT)
+                            )
         ).findFirst().orElse(null);
     }
-
-    public Unit getUnitByName(List<Unit> units, String name) {
-        return units.stream().filter(unit -> unit.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-    }
-
-
 }

@@ -24,27 +24,38 @@ import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.ItemService;
+import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
 @RestController
 public class ItemController {
+    private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
     @Autowired
     ItemService itemService;
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @Autowired
     WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -54,6 +65,7 @@ public class ItemController {
     public List<Item> findAllItems(@RequestParam(name="companyId", required = false, defaultValue = "")  Long companyId,
                                    @RequestParam(name="warehouseId", required = false, defaultValue = "")  Long warehouseId,
                                    @RequestParam(name="name", required = false, defaultValue = "") String name,
+                                   @RequestParam(name="names", required = false, defaultValue = "") String names,
                                    @RequestParam(name="description", required = false, defaultValue = "") String description,
                                    @RequestParam(name="quickbookListId", required = false, defaultValue = "") String quickbookListId,
                                    @RequestParam(name="clientIds", required = false, defaultValue = "") String clientIds,
@@ -62,7 +74,7 @@ public class ItemController {
                                    @RequestParam(name="companyItem", required = false, defaultValue = "") Boolean companyItem,
                                    @RequestParam(name="warehouseSpecificItem", required = false, defaultValue = "") Boolean warehouseSpecificItem,
                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
-                                   ClientRestriction clientRestriction) {
+                                   ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
         // company ID or warehouse id is required
         if (Objects.isNull(companyId) && Objects.isNull(warehouseId)) {
@@ -77,10 +89,33 @@ public class ItemController {
                             .getWarehouseById(warehouseId).getCompanyId();
         }
 
-        return itemService.findAll(companyId, warehouseId, name, quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
+        logger.debug("Start to find item by ");
+        logger.debug("#  name: {}", Strings.isBlank(name) ? "N/A" : name);
+        logger.debug("#  decoded name: {}", Strings.isBlank(name) ? "N/A" :
+                        URLDecoder.decode(name, StandardCharsets.UTF_8.name()));
+        logger.debug("#  description: {}", Strings.isBlank(description) ? "N/A" : description);
+        logger.debug("#  clientIds: {}", Strings.isBlank(clientIds) ? "N/A" : clientIds);
+        logger.debug("#  itemFamilyIds {}", Strings.isBlank(itemFamilyIds) ? "N/A" : itemFamilyIds);
+        logger.debug("#  itemIdList: {}", Strings.isBlank(itemIdList) ? "N/A" : itemIdList);
+
+        return itemService.findAll(companyId, warehouseId,
+                URLDecoder.decode(name, StandardCharsets.UTF_8.name()),
+                names,
+                quickbookListId, clientIds, itemFamilyIds, itemIdList, companyItem,
                 warehouseSpecificItem, description,  loadDetails, clientRestriction);
     }
 
+    @ClientValidationEndpoint
+    @RequestMapping(value="/items-query/by-barcode", method = RequestMethod.GET)
+    public List<Item> findByBarcode(@RequestParam Long companyId,
+                                    @RequestParam Long warehouseId,
+                                    @RequestParam String barcode,
+                                    @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                    ClientRestriction clientRestriction) {
+
+        return itemService.findByBarcode(companyId, warehouseId, barcode, loadDetails, clientRestriction);
+
+    }
 
     @ClientValidationEndpoint
     @RequestMapping(value="/items-query/by-keyword", method = RequestMethod.GET)
@@ -109,6 +144,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item deleteItem(@PathVariable Long id) {
@@ -126,6 +162,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item uploadItemImages(@PathVariable Long id,
@@ -135,6 +172,26 @@ public class ItemController {
         return  itemService.uploadItemImages(id, file);
     }
 
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/items/{id}/work-order-sop/upload")
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "AdminService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "LayoutService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
+            }
+    )
+    public Item uploadItemWorkOrderSOP(@PathVariable Long id,
+                                 @RequestParam("file") MultipartFile file) throws IOException {
+
+
+        return  itemService.uploadItemWorkOrderSOP(id, file);
+    }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.DELETE, value="/items")
@@ -147,6 +204,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public void removeItems(@RequestParam(name = "item_ids", required = false, defaultValue = "") String itemIds) {
@@ -170,11 +228,71 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public Item changeItem(@PathVariable Long id, @RequestBody Item item) {
-
         return itemService.changeItem(id, item);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/thumbnail")
+    public ResponseEntity<Resource> getThumbnail(@RequestParam Long warehouseId,
+                                                 @PathVariable Long id) throws FileNotFoundException {
+
+
+
+        File thumbnailFile = itemService.getThumbnail(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(thumbnailFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + thumbnailFile.getName())
+                .contentLength(thumbnailFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/image")
+    public ResponseEntity<Resource> getImage(@RequestParam Long warehouseId,
+                                                 @PathVariable Long id,
+                                             @RequestParam(required = false,name = "download", defaultValue = "true") Boolean download) throws FileNotFoundException {
+
+        logger.debug("start get image for item id {}, download? {}",
+                id, download);
+        File imageFile = itemService.getImage(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(imageFile));
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+
+                        (Boolean.FALSE.equals(download) ? "inline" : "attachment") +
+                                ";fileName=" + imageFile.getName())
+                .contentLength(imageFile.length())
+                .contentType(Boolean.FALSE.equals(download) ? MediaType.IMAGE_PNG : MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/items/{id}/work-order-sop")
+    public ResponseEntity<Resource> getWorkOrderSOP(@RequestParam Long warehouseId,
+                                             @PathVariable Long id,
+                                                    @RequestParam(required = false,name = "download", defaultValue = "true") Boolean download) throws FileNotFoundException {
+
+
+        logger.debug("start get work order sop for item id {}, download? {}",
+                id, download);
+
+        File workOrderSOPFile = itemService.getWorkOrderSOP(id);
+
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(workOrderSOPFile));
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+                        (Boolean.FALSE.equals(download) ? "inline" : "attachment") +
+                                ";fileName=" + workOrderSOPFile.getName())
+                .contentLength(workOrderSOPFile.length())
+                .contentType(Boolean.FALSE.equals(download) ? MediaType.APPLICATION_PDF : MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @RequestMapping(method=RequestMethod.POST, value="/items/validate-new-item-name")
@@ -197,23 +315,26 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadItems(Long warehouseId,
+    public ResponseBodyWrapper uploadItems(Long companyId, Long warehouseId,
+                                           @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                            @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "items", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "items", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        // List<Item> items = itemService.saveItemData(warehouseId, localFile);
-        // return  ResponseBodyWrapper.success(String.valueOf(items.size()));
-        String fileUploadProgressKey = itemService.uploadItemData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/items/upload/progress")
@@ -249,6 +370,7 @@ public class ItemController {
                     @CacheEvict(cacheNames = "OutboundService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_Item", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_ItemPackageType", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_ItemPackageType", allEntries = true),
             }
     )
     public ResponseBodyWrapper processItemOverride(@RequestParam Long warehouseId,
@@ -266,4 +388,26 @@ public class ItemController {
 
         return itemService.getLastItemFromSiloLocation(warehouseId, locationName, loadDetails);
     }
+
+    @RequestMapping(method=RequestMethod.POST, value="/items/{id}/add-item-barcode")
+    public ItemBarcode addItemBarcode(
+            Long warehouseId,
+            @PathVariable Long id,
+            @RequestBody ItemBarcode itemBarcode)   {
+
+
+        return itemService.addItemBarcode(id, warehouseId, itemBarcode);
+    }
+
+    @RequestMapping(method=RequestMethod.PUT, value="/items/{id}/create-kit-item")
+    public Item createKitItem(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam Long billOfMaterialId)   {
+
+
+        return itemService.createKitItem(warehouseId, id, billOfMaterialId);
+    }
+
+
 }

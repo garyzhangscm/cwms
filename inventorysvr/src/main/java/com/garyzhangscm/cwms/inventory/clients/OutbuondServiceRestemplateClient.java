@@ -46,7 +46,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}");
 /**
         ResponseBodyWrapper<Pick> responseBodyWrapper
@@ -69,11 +69,11 @@ public class OutbuondServiceRestemplateClient {
 
 
 
-    public Pick unpick(Long pickId, Long unpickQuantity) {
+    public List<Pick> unpick(Long pickId, Long unpickQuantity) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}/unpick")
                         .queryParam("unpickQuantity", unpickQuantity);
 /**
@@ -87,20 +87,19 @@ public class OutbuondServiceRestemplateClient {
         return responseBodyWrapper.getData();
  **/
 
-        return restTemplateProxy.exchange(
+        return restTemplateProxy.exchangeList(
                 Pick.class,
                 builder.buildAndExpand(pickId).toUriString(),
                 HttpMethod.POST,
                 null
         );
-
     }
 
     public void refreshPickMovement(Long pickId, Long destinationLocationId,Long quantity) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/pick-movement/refresh")
                         .queryParam("pickId", pickId)
                         .queryParam("destinationLocationId", destinationLocationId)
@@ -127,7 +126,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("workOrderLineIds", workOrderLineIds)
                         .queryParam("warehouseId", warehouseId);
@@ -152,7 +151,7 @@ public class OutbuondServiceRestemplateClient {
     public String handleItemOverride( Long warehouseId, Long oldItemId, Long newItemId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/outbound-configuration/item-override")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("oldItemId", oldItemId)
@@ -185,11 +184,69 @@ public class OutbuondServiceRestemplateClient {
                                     String color,
                                     String productSize,
                                     String style,
-                                    boolean exactMatch) {
+                                    String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
+                                   boolean exactMatch) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/quantity-in-order")
+                        .queryParam("warehouseId", warehouseId)
+                        .queryParam("itemId", itemId)
+                        .queryParam("inventoryStatusId", inventoryStatusId)
+                        .queryParam("exactMatch", exactMatch);
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+        if (Strings.isNotBlank(color)) {
+            builder = builder.queryParam("color", color);
+        }
+        if (Strings.isNotBlank(productSize)) {
+            builder = builder.queryParam("productSize", productSize);
+        }
+        if (Strings.isNotBlank(style)) {
+            builder = builder.queryParam("style", style);
+        }
+        if (Strings.isNotBlank(attribute1)) {
+            builder = builder.queryParam("inventoryAttribute1", attribute1);
+        }
+        if (Strings.isNotBlank(attribute2)) {
+            builder = builder.queryParam("inventoryAttribute2", attribute2);
+        }
+        if (Strings.isNotBlank(attribute3)) {
+            builder = builder.queryParam("inventoryAttribute3", attribute3);
+        }
+        if (Strings.isNotBlank(attribute4)) {
+            builder = builder.queryParam("inventoryAttribute4", attribute4);
+        }
+        if (Strings.isNotBlank(attribute5)) {
+            builder = builder.queryParam("inventoryAttribute5", attribute5);
+        }
+        return restTemplateProxy.exchange(
+                Long.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
+
+
+
+    public long getQuantityInOrderPick(Long warehouseId,
+                                   Long clientId,
+                                   Long itemId,
+                                   Long inventoryStatusId,
+                                   String color,
+                                   String productSize,
+                                   String style,
+                                   boolean exactMatch) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/outbound/picks/quantity-in-order-pick")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemId", itemId)
                         .queryParam("inventoryStatusId", inventoryStatusId)
@@ -215,37 +272,27 @@ public class OutbuondServiceRestemplateClient {
     }
 
 
+    public List<Pick> getOpenPicks(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
+                                   Long locationId)  {
 
-    public long getQuantityInOrderPick(Long warehouseId,
-                                   Long clientId,
-                                   Long itemId,
-                                   Long inventoryStatusId,
-                                   String color,
-                                   String productSize,
-                                   String style,
-                                   boolean exactMatch) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/outbound/picks/quantity-in-order-pick")
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("itemId", itemId)
                         .queryParam("inventoryStatusId", inventoryStatusId)
-                        .queryParam("exactMatch", exactMatch);
+                        .queryParam("loadDetails", false)
+                        .queryParam("openPickOnly", true);
+
         if (Objects.nonNull(clientId)) {
             builder = builder.queryParam("clientId", clientId);
         }
-        if (Strings.isNotBlank(color)) {
-            builder = builder.queryParam("color", color);
+        if (Objects.nonNull(locationId)) {
+            builder = builder.queryParam("locationId", locationId);
         }
-        if (Strings.isNotBlank(productSize)) {
-            builder = builder.queryParam("productSize", productSize);
-        }
-        if (Strings.isNotBlank(style)) {
-            builder = builder.queryParam("style", style);
-        }
-        return restTemplateProxy.exchange(
-                Long.class,
+        return restTemplateProxy.exchangeList(
+                Pick.class,
                 builder.toUriString(),
                 HttpMethod.GET,
                 null

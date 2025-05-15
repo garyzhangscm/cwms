@@ -21,21 +21,31 @@ package com.garyzhangscm.cwms.inventory.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 @RestController
 public class InventoryController {
@@ -47,10 +57,15 @@ public class InventoryController {
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
+
+    public InventoryController() {
+    }
 
     @ClientValidationEndpoint
     @RequestMapping(value="/inventories", method = RequestMethod.GET)
-    public List<Inventory> findAllInventories(@RequestParam Long warehouseId,
+    public ResponseBodyWrapper<List<Inventory>> findAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                               @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
@@ -63,7 +78,9 @@ public class InventoryController {
                                               @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
                                               @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="pickZoneId", required = false, defaultValue = "") Long pickZoneId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                              @RequestParam(name="receiptIds", required = false, defaultValue = "") String receiptIds,
                                               @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                               @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
                                               @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
@@ -74,35 +91,74 @@ public class InventoryController {
                                               @RequestParam(name="color", required = false, defaultValue = "") String color,
                                               @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
                                               @RequestParam(name="style", required = false, defaultValue = "") String style,
+                                              @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                              @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                              @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                              @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                              @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                              @RequestParam(name = "maxLPNCount", defaultValue = "", required = false) Integer maxLPNCount,
+                                              @RequestParam(name = "pageIndex", defaultValue = "-1", required = false) Integer pageIndex,
+                                              @RequestParam(name = "recordPerPage", defaultValue = "10", required = false) Integer recordPerPage,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
                                               @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
-                                              ClientRestriction clientRestriction) {
+                                                                   @RequestParam(name = "compression", defaultValue = "false", required = false) Boolean compression,
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
 
 
-        return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
+        logger.debug("see if we have restriction on the max LPN we can return: {}",
+                Objects.nonNull(maxLPNCount) ? maxLPNCount : "No Restriction");
+
+        List<Inventory> inventories = inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
                 itemPackageTypeName, clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
-                locationId, locationIds, locationGroupId,  receiptId,  receiptNumber,
+                locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptIds,  receiptNumber,
                 customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, color, productSize, style, inventoryIds, notPutawayInventoryOnly,
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction,
-                includeDetails);
+                includeDetails, maxLPNCount  );
+        int totalCount = inventories.size();
+        if (pageIndex >= 0) {
+            if (recordPerPage <= 0) {
+                recordPerPage = 10;
+            }
+            int lastIndex = Math.min(inventories.size(), pageIndex  * recordPerPage);
+            inventories = inventories.subList((pageIndex  -1) * recordPerPage, lastIndex);
+        }
+
+        // for compression, we will just return the item's id / name and
+        // item package type's id and name to the uesr so that it won't cause big network traffic
+        if (Boolean.TRUE.equals(compression)) {
+            logger.debug("Return compressed {} inventory to the end user",
+                    inventories.size());
+            inventoryService.compress(inventories);
+        }
+        return new ResponseBodyWrapper<>(0, "", inventories, totalCount);
 
 
     }
 
+
     @ClientValidationEndpoint
-    @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
-    public int getInventoryCount(@RequestParam Long warehouseId,
+    @RequestMapping(value="/inventories/pagination", method = RequestMethod.GET)
+    public Page<Inventory> findPaginatedInventories(@RequestParam Long warehouseId,
+                                              @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                 @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
-                                             @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
-                                             @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
-                                 @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
+                                              @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
+                                              @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                              @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
                                               @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
                                               @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
@@ -110,29 +166,110 @@ public class InventoryController {
                                               @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
                                               @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                              @RequestParam(name="pickZoneId", required = false, defaultValue = "") Long pickZoneId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
-                                 @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
-                                 @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
+                                              @RequestParam(name="receiptIds", required = false, defaultValue = "") String receiptIds,
+                                              @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
+                                              @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
                                               @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                                               @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                             @RequestParam(name = "color", defaultValue = "", required = false) String color,
-                                             @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
-                                             @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                              @RequestParam(name="color", required = false, defaultValue = "") String color,
+                                              @RequestParam(name="productSize", required = false, defaultValue = "") String productSize,
+                                              @RequestParam(name="style", required = false, defaultValue = "") String style,
+                                              @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                              @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                              @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                              @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                              @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
-                                              @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
-                                              @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
-                                 ClientRestriction clientRestriction) {
+                                             @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
+                                                    @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                                    @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize,
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
+
+
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "locationId"));
+        //return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+
+        return inventoryService.findAllByPagination(warehouseId, itemId, itemName, itemNames,
+                itemPackageTypeName, clientId,  clientIds,
+                itemFamilyIds,inventoryStatusId,  locationName,
+                locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptIds,  receiptNumber,
+                customerReturnOrderId,  workOrderId,
+                workOrderLineIds, workOrderByProductIds,
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                inventoryIds,
+                includeVirturalInventory, clientRestriction, paging  );
+
+
+
+    }
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/inventories/count", method = RequestMethod.GET)
+    public int getInventoryCount(@RequestParam Long warehouseId,
+                                  @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                 @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
+                                 @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
+                                 @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
+                                 @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
+                                  @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
+                                  @RequestParam(name="itemFamilies", required = false, defaultValue = "") String itemFamilyIds,
+                                  @RequestParam(name="inventoryStatusId", required = false, defaultValue = "") Long inventoryStatusId,
+                                  @RequestParam(name="location", required = false, defaultValue = "") String locationName,
+                                  @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
+                                  @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
+                                  @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                 @RequestParam(name="pickZoneId", required = false, defaultValue = "") Long pickZoneId,
+                                  @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
+                                 @RequestParam(name="receiptIds", required = false, defaultValue = "") String receiptIds,
+                                 @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
+                                 @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
+                                  @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
+                                  @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
+                                  @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
+                                  @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
+                                  @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                 @RequestParam(name = "color", defaultValue = "", required = false) String color,
+                                 @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                 @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                 @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                 @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                 @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                 @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                 @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
+                                  @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
+                                  @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
+                                  @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
+                                 ClientRestriction clientRestriction) throws UnsupportedEncodingException {
         return inventoryService.findAll(warehouseId, itemId, itemName, itemNames,
                 itemPackageTypeName,  clientId, clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
-                locationId, locationIds, locationGroupId, receiptId, receiptNumber ,
+                locationId, locationIds, locationGroupId, pickZoneId, receiptId, receiptIds, receiptNumber ,
                 customerReturnOrderId, workOrderId,
                 workOrderLineIds, workOrderByProductIds,
-                pickIds, lpn, color, productSize, style,
-                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false).size();
+                pickIds, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                inventoryIds, notPutawayInventoryOnly, includeVirturalInventory, clientRestriction, false, null).size();
     }
 
     @RequestMapping(value="/inventories/pending", method = RequestMethod.GET)
@@ -147,12 +284,63 @@ public class InventoryController {
                                                    @RequestParam(name = "color", defaultValue = "", required = false) String color,
                                                    @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
                                                    @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                                   @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                                   @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                                   @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                                   @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                                   @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                                    @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
-                                                   @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId) {
-                                                 //   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails) {
+                                                   @RequestParam(name = "locationId", defaultValue = "", required = false) Long locationId,
+                                                   @RequestParam(name = "skipLocationIds", defaultValue = "", required = false) String skipLocationIds,
+                                                   @RequestParam(name = "includeDetails", defaultValue = "true", required = false) Boolean includeDetails,
+                                                   @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) int lpnLimit) throws UnsupportedEncodingException {
+
+        logger.debug("Start to find pickable inventory by criteria");
+        logger.debug("itemId = {}", itemId);
+        logger.debug("inventoryStatusId = {}", inventoryStatusId);
+        logger.debug("lpn = {}", Strings.isBlank(lpn) ? "N/A" : lpn);
+        logger.debug("color = {}", Strings.isBlank(URLDecoder.decode(color, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()));
+        logger.debug("productSize = {}", Strings.isBlank(URLDecoder.decode(productSize, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()));
+
+        logger.debug("style = {}", Strings.isBlank(URLDecoder.decode(style, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute1 = {}", Strings.isBlank(URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute2 = {}", Strings.isBlank(URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute3 = {}", Strings.isBlank(URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute4 = {}", Strings.isBlank(URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()));
+        logger.debug("attribute5 = {}", Strings.isBlank(URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name())) ? "N/A" :
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()));
+
+        logger.debug("receiptNumber = {}", Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
+        logger.debug("locationId = {}", Objects.isNull(locationId) ? "N/A" : locationId);
+        logger.debug("skipLocationIds = {}", Objects.isNull(skipLocationIds) ? "N/A" : skipLocationIds);
+
+
         // return inventoryService.findPickableInventories(itemId, inventoryStatusId, includeDetails);
-        return inventoryService.findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, receiptNumber);
+        List<Inventory> pickableInventory = inventoryService.findPickableInventories(
+                itemId, inventoryStatusId, locationId, lpn,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
+                receiptNumber, skipLocationIds, lpnLimit, includeDetails);
+        logger.debug("return {} pickable inventory with criteria ",
+                pickableInventory.size());
+        logger.debug("=========   Pickable   Inventory   ===============");
+        pickableInventory.forEach(
+                inventory -> logger.debug(">> id: {}, LPN : {}", inventory.getId(), inventory.getLpn())
+        );
+        return pickableInventory;
     }
 
 
@@ -218,7 +406,7 @@ public class InventoryController {
     public ResponseBodyWrapper<String> removeAllInventories(@RequestParam Long warehouseId,
                                               @RequestParam(name="itemId", required = false, defaultValue = "") Long itemId,
                                               @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                                            @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
+                                                @RequestParam(name="itemNames", required = false, defaultValue = "") String itemNames,
                                               @RequestParam(name="itemPackageTypeName", required = false, defaultValue = "") String itemPackageTypeName,
                                               @RequestParam(name="client", required = false, defaultValue = "") Long clientId,
                                               @RequestParam(name="clients", required = false, defaultValue = "") String clientIds,
@@ -228,31 +416,46 @@ public class InventoryController {
                                               @RequestParam(name="locationId", required = false, defaultValue = "") Long locationId,
                                               @RequestParam(name="locationIds", required = false, defaultValue = "") String locationIds,
                                               @RequestParam(name="locationGroupId", required = false, defaultValue = "") Long locationGroupId,
+                                                            @RequestParam(name="pickZoneId", required = false, defaultValue = "") Long pickZoneId,
                                               @RequestParam(name="receiptId", required = false, defaultValue = "") String receiptId,
-                                                            @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
+                                                            @RequestParam(name="receiptIds", required = false, defaultValue = "") String receiptIds,
+                                                @RequestParam(name = "receiptNumber", defaultValue = "", required = false) String receiptNumber,
                                               @RequestParam(name="customerReturnOrderId", required = false, defaultValue = "") String customerReturnOrderId,
                                               @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                                               @RequestParam(name="workOrderLineIds", required = false, defaultValue = "") String workOrderLineIds,
                                               @RequestParam(name="workOrderByProductIds", required = false, defaultValue = "") String workOrderByProductIds,
                                               @RequestParam(name="pickIds", required = false, defaultValue = "") String pickIds,
                                               @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                                            @RequestParam(name = "color", defaultValue = "", required = false) String color,
-                                                            @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
-                                                            @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                            @RequestParam(name = "color", defaultValue = "", required = false) String color,
+                                            @RequestParam(name = "productSize", defaultValue = "", required = false) String productSize,
+                                            @RequestParam(name = "style", defaultValue = "", required = false) String style,
+                                                @RequestParam(name="attribute1", required = false, defaultValue = "") String attribute1,
+                                                @RequestParam(name="attribute2", required = false, defaultValue = "") String attribute2,
+                                                @RequestParam(name="attribute3", required = false, defaultValue = "") String attribute3,
+                                                @RequestParam(name="attribute4", required = false, defaultValue = "") String attribute4,
+                                                @RequestParam(name="attribute5", required = false, defaultValue = "") String attribute5,
                                               @RequestParam(name = "inventoryIds", defaultValue = "", required = false) String inventoryIds,
                                               @RequestParam(name = "notPutawayInventoryOnly", defaultValue = "false", required = false) Boolean notPutawayInventoryOnly,
                                               @RequestParam(name = "includeVirturalInventory", defaultValue = "", required = false) Boolean includeVirturalInventory,
-                                              ClientRestriction clientRestriction) {
+                                              ClientRestriction clientRestriction) throws UnsupportedEncodingException {
 
 
 
         inventoryService.removeAllInventories(warehouseId, itemId, itemName, itemNames, itemPackageTypeName,clientId,  clientIds,
                 itemFamilyIds,inventoryStatusId,  locationName,
-                locationId, locationIds, locationGroupId,  receiptId, receiptNumber,
+                locationId, locationIds, locationGroupId, pickZoneId,
+                receiptId, receiptIds, receiptNumber,
                 customerReturnOrderId,  workOrderId,
                 workOrderLineIds, workOrderByProductIds,
                 pickIds, lpn,
-                color, productSize, style,
+                URLDecoder.decode(color, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(productSize, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(style, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute1, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute2, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute3, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute4, StandardCharsets.UTF_8.name()),
+                URLDecoder.decode(attribute5, StandardCharsets.UTF_8.name()),
                 inventoryIds, notPutawayInventoryOnly,
                 includeVirturalInventory, clientRestriction);
 
@@ -262,10 +465,18 @@ public class InventoryController {
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.DELETE, value="/inventory")
-    public List<Inventory> removeInventories(@RequestParam String inventoryIds) {
+    @RequestMapping(method=RequestMethod.DELETE, value="/inventory/batch-remove")
+    public ResponseBodyWrapper<String> removeInventories(
+            @RequestParam Long companyId,
+            @RequestBody String inventoryIds,
+                                    @RequestParam(name ="asyncronized", required =  false, defaultValue = "false") Boolean asyncronized) {
 
-        return inventoryService.removeInventores(inventoryIds);
+        logger.debug("Start to remove inventory by id {}", inventoryIds);
+        logger.debug("asyncronized? {}", asyncronized);
+        if (Strings.isBlank(inventoryIds.trim())) {
+            return ResponseBodyWrapper.success("no inventory id is passed in");
+        }
+        return ResponseBodyWrapper.success(inventoryService.removeInventores(companyId, inventoryIds, asyncronized));
     }
 
 
@@ -306,40 +517,55 @@ public class InventoryController {
     // Adjust up the inventory from 0
     @RequestMapping(method=RequestMethod.PUT, value="/inventory-adj")
     public Inventory addInventoryByInventoryAdjust(@RequestBody Inventory inventory,
+                                                   @RequestParam(name = "kitInventoryUseDefaultAttribute", required = false, defaultValue = "true") Boolean kitInventoryUseDefaultAttribute,
                                                    @RequestParam(name ="documentNumber", required =  false, defaultValue = "") String documentNumber,
                                                    @RequestParam(name ="comment", required =  false, defaultValue = "") String comment) {
 
         logger.debug("Start to create inventory \n{}", inventory.getLpn());
-        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+        return inventoryService.addInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,
+                documentNumber, comment, kitInventoryUseDefaultAttribute);
     }
     @BillableEndpoint
     // Adjust down the inventory to 0
     @RequestMapping(method=RequestMethod.PUT, value="/receive")
     public Inventory addInventoryByReceiving(@RequestBody Inventory inventory,
+                                             @RequestParam(name = "kitInventoryUseDefaultAttribute", required = false, defaultValue = "true") Boolean kitInventoryUseDefaultAttribute,
                                              @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
-                                             @RequestParam(name = "comment", required = false, defaultValue = "") String comment) {
-        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}",
-                inventory.getLpn(), documentNumber, comment);
+                                             @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
+                                             @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId) {
+        logger.debug("Start to receive inventory: {}, document number: {}, comment: {}, reason code id: {} / {}",
+                inventory.getLpn(), documentNumber, comment, reasonCodeId, inventory.getReasonCodeId());
+
+        // if the reason code is not passed in explicitly, use the one from the inventory
+        if (Objects.isNull(reasonCodeId)) {
+            reasonCodeId = inventory.getReasonCodeId();
+        }
+
         // We may receive  from a receipt, or a work order
         if (Objects.nonNull(inventory.getReceiptId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RECEIVING,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderLineId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.RETURN_MATERAIL,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderByProductId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING_BY_PRODUCT,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else if (Objects.nonNull(inventory.getWorkOrderId())){
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.PRODUCING,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
         else {
 
-            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN, documentNumber, comment);
+            return inventoryService.addInventory(inventory, InventoryQuantityChangeType.UNKNOWN,
+                    documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
     }
 
@@ -388,29 +614,60 @@ public class InventoryController {
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/move")
     public Inventory moveInventory(@PathVariable long id,
+                                   @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
                                    @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
                                    @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
                                    @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
-                                   @RequestBody Location location) {
+                                   @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
+                                   @RequestBody(required = false) Location location) {
 
+
+
+        if (Objects.isNull(location)) {
+            if (Strings.isNotBlank(destinationLocationName) && Objects.nonNull(warehouseId)) {
+                location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
+            }
+            else {
+                throw MissingInformationException.raiseException("either location or location name need to be present in the request");
+            }
+        }
 
         return inventoryService.moveInventory(id, location , pickId, immediateMove, destinationLpn);
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.POST, value="/inventory/move")
-    public List<Inventory> moveInventory(@RequestParam Long warehouseId,
-                                   @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
-                                   @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
-                                   @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
-                                   @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
-                                   @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
-                                   @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
-                                   @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                   @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
-                                   @RequestParam(name="unitOfMeasureName", required = false, defaultValue = "") String unitOfMeasureName,
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/{id}/ship")
+    public Inventory shipInventory(@PathVariable long id,
                                    @RequestBody Location location) {
 
+
+        return inventoryService.shipInventory(id, location);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/inventory/move")
+    public List<Inventory> moveInventory(@RequestParam Long warehouseId,
+                                       @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId,
+                                       @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
+                                       @RequestParam(name="pickId", required = false, defaultValue = "") Long pickId,
+                                       @RequestParam(name="immediateMove", required = false, defaultValue = "true") boolean immediateMove,
+                                       @RequestParam(name="destinationLpn", required = false, defaultValue = "") String destinationLpn,
+                                       @RequestParam(name="lpn", required = false, defaultValue = "") String lpn,
+                                       @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                       @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
+                                       @RequestParam(name="unitOfMeasureName", required = false, defaultValue = "") String unitOfMeasureName,
+                                         @RequestParam(name="destinationLocationName", required = false, defaultValue = "") String destinationLocationName,
+                                   @RequestBody Location location) {
+
+        if (Objects.isNull(location)) {
+            if (Strings.isNotBlank(destinationLocationName)) {
+                location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, destinationLocationName);
+            }
+            else {
+                throw MissingInformationException.raiseException("either location or location name need to be present in the request");
+            }
+        }
 
         // if the inventory id is passed in, then we will only move the specific inventory
         if (Objects.nonNull(inventoryId)) {
@@ -537,22 +794,24 @@ public class InventoryController {
     public Long getAvailableQuantityForMPS(
             @RequestParam Long warehouseId,
             @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
-            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+            @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) Integer lpnLimit) {
 
         return inventoryService.getAvailableQuantityForMPS(warehouseId,
 
-                itemId, itemName);
+                itemId, itemName, lpnLimit);
     }
 
     @RequestMapping(value="/inventories/available-for-mps/inventory-ignore-order", method = RequestMethod.GET)
     public List<Inventory> getAvailableInventoryForMPS(
             @RequestParam Long warehouseId,
             @RequestParam(name = "itemId", defaultValue = "", required = false) Long itemId,
-            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName) {
+            @RequestParam(name = "itemName", defaultValue = "", required = false) String itemName,
+            @RequestParam(name = "lpnLimit", defaultValue = "9999", required = false) Integer lpnLimit) {
 
         return inventoryService.getAvailableInventoryForMPS(warehouseId,
 
-                itemId, itemName);
+                itemId, itemName, lpnLimit);
     }
 
     @RequestMapping(value="/inventories/summary/quickbook-desktop", method = RequestMethod.GET)
@@ -577,20 +836,25 @@ public class InventoryController {
      * @throws IOException
      */
     @RequestMapping(method=RequestMethod.POST, value="/inventories/upload")
-    public ResponseBodyWrapper uploadInventories(Long warehouseId,
+    public ResponseBodyWrapper uploadInventories(Long companyId,
+                                                 Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
+                                                 @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "inventory", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "inventory", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = inventoryService.uploadInventoryData(warehouseId, localFile, removeExistingInventory);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventories/upload/progress")
@@ -619,20 +883,23 @@ public class InventoryController {
      * @throws IOException
      */
     @RequestMapping(method=RequestMethod.POST, value="/inventories/putaway-inventory/upload")
-    public ResponseBodyWrapper uploadPutawayInventories(Long warehouseId,
+    public ResponseBodyWrapper uploadPutawayInventories(Long companyId, Long warehouseId,
                                                  @RequestParam("file") MultipartFile file,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                  @RequestParam(name = "removeExistingInventory", defaultValue = "true", required = false) Boolean removeExistingInventory) throws IOException {
 
-
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "putaway-inventories", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "putaway-inventories", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = inventoryService.uploadPutawayInventoryData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
     }
 
     @RequestMapping(method=RequestMethod.GET, value="/inventories/putaway-inventory/upload/progress")
@@ -723,5 +990,48 @@ public class InventoryController {
         return inventoryService.relabelInventories(
                 ids, newLPN, mergeWithExistingInventory
         );
+    }
+
+
+    @ClientValidationEndpoint
+    @RequestMapping(value="/inventories/dry-run-allocation", method = RequestMethod.GET)
+    public List<AllocationDryRunResult> getAllocationDryRunResult(
+            @RequestParam Long warehouseId,
+            @RequestParam Long  itemId,
+            @RequestParam Long  inventoryStatusId,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long  clientId,
+            @RequestParam(name = "locationId", defaultValue = "", required = false) Long  locationId,
+            @RequestParam(name = "lpn", defaultValue = "", required = false) String lpn,
+            ClientRestriction clientRestriction) {
+
+
+
+        return inventoryService.getAllocationDryRunResult(warehouseId, clientId,
+                itemId, inventoryStatusId,
+                locationId, lpn,
+                clientRestriction
+        );
+    }
+
+    @RequestMapping(value="/inventories/inventory-aging-for-billing", method = RequestMethod.GET)
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(
+            @RequestParam Long warehouseId,
+            @RequestParam String billableCategory,
+            @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+            @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long  clientId,
+            @RequestParam(name = "includeDaysSinceInWarehouseForStorageFee", required = false, defaultValue = "false") Boolean includeDaysSinceInWarehouseForStorageFee) {
+
+
+        return inventoryService.getInventoryAgingForBilling(warehouseId, clientId, billableCategory,
+                startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+    }
+
+
+    @RequestMapping(value="/inventories/qc-inspection-requests/manual", method = RequestMethod.POST)
+    public List<QCInspectionRequest> generateManualQCInspectionRequests(
+            @RequestParam Long warehouseId,
+            @RequestParam(name="inventoryId", required = false, defaultValue = "") Long inventoryId ) {
+        return inventoryService.generateManualQCInspectionRequests(warehouseId, inventoryId);
     }
 }

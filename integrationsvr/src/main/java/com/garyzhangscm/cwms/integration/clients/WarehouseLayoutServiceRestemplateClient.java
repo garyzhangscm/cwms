@@ -21,6 +21,7 @@ package com.garyzhangscm.cwms.integration.clients;
 import com.garyzhangscm.cwms.integration.model.Company;
 import com.garyzhangscm.cwms.integration.model.Warehouse;
 
+import com.garyzhangscm.cwms.integration.model.WarehouseConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +42,38 @@ public class WarehouseLayoutServiceRestemplateClient {
     @Autowired
     private RestTemplateProxy restTemplateProxy;
 
+    @Cacheable(cacheNames = "IntegrationService_WarehouseConfiguration", unless="#result == null")
+    public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId)   {
+
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout//warehouse-configuration/by-warehouse/{id}");
+/**
+ ResponseBodyWrapper<WarehouseConfiguration> responseBodyWrapper
+ = restTemplate.exchange(
+ builder.buildAndExpand(warehouseId).toUriString(),
+ HttpMethod.GET,
+ null,
+ new ParameterizedTypeReference<ResponseBodyWrapper<WarehouseConfiguration>>() {}).getBody();
+
+ return responseBodyWrapper.getData();
+ **/
+
+        return restTemplateProxy.exchange(
+                WarehouseConfiguration.class,
+                builder.buildAndExpand(warehouseId).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
+
     @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
     public Company getCompanyByCode(String companyCode) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/companies")
+                UriComponentsBuilder.fromHttpUrl("http://apigateway:5555/api/layout/companies")
                         .queryParam("code", companyCode);
 /**
         ResponseBodyWrapper<List<Company>> responseBodyWrapper = restTemplate.exchange(
@@ -69,12 +97,27 @@ public class WarehouseLayoutServiceRestemplateClient {
             return companies.get(0);
         }
     }
+    @Cacheable(cacheNames = "IntegrationService_Company", unless="#result == null")
+    public Company getCompanyById(Long id) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/companies/{id}");
+
+        return restTemplateProxy.exchange(
+                Company.class,
+                builder.buildAndExpand(id).toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 
     @Cacheable(cacheNames = "IntegrationService_Warehouse", unless="#result == null")
     public Warehouse getWarehouseByName(String companyCode, String name) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
+                UriComponentsBuilder.fromHttpUrl("http://apigateway:5555/api/layout/warehouses")
                         .queryParam("companyCode", companyCode)
                 .queryParam("name", name);
 /**
@@ -104,7 +147,7 @@ public class WarehouseLayoutServiceRestemplateClient {
     public Warehouse getWarehouseByName(Long companyId, String name) {
 
         UriComponentsBuilder builder =
-                UriComponentsBuilder.fromHttpUrl("http://zuulserver:5555/api/layout/warehouses")
+                UriComponentsBuilder.fromHttpUrl("http://apigateway:5555/api/layout/warehouses")
                         .queryParam("companyId", companyId)
                         .queryParam("name", name);
 /**
@@ -168,7 +211,7 @@ public class WarehouseLayoutServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/layout/warehouses/{id}");
 
 /**
@@ -190,7 +233,35 @@ public class WarehouseLayoutServiceRestemplateClient {
 
 
     }
+    public List<Company> getAllCompanies() {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/companies");
+        return  restTemplateProxy.exchangeList(
+                Company.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+    }
+    public List<Warehouse> getWarehouseByCompany(Long companyId) {
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.newInstance()
+                        .scheme("http").host("apigateway").port(5555)
+                        .path("/api/layout/warehouses")
+                        .queryParam("companyId", companyId);
 
+        logger.debug("Start to get warehouse by companyId: {}, /n >> {}",
+                companyId, builder.toUriString());
+        return restTemplateProxy.exchangeList(
+                Warehouse.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
+    }
 
 
 

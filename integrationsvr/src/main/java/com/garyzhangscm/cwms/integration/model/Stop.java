@@ -6,7 +6,6 @@ import java.util.List;
 
 public class Stop   implements Serializable {
 
-    private List<Shipment> shipments = new ArrayList<>();
 
     private Long warehouseId;
 
@@ -32,6 +31,9 @@ public class Stop   implements Serializable {
     private String addressLine2;
     private String addressPostcode;
 
+    private List<Shipment> shipments = new ArrayList<>();
+
+    private List<TrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
 
     public List<Shipment> getShipments() {
         return shipments;
@@ -50,6 +52,18 @@ public class Stop   implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public List<TrailerOrderLineAssignment> getTrailerOrderLineAssignments() {
+        return trailerOrderLineAssignments;
+    }
+
+    public void setTrailerOrderLineAssignments(List<TrailerOrderLineAssignment> trailerOrderLineAssignments) {
+        this.trailerOrderLineAssignments = trailerOrderLineAssignments;
+    }
+
+    public void addTrailerOrderLineAssignment(TrailerOrderLineAssignment trailerOrderLineAssignment) {
+        this.trailerOrderLineAssignments.add(trailerOrderLineAssignment);
     }
 
     public String getNumber() {

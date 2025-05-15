@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -131,7 +132,8 @@ public class PrinterService  {
         printerRepository.deleteById(id);
 
     }
-    public List<String> getServerPrinters(Long warehouseId, String printingStrategyName) {
+    public List<Printer> getPrinters(Long warehouseId, String printingStrategyName,
+                                     String name, String printerType) {
         // there're 3 ways to print document
         // 1. print from the server that host this resource service
         // 2. print from a centralized client but data from server
@@ -167,11 +169,19 @@ public class PrinterService  {
          **/
         if (printingStrategy.equals(PrintingStrategy.SERVER_PRINTER)) {
             // option 1: get printers that connect to the server that host the printing service(now integrated in local plugin service)
-            return printingServiceRestemplateClient.getPrinters();
+            try {
+                return printingServiceRestemplateClient.getPrinters(name, printerType);
+            } catch (URISyntaxException e) {
+                logger.debug("Error while get printers, will return empty list to the user");
+                e.printStackTrace();
+                return new ArrayList<>();
+            }
+
+
         }
         else if (printingStrategy.equals(PrintingStrategy.LOCAL_PRINTER_SERVER_DATA)) {
             // option 2: get printers from the printer table
-            return findAll(warehouseId, null, null).stream().map(Printer::getName).collect(Collectors.toList());
+            return findAll(warehouseId, name, printerType).stream().collect(Collectors.toList());
         }
         else {
 

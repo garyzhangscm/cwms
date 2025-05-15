@@ -2,10 +2,13 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.Strings;
 
 public class BillOfMaterialLineCSVWrapper {
 
     private String number;
+    private String client;
+
 
     // BOM number
     private String billOfMaterial;
@@ -22,6 +25,23 @@ public class BillOfMaterialLineCSVWrapper {
     private String item;
 
     private String inventoryStatus;
+
+    private Boolean createKitItem;
+
+    public BillOfMaterialLineCSVWrapper trim() {
+
+        number = Strings.isBlank(number) ? "" : number.trim();
+        client = Strings.isBlank(client) ? "" : client.trim();
+        billOfMaterial = Strings.isBlank(billOfMaterial) ? "" : billOfMaterial.trim();
+        bomItem = Strings.isBlank(bomItem) ? "" : bomItem.trim();
+        warehouse = Strings.isBlank(warehouse) ? "" : warehouse.trim();
+        company = Strings.isBlank(company) ? "" : company.trim();
+        item = Strings.isBlank(item) ? "" : item.trim();
+        inventoryStatus = Strings.isBlank(inventoryStatus) ? "" : inventoryStatus.trim();
+
+
+        return this;
+    }
 
     @Override
     public String toString() {
@@ -103,5 +123,21 @@ public class BillOfMaterialLineCSVWrapper {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public Boolean getCreateKitItem() {
+        return createKitItem;
+    }
+
+    public void setCreateKitItem(Boolean createKitItem) {
+        this.createKitItem = createKitItem;
     }
 }

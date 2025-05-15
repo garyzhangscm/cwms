@@ -27,6 +27,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -39,10 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -67,6 +64,8 @@ public class ProductionLineService implements TestDataInitiableService {
     private ProductionLineMonitorTransactionService productionLineMonitorTransactionService;
     @Autowired
     WorkOrderProduceTransactionService workOrderProduceTransactionService;
+    @Autowired
+    private ProductionLineAssignmentService productionLineAssignmentService;
 
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -84,22 +83,18 @@ public class ProductionLineService implements TestDataInitiableService {
     // if the last cycle happens 120 seconds ago, then the production will
     // be defined as inactive
     private Double DEFAULT_MAX_CYCLE_TIME = 120.0;
-    public ProductionLine findById(Long id, boolean loadDetails) {
-        ProductionLine productionLine = productionLineRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.raiseException("production line not found by id: " + id));
-        if (loadDetails) {
-            loadAttribute(productionLine);
-        }
-        return productionLine;
-    }
-
     public ProductionLine findById(Long id) {
-        return findById(id, true);
+        return productionLineRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.raiseException("production line not found by id: " + id));
+
     }
 
 
-    public List<ProductionLine> findAll(Long warehouseId, String name, String productionLineIds, boolean genericMatch,
-                                        boolean loadDetails) {
+
+    public List<ProductionLine> findAll(Long warehouseId, String name, String productionLineIds,
+                                        String productionLineNames,
+                                        String type,
+                                        Boolean enabled ) {
         List<ProductionLine> productionLines
                 =  productionLineRepository.findAll(
                 (Root<ProductionLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -108,12 +103,11 @@ public class ProductionLineService implements TestDataInitiableService {
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
                     if (!StringUtils.isBlank(name)) {
-                        if (genericMatch) {
 
-                            predicates.add(criteriaBuilder.like(root.get("name"), name));
+                        if (name.contains("%") || name.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("name"), name.replaceAll("\\*", "%")));
                         }
                         else {
-
                             predicates.add(criteriaBuilder.equal(root.get("name"), name));
                         }
 
@@ -125,6 +119,23 @@ public class ProductionLineService implements TestDataInitiableService {
                         }
                         predicates.add(criteriaBuilder.and(inProductionLineIds));
                     }
+                    if (Strings.isNotBlank(type)) {
+
+                        Join<ProductionLine, ProductionLineType> joinProductionPlanLine = root.join("type", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinProductionPlanLine.get("name"), type));
+                    }
+                    if (!StringUtils.isBlank(productionLineNames)) {
+                        CriteriaBuilder.In<String> inProductionLineNames = criteriaBuilder.in(root.get("name"));
+                        for(String productionLineName : productionLineNames.split(",")) {
+                            inProductionLineNames.value(productionLineName);
+                        }
+                        predicates.add(criteriaBuilder.and(inProductionLineNames));
+                    }
+
+                    if (Objects.nonNull(enabled)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("enabled"), enabled));
+                    }
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
@@ -132,57 +143,37 @@ public class ProductionLineService implements TestDataInitiableService {
                 Sort.by(Sort.Direction.ASC, "name")
         );
 
-
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
+/**
+        if (productionLines.size() > 0) {
+            loadAttribute(productionLines, loadDetails, loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails, loadWorkOrderItemDetails);
         }
+ **/
         return productionLines;
     }
 
-    public List<ProductionLine> findAll(Long warehouseId,String name, String productionLineIds, boolean genericMatch) {
-        return findAll(warehouseId, name, productionLineIds, genericMatch, true);
-    }
+
 
     public List<ProductionLine> findAllAvailableProductionLines(
             Long warehouseId, Long itemId) {
-        return findAllAvailableProductionLines(warehouseId, itemId,true);
-    }
-
-    public List<ProductionLine> findAllAvailableProductionLinesForMPS(
-            Long warehouseId, Long itemId) {
-        return findAllAvailableProductionLinesForMPS(warehouseId, itemId,true);
-    }
-
-    public List<ProductionLine> findAllAvailableProductionLines(
-            Long warehouseId, Long itemId, boolean loadDetails) {
         List<ProductionLine> productionLines
                 = productionLineRepository.findByWarehouseId(warehouseId);
-        productionLines =
-                productionLines.stream()
+        return productionLines.stream()
                         .filter(productionLine ->
                                 isAvailableForNewWorkOrder(productionLine, itemId))
                             .collect(Collectors.toList());
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
-        }
-        return productionLines;
+
 
     }
 
 
     public List<ProductionLine> findAllAvailableProductionLinesForMPS(
-            Long warehouseId, Long itemId, boolean loadDetails) {
+            Long warehouseId, Long itemId) {
         List<ProductionLine> productionLines
                 = productionLineRepository.findByWarehouseId(warehouseId);
-        productionLines =
-                productionLines.stream()
+        return productionLines.stream()
                         .filter(productionLine ->
                                 isAvailableForFutureWorkOrder(productionLine, itemId))
                         .collect(Collectors.toList());
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
-        }
-        return productionLines;
 
     }
 
@@ -207,8 +198,13 @@ public class ProductionLineService implements TestDataInitiableService {
             logger.debug("> production line is disabled");
             return false;
         }
+        List<ProductionLineAssignment> currentProductionLineAssignment =
+                productionLine.getProductionLineAssignments().stream().filter(
+                        productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                ).collect(Collectors.toList());
+
         if (productionLine.getWorkOrderExclusiveFlag() &&
-            productionLine.getProductionLineAssignments().size() > 0) {
+                currentProductionLineAssignment.size() > 0) {
 
             logger.debug("> production line is assigned and setup as exclusive");
             return false;
@@ -284,11 +280,7 @@ public class ProductionLineService implements TestDataInitiableService {
     }
 
     public ProductionLine findByName(Long warehouseId, String name, boolean loadDetails) {
-        ProductionLine productionLine = productionLineRepository.findByWarehouseIdAndName(warehouseId, name);
-        if (productionLine != null && loadDetails) {
-            loadAttribute(productionLine);
-        }
-        return productionLine;
+        return productionLineRepository.findByWarehouseIdAndName(warehouseId, name);
     }
 
     public ProductionLine findByName(Long warehouseId, String name) {
@@ -297,29 +289,93 @@ public class ProductionLineService implements TestDataInitiableService {
 
 
 
-    public List<ProductionLine> findByIds(Long warehouseId, String productionLineIds, boolean loadDetails) {
+    public List<ProductionLine> findByIds(Long warehouseId, String productionLineIds) {
 
         List<Long> productionLineIdList = Arrays.stream(productionLineIds.split(","))
                 .mapToLong(Long::parseLong).boxed().collect(Collectors.toList());
 
-        List<ProductionLine> productionLines = productionLineRepository.findByIds(warehouseId, productionLineIdList);
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
-        }
-        return productionLines;
+        return productionLineRepository.findByIds(warehouseId, productionLineIdList);
     }
 
-    public List<ProductionLine> findByIds(Long warehouseId, String productionLineIds) {
-        return findByIds(warehouseId, productionLineIds, true);
+/**
+    private void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails) {
+        loadAttribute(productionLines, loadDetails, false, true, true);
     }
-
-    public void loadAttribute(List<ProductionLine> productionLines) {
+    public void loadAttribute(List<ProductionLine> productionLines, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder,
+                              boolean loadWorkOrderDetails, boolean loadWorkOrderItemDetails) {
         for (ProductionLine productionLine : productionLines) {
-            loadAttribute(productionLine);
+            loadAttribute(productionLine, loadDetails, loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails, loadWorkOrderItemDetails);
         }
     }
 
-    public void loadAttribute(ProductionLine productionLine) {
+    private void loadAttribute(ProductionLine productionLine, boolean loadDetails) {
+        loadAttribute(productionLine, loadDetails, false, true, true);
+    }
+    public void loadAttribute(ProductionLine productionLine, boolean loadDetails, boolean loadDetailsForDeassignedWorkOrder,
+                              boolean loadWorkOrderDetails, boolean loadWorkOrderItemDetails) {
+
+        // we will load the details for the production line assignment any way
+
+        logger.debug("we will load details for the production line {}? loadDetails = {}, " +
+                        "loadDetailsForDeassignedWorkOrder = {}, loadWorkOrderDetails = {}",
+                productionLine.getName(),
+                loadDetails,
+                loadDetailsForDeassignedWorkOrder, loadWorkOrderDetails);
+        if (Boolean.TRUE.equals(loadDetailsForDeassignedWorkOrder)) {
+
+            productionLine.getProductionLineAssignments().stream()
+                    // WE will load the details even if the production line is already deassigned
+                    .forEach(
+                            productionLineAssignment ->
+                                    productionLineAssignmentService.loadAttribute(productionLineAssignment)
+                    );
+
+        }
+        else {
+            productionLine.getProductionLineAssignments().stream()
+                     .filter(
+                         productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned()) &&
+                         Objects.isNull(productionLineAssignment.getDeassignedTime())
+                     )
+                    .forEach(
+                            productionLineAssignment -> {
+                                // productionLineAssignmentService.loadAttribute(productionLineAssignment);
+                                if (Objects.nonNull(productionLineAssignment.getWorkOrder())) {
+                                    productionLineAssignment.setWorkOrderId(
+                                            productionLineAssignment.getWorkOrder().getId()
+                                    );
+                                    productionLineAssignment.setWorkOrderNumber(
+                                            productionLineAssignment.getWorkOrder().getNumber()
+                                    );
+
+                                    if (loadWorkOrderDetails) {
+
+                                        workOrderService.loadAttribute(productionLineAssignment.getWorkOrder());
+                                    }
+                                    else if (loadWorkOrderItemDetails) {
+
+                                        if (Objects.nonNull(productionLineAssignment.getWorkOrder())
+                                                && Objects.isNull(productionLineAssignment.getWorkOrder().getItem())) {
+                                            productionLineAssignment.getWorkOrder().setItem(
+                                                    inventoryServiceRestemplateClient.getItemById(
+                                                            productionLineAssignment.getWorkOrder().getItemId()
+                                                    )
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                    );
+
+        }
+
+        if (!loadDetails) {
+
+
+            return;
+        }
+
+        // continue loading other attribute
 
         if (productionLine.getWarehouseId() != null && productionLine.getWarehouse() == null) {
             productionLine.setWarehouse(
@@ -366,13 +422,11 @@ public class ProductionLineService implements TestDataInitiableService {
         // productionLine.getWorkOrders().forEach(workOrder -> workOrderService.loadAttribute(workOrder));
 
     }
-
+**/
 
 
     public ProductionLine save(ProductionLine productionLine) {
-        ProductionLine newProductionLine = productionLineRepository.save(productionLine);
-        loadAttribute(newProductionLine);
-        return newProductionLine;
+        return productionLineRepository.save(productionLine);
     }
 
     public ProductionLine saveOrUpdate(ProductionLine productionLine) {
@@ -488,8 +542,97 @@ public class ProductionLineService implements TestDataInitiableService {
                                 productionLine
                         )
         );
+        // setup the locations
+        setupProductionLineLocations(productionLine);
+
         return saveOrUpdate(productionLine);
     }
+
+    /**
+     * Setup the production line location, in and out staging location automatically
+     * @param productionLine
+     */
+    private void setupProductionLineLocations(ProductionLine productionLine) {
+        if (Objects.isNull(productionLine.getProductionLineLocationId())) {
+
+            if (Objects.isNull(productionLine.getProductionLineLocation().getId()) ||
+                    productionLine.getProductionLineLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getProductionLineLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setProductionLineLocation(location);
+                    productionLine.setProductionLineLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setProductionLineLocationId(
+                        productionLine.getProductionLineLocation().getId()
+                );
+            }
+        }
+
+        if (Objects.isNull(productionLine.getInboundStageLocationId())) {
+
+            if (Objects.isNull(productionLine.getInboundStageLocation().getId()) ||
+                    productionLine.getInboundStageLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineInboundLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getInboundStageLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setInboundStageLocation(location);
+                    productionLine.setInboundStageLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the inbound location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setInboundStageLocationId(
+                        productionLine.getInboundStageLocation().getId()
+                );
+            }
+        }
+
+        if (Objects.isNull(productionLine.getOutboundStageLocationId())) {
+
+            if (Objects.isNull(productionLine.getOutboundStageLocation().getId()) ||
+                    productionLine.getOutboundStageLocation().getId() < 0) {
+
+                Location location = warehouseLayoutServiceRestemplateClient.getOrCreateProductionLineOutboundLocation(
+                        productionLine.getWarehouseId(),
+                        productionLine.getOutboundStageLocation()
+                );
+                if(Objects.nonNull(location)) {
+                    productionLine.setOutboundStageLocation(location);
+                    productionLine.setOutboundStageLocationId(location.getId());
+
+                }
+                else {
+                    throw WorkOrderException.raiseException("Error creating production line. Can't create the outbound location for production line " +
+                            productionLine.getName());
+                }
+            }
+            else {
+                productionLine.setOutboundStageLocationId(
+                        productionLine.getOutboundStageLocation().getId()
+                );
+            }
+        }
+
+    }
+
 
     public ProductionLine changeProductionLine(ProductionLine productionLine) {
         productionLine.getProductionLineCapacities().forEach(
@@ -574,15 +717,15 @@ public class ProductionLineService implements TestDataInitiableService {
                 productionLines.size(), warehouseId);
         productionLines =
                 productionLines.stream()
-                        .filter(productionLine ->  productionLine.getProductionLineAssignments().size() > 0
+                        .filter(
+                                productionLine ->  productionLine.getProductionLineAssignments().stream().anyMatch(
+                                                        productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                                                    )
                         )
                         .collect(Collectors.toList());
 
         logger.debug("We have {} ASSIGNED production lines for warehouse id {}",
                 productionLines.size(), warehouseId);
-        if (productionLines.size() > 0 && loadDetails) {
-            loadAttribute(productionLines);
-        }
         return productionLines;
     }
 
@@ -630,7 +773,7 @@ public class ProductionLineService implements TestDataInitiableService {
             // return the status for all production line
             // we will only return the enabled lines
             List<ProductionLine> productionLines = findAll(warehouseId,
-                    null, null, false, false)
+                    null, null, null,null, null)
                     .stream().filter(productionLine -> Boolean.TRUE.equals(productionLine.getEnabled()))
                     .collect(Collectors.toList());
             return getProductionLineStatus(warehouseId, productionLines,
@@ -770,7 +913,7 @@ public class ProductionLineService implements TestDataInitiableService {
                                                                     String name) {
 
         List<ProductionLine> productionLines =
-                findAll(warehouseId, null, productionLineIds, false, false);
+                findAll(warehouseId, null, productionLineIds, null,null, null);
 
         return getProductionLineAttribute(
                 productionLines, name
@@ -931,7 +1074,7 @@ public class ProductionLineService implements TestDataInitiableService {
             ZonedDateTime startTime, ZonedDateTime endTime, LocalDate date) {
 
         List<ProductionLine> productionLines =
-                findAll(warehouseId, null, productionLineIds, false, false);
+                findAll(warehouseId, null, productionLineIds, null,null, null);
 
         return getProducedInventoryTotalQuantity(
                 warehouseId, productionLines, startTime, endTime, date

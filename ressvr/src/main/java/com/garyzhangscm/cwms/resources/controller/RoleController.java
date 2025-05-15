@@ -71,6 +71,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -92,6 +93,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -121,6 +123,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -154,6 +157,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -185,6 +189,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -210,6 +215,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),
@@ -238,6 +244,7 @@ public class RoleController {
                     // cache as well since the user may have the role cached as well
                     @CacheEvict(cacheNames = "AdminService_UserByName", allEntries = true),
                     @CacheEvict(cacheNames = "CommonService_User", allEntries = true),
+                    @CacheEvict(cacheNames = "IntegrationService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InboundService_User", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_User", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_User", allEntries = true),

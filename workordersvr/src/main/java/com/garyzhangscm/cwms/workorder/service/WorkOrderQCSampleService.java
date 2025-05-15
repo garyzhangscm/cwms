@@ -18,29 +18,24 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
-import com.garyzhangscm.cwms.workorder.repository.MouldRepository;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderQCSampleRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -96,13 +91,16 @@ public class WorkOrderQCSampleService   {
 
 
     public List<WorkOrderQCSample> findAll(Long warehouseId, String number,
-                                           Long productionLineAssignmentId) {
+                                           Long productionLineAssignmentId,
+                                           Boolean includeRemovedSamples) {
 
-        return findAll(warehouseId, number, productionLineAssignmentId, true);
+        return findAll(warehouseId, number, productionLineAssignmentId, includeRemovedSamples,
+                true);
     }
 
     public List<WorkOrderQCSample> findAll(Long warehouseId, String number,
                                            Long productionLineAssignmentId,
+                                           Boolean includeRemovedSamples,
                                            boolean loadDetail) {
         List<WorkOrderQCSample> workOrderQCSamples =
                 workOrderQCSampleRepository.findAll(
@@ -120,6 +118,10 @@ public class WorkOrderQCSampleService   {
                         Join<WorkOrderQCSample, ProductionLineAssignment> joinProductionLineAssignment
                                 = root.join("productionLineAssignment", JoinType.INNER);
                         predicates.add(criteriaBuilder.equal(joinProductionLineAssignment.get("id"), productionLineAssignmentId));
+                    }
+                    if (!Boolean.TRUE.equals(includeRemovedSamples)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("removed"), false));
                     }
 
 
@@ -255,6 +257,7 @@ public class WorkOrderQCSampleService   {
     private void removeQCSample(WorkOrderQCSample workOrderQCSample) {
         // remove all files
 
+        /**
         String filePath = getWorkOrderQCSampleImageFolder(workOrderQCSample.getProductionLineAssignment().getId());
         logger.debug("start to remove qc samples from folder {}",
                 filePath);
@@ -262,7 +265,9 @@ public class WorkOrderQCSampleService   {
 
         // remove the qc sample record
         delete(workOrderQCSample);
-
+**/
+        workOrderQCSample.setRemoved(true);
+        saveOrUpdate(workOrderQCSample);
     }
 
     public void removeQCSample(Long id) {

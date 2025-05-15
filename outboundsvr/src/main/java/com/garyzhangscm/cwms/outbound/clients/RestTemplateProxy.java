@@ -24,24 +24,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.exception.ExceptionCode;
 import com.garyzhangscm.cwms.outbound.exception.GenericException;
-import com.garyzhangscm.cwms.outbound.model.Order;
-import com.garyzhangscm.cwms.outbound.model.WorkTask;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentRequest;
-import com.garyzhangscm.cwms.outbound.model.hualei.ShipmentResponse;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -54,17 +45,20 @@ public class RestTemplateProxy {
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateProxy.class);
 
     @Autowired
-    OAuth2RestOperations restTemplate;
+    RestTemplate restTemplate;
 
-    @Autowired
-    @Qualifier("autoLoginRestTemplate")
-    RestTemplate autoLoginRestTemplate;
+    // @Autowired
+    // @Qualifier("autoLoginRestTemplate")
+    // RestTemplate autoLoginRestTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired
     private ObjectMapper objectMapper;
 
-
+    public RestOperations getRestTemplate()  {
+        return restTemplate;
+    }
+  /*
     public RestOperations getRestTemplate()  {
 
         boolean inUserContext = true;
@@ -86,14 +80,14 @@ public class RestTemplateProxy {
             return autoLoginRestTemplate;
         }
     }
+    */
 
     public <T> T exchange(Class<T> t, String uri, HttpMethod method,
                           Object obj) {
         HttpEntity entity = null;
         try {
             entity = Objects.isNull(obj) ?
-                    null :
-                    getHttpEntity(objectMapper.writeValueAsString(obj));
+                    null : getHttpEntity(objectMapper.writeValueAsString(obj));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new GenericException(ExceptionCode.SYSTEM_FATAL_ERROR,
@@ -131,7 +125,7 @@ public class RestTemplateProxy {
     }
 
     public <T> List<T> exchangeList(Class<T> t, String uri, HttpMethod method,
-                                Object obj) {
+                                    Object obj) {
         HttpEntity entity = null;
         try {
             entity = Objects.isNull(obj) ?
@@ -174,11 +168,9 @@ public class RestTemplateProxy {
     }
 
     private HttpEntity<String> getHttpEntity(String requestBody) {
-
-        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
-
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(mediaType);
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }

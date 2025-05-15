@@ -2,28 +2,38 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/APIGateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/QuickBook/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/QuickBook/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/adminsvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/authsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/authsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/authsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/commonsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/commonsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/commonsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/confsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/confsvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/confsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/dblink/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dblink/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inboundsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inboundsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/inboundsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/integrationsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/integrationsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inventorysvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inventorysvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/layoutserver" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/layoutserver/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/layoutserver/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/outboundsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/outboundsvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/outboundsvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ressvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ressvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/workordersvr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/workordersvr/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuulsvr/src/main/resources" charset="UTF-8" />

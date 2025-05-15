@@ -22,7 +22,17 @@ public enum ReportType {
     PARCEL_REPORT(false),
     BULK_PICK_SHEET(false),
     PICK_SHEET(false),
-    WALMART_SHIPPING_CARTON_LABEL(true);
+    PALLET_PICK_LABEL(true),
+    WALMART_SHIPPING_CARTON_LABEL(true),
+    WALMART_PALLET_PICK_LABEL(true),
+    TARGET_SHIPPING_CARTON_LABEL(true),
+    TARGET_PALLET_PICK_LABEL(true),
+    COMBINED_LABELS(true),
+    PALLET_PICK_SUMMARY_LABEL(true),
+    WAVE_PICK_SHEET_BY_LOCATION(false),
+    WAVE_PACKING_SLIP(false),
+    ORDER_MANUAL_PICK_SHEET(false),
+    WORK_ORDER_MANUAL_PICK_SHEET(false);
 
     private boolean isLabelFlag;
 

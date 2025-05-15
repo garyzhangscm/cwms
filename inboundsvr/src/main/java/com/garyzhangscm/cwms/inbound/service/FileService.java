@@ -26,7 +26,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.controller.ReceiptController;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inbound.exception.SystemFatalException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +53,8 @@ public class FileService {
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private ExcelFileHandler excelFileHandler;
 
 
     public File saveFile(MultipartFile file) throws IOException {
@@ -67,7 +73,8 @@ public class FileService {
 
     }
 
-    public <T> List<T> loadData(File file, Class<T> tClass)throws IOException {
+
+    public <T> List<T> loadData(File file, Class<T> tClass)  {
         CsvMapper csvMapper = new CsvMapper();
         CsvSchema bootstrapSchema = CsvSchema.emptySchema() //
                 .withHeader() //
@@ -122,45 +129,21 @@ public class FileService {
         return mappingIterator.readAll();
     }
 
-    public void validateCSVFile(Long warehouseId,
-                                  String type,
-                                  File file) {
-        // we will assume the first line of the file is the hader of the CSV file
 
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-            String header = br.readLine();
-            if (header != null) {
-                validateCSVFile(warehouseId, type, header);
-            }
-            else {
-                logger.debug("Can't get header information from file {}", file);
+    public File saveCSVFile(String fileName, String content) throws IOException {
+        String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
+        File localFile = new File(destination);
 
-                throw SystemFatalException.raiseException(
-                        "CSV file " + file.getName() + " is missing the header");
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw SystemFatalException.raiseException(
-                    "CSV file " + file.getName() + " is not in the right format for type " + type
-            );
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
         }
-    }
 
-    public void validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
-        String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
 
-        if (Strings.isNotBlank(result)) {
-            logger.debug("Get error while validate CSV file of type {}, \n{}",
-                    type, result);
-            throw SystemFatalException.raiseException(result);
-        }
+        Files.write(Paths.get(destination), content.getBytes("UTF-8"));
+
+        localFile = new File(destination);
+        logger.debug("The content is saved to the file {}, \n{}",
+                destination, content);
+        return localFile;
     }
 }

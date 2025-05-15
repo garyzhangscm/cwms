@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,9 @@ import java.util.Objects;
 public class Item implements Serializable {
 
     private Long id;
+
+    private Long warehouseId;
+    private Long companyId;
 
     private String name;
     private String description;
@@ -44,6 +48,7 @@ public class Item implements Serializable {
     private ItemFamily itemFamily;
 
     private List<ItemPackageType> itemPackageTypes= new ArrayList<>();
+    private List<ItemBarcode> itemBarcodes = new ArrayList<>();
     private ItemPackageType defaultItemPackageType;
 
     private double unitCost;
@@ -56,6 +61,27 @@ public class Item implements Serializable {
 
     private boolean trackingStyleFlag;
     private String defaultStyle;
+
+    private boolean trackingInventoryAttribute1Flag;
+    private String defaultInventoryAttribute1;
+
+    private boolean trackingInventoryAttribute2Flag;
+    private String defaultInventoryAttribute2;
+
+    private boolean trackingInventoryAttribute3Flag;
+    private String defaultInventoryAttribute3;
+
+    private boolean trackingInventoryAttribute4Flag;
+    private String defaultInventoryAttribute4;
+
+    private boolean trackingInventoryAttribute5Flag;
+    private String defaultInventoryAttribute5;
+
+    private Boolean kitItemFlag = false;
+
+    private Long billOfMaterialId;
+
+    private List<Item> kitInnerItems = new ArrayList<>();
 
     @Override
     public boolean equals(Object anotherItem) {
@@ -138,6 +164,14 @@ public class Item implements Serializable {
         this.itemPackageTypes = itemPackageTypes;
     }
 
+    public List<ItemBarcode> getItemBarcodes() {
+        return itemBarcodes;
+    }
+
+    public void setItemBarcodes(List<ItemBarcode> itemBarcodes) {
+        this.itemBarcodes = itemBarcodes;
+    }
+
     public double getUnitCost() {
         return unitCost;
     }
@@ -154,6 +188,22 @@ public class Item implements Serializable {
         this.quickbookListId = quickbookListId;
     }
 
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 
     public ItemPackageType getDefaultItemPackageType() {
         // if the default item package type is not setup for this item
@@ -211,5 +261,113 @@ public class Item implements Serializable {
 
     public void setDefaultStyle(String defaultStyle) {
         this.defaultStyle = defaultStyle;
+    }
+
+    public void setDefaultItemPackageType(ItemPackageType defaultItemPackageType) {
+        this.defaultItemPackageType = defaultItemPackageType;
+    }
+
+    public boolean isTrackingInventoryAttribute1Flag() {
+        return trackingInventoryAttribute1Flag;
+    }
+
+    public void setTrackingInventoryAttribute1Flag(boolean trackingInventoryAttribute1Flag) {
+        this.trackingInventoryAttribute1Flag = trackingInventoryAttribute1Flag;
+    }
+
+    public String getDefaultInventoryAttribute1() {
+        return defaultInventoryAttribute1;
+    }
+
+    public void setDefaultInventoryAttribute1(String defaultInventoryAttribute1) {
+        this.defaultInventoryAttribute1 = defaultInventoryAttribute1;
+    }
+
+    public boolean isTrackingInventoryAttribute2Flag() {
+        return trackingInventoryAttribute2Flag;
+    }
+
+    public void setTrackingInventoryAttribute2Flag(boolean trackingInventoryAttribute2Flag) {
+        this.trackingInventoryAttribute2Flag = trackingInventoryAttribute2Flag;
+    }
+
+    public String getDefaultInventoryAttribute2() {
+        return defaultInventoryAttribute2;
+    }
+
+    public void setDefaultInventoryAttribute2(String defaultInventoryAttribute2) {
+        this.defaultInventoryAttribute2 = defaultInventoryAttribute2;
+    }
+
+    public boolean isTrackingInventoryAttribute3Flag() {
+        return trackingInventoryAttribute3Flag;
+    }
+
+    public void setTrackingInventoryAttribute3Flag(boolean trackingInventoryAttribute3Flag) {
+        this.trackingInventoryAttribute3Flag = trackingInventoryAttribute3Flag;
+    }
+
+    public String getDefaultInventoryAttribute3() {
+        return defaultInventoryAttribute3;
+    }
+
+    public void setDefaultInventoryAttribute3(String defaultInventoryAttribute3) {
+        this.defaultInventoryAttribute3 = defaultInventoryAttribute3;
+    }
+
+    public boolean isTrackingInventoryAttribute4Flag() {
+        return trackingInventoryAttribute4Flag;
+    }
+
+    public void setTrackingInventoryAttribute4Flag(boolean trackingInventoryAttribute4Flag) {
+        this.trackingInventoryAttribute4Flag = trackingInventoryAttribute4Flag;
+    }
+
+    public String getDefaultInventoryAttribute4() {
+        return defaultInventoryAttribute4;
+    }
+
+    public void setDefaultInventoryAttribute4(String defaultInventoryAttribute4) {
+        this.defaultInventoryAttribute4 = defaultInventoryAttribute4;
+    }
+
+    public boolean isTrackingInventoryAttribute5Flag() {
+        return trackingInventoryAttribute5Flag;
+    }
+
+    public void setTrackingInventoryAttribute5Flag(boolean trackingInventoryAttribute5Flag) {
+        this.trackingInventoryAttribute5Flag = trackingInventoryAttribute5Flag;
+    }
+
+    public String getDefaultInventoryAttribute5() {
+        return defaultInventoryAttribute5;
+    }
+
+    public void setDefaultInventoryAttribute5(String defaultInventoryAttribute5) {
+        this.defaultInventoryAttribute5 = defaultInventoryAttribute5;
+    }
+
+    public Boolean getKitItemFlag() {
+        return kitItemFlag;
+    }
+
+    public void setKitItemFlag(Boolean kitItemFlag) {
+        this.kitItemFlag = kitItemFlag;
+    }
+
+    public Long getBillOfMaterialId() {
+        return billOfMaterialId;
+    }
+
+    public void setBillOfMaterialId(Long billOfMaterialId) {
+        this.billOfMaterialId = billOfMaterialId;
+    }
+
+    public List<Item> getKitInnerItems() {
+        return kitInnerItems;
+    }
+
+    public void setKitInnerItems(List<Item> kitInnerItems) {
+        this.kitInnerItems = kitInnerItems;
     }
 }

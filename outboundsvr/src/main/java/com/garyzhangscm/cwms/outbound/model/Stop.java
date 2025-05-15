@@ -2,7 +2,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.garyzhangscm.cwms.outbound.exception.ShippingException;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +80,13 @@ public class Stop  extends AuditibleEntity<String> {
     private String addressLine2;
     @Column(name = "address_postcode")
     private String addressPostcode;
+
+    @Transient
+    @OneToMany(
+            mappedBy = "stop",
+            fetch = FetchType.EAGER
+    )
+    private List<TrailerOrderLineAssignment> trailerOrderLineAssignments = new ArrayList<>();
 
     public Stop() {}
     public Stop(Long warehouseId, String number,
@@ -191,6 +198,9 @@ public class Stop  extends AuditibleEntity<String> {
     public boolean validateNewShipmentsForStop(Shipment shipment) {
         if (shipments.size() == 0) {
             // there's no shipment in the stop yet,
+            logger.debug("There's no shipment in this stop {} yet, we can accept the new shipment {}",
+                    getNumber(),
+                    shipment.getNumber());
             return true;
         }
         // we know for sure that all the existing shipments in the same
@@ -308,6 +318,9 @@ public class Stop  extends AuditibleEntity<String> {
         // escape the null value
         value1 = Strings.isBlank(value1) ? "" : value1;
         value2 = Strings.isBlank(value2) ? "" : value2;
+        logger.debug("Compare field {} between shipment {} and {}, {} vs {}",
+                fieldName, shipmentNumber1, shipmentNumber2,
+                value1, value2);
         if (!value1.equals(value2)) {
 
             logger.debug("shipment {}'s {}: {} is different from " +
@@ -320,6 +333,8 @@ public class Stop  extends AuditibleEntity<String> {
                     value2);
             return false;
         }
+        logger.debug("The 2 shipments has the same value in this field {}",
+                fieldName);
         return true;
     }
 
@@ -480,5 +495,13 @@ public class Stop  extends AuditibleEntity<String> {
 
     public void setShipToCustomer(Customer shipToCustomer) {
         this.shipToCustomer = shipToCustomer;
+    }
+
+    public List<TrailerOrderLineAssignment> getTrailerOrderLineAssignments() {
+        return trailerOrderLineAssignments;
+    }
+
+    public void setTrailerOrderLineAssignments(List<TrailerOrderLineAssignment> trailerOrderLineAssignments) {
+        this.trailerOrderLineAssignments = trailerOrderLineAssignments;
     }
 }

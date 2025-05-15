@@ -19,27 +19,14 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 
-import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.KafkaSender;
 import com.garyzhangscm.cwms.inventory.clients.OutbuondServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
-import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.repository.InventoryActivityRepository;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import javax.persistence.criteria.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -62,9 +49,12 @@ public class InventoryAllocationSummaryService {
         //get all the inventory based on the criteria
         List<Inventory> inventories = inventoryService.findAll(warehouseId,
                 itemId, itemName,null, null,null,null,null, null,locationName,
-                locationId,null,null,null,null,null, null,
+                locationId,null,
+                null, null,null,null,null, null, null,
                 null,null,null,null,null, null,null,null,null,
-                false, null);
+                null,null,null,null,null,
+                false, null,
+                null );
         // key: location id + item id  + inventory status id
         Map<String, InventoryAllocationSummary> inventoryAllocationSummaryMap = new HashMap<>();
         inventories.forEach(

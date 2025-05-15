@@ -18,6 +18,7 @@
 
 package com.garyzhangscm.cwms.outbound.service;
 
+import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.exception.*;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -27,6 +28,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.*;
@@ -50,6 +53,8 @@ public class WalmartShippingCartonLabelService {
     private FileService fileService;
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
     private final static int FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> fileUploadProgress = new ConcurrentHashMap<>();
@@ -67,7 +72,16 @@ public class WalmartShippingCartonLabelService {
                                                     String SSCC18s,
                                                     String poNumber, String type,
                                                     String dept,
-                                                    String itemNumber) {
+                                                    String itemNumber,
+                                                    Long palletPickLabelContentId,
+                                                    Boolean notPrinted,
+                                                    Boolean notAssignedToPalletPickLabel,
+                                                    Integer count) {
+
+        if (Objects.isNull(count) || count <= 0) {
+            count = Integer.MAX_VALUE;
+        }
+        Pageable limit = PageRequest.of(0,count);
 
         return  walmartShippingCartonLabelRepository.findAll(
                 (Root<WalmartShippingCartonLabel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -108,11 +122,28 @@ public class WalmartShippingCartonLabelService {
 
                         predicates.add(criteriaBuilder.equal(root.get("itemNumber"), itemNumber));
                     }
+                    if (Objects.nonNull(palletPickLabelContentId)) {
+
+                        Join<WalmartShippingCartonLabel, PalletPickLabelContent> joinPalletPickLabelContent =
+                                root.join("palletPickLabelContent", JoinType.INNER);
+
+                        predicates.add(criteriaBuilder.equal(joinPalletPickLabelContent.get("id"), palletPickLabelContentId));
+                    }
+                    if (Boolean.TRUE.equals(notPrinted)) {
+
+                        predicates.add(criteriaBuilder.isNull(root.get("lastPrintTime")));
+                    }
+                    if (Boolean.TRUE.equals(notAssignedToPalletPickLabel)) {
+
+                        predicates.add(criteriaBuilder.isNull(root.get("palletPickLabelContent")));
+                    }
+
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
-                }
-        );
+                },
+                limit
+        ).getContent();
     }
 
 
@@ -120,8 +151,23 @@ public class WalmartShippingCartonLabelService {
         return walmartShippingCartonLabelRepository.findBySSCC18(SSCC18);
     }
 
-    public List<WalmartShippingCartonLabel> findByPoNumber(Long warehouseId, String poNumber) {
-        return walmartShippingCartonLabelRepository.findByWarehouseIdAndPoNumber(warehouseId, poNumber);
+    public List<WalmartShippingCartonLabel> findByPoNumberAndItem(
+            Long warehouseId, String poNumber, String itemName,
+            boolean nonAssignedOnly, boolean nonPrintedOnly) {
+        return findByPoNumberAndItem(warehouseId, poNumber, itemName,
+                nonAssignedOnly, nonPrintedOnly, Integer.MAX_VALUE);
+    }
+    public List<WalmartShippingCartonLabel> findByPoNumberAndItem(Long warehouseId, String poNumber, String itemName,
+                                                                  boolean nonAssignedOnly, boolean nonPrintedOnly, int labelCount) {
+
+        return findAll(warehouseId,
+                null,
+                null,
+                poNumber, null,
+                null,
+                itemName,
+                null,
+                nonPrintedOnly, nonAssignedOnly, labelCount);
     }
 
 
@@ -291,6 +337,22 @@ public class WalmartShippingCartonLabelService {
         return reportHistory;
     }
 
+    public List<WalmartShippingCartonLabel> findByPalletPickLabel(PalletPickLabelContent palletPickLabelContent) {
+        /**
+        return findAll(
+                palletPickLabelContent.getWarehouseId(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                palletPickLabelContent.getId(),
+                null, null, null
+        );
+         **/
+        return walmartShippingCartonLabelRepository.findByPalletPickLabelContentId(palletPickLabelContent.getId());
+    }
     private void setupWalmartShippingCartonLabelData(Long warehouseId,
                                                      Report reportData,
                                                      String SSCC18s,
@@ -299,7 +361,8 @@ public class WalmartShippingCartonLabelService {
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
         if (Strings.isNotBlank(SSCC18s)) {
             List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
-                    findAll(warehouseId, null, SSCC18s, null, null, null, null);
+                    findAll(warehouseId, null, SSCC18s, null, null, null,
+                            null, null, null, null, null);
 
             walmartShippingCartonLabels.forEach(
                     walmartShippingCartonLabel -> {
@@ -335,4 +398,146 @@ public class WalmartShippingCartonLabelService {
 
         return lpnLabelContent;
     }
+
+    private Long getPieceCartonFromShippingCartonLabel(Long warehouseId, String poNumber, String itemName) {
+        String pieceCarton = walmartShippingCartonLabelRepository.getPieceCartonFromShippingCartonLabel(
+                warehouseId, poNumber, itemName
+        );
+        if (Strings.isNotBlank(pieceCarton)) {
+            return Long.parseLong(pieceCarton);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Assign walmart carton label to pallet pick label so that we know we already assigned to certain pallet pick label
+     * @param palletPickLabelContent
+     * @return
+     */
+    public List<WalmartShippingCartonLabel> assignShippingCartonLabel(Order order,
+                                                                      PalletPickLabelContent palletPickLabelContent) {
+        // let's find all the available shipping carton labels that belongs to the order(BY PO number)
+        // and not printed yet
+        if (Strings.isBlank(order.getPoNumber())) {
+            throw OrderOperationException.raiseException("The order " + order.getNumber() + " doesn't have a PO number");
+        }
+        List<WalmartShippingCartonLabel> result = new ArrayList<>();
+        // for each picks in this pallet picking label, let's get the item and its quantity
+        // and then we can get available shipping carton label for each box of the item
+        for (PalletPickLabelPickDetail palletPickLabelPickDetail : palletPickLabelContent.getPalletPickLabelPickDetails()) {
+            Item item = palletPickLabelPickDetail.getPick().getItem();
+            if (Objects.isNull(item)) {
+                item = inventoryServiceRestemplateClient.getItemById(
+                        palletPickLabelPickDetail.getPick().getItemId()
+                );
+            }
+            // only continue when there's no
+            if (Objects.isNull(item)) {
+
+                throw OrderOperationException.raiseException("fail to assign walmart shipping carton label to the pallet picking label," +
+                        " can't load the item information");
+            }
+
+            // see how many cases of the item will be picked onto this pallet
+            // let's get the piece / carton from the shipping label first
+            Long quantityPerCase = getPieceCartonFromShippingCartonLabel(
+                    item.getWarehouseId(), order.getPoNumber(), item.getName()
+            );
+            logger.debug("Get piece per carton from the shipping label: {}",
+                    Objects.isNull(quantityPerCase) ? "N/A" : quantityPerCase);
+
+            if (Objects.isNull(quantityPerCase)) {
+                logger.debug("Piece per carton is not defined by the shipping label, let's get from the item");
+                quantityPerCase = getPieceCartonFromItem(item, palletPickLabelPickDetail.getPick());
+            }
+
+            int caseQuantity = (int)Math.ceil(palletPickLabelPickDetail.getPickQuantity() / quantityPerCase);
+            List<WalmartShippingCartonLabel> availableWalmartShippingCartonLabels =
+                    findByPoNumberAndItem(order.getWarehouseId(),
+                            order.getPoNumber(),  item.getName(),
+                            true, true, caseQuantity);
+
+            logger.debug("get {} carton labels for this item {} in the order {}, for {} cases",
+                    availableWalmartShippingCartonLabels.size(),
+                    item.getName(),
+                    order.getNumber(),
+                    caseQuantity);
+            result.addAll(availableWalmartShippingCartonLabels);
+            // start to assign the labels to the pallet label
+            availableWalmartShippingCartonLabels.forEach(
+                    walmartShippingCartonLabel -> assignWalmartShippingCartonLabel(walmartShippingCartonLabel, palletPickLabelContent)
+            );
+
+        }
+        return result;
+    }
+
+
+    private Long getPieceCartonFromItem(Item item, Pick pick) {
+        Long quantityPerCase = 1l;
+        ItemPackageType itemPackageType = pick.getItemPackageType();
+        if (Objects.isNull(itemPackageType) && Objects.nonNull(pick.getItemPackageTypeId())) {
+            itemPackageType = inventoryServiceRestemplateClient.getItemPackageTypeById(
+                    pick.getItemPackageTypeId()
+            );
+        }
+        if (Objects.isNull(itemPackageType)) {
+            itemPackageType = item.getDefaultItemPackageType();
+        }
+        if (Objects.isNull(itemPackageType.getCaseItemUnitOfMeasure())) {
+            logger.debug("There's no case UOM defined for the item package type {} of item {}, let's use the stock UOM {}'s quantity = {}",
+                    itemPackageType.getName(),
+                    item.getName(),
+                    itemPackageType.getStockItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                    itemPackageType.getStockItemUnitOfMeasure().getQuantity());
+            quantityPerCase = itemPackageType.getStockItemUnitOfMeasure().getQuantity();
+        }
+        else {
+            logger.debug("Case UOM {} is defined for the item package type {} of item {}, let's use the its quantity = {}",
+                    itemPackageType.getCaseItemUnitOfMeasure().getUnitOfMeasure().getName(),
+                    itemPackageType.getName(),
+                    item.getName(),
+                    itemPackageType.getCaseItemUnitOfMeasure().getQuantity());
+            quantityPerCase = itemPackageType.getCaseItemUnitOfMeasure().getQuantity();
+        }
+        return quantityPerCase;
+    }
+
+    private void assignWalmartShippingCartonLabel(WalmartShippingCartonLabel walmartShippingCartonLabel,
+                                                  PalletPickLabelContent palletPickLabelContent) {
+        walmartShippingCartonLabel.setPalletPickLabelContent( palletPickLabelContent);
+        saveOrUpdate(walmartShippingCartonLabel);
+    }
+
+    /**
+     * Once we remove a pallet pallet, we may need to release all the shipping carton on it as well so
+     * that those shipping cartons can be group into a new pallet
+     * @param palletPickLabelContent
+     */
+    public void releaseShippingCartonLabel(PalletPickLabelContent palletPickLabelContent) {
+        logger.debug("start to remove walmart shipping carton labels " +
+                " for pallet with id and number {} / {}",
+                palletPickLabelContent.getId(), palletPickLabelContent.getNumber());
+        List<WalmartShippingCartonLabel> walmartShippingCartonLabels 
+                = findByPalletPickLabel(palletPickLabelContent);
+        logger.debug("we get {} walmart shipping carton labels from the pallet with id {}",
+                walmartShippingCartonLabels.size(),
+                palletPickLabelContent.getId());
+
+        walmartShippingCartonLabels.forEach(
+                walmartShippingCartonLabel -> {
+                    walmartShippingCartonLabel.setPalletPickLabelContent(null);
+                    walmartShippingCartonLabel.setLastPrintTime(null);
+                    saveOrUpdate(walmartShippingCartonLabel);
+                }
+        );
+
+
+
+
+        
+    }
+
 }

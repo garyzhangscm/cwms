@@ -18,30 +18,23 @@
 
 package com.garyzhangscm.cwms.workorder.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.OutboundServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
-import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderKPIRepository;
-import com.garyzhangscm.cwms.workorder.repository.WorkOrderRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Transient;
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -68,32 +61,32 @@ public class WorkOrderKPIService{
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
 
-    public WorkOrderKPI findById(Long id, boolean loadDetails) {
-        WorkOrderKPI workOrderKPI = workOrderKPIRepository.findById(id)
+    public WorkOrderKPI findById(Long id) {
+        return workOrderKPIRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("work order not found by id: " + id));
-        if (loadDetails) {
-            loadAttribute(workOrderKPI);
-        }
-        return workOrderKPI;
     }
 
-    public WorkOrderKPI findById(Long id) {
-        return findById(id, true);
-    }
 
 
     public List<WorkOrderKPI> findAll(Long warehouseId, WorkOrder workOrder,
                                       String username, String workingTeamName,
-                                      boolean genericQuery, boolean loadDetails) {
+                                      String workOrderNumber) {
 
-        List<WorkOrderKPI> workOrderKPIs =  workOrderKPIRepository.findAll(
+        return workOrderKPIRepository.findAll(
                 (Root<WorkOrderKPI> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
-                    if (Objects.nonNull(warehouseId)) {
+                    if (Objects.nonNull(warehouseId) || Strings.isNotBlank(workOrderNumber)) {
 
                         Join<WorkOrderKPI, WorkOrder> joinWorkOrder = root.join("workOrder", JoinType.INNER);
-                        predicates.add(criteriaBuilder.equal(joinWorkOrder.get("warehouseId"), warehouseId));
+                        if (Objects.nonNull(warehouseId)) {
+
+                            predicates.add(criteriaBuilder.equal(joinWorkOrder.get("warehouseId"), warehouseId));
+                        }
+                        if (Strings.isNotBlank(workOrderNumber)) {
+
+                            predicates.add(criteriaBuilder.equal(joinWorkOrder.get("number"), workOrderNumber));
+                        }
                     }
 
 
@@ -113,31 +106,10 @@ public class WorkOrderKPIService{
                     return criteriaBuilder.and(predicates.toArray(p));
                 }
         );
-
-        if (workOrderKPIs.size() > 0 && loadDetails) {
-            loadAttribute(workOrderKPIs);
-        }
-        return workOrderKPIs;
-    }
-
-    public List<WorkOrderKPI> findAll(Long warehouseId, WorkOrder workOrder, String username,
-                                      String workingTeamName, boolean genericQuery) {
-        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery,true);
-    }
-
-    public List<WorkOrderKPI> findAll(Long warehouseId, String workOrderNumber,
-                                      String username, String workingTeamName,
-                                      boolean genericQuery) {
-        WorkOrder workOrder = null;
-        if (StringUtils.isNotBlank(workOrderNumber)) {
-            workOrder = workOrderService.findByNumber(warehouseId, workOrderNumber);
-        }
-        return findAll(warehouseId, workOrder, username, workingTeamName, genericQuery);
     }
 
 
-
-
+/**
     public void loadAttribute(List<WorkOrderKPI> workOrderKPIs) {
         for (WorkOrderKPI workOrderKPI : workOrderKPIs) {
             loadAttribute(workOrderKPI);
@@ -149,45 +121,32 @@ public class WorkOrderKPIService{
         workOrderService.loadAttribute(workOrderKPI.getWorkOrder());
 
     }
-
-    public WorkOrderKPI findByWorkOrderAndUsername(WorkOrder workOrder, String username, boolean loadDetails) {
-        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
-        return findAll(warehouseId, workOrder, username, null, loadDetails).stream().findFirst().orElse(null);
-    }
-    public List<WorkOrderKPI> findByWorkOrder(WorkOrder workOrder, boolean loadDetails) {
-        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
-        return findAll(warehouseId, workOrder, null, null,  loadDetails);
-    }
-    public List<WorkOrderKPI> findByWorkOrder(WorkOrder workOrder) {
-        return findByWorkOrder(workOrder, true);
-    }
-
+ **/
 
     public WorkOrderKPI findByWorkOrderAndUsername(WorkOrder workOrder, String username) {
-        return findByWorkOrderAndUsername(workOrder, username, true);
+        Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
+        return findAll(warehouseId, workOrder, username, null, null).stream().findFirst().orElse(null);
+    }
+    public List<WorkOrderKPI> findByWorkOrder(WorkOrder workOrder) {
+        return findAll(workOrder.getWarehouseId(), workOrder,
+                null, null, null);
     }
 
     public WorkOrderKPI findByWorkOrderAndWorkingTeamName(WorkOrder workOrder, String workingTeamName) {
-        return findByWorkOrderAndWorkingTeamName(workOrder, workingTeamName, true);
-    }
-
-    public WorkOrderKPI findByWorkOrderAndWorkingTeamName(WorkOrder workOrder, String workingTeamName, boolean loadDetails) {
         Long warehouseId = Objects.isNull(workOrder) ? null : workOrder.getWarehouseId();
-        return findAll(warehouseId, workOrder, null, workingTeamName, loadDetails).stream().findFirst().orElse(null);
+        return findAll(warehouseId, workOrder, null, workingTeamName, null).stream().findFirst().orElse(null);
     }
 
 
 
     public WorkOrderKPI save(WorkOrderKPI workOrderKPI) {
-        WorkOrderKPI newWorkOrderKPI = workOrderKPIRepository.save(workOrderKPI);
-        loadAttribute(newWorkOrderKPI);
-        return newWorkOrderKPI;
+        return workOrderKPIRepository.save(workOrderKPI);
     }
 
     public WorkOrderKPI saveOrUpdate(WorkOrderKPI workOrder) {
-        if (workOrder.getId() == null && findByWorkOrderAndUsername(workOrder.getWorkOrder(), workOrder.getUsername(), false) != null) {
+        if (workOrder.getId() == null && findByWorkOrderAndUsername(workOrder.getWorkOrder(), workOrder.getUsername()) != null) {
             workOrder.setId(
-                    findByWorkOrderAndUsername(workOrder.getWorkOrder(), workOrder.getUsername(), false).getId());
+                    findByWorkOrderAndUsername(workOrder.getWorkOrder(), workOrder.getUsername()).getId());
         }
         return save(workOrder);
     }

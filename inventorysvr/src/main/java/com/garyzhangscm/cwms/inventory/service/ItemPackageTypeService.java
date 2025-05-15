@@ -24,23 +24,23 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.ItemPackageTypeRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class ItemPackageTypeService {
@@ -63,10 +63,20 @@ public class ItemPackageTypeService {
     @Value("${fileupload.test-data.items:item_package_types}")
     String testDataFile;
 
-    public ItemPackageType findById(Long id) {
-         return itemPackageTypeRepository.findById(id)
+    public ItemPackageType findById(Long id, boolean includeDetails) {
+
+        ItemPackageType itemPackageType = itemPackageTypeRepository.findById(id)
                  .orElseThrow(() -> ResourceNotFoundException.raiseException("item package type not found by id: " + id));
+        if (includeDetails) {
+            loadAttribute(itemPackageType);
+        }
+        return itemPackageType;
     }
+    public ItemPackageType findById(Long id) {
+
+        return findById(id, true);
+    }
+
 
     public List<ItemPackageType> findAll(Long companyId,
                                          Long warehouseId,
@@ -148,6 +158,41 @@ public class ItemPackageTypeService {
             itemPackageTypeProcessed.add(key);
         }
     }
+
+
+    private void loadAttribute(List<ItemPackageType> itemPackageTypes) {
+        itemPackageTypes.stream().forEach(this::loadAttribute);
+    }
+
+    private void loadAttribute(ItemPackageType itemPackageType) {
+
+        if (itemPackageType.getClientId() != null && itemPackageType.getClient() == null) {
+            try {
+                itemPackageType.setClient(commonServiceRestemplateClient.getClientById(itemPackageType.getClientId()));
+            }
+            catch (Exception ex) {}
+        }
+        if (itemPackageType.getSupplierId() != null && itemPackageType.getSupplier() == null) {
+            try {
+                itemPackageType.setSupplier(commonServiceRestemplateClient.getSupplierById(itemPackageType.getSupplierId()));
+            }
+            catch (Exception ex) {}
+        }
+
+        itemPackageType.getItemUnitOfMeasures()
+                    .stream().filter(itemUnitOfMeasure -> itemUnitOfMeasure.getUnitOfMeasure() == null)
+                    .forEach(itemUnitOfMeasure -> {
+                        try {
+                            itemUnitOfMeasure.setUnitOfMeasure(
+                                    commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()));
+                        }
+                        catch (Exception ex) {}
+
+                    });
+
+    }
+
 
     public ItemPackageType save(ItemPackageType itemPackageType) {
         return itemPackageTypeRepository.save(itemPackageType);
@@ -319,6 +364,42 @@ public class ItemPackageTypeService {
         itemPackageTypeCSVWrapper.setDefaultStyle(
                 itemUnitOfMeasureCSVWrapper.getDefaultStyle()
         );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute1Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute1Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute1(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute1()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute2Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute2Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute2(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute2()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute3Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute3Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute3(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute3()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute4Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute4Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute4(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute4()
+        );
+
+        itemPackageTypeCSVWrapper.setTrackingInventoryAttribute5Flag(
+                itemUnitOfMeasureCSVWrapper.getTrackingInventoryAttribute5Flag()
+        );
+        itemPackageTypeCSVWrapper.setDefaultInventoryAttribute5(
+                itemUnitOfMeasureCSVWrapper.getDefaultInventoryAttribute5()
+        );
+
         itemPackageTypeCSVWrapper.setReceivingRateByUnit(
                 itemUnitOfMeasureCSVWrapper.getReceivingRateByUnit()
         );
@@ -349,9 +430,11 @@ public class ItemPackageTypeService {
         if (inventoryService.
                 findAll(item.getWarehouseId(), null, item.getName(), null, itemPackageType.getName(),
                 null,null,null,null,null, null,
-                null,null,null,null, null,
-                null,null,null,null,null,null, null,null,null,
-                        null, false, null, false)
+                null,null,null,null, null, null,
+                null,null,null,null,null,null,null, null,null,null,
+                        null, null,null,null,null,
+                        null, false, null, false,
+                        null )
                   .size() > 0) {
             logger.debug("There's inventory attached to this item package type {} / {}, can't remove it",
                     item.getName(), itemPackageType.getName());

@@ -19,25 +19,42 @@
 package com.garyzhangscm.cwms.inventory;
 
 
-import com.garyzhangscm.cwms.inventory.exception.GenericException;
+import java.util.Collection;
 
 public class ResponseBodyWrapper<T> {
     private int result;
     private String message;
     private T data;
+    // if T is a list, then total record
+    // otherwise, 1
+    // used in the front pagination
+    private int total;
 
 
     public ResponseBodyWrapper() {
         this.result = 0;
         this.message = "";
+        this.total = 1;
     }
 
     public ResponseBodyWrapper(int result, String message, T data) {
         this.result = result;
         this.message = message;
         this.data = data;
+        if (data instanceof Collection) {
+            total = ((Collection<?>) data).size();
+        }
+        else {
+            total = 1;
+        }
     }
 
+    public ResponseBodyWrapper(int result, String message, T data, int total) {
+        this.result = result;
+        this.message = message;
+        this.data = data;
+        this.total = total;
+    }
 
     public static ResponseBodyWrapper success(String message, String body) {
         return new ResponseBodyWrapper<String>(0,  message, body);
@@ -69,5 +86,13 @@ public class ResponseBodyWrapper<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
     }
 }

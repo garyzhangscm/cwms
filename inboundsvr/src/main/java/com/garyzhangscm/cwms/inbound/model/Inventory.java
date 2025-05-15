@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.inbound.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -27,11 +28,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Column;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -68,7 +69,9 @@ public class Inventory implements Serializable {
     private Location location;
 
     private Long receiptId;
+    private String receiptNumber;
     private Long receiptLineId;
+    private String receiptLineNumber;
 
     private List<InventoryMovement> inventoryMovements;
 
@@ -83,10 +86,30 @@ public class Inventory implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private ZonedDateTime fifoDate;
 
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime inWarehouseDatetime;
+
     private String color;
     private String productSize;
 
     private String style;
+
+    private String attribute1;
+    private String attribute2;
+    private String attribute3;
+    private String attribute4;
+    private String attribute5;
+
+
+    private Boolean kitInventoryFlag = false;
+
+    private Boolean kitInnerInventoryFlag = false;
+
+    private Inventory kitInventory;
+
+    private List<Inventory> kitInnerInventories = new ArrayList<>();
 
     public Double getSize() {
         if (itemPackageType == null) {
@@ -318,5 +341,99 @@ public class Inventory implements Serializable {
         this.clientId = clientId;
     }
 
+    public String getAttribute1() {
+        return attribute1;
+    }
 
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
+    }
+
+    public ZonedDateTime getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(ZonedDateTime inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
+    }
+
+    public String getReceiptNumber() {
+        return receiptNumber;
+    }
+
+    public void setReceiptNumber(String receiptNumber) {
+        this.receiptNumber = receiptNumber;
+    }
+
+    public String getReceiptLineNumber() {
+        return receiptLineNumber;
+    }
+
+    public void setReceiptLineNumber(String receiptLineNumber) {
+        this.receiptLineNumber = receiptLineNumber;
+    }
+
+    public Boolean getKitInventoryFlag() {
+        return kitInventoryFlag;
+    }
+
+    public void setKitInventoryFlag(Boolean kitInventoryFlag) {
+        this.kitInventoryFlag = kitInventoryFlag;
+    }
+
+    public Boolean getKitInnerInventoryFlag() {
+        return kitInnerInventoryFlag;
+    }
+
+    public void setKitInnerInventoryFlag(Boolean kitInnerInventoryFlag) {
+        this.kitInnerInventoryFlag = kitInnerInventoryFlag;
+    }
+
+    public Inventory getKitInventory() {
+        return kitInventory;
+    }
+
+    public void setKitInventory(Inventory kitInventory) {
+        this.kitInventory = kitInventory;
+    }
+
+    public List<Inventory> getKitInnerInventories() {
+        return kitInnerInventories;
+    }
+
+    public void setKitInnerInventories(List<Inventory> kitInnerInventories) {
+        this.kitInnerInventories = kitInnerInventories;
+    }
 }

@@ -22,13 +22,13 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.model.Company;
 import com.garyzhangscm.cwms.inventory.model.InventorySnapshotConfiguration;
 import com.garyzhangscm.cwms.inventory.model.Warehouse;
-import com.garyzhangscm.cwms.inventory.model.WarehouseConfiguration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import java.io.IOException;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;

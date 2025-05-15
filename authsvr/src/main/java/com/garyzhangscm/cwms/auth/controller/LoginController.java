@@ -21,22 +21,21 @@ package com.garyzhangscm.cwms.auth.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.auth.exception.ExceptionCode;
+import com.garyzhangscm.cwms.auth.model.CWMSAuthentication;
 import com.garyzhangscm.cwms.auth.model.*;
-import com.garyzhangscm.cwms.auth.service.OAuth2Service;
+import com.garyzhangscm.cwms.auth.service.JwtService;
 import com.garyzhangscm.cwms.auth.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.List;
-
 @RestController
-@RequestMapping(value = "/login")
 public class LoginController {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
@@ -46,14 +45,15 @@ public class LoginController {
     @Qualifier("getObjMapper")
     private ObjectMapper objectMapper;
 
+
+
+
     @Autowired
-    OAuth2Service oAuth2Service;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     UserService userService;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
 
     /***
     @RequestMapping(method =  RequestMethod.POST)
@@ -64,8 +64,26 @@ public class LoginController {
         return LoginResponseWrapper.of("ok", OAuth2TokenWrapper.of(oAuth2Token));
     }
      **/
-    @RequestMapping(method =  RequestMethod.POST)
-    public LoginResponseWrapper login(@RequestBody User user) throws JsonProcessingException {
+    @RequestMapping(value = "/login", method =  RequestMethod.POST)
+    public LoginResponseWrapper login(@RequestBody User user)  {
+
+        logger.debug("start to login with user {}", user);
+        Authentication authentication = authenticationManager.authenticate(
+                new CWMSAuthentication(user.getCompanyId(),
+                        user.getUsername(), user.getPassword())
+        );
+
+        logger.debug("user is authenticated? {}", authentication.isAuthenticated());
+        if (authentication.isAuthenticated()) {
+            return LoginResponseWrapper.of(0, "", userService.generateJWTToken(
+                    user.getCompanyId(), user.getUsername()
+            ));
+        } else {
+            throw new UsernameNotFoundException("Username and password doesn't match!");
+        }
+
+        /**
+         * OBSOLETED: The old way is to use simple token. we will switch to JWT
         try {
             logger.debug("start to login with user {}", user);
             OAuth2Token oAuth2Token = oAuth2Service.getOAuth2Token(user.getCompanyId(), user.getUsername(), user.getPassword());
@@ -83,6 +101,7 @@ public class LoginController {
             logger.debug("login error / BadRequest: \n{}\n{}", badRequest.getMessage(), badRequest.getResponseBodyAsString());
             return LoginResponseWrapper.of(ExceptionCode.LOGIN_ERROR.getCode(), getErrorMessage(badRequest), null);
         }
+         **/
     }
 
     private String getErrorMessage(HttpClientErrorException.BadRequest badRequest) {
@@ -98,25 +117,6 @@ public class LoginController {
         } catch (JsonProcessingException e) {
             return "Login error";
         }
-    }
-
-    @RequestMapping("/mock")
-    public User generateMocaUser(@RequestParam("username") String username,
-                                 @RequestParam("password") String password) {
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setEmail("gzhang1999@gmail.com");
-        user.setEnabled(true);
-        user.setLocked(false);
-
-        return userService.save(user);
-    }
-
-
-    @RequestMapping("/allusers")
-    public List<User> getAllUsers() {
-          return userService.findAll(null, null);
     }
 
 }

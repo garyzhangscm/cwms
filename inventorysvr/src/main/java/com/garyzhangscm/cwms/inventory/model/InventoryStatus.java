@@ -21,9 +21,9 @@ package com.garyzhangscm.cwms.inventory.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -50,8 +50,27 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
     @Transient
     private Warehouse warehouse;
 
+    // WHETHER this status stands for a 'available' status.
+    // the available status will be displayed by default when
+    // receiving / adjust in / produce new inventory
     @Column(name = "available_status_flag")
     private Boolean availableStatusFlag;
+
+
+    @Column(name = "reason_required_when_receiving")
+    private Boolean reasonRequiredWhenReceiving;
+    @Column(name = "reason_required_when_producing")
+    private Boolean reasonRequiredWhenProducing;
+    @Column(name = "reason_required_when_adjusting")
+    private Boolean reasonRequiredWhenAdjusting;
+
+    @Column(name = "reason_optional_when_receiving")
+    private Boolean reasonOptionalWhenReceiving;
+    @Column(name = "reason_optional_when_producing")
+    private Boolean reasonOptionalWhenProducing;
+    @Column(name = "reason_optional_when_adjusting")
+    private Boolean reasonOptionalWhenAdjusting;
+
 
     @Override
     public Object clone() {
@@ -143,5 +162,53 @@ public class InventoryStatus extends AuditibleEntity<String> implements Serializ
 
     public void setAvailableStatusFlag(Boolean availableStatusFlag) {
         this.availableStatusFlag = availableStatusFlag;
+    }
+
+    public Boolean getReasonRequiredWhenReceiving() {
+        return reasonRequiredWhenReceiving;
+    }
+
+    public void setReasonRequiredWhenReceiving(Boolean reasonRequiredWhenReceiving) {
+        this.reasonRequiredWhenReceiving = reasonRequiredWhenReceiving;
+    }
+
+    public Boolean getReasonRequiredWhenProducing() {
+        return reasonRequiredWhenProducing;
+    }
+
+    public void setReasonRequiredWhenProducing(Boolean reasonRequiredWhenProducing) {
+        this.reasonRequiredWhenProducing = reasonRequiredWhenProducing;
+    }
+
+    public Boolean getReasonRequiredWhenAdjusting() {
+        return reasonRequiredWhenAdjusting;
+    }
+
+    public void setReasonRequiredWhenAdjusting(Boolean reasonRequiredWhenAdjusting) {
+        this.reasonRequiredWhenAdjusting = reasonRequiredWhenAdjusting;
+    }
+
+    public Boolean getReasonOptionalWhenReceiving() {
+        return reasonOptionalWhenReceiving;
+    }
+
+    public void setReasonOptionalWhenReceiving(Boolean reasonOptionalWhenReceiving) {
+        this.reasonOptionalWhenReceiving = reasonOptionalWhenReceiving;
+    }
+
+    public Boolean getReasonOptionalWhenProducing() {
+        return reasonOptionalWhenProducing;
+    }
+
+    public void setReasonOptionalWhenProducing(Boolean reasonOptionalWhenProducing) {
+        this.reasonOptionalWhenProducing = reasonOptionalWhenProducing;
+    }
+
+    public Boolean getReasonOptionalWhenAdjusting() {
+        return reasonOptionalWhenAdjusting;
+    }
+
+    public void setReasonOptionalWhenAdjusting(Boolean reasonOptionalWhenAdjusting) {
+        this.reasonOptionalWhenAdjusting = reasonOptionalWhenAdjusting;
     }
 }

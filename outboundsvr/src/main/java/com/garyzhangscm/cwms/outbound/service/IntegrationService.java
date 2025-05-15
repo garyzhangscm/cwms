@@ -26,6 +26,7 @@ public class IntegrationService {
 
     // Add/ change item
     public void process(Order order) {
+        orderService.validateOrderForModification(order.getWarehouseId(), order.getClientId(), order.getNumber());
         // We will init the order with some default 0 quantity
         // Since when we get order from integration, the integration
         // data will only need to specify the expect quantity
