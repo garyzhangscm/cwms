@@ -22,14 +22,13 @@ import com.garyzhangscm.cwms.inventory.clients.*;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAdjustmentRequestRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -193,18 +192,20 @@ public class InventoryAdjustmentRequestService{
 
 
     public void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                            String documentNumber, String comment) {
+                                            String documentNumber, String comment, Long reasonCodeId) {
         writeInventoryAdjustRequest(inventory, inventory.getQuantity(), newQuantity,
-                inventoryQuantityChangeType, documentNumber, comment);
+                inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, true);
 
     }
     public void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                            String documentNumber, String comment) {
+                                            String documentNumber, String comment, Long reasonCodeId,
+                                            Boolean kitInventoryUseDefaultAttribute
+    ) {
 
 
         InventoryAdjustmentRequest inventoryAdjustmentRequest
                 = new InventoryAdjustmentRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType, userService.getCurrentUserName(),
-                                                 documentNumber, comment);
+                                                 documentNumber, comment, reasonCodeId,kitInventoryUseDefaultAttribute);
         // logger.debug("Will persist the adjust request: {}", inventoryAdjustmentRequest);
         save(inventoryAdjustmentRequest);
 

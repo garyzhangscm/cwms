@@ -20,14 +20,15 @@ package com.garyzhangscm.cwms.zuulsvr.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.zuulsvr.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.zuulsvr.clients.AuthServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.zuulsvr.exception.SystemFatalException;
 import com.garyzhangscm.cwms.zuulsvr.exception.UnauthorizedException;
 import com.garyzhangscm.cwms.zuulsvr.model.Company;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
+import com.garyzhangscm.cwms.zuulsvr.service.JwtService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +38,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -55,13 +53,17 @@ public class UrlAccessControllerFilter implements Filter {
 
 
     @Autowired
-    private AuthServiceRestemplateClient authServiceRestemplateClient;
+    private JwtService jwtService;
+
 
     @Autowired
     private LayoutServiceRestemplateClient layoutServiceRestemplateClient;
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+
+    @Value("${auth.jwt.inner_call.token}")
+    private String innerCallJWTToken;
 
 
     // for single company server(server that host by the company, not
@@ -70,6 +72,15 @@ public class UrlAccessControllerFilter implements Filter {
     private Boolean singleCompanySite;
 
 
+    // URL that is accessible even if the user is not logged in
+    private static final String[] URL_WHITE_LIST = new String[]{
+            "/api/integration/tiktok/webhook",
+            "/api/integration/shopify/shop-oauth",
+            "/api/layout/companies",
+            "/api/layout/warehouses",
+            "/api/layout/warehouse-configuration/by-warehouse",
+            "/api/auth/users/username-by-token"
+    };
 
     @Override
     public void doFilter(ServletRequest servletRequest,
@@ -130,12 +141,12 @@ public class UrlAccessControllerFilter implements Filter {
 
 
         logger.debug("Start to validate http access");
-        String innerCall = httpServletRequest.getHeader("innerCall");
-        // logger.debug("innerCall? : {}", innerCall);
-        if ("true".equalsIgnoreCase(innerCall)) {
-            logger.debug("Skip validation if the call is from inner service");
+        if (isUrlInWhiteList(httpServletRequest.getRequestURI())) {
+            logger.debug("URL {} is in the white list, pass the validation",
+                    httpServletRequest.getRequestURI());
             return;
         }
+
         // first, we will check if we have token in the http header
         String token = httpServletRequest.getHeader("Authorization");
         logger.debug("token: " + token);
@@ -148,12 +159,17 @@ public class UrlAccessControllerFilter implements Filter {
             // normally if the end point doesn't require
             // token authentication, then it means there's no
             // security validation needed for the end point
-            logger.debug("There's no token in the http header, we will pass the access validation and leave it to OAuth2 and spring security");
-            return;
+
+            throw SystemFatalException.raiseException("user is not logged in");
         }
 
         if (token.startsWith("Bearer")) {
             token = token.substring(7).trim();
+        }
+
+        if (token.equals(innerCallJWTToken)) {
+            logger.debug("current call is a inner http call, ignore the validation");
+            return;
         }
 
         // check if the current user is a sys admin.
@@ -164,6 +180,10 @@ public class UrlAccessControllerFilter implements Filter {
         // if there's no parameters, let's just ignore it for now
         Long companyId = getLongValueFromRequest("companyId", httpServletRequest);
         Long warehouseId = getLongValueFromRequest("warehouseId", httpServletRequest);
+
+        logger.debug("Get company ID {} and warehouse id {} from the http request",
+                Objects.isNull(companyId) ? "N/A" : companyId,
+                Objects.isNull(warehouseId) ? "N/A" : warehouseId);
 
         if (Objects.isNull(companyId)) {
             // if company ID is not passed in, then see if the company code is passed in
@@ -198,7 +218,9 @@ public class UrlAccessControllerFilter implements Filter {
         // ok, now let's get the username out of the toke and company. We will first validate
         // if the user is a system admin. System admin will have a full access to everything and
         // ignore any restriction in the system
-        String username = authServiceRestemplateClient.getUserNameByToken(companyId, token);
+        // String username = authServiceRestemplateClient.getUserNameByToken(companyId, token);
+        String username = jwtService.extractUsername(token);
+
         if (Strings.isBlank(username)) {
 
             // as long as we have the token, we should be able to get the username
@@ -212,9 +234,20 @@ public class UrlAccessControllerFilter implements Filter {
             return;
         }
 
-        validateCompanyAccess(httpServletRequest.getRequestURL().toString(), companyId, token);
+        // validateCompanyAccess(httpServletRequest.getRequestURL().toString(), companyId, token);
+        if (jwtService.extractCompanyId(token).equals(companyId)) {
+            return;
+        }
 
         valdiateWarehouseAccess(companyId, warehouseId, token);
+    }
+
+    private boolean isUrlInWhiteList(String requestURI) {
+        return Arrays.stream(URL_WHITE_LIST).anyMatch(
+                whiteListUrl ->
+                        // whiteListUrl.equalsIgnoreCase(requestURI)
+                        requestURI.toLowerCase(Locale.ROOT).startsWith(whiteListUrl.toLowerCase(Locale.ROOT))
+        );
     }
 
     /**
@@ -256,32 +289,5 @@ public class UrlAccessControllerFilter implements Filter {
     private void valdiateWarehouseAccess(Long companyId, Long warehouseId, String token) {
     }
 
-    private void validateCompanyAccess(String url, Long companyId, String token) {
 
-        if (Boolean.TRUE.equals(singleCompanySite)) {
-            // this is a single company server, which normally
-            // means the server is host by the customer, not on public
-            // cloud, then we won't need to validate the company
-            logger.debug("skip the company validation if this is a single company server");
-            return;
-        }
-        if (!Boolean.TRUE.equals(layoutServiceRestemplateClient.isCompanyEnabled(companyId))) {
-
-            logger.debug("the company {} is NOT enabled", companyId);
-            throw SystemFatalException.raiseException("Error: current company is not enabled");
-        }
-        if (!authServiceRestemplateClient.validateCompanyAccess(companyId, token)) {
-
-            logger.debug("access to url {} fail, the user {} can't access the company {}",
-                    url, token, companyId);
-            throw UnauthorizedException.raiseException("Error: current user doesn't have access to the company information");
-        }
-        if (!authServiceRestemplateClient.validateCompanyAccess(companyId, token)) {
-
-            logger.debug("access to url {} fail, the user {} can't access the company {}",
-                    url, token, companyId);
-            throw UnauthorizedException.raiseException("Erorr: current user doesn't have access to the company information");
-        }
-        logger.debug("token {} has access to the company {}", token, companyId);
-    }
 }

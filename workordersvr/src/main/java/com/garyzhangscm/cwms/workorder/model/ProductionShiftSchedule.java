@@ -1,23 +1,10 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.*;
+
 
 @Entity
 @Table(name = "production_shift_schedule")
@@ -34,16 +21,23 @@ public class ProductionShiftSchedule extends AuditibleEntity<String>{
 
 
     @Column(name = "shift_start_time")
+    /**
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime shiftStartTime;
+     **/
+    private String shiftStartTime;
 
     @Column(name = "shift_end_time")
+    /**
     @JsonDeserialize(using = LocalTimeDeserializer.class)
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime shiftEndTime;
+    **/
+    private String shiftEndTime;
+
 
 
     // whether shift end next day or the same day as
@@ -67,19 +61,19 @@ public class ProductionShiftSchedule extends AuditibleEntity<String>{
         this.warehouseId = warehouseId;
     }
 
-    public LocalTime getShiftStartTime() {
+    public String getShiftStartTime() {
         return shiftStartTime;
     }
 
-    public void setShiftStartTime(LocalTime shiftStartTime) {
+    public void setShiftStartTime(String shiftStartTime) {
         this.shiftStartTime = shiftStartTime;
     }
 
-    public LocalTime getShiftEndTime() {
+    public String getShiftEndTime() {
         return shiftEndTime;
     }
 
-    public void setShiftEndTime(LocalTime shiftEndTime) {
+    public void setShiftEndTime(String shiftEndTime) {
         this.shiftEndTime = shiftEndTime;
     }
 

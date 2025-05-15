@@ -25,7 +25,7 @@ import com.garyzhangscm.cwms.workorder.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.ProductionLineCapacityRepository;
-import com.garyzhangscm.cwms.workorder.repository.ProductionLineRepository;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -34,17 +34,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.persistence.criteria.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -318,5 +313,109 @@ public class ProductionLineCapacityService implements TestDataInitiableService {
         productionLineCapacityRepository.processItemOverride(
                 warehouseId, oldItemId, newItemId
         );
+    }
+
+    /**
+     * calculate the quantity that is supposed to be produce in a certain amount of hours, based on the capacity
+     * @param productionLineCapacity
+     * @param hours
+     * @return
+     */
+    public Long getExpectedProduceQuantityByHours(ProductionLineCapacity productionLineCapacity, int hours) {
+        logger.debug("start to calculate teh expected produced quantity based on capacity {} and hours {}",
+                productionLineCapacity, hours);
+
+        if (Objects.isNull(productionLineCapacity.getItem())) {
+            loadAttribute(productionLineCapacity);
+        }
+        // get the right item package type
+        ItemPackageType defaultItemPackageType = productionLineCapacity.getItem().getDefaultItemPackageType();
+        Long unitOfMeasureQuantity = 1l;
+        if (Objects.nonNull(defaultItemPackageType)) {
+            logger.debug("we will get the unit of measure from default item package type {}, {}",
+                    productionLineCapacity.getItem().getName(),
+                    defaultItemPackageType.getName());
+            for (ItemUnitOfMeasure itemUnitOfMeasure : defaultItemPackageType.getItemUnitOfMeasures()) {
+                if (itemUnitOfMeasure.getUnitOfMeasureId() == productionLineCapacity.getUnitOfMeasureId()) {
+                    logger.debug("found the item unit of measure {}, set the quantity to {}",
+                            itemUnitOfMeasure.getUnitOfMeasure().getName(),
+                            itemUnitOfMeasure.getQuantity());
+                    unitOfMeasureQuantity = itemUnitOfMeasure.getQuantity();
+                }
+            }
+        }
+        switch (productionLineCapacity.getCapacityUnit()) {
+            case MILLISECOND:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours * 1000 * 60 * 60;
+            case SECOND:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours * 60 * 60;
+            case MINUTE:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours * 60;
+            case HOUR:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours;
+            case DAY:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours / 24;
+            case WEEK:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours / (24 * 7);
+            case MONTH:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours / (24 * 30);
+            case YEAR:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * hours / (24 * 365);
+
+        }
+        // we should never reach here
+        return productionLineCapacity.getCapacity() * unitOfMeasureQuantity;
+    }
+
+    /**
+     * calculate the quantity that is supposed to be produce in a certain amount of minutes, based on the capacity
+     * @param productionLineCapacity
+     * @param minutes
+     * @return
+     */
+    public Long getExpectedProduceQuantityByMinutes(ProductionLineCapacity productionLineCapacity, int minutes) {
+        logger.debug("start to calculate teh expected produced quantity based on capacity {} and minutes {}",
+                productionLineCapacity, minutes);
+
+        if (Objects.isNull(productionLineCapacity.getItem())) {
+            loadAttribute(productionLineCapacity);
+        }
+        // get the right item package type
+        ItemPackageType defaultItemPackageType = productionLineCapacity.getItem().getDefaultItemPackageType();
+        Long unitOfMeasureQuantity = 1l;
+        if (Objects.nonNull(defaultItemPackageType)) {
+            logger.debug("we will get the unit of measure from default item package type {}, {}",
+                    productionLineCapacity.getItem().getName(),
+                    defaultItemPackageType.getName());
+            for (ItemUnitOfMeasure itemUnitOfMeasure : defaultItemPackageType.getItemUnitOfMeasures()) {
+                if (itemUnitOfMeasure.getUnitOfMeasureId() == productionLineCapacity.getUnitOfMeasureId()) {
+                    logger.debug("found the item unit of measure {}, set the quantity to {}",
+                            itemUnitOfMeasure.getUnitOfMeasure().getName(),
+                            itemUnitOfMeasure.getQuantity());
+                    unitOfMeasureQuantity = itemUnitOfMeasure.getQuantity();
+                }
+            }
+        }
+        switch (productionLineCapacity.getCapacityUnit()) {
+            case MILLISECOND:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes * 1000 * 60;
+            case SECOND:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes * 60;
+            case MINUTE:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes ;
+            case HOUR:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes / 60;
+            case DAY:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes / (60 * 24);
+            case WEEK:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes / (60 * 24 * 7);
+            case MONTH:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes / (60 * 24 * 30);
+            case YEAR:
+                return productionLineCapacity.getCapacity() * unitOfMeasureQuantity * minutes / (60 * 24 * 365);
+
+        }
+        // we should never reach here
+        return productionLineCapacity.getCapacity() * unitOfMeasureQuantity;
     }
 }

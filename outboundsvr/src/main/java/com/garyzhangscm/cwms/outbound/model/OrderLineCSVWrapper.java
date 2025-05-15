@@ -21,8 +21,7 @@ package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import javax.persistence.Column;
+import org.apache.logging.log4j.util.Strings;
 
 public class OrderLineCSVWrapper {
     private String client;
@@ -41,6 +40,7 @@ public class OrderLineCSVWrapper {
     // if we want to create both order and order line
     // in one file
     private String shipToCustomer;
+    private String shipToCustomerDescription;
     private String billToCustomerSameAsShipToCustomer;
     private String billToCustomer;
 
@@ -74,6 +74,11 @@ public class OrderLineCSVWrapper {
     private String productSize;
     private String style;
 
+    private String inventoryAttribute1;
+    private String inventoryAttribute2;
+    private String inventoryAttribute3;
+    private String inventoryAttribute4;
+    private String inventoryAttribute5;
 
     private String hualeiProductId;
     private String autoRequestShippingLabel;
@@ -87,6 +92,58 @@ public class OrderLineCSVWrapper {
 
     private String load;
     private Integer stopSequence;
+
+    public void trim() {
+
+        client = Strings.isBlank(client) ? "" : client.trim();
+        order = Strings.isBlank(order) ? "" : order.trim();
+        line = Strings.isBlank(line) ? "" : line.trim();
+        item  = Strings.isBlank(item) ? "" : item.trim();
+        unitOfMeasure  = Strings.isBlank(unitOfMeasure) ? "" : unitOfMeasure.trim();
+        inventoryStatus  = Strings.isBlank(inventoryStatus) ? "" : inventoryStatus.trim();
+        allocationStrategyType  = Strings.isBlank(allocationStrategyType) ? "" : allocationStrategyType.trim();
+        shipToCustomer  = Strings.isBlank(shipToCustomer) ? "" : shipToCustomer.trim();
+        shipToCustomerDescription  = Strings.isBlank(shipToCustomerDescription) ? "" : shipToCustomerDescription.trim();
+        billToCustomerSameAsShipToCustomer  = Strings.isBlank(billToCustomerSameAsShipToCustomer) ? "" : billToCustomerSameAsShipToCustomer.trim();
+        billToCustomer  = Strings.isBlank(billToCustomer) ? "" : billToCustomer.trim();
+        shipToContactorFirstname  = Strings.isBlank(shipToContactorFirstname) ? "" : shipToContactorFirstname.trim();
+        shipToContactorLastname  = Strings.isBlank(shipToContactorLastname) ? "" : shipToContactorLastname.trim();
+        shipToContactorPhoneNumber  = Strings.isBlank(shipToContactorPhoneNumber) ? "" : shipToContactorPhoneNumber.trim();
+        shipToAddressCountry  = Strings.isBlank(shipToAddressCountry) ? "" : shipToAddressCountry.trim();
+        shipToAddressState  = Strings.isBlank(shipToAddressState) ? "" : shipToAddressState.trim();
+        shipToAddressCounty  = Strings.isBlank(shipToAddressCounty) ? "" : shipToAddressCounty.trim();
+        shipToAddressCity  = Strings.isBlank(shipToAddressCity) ? "" : shipToAddressCity.trim();
+        shipToAddressDistrict  = Strings.isBlank(shipToAddressDistrict) ? "" : shipToAddressDistrict.trim();
+        shipToAddressLine1  = Strings.isBlank(shipToAddressLine1) ? "" : shipToAddressLine1.trim();
+        shipToAddressLine2  = Strings.isBlank(shipToAddressLine2) ? "" : shipToAddressLine2.trim();
+        shipToAddressPostcode  = Strings.isBlank(shipToAddressPostcode) ? "" : shipToAddressPostcode.trim();
+        billToAddressSameAsShipToAddress  = Strings.isBlank(billToAddressSameAsShipToAddress) ? "" : billToAddressSameAsShipToAddress.trim();
+        billToContactorFirstname  = Strings.isBlank(billToContactorFirstname) ? "" : billToContactorFirstname.trim();
+        billToContactorLastname  = Strings.isBlank(billToContactorLastname) ? "" : billToContactorLastname.trim();
+        billToAddressCountry  = Strings.isBlank(billToAddressCountry) ? "" : billToAddressCountry.trim();
+        billToAddressState  = Strings.isBlank(billToAddressState) ? "" : billToAddressState.trim();
+        billToAddressCounty  = Strings.isBlank(billToAddressCounty) ? "" : billToAddressCounty.trim();
+        billToAddressCity  = Strings.isBlank(billToAddressCity) ? "" : billToAddressCity.trim();
+        billToAddressDistrict  = Strings.isBlank(billToAddressDistrict) ? "" : billToAddressDistrict.trim();
+        billToAddressLine1  = Strings.isBlank(billToAddressLine1) ? "" : billToAddressLine1.trim();
+        billToAddressLine2  = Strings.isBlank(billToAddressLine2) ? "" : billToAddressLine2.trim();
+        billToAddressPostcode  = Strings.isBlank(billToAddressPostcode) ? "" : billToAddressPostcode.trim();
+        color  = Strings.isBlank(color) ? "" : color.trim();
+        productSize  = Strings.isBlank(productSize) ? "" : productSize.trim();
+        style  = Strings.isBlank(style) ? "" : style.trim();
+        inventoryAttribute1  = Strings.isBlank(inventoryAttribute1) ? "" : inventoryAttribute1.trim();
+        inventoryAttribute2  = Strings.isBlank(inventoryAttribute2) ? "" : inventoryAttribute2.trim();
+        inventoryAttribute3  = Strings.isBlank(inventoryAttribute3) ? "" : inventoryAttribute3.trim();
+        inventoryAttribute4  = Strings.isBlank(inventoryAttribute4) ? "" : inventoryAttribute4.trim();
+        inventoryAttribute5  = Strings.isBlank(inventoryAttribute5) ? "" : inventoryAttribute5.trim();
+        hualeiProductId  = Strings.isBlank(hualeiProductId) ? "" : hualeiProductId.trim();
+        autoRequestShippingLabel  = Strings.isBlank(autoRequestShippingLabel) ? "" : autoRequestShippingLabel.trim();
+        allocateByReceiptNumber  = Strings.isBlank(allocateByReceiptNumber) ? "" : allocateByReceiptNumber.trim();
+        parcelInsured  = Strings.isBlank(parcelInsured) ? "" : parcelInsured.trim();
+        parcelSignatureRequired  = Strings.isBlank(parcelSignatureRequired) ? "" : parcelSignatureRequired.trim();
+        load = Strings.isBlank(load) ? "" : load.trim();
+
+    }
 
     @Override
     public String toString() {
@@ -185,6 +242,46 @@ public class OrderLineCSVWrapper {
 
     public void setHualeiProductId(String hualeiProductId) {
         this.hualeiProductId = hualeiProductId;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 
     public String getAutoRequestShippingLabel() {
@@ -451,4 +548,13 @@ public class OrderLineCSVWrapper {
     public void setStopSequence(Integer stopSequence) {
         this.stopSequence = stopSequence;
     }
+
+    public String getShipToCustomerDescription() {
+        return shipToCustomerDescription;
+    }
+
+    public void setShipToCustomerDescription(String shipToCustomerDescription) {
+        this.shipToCustomerDescription = shipToCustomerDescription;
+    }
+
 }

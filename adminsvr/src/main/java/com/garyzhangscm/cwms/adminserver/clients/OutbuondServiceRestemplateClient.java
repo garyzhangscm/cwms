@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 
@@ -51,7 +52,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders")
                         .queryParam("number", orderNumber)
                         .queryParam("warehouseId", warehouseId);
@@ -82,7 +83,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("orderId", order.getId());
@@ -110,7 +111,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("shortAllocationId", shortAllocation.getId());
@@ -136,7 +137,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/shortAllocations")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("orderId", order.getId());
@@ -163,7 +164,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/{id}/allocate");
         /**
         ResponseBodyWrapper<Order> responseBodyWrapper =
@@ -188,7 +189,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/allocation-configuration");
         /**
         ResponseBodyWrapper<AllocationConfiguration> responseBodyWrapper =
@@ -215,7 +216,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/allocation-configuration")
                         .queryParam("warehouseId", warehouse.getId())
                         .queryParam("itemFamilyId", itemFamily.getId());
@@ -243,7 +244,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/allocation-configuration/{id}/pickable-unit-of-measures");
 /**
         ResponseBodyWrapper<AllocationConfiguration> responseBodyWrapper =
@@ -269,7 +270,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/picks/{id}/confirm")
                         .queryParam("quantity", confirmQuantity);
 /**
@@ -300,7 +301,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/{id}/complete");
 /**
         ResponseBodyWrapper<Order> responseBodyWrapper =
@@ -330,7 +331,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/emergency-replenishment-configuration");
         /**
         ResponseBodyWrapper<EmergencyReplenishmentConfiguration> responseBodyWrapper =
@@ -355,7 +356,7 @@ public class OutbuondServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/emergency-replenishment-configuration")
                         .queryParam("warehouseId", warehouse.getId())
                         .queryParam("itemFamilyId", itemFamily.getId());
@@ -384,13 +385,17 @@ public class OutbuondServiceRestemplateClient {
             ZonedDateTime endTime, Boolean includeLineActivity )   {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/order-billable-activities/billable-activity")
                         .queryParam("warehouseId", warehouseId)
-                        .queryParam("clientId", clientId)
                         .queryParam("startTime", startTime)
                         .queryParam("endTime", endTime)
                         .queryParam("includeLineActivity", includeLineActivity);
+
+        if (Objects.nonNull(clientId)) {
+            builder = builder.queryParam("clientId", clientId);
+        }
+
 /**
         ResponseBodyWrapper<List<BillableActivity>> responseBodyWrapper
                 = restTemplate.exchange(

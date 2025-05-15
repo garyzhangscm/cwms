@@ -21,11 +21,13 @@ package com.garyzhangscm.cwms.outbound.service;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
+import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
 import com.garyzhangscm.cwms.outbound.model.Order;
 import com.garyzhangscm.cwms.outbound.repository.ShipmentLineRepository;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,14 +80,18 @@ public class ShipmentLineService {
 
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                       String orderNumber, Long orderLineId,
-                                      Long orderId, Long waveId) {
+                                      Long orderId, Long waveId,
+                                      String orderLineIds,
+                                      String shipmentLineIds) {
         return findAll(warehouseId, number,
-                orderNumber, orderLineId, orderId, waveId, true);
+                orderNumber, orderLineId, orderId, waveId, orderLineIds, shipmentLineIds, true);
     }
 
     public List<ShipmentLine> findAll(Long warehouseId, String number,
                                        String orderNumber, Long orderLineId,
                                       Long orderId, Long waveId,
+                                      String orderLineIds,
+                                      String shipmentLineIds,
                                       boolean loadDetails) {
         List<ShipmentLine> shipmentLines =  shipmentLineRepository.findAll(
                 (Root<ShipmentLine> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
@@ -124,6 +127,27 @@ public class ShipmentLineService {
                         predicates.add(criteriaBuilder.equal(joinWave.get("id"), waveId));
 
                     }
+                    if (Strings.isNotBlank(orderLineIds)) {
+
+                        Join<ShipmentLine, OrderLine> joinOrderLine = root.join("orderLine", JoinType.INNER);
+
+                        CriteriaBuilder.In<Long> inOrderLineIds = criteriaBuilder.in(joinOrderLine.get("id"));
+                        for(String id : orderLineIds.split(",")) {
+                            inOrderLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderLineIds));
+
+                    }
+                    if (Strings.isNotBlank(shipmentLineIds)) {
+
+
+                        CriteriaBuilder.In<Long> inShipmentLineIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : shipmentLineIds.split(",")) {
+                            inShipmentLineIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inShipmentLineIds));
+
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -146,11 +170,23 @@ public class ShipmentLineService {
         }
     }
     public List<ShipmentLine> findByOrderLine(OrderLine orderLine) {
-        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null);
+        return findAll(orderLine.getWarehouseId(), null, null, orderLine.getId(), null, null, null, null);
+    }
+    public List<ShipmentLine> findByOrderLineId(Long warehouseId, Long orderLineId) {
+        return findAll(warehouseId, null, null, orderLineId, null, null, null, null);
+    }
+    public List<ShipmentLine> findByOrderLineIds(Long warehouseId, String orderLineIds) {
+        return findAll(warehouseId, null, null, null, null, null, orderLineIds, null);
+    }
+    public List<ShipmentLine> findByShipmentLineIds(Long warehouseId, String shipmentLineIds) {
+        return findAll(warehouseId, null, null, null, null, null, null, shipmentLineIds);
     }
 
+
+
+
     public List<ShipmentLine> findByOrder(Order order) {
-        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null);
+        return findAll(order.getWarehouseId(), null, order.getNumber(), null, null, null, null, null);
     }
 
     public ShipmentLine save(ShipmentLine shipmentLine) {
@@ -226,21 +262,35 @@ public class ShipmentLineService {
 
     @Transactional
     public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine) {
+
+        return allocateShipmentLine(shipmentLine, new HashSet<>());
+    }
+
+    /**
+     * Allocate the shipment,
+     * skip locations: skip locations
+     * @param shipmentLine
+     * @param skipLocations
+     * @return
+     */
+    public AllocationResult allocateShipmentLine(ShipmentLine shipmentLine,
+                                                 Set<Long> skipLocations) {
         logger.debug("Start to allocate shipment line: {} / {}", shipmentLine.getId(), shipmentLine.getNumber());
+        logger.debug("skip locations: {} ", skipLocations);
         if (!isAllocatable(shipmentLine) || shipmentLine.getOpenQuantity() <= 0) {
             logger.debug("Shipment line is not allocatable! is allocatable? {}, open quantity? {}",
-                            isAllocatable(shipmentLine), shipmentLine.getOpenQuantity());
+                    isAllocatable(shipmentLine), shipmentLine.getOpenQuantity());
             return new AllocationResult();
         }
 
         // AllocationResult allocationResult = allocationConfigurationService.allocate(shipmentLine);
         loadAttribute(shipmentLine);
 
-        AllocationResult allocationResult = allocationService.allocate(shipmentLine);
+        AllocationResult allocationResult = allocationService.allocate(shipmentLine, skipLocations);
 
         OrderActivity orderActivity =
                 orderActivityService.createOrderActivity(shipmentLine.getWarehouseId(),
-                shipmentLine, OrderActivityType.SHIPMENT_ALLOCATION);
+                        shipmentLine, OrderActivityType.SHIPMENT_ALLOCATION);
         // Move the open quantity into the in process quantity and start allocation
         logger.debug("Allocation Step 1: Move quantity {} from open quantity to in process quantity",
                 shipmentLine.getOpenQuantity());
@@ -272,7 +322,7 @@ public class ShipmentLineService {
         return allocationResult;
     }
 
-    private boolean isAllocatable(ShipmentLine shipmentLine) {
+    public boolean isAllocatable(ShipmentLine shipmentLine) {
         return shipmentLine.getShipment().getStatus().equals(ShipmentStatus.PENDING) ||
                 shipmentLine.getShipment().getStatus().equals(ShipmentStatus.INPROCESS);
     }
@@ -412,7 +462,7 @@ public class ShipmentLineService {
     public void cancelShipmentLine(ShipmentLine shipmentLine) {
 
         // return the quantity back to order line
-        orderLineService.returnInProcessQuantity(shipmentLine.getOrderLine(), shipmentLine.getQuantity());
+        orderLineService.registerShipmentLineCancelled(shipmentLine.getOrderLine(), shipmentLine.getQuantity());
 
         shipmentLine.setStatus(ShipmentLineStatus.CANCELLED);
         // remove the shipment from the wave and order
@@ -421,5 +471,31 @@ public class ShipmentLineService {
         save(shipmentLine);
 
 
+
+    }
+
+    /**
+     * Deassign shipment line from the wave
+     * @param wave
+     * @param shipmentLineId
+     */
+    public ShipmentLine deassignShipmentLineFromWave(Wave wave, Long shipmentLineId) {
+        ShipmentLine shipmentLine = findById(shipmentLineId);
+        if (Objects.nonNull(shipmentLine.getWave()) &&
+                !shipmentLine.getWave().getId().equals(wave.getId())) {
+            throw OrderOperationException.raiseException("Can't deassign shipment  " +
+                    shipmentLine.getShipmentNumber() + " / line " + shipmentLine.getNumber() +
+                    " from wave " + wave.getNumber() + " as it belongs to another wave " +
+                    shipmentLine.getWave().getNumber());
+        }
+        shipmentLine.setWave(null);
+
+        return save(shipmentLine);
+
+    }
+
+    public ShipmentLine planShipmentLineIntoWave(ShipmentLine shipmentLine, Wave wave) {
+        shipmentLine.setWave(wave);
+        return save(shipmentLine);
     }
 }

@@ -20,6 +20,7 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.outbound.clients.*;
+import com.garyzhangscm.cwms.outbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.outbound.exception.OrderOperationException;
 import com.garyzhangscm.cwms.outbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.outbound.model.*;
@@ -31,16 +32,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.nio.charset.StandardCharsets;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,9 +60,13 @@ public class OrderService {
     @Autowired
     private OrderActivityService orderActivityService;
     @Autowired
+    private WarehouseConfigurationService warehouseConfigurationService;
+    @Autowired
     private KafkaSender kafkaSender;
     @Autowired
     private OrderCancellationRequestService orderCancellationRequestService;
+    @Autowired
+    private OutboundConfigurationService outboundConfigurationService;
 
     @Autowired
     private PickService pickService;
@@ -89,6 +95,11 @@ public class OrderService {
     private PickReleaseService pickReleaseService;
     @Autowired
     private WalmartShippingCartonLabelService walmartShippingCartonLabelService;
+    @Autowired
+    private TargetShippingCartonLabelService targetShippingCartonLabelService;
+    @Autowired
+    private PalletPickLabelContentService palletPickLabelContentService;
+
 
 
 
@@ -116,20 +127,22 @@ public class OrderService {
 
 
     public List<Order> findAll(Long warehouseId,
+                               String ids,
                                String number,
                                String numbers,
                                String status,
-                               ZonedDateTime startCompleteTime,
-                               ZonedDateTime endCompleteTime,
-                               LocalDate specificCompleteDate,
-                               ZonedDateTime startCreatedTime,
-                               ZonedDateTime endCreatedTime,
-                               LocalDate specificCreatedDate,
+                               String startCompleteTime,
+                               String endCompleteTime,
+                               String specificCompleteDate,
+                               String startCreatedTime,
+                               String endCreatedTime,
+                               String specificCreatedDate,
                                String category,
                                String customerName,
                                Long customerId,
                                Long clientId,
                                Long trailerAppointmentId,
+                               String poNumber,
                                Boolean loadDetails,
                                ClientRestriction clientRestriction) {
 
@@ -139,6 +152,15 @@ public class OrderService {
                     criteriaQuery.distinct(true);
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inOrderIds = criteriaBuilder.in(root.get("id"));
+                        for(String id : ids.split(",")) {
+                            inOrderIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inOrderIds));
+                    }
 
                     if (StringUtils.isNotBlank(number)) {
                         if (number.contains("*")) {
@@ -170,41 +192,63 @@ public class OrderService {
                         predicates.add(criteriaBuilder.equal(root.get("category"), orderCategory));
 
                     }
-                    if (Objects.nonNull(startCompleteTime)) {
+                    if (Strings.isNotBlank(poNumber)) {
+
+                        predicates.add(criteriaBuilder.equal(root.get("poNumber"), poNumber));
+                    }
+                    if (Strings.isNotBlank(startCompleteTime)) {
+
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, startCompleteTime
+                        );
+
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("completeTime"), startCompleteTime));
+                                root.get("completeTime"), begin));
 
                     }
 
-                    if (Objects.nonNull(endCompleteTime)) {
+                    if (Strings.isNotBlank(endCompleteTime)) {
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, endCompleteTime
+                        );
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("completeTime"), endCompleteTime));
+                                root.get("completeTime"), end));
 
                     }
-                    if (Objects.nonNull(specificCompleteDate)) {
-                        LocalDateTime dateStartTime = specificCompleteDate.atStartOfDay();
-                        LocalDateTime dateEndTime = specificCompleteDate.atStartOfDay().plusDays(1).minusSeconds(1);
-                        predicates.add(criteriaBuilder.between(
-                                root.get("completeTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+                    if (Strings.isNotBlank(specificCompleteDate)) {
+
+                        Pair<ZonedDateTime, ZonedDateTime> zonedDateTimes =
+                                warehouseConfigurationService.getUTCDateTimeRangeFromWarehouseTimeZone(warehouseId, specificCompleteDate);
+                        predicates.add(criteriaBuilder.between(root.get("completeTime"),
+                                zonedDateTimes.getFirst(), zonedDateTimes.getSecond()));
+
 
                     }
 
-                    if (Objects.nonNull(startCreatedTime)) {
+                    if (Strings.isNotBlank(startCreatedTime)) {
+                        ZonedDateTime begin = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, startCreatedTime
+                        );
+
                         predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                root.get("createdTime"), startCreatedTime));
+                                root.get("createdTime"), begin));
 
                     }
 
-                    if (Objects.nonNull(endCreatedTime)) {
+                    if (Strings.isNotBlank(endCreatedTime)) {
+                        ZonedDateTime end = warehouseConfigurationService.getUTCDateTimeFromWarehouseTimeZone(
+                                warehouseId, endCreatedTime
+                        );
                         predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                root.get("createdTime"), endCreatedTime));
+                                root.get("createdTime"), end));
 
                     }
-                    if (Objects.nonNull(specificCreatedDate)) {
-                        LocalDateTime dateStartTime = specificCreatedDate.atStartOfDay();
-                        LocalDateTime dateEndTime = specificCreatedDate.atStartOfDay().plusDays(1).minusSeconds(1);
-                        predicates.add(criteriaBuilder.between(
-                                root.get("createdTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+                    if (Strings.isNotBlank(specificCreatedDate)) {
+
+                        Pair<ZonedDateTime, ZonedDateTime> zonedDateTimes =
+                                warehouseConfigurationService.getUTCDateTimeRangeFromWarehouseTimeZone(warehouseId, specificCreatedDate);
+                        predicates.add(criteriaBuilder.between(root.get("createdTime"),
+                                zonedDateTimes.getFirst(), zonedDateTimes.getSecond()));
 
                     }
 
@@ -310,20 +354,20 @@ public class OrderService {
 
     }
 
-    public List<Order> findAll(Long warehouseId, String number, String numbers, String status,
-                               ZonedDateTime startCompleteTime, ZonedDateTime endCompleteTime,
-                               LocalDate specificCompleteDate,
-                               ZonedDateTime startCreatedTime, ZonedDateTime endCreatedTime,
-                               LocalDate specificCreatedDate,
+    public List<Order> findAll(Long warehouseId, String ids, String number, String numbers, String status,
+                               String startCompleteTime, String endCompleteTime,
+                               String specificCompleteDate,
+                               String startCreatedTime, String endCreatedTime,
+                               String specificCreatedDate,
                                String category, String customerName, Long customerId,
                                Long clientId,
-                              Long trailerAppointmentId,
+                              Long trailerAppointmentId, String poNumber,
                               ClientRestriction clientRestriction) {
-        return findAll(warehouseId, number, numbers, status,
+        return findAll(warehouseId, ids, number, numbers, status,
                 startCompleteTime, endCompleteTime, specificCompleteDate,
                 startCreatedTime, endCreatedTime, specificCreatedDate,
                 category, customerName, customerId,
-                clientId, trailerAppointmentId, true, clientRestriction);
+                clientId, trailerAppointmentId,  poNumber, true, clientRestriction);
     }
 
     /**
@@ -378,20 +422,21 @@ public class OrderService {
     }
 
 
-    public List<Order> findWavableOrders(Long warehouseId, String orderNumber,
+    public List<Order> findWaveableOrdersCandidate(Long warehouseId, String orderNumber,
                                          Long clientId,
                                          String customerName, Long customerId,
-                                         ZonedDateTime startCreatedTime,
-                                         ZonedDateTime endCreatedTime,
-                                         LocalDate specificCreatedDate,
+                                                   String startCreatedTime,
+                                                   String endCreatedTime,
+                                                   String specificCreatedDate,
                                          Boolean singleOrderLineOnly,
                                          Boolean singleOrderQuantityOnly,
                                          Boolean singleOrderCaseQuantityOnly,
                                          ClientRestriction clientRestriction,
                                          int orderNumberCap) {
 
+
         List<Order> orders = findAll(warehouseId,
-                orderNumber, null, OrderStatus.OPEN.toString(),
+                null, orderNumber, null, OrderStatus.OPEN.toString(),
                 null,
                 null,
                 null,
@@ -402,6 +447,7 @@ public class OrderService {
                 customerName,
                 customerId,
                 clientId,
+                null,
                 null,
                 false, clientRestriction);
 
@@ -630,9 +676,7 @@ public class OrderService {
         if (Objects.isNull(order.getId())) {
             newOrderFlag = true;
         }
-        if (!newOrderFlag) {
-            validateOrderForModification(order);
-        }
+
         // in case the order is created out of context, we will need to
         // setup the created by in the context and then pass the username
         // in the down stream so that when we send alert, the alert will
@@ -676,21 +720,18 @@ public class OrderService {
 
     /**
      * Check if we can modify an existing order
-     * @param order
+     * @param orderNumber
      */
-    private void validateOrderForModification(Order order) {
-        if (Objects.isNull(order.getId())) {
-            // if the id of the order is null, then we assume it is
-            // a new order
+    public void validateOrderForModification(Long warehouseId, Long clientId, String orderNumber) {
+        Order existingOrder = findByNumber(warehouseId, clientId, orderNumber);
+        if (Objects.isNull(existingOrder)) {
+            // the order doesn't exists yet, we will always allow it
             return;
         }
 
-        // if there's already active shipment for this order, let's
-        // disallow the user to change the
-        if (order.getStatus().equals(OrderStatus.CANCELLED) || order.getStatus().equals(OrderStatus.COMPLETE)) {
-            // OK, if we are try to cancel the order or complete the order
-            // we will always allow
-            return;
+
+        if (!existingOrder.getStatus().equals(OrderStatus.OPEN)) {
+            throw OrderOperationException.raiseException("you can only change orders in OPEN status");
         }
         // see if we are try to chance the quantity.
 
@@ -911,10 +952,12 @@ public class OrderService {
     }
 **/
     public Order convertFromWrapper(Long warehouseId,
-                                     OrderLineCSVWrapper orderLineCSVWrapper) {
+                                    OrderLineCSVWrapper orderLineCSVWrapper,
+                                    Boolean createCustomer,
+                                    Boolean modifyCustomer) {
 
         Order order = new Order();
-        order.setNumber(orderLineCSVWrapper.getOrder());
+        order.setNumber(orderLineCSVWrapper.getOrder().trim());
 
 
         Warehouse warehouse =
@@ -939,90 +982,173 @@ public class OrderService {
             );
         }
         if (billToAddressSameAsShipToAddress) {
-            orderLineCSVWrapper.setBillToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
-            orderLineCSVWrapper.setBillToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
-            orderLineCSVWrapper.setBillToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
-            orderLineCSVWrapper.setBillToAddressState(orderLineCSVWrapper.getShipToAddressState());
-            orderLineCSVWrapper.setBillToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
-            orderLineCSVWrapper.setBillToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
-            orderLineCSVWrapper.setBillToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
-            orderLineCSVWrapper.setBillToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
-            orderLineCSVWrapper.setBillToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
-            orderLineCSVWrapper.setBillToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+            orderLineCSVWrapper.setBillToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname().trim());
+            orderLineCSVWrapper.setBillToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname().trim());
+            orderLineCSVWrapper.setBillToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry().trim());
+            orderLineCSVWrapper.setBillToAddressState(orderLineCSVWrapper.getShipToAddressState().trim());
+            orderLineCSVWrapper.setBillToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty().trim());
+            orderLineCSVWrapper.setBillToAddressCity(orderLineCSVWrapper.getShipToAddressCity().trim());
+            orderLineCSVWrapper.setBillToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict().trim());
+            orderLineCSVWrapper.setBillToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1().trim());
+            orderLineCSVWrapper.setBillToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2().trim());
+            orderLineCSVWrapper.setBillToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode().trim());
         }
 
 
         // if we specify the ship to customer, we load information with the customer
         if (!StringUtils.isBlank(orderLineCSVWrapper.getShipToCustomer())) {
             Customer shipToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(),
-                    warehouse.getId(), orderLineCSVWrapper.getShipToCustomer());
+                    warehouse.getId(), orderLineCSVWrapper.getShipToCustomer().trim());
 
+            // if we can't find the customer, see if we allow the user
+            // to create the customer on the fly
+            if (Objects.isNull(shipToCustomer)) {
+                if (Boolean.TRUE.equals(createCustomer)) {
+                    shipToCustomer = createCustomerWhenUploadingOrderFile(warehouse.getCompanyId(),
+                            warehouse.getId(), orderLineCSVWrapper);
+                }
+                else {
+                    throw OrderOperationException.raiseException("can't find customer with name " +
+                            orderLineCSVWrapper.getShipToCustomer().trim());
+                }
+            }
+            else if (Boolean.TRUE.equals(modifyCustomer)) {
+                shipToCustomer = modifyCustomerWhenUploadingOrderFile(shipToCustomer, orderLineCSVWrapper);
+            }
             order.setShipToCustomer(shipToCustomer);
             order.setShipToCustomerId(shipToCustomer.getId());
 
-            order.setShipToContactorFirstname(shipToCustomer.getContactorFirstname());
-            order.setShipToContactorLastname(shipToCustomer.getContactorLastname());
-            order.setShipToAddressCountry(shipToCustomer.getAddressCountry());
-            order.setShipToAddressState(shipToCustomer.getAddressState());
-            order.setShipToAddressCounty(shipToCustomer.getAddressCounty());
-            order.setShipToAddressCity(shipToCustomer.getAddressCity());
-            order.setShipToAddressDistrict(shipToCustomer.getAddressDistrict());
-            order.setShipToAddressLine1(shipToCustomer.getAddressLine1());
-            order.setShipToAddressLine2(shipToCustomer.getAddressLine2());
-            order.setShipToAddressPostcode(shipToCustomer.getAddressPostcode());
+            order.setShipToContactorFirstname(shipToCustomer.getContactorFirstname().trim());
+            order.setShipToContactorLastname(shipToCustomer.getContactorLastname().trim());
+            order.setShipToAddressCountry(shipToCustomer.getAddressCountry().trim());
+            order.setShipToAddressState(shipToCustomer.getAddressState().trim());
+            order.setShipToAddressCounty(shipToCustomer.getAddressCounty().trim());
+            order.setShipToAddressCity(shipToCustomer.getAddressCity().trim());
+            order.setShipToAddressDistrict(shipToCustomer.getAddressDistrict().trim());
+            order.setShipToAddressLine1(shipToCustomer.getAddressLine1().trim());
+            order.setShipToAddressLine2(shipToCustomer.getAddressLine2().trim());
+            order.setShipToAddressPostcode(shipToCustomer.getAddressPostcode().trim());
         } else {
-            order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname());
-            order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname());
-            order.setShipToContactorPhoneNumber(orderLineCSVWrapper.getShipToContactorPhoneNumber());
-            order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry());
-            order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState());
-            order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty());
-            order.setShipToAddressCity(orderLineCSVWrapper.getShipToAddressCity());
-            order.setShipToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict());
-            order.setShipToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1());
-            order.setShipToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2());
-            order.setShipToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode());
+            order.setShipToContactorFirstname(orderLineCSVWrapper.getShipToContactorFirstname().trim());
+            order.setShipToContactorLastname(orderLineCSVWrapper.getShipToContactorLastname().trim());
+            order.setShipToContactorPhoneNumber(orderLineCSVWrapper.getShipToContactorPhoneNumber().trim());
+            order.setShipToAddressCountry(orderLineCSVWrapper.getShipToAddressCountry().trim());
+            order.setShipToAddressState(orderLineCSVWrapper.getShipToAddressState().trim());
+            order.setShipToAddressCounty(orderLineCSVWrapper.getShipToAddressCounty().trim());
+            order.setShipToAddressCity(orderLineCSVWrapper.getShipToAddressCity().trim());
+            order.setShipToAddressDistrict(orderLineCSVWrapper.getShipToAddressDistrict().trim());
+            order.setShipToAddressLine1(orderLineCSVWrapper.getShipToAddressLine1().trim());
+            order.setShipToAddressLine2(orderLineCSVWrapper.getShipToAddressLine2().trim());
+            order.setShipToAddressPostcode(orderLineCSVWrapper.getShipToAddressPostcode().trim());
         }
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getBillToCustomer())) {
             Customer billToCustomer = commonServiceRestemplateClient.getCustomerByName(warehouse.getCompanyId(), warehouse.getId(),
-                    orderLineCSVWrapper.getBillToCustomer());
+                    orderLineCSVWrapper.getBillToCustomer().trim());
 
             order.setBillToCustomer(billToCustomer);
             order.setBillToCustomerId(billToCustomer.getId());
 
-            order.setBillToContactorFirstname(billToCustomer.getContactorFirstname());
-            order.setBillToContactorLastname(billToCustomer.getContactorLastname());
-            order.setBillToAddressCountry(billToCustomer.getAddressCountry());
-            order.setBillToAddressState(billToCustomer.getAddressState());
-            order.setBillToAddressCounty(billToCustomer.getAddressCounty());
-            order.setBillToAddressCity(billToCustomer.getAddressCity());
-            order.setBillToAddressDistrict(billToCustomer.getAddressDistrict());
-            order.setBillToAddressLine1(billToCustomer.getAddressLine1());
-            order.setBillToAddressLine2(billToCustomer.getAddressLine2());
-            order.setBillToAddressPostcode(billToCustomer.getAddressPostcode());
+            order.setBillToContactorFirstname(billToCustomer.getContactorFirstname().trim());
+            order.setBillToContactorLastname(billToCustomer.getContactorLastname().trim());
+            order.setBillToAddressCountry(billToCustomer.getAddressCountry().trim());
+            order.setBillToAddressState(billToCustomer.getAddressState().trim());
+            order.setBillToAddressCounty(billToCustomer.getAddressCounty().trim());
+            order.setBillToAddressCity(billToCustomer.getAddressCity().trim());
+            order.setBillToAddressDistrict(billToCustomer.getAddressDistrict().trim());
+            order.setBillToAddressLine1(billToCustomer.getAddressLine1().trim());
+            order.setBillToAddressLine2(billToCustomer.getAddressLine2().trim());
+            order.setBillToAddressPostcode(billToCustomer.getAddressPostcode().trim());
         } else {
-            order.setBillToContactorFirstname(orderLineCSVWrapper.getBillToContactorFirstname());
-            order.setBillToContactorLastname(orderLineCSVWrapper.getBillToContactorLastname());
-            order.setBillToAddressCountry(orderLineCSVWrapper.getBillToAddressCountry());
-            order.setBillToAddressState(orderLineCSVWrapper.getBillToAddressState());
-            order.setBillToAddressCounty(orderLineCSVWrapper.getBillToAddressCounty());
-            order.setBillToAddressCity(orderLineCSVWrapper.getBillToAddressCity());
-            order.setBillToAddressDistrict(orderLineCSVWrapper.getBillToAddressDistrict());
-            order.setBillToAddressLine1(orderLineCSVWrapper.getBillToAddressLine1());
-            order.setBillToAddressLine2(orderLineCSVWrapper.getBillToAddressLine2());
-            order.setBillToAddressPostcode(orderLineCSVWrapper.getBillToAddressPostcode());
+            order.setBillToContactorFirstname(orderLineCSVWrapper.getBillToContactorFirstname().trim());
+            order.setBillToContactorLastname(orderLineCSVWrapper.getBillToContactorLastname().trim());
+            order.setBillToAddressCountry(orderLineCSVWrapper.getBillToAddressCountry().trim());
+            order.setBillToAddressState(orderLineCSVWrapper.getBillToAddressState().trim());
+            order.setBillToAddressCounty(orderLineCSVWrapper.getBillToAddressCounty().trim());
+            order.setBillToAddressCity(orderLineCSVWrapper.getBillToAddressCity().trim());
+            order.setBillToAddressDistrict(orderLineCSVWrapper.getBillToAddressDistrict().trim());
+            order.setBillToAddressLine1(orderLineCSVWrapper.getBillToAddressLine1().trim());
+            order.setBillToAddressLine2(orderLineCSVWrapper.getBillToAddressLine2().trim());
+            order.setBillToAddressPostcode(orderLineCSVWrapper.getBillToAddressPostcode().trim());
         }
 
 
         if (!StringUtils.isBlank(orderLineCSVWrapper.getClient())) {
             Client client = commonServiceRestemplateClient.getClientByName(
-                    warehouse.getId(), orderLineCSVWrapper.getClient());
+                    warehouse.getId(), orderLineCSVWrapper.getClient().trim());
             order.setClientId(client.getId());
             order.setClient(client);
         }
 
         return order;
+    }
+
+
+    private Customer modifyCustomerWhenUploadingOrderFile(Customer customer,
+                                                          OrderLineCSVWrapper orderLineCSVWrapper) {
+        customer.setDescription(Strings.isBlank(orderLineCSVWrapper.getShipToCustomerDescription()) ?
+                "" : orderLineCSVWrapper.getShipToCustomerDescription().trim());
+
+
+        customer.setAddressCountry(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCountry()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCountry());
+        customer.setAddressState(Strings.isBlank(orderLineCSVWrapper.getShipToAddressState()) ?
+                "" : orderLineCSVWrapper.getShipToAddressState());
+        customer.setAddressCounty(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCounty()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCounty());
+        customer.setAddressCity(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCity()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCity());
+        customer.setAddressDistrict(Strings.isBlank(orderLineCSVWrapper.getShipToAddressDistrict()) ?
+                "" : orderLineCSVWrapper.getShipToAddressDistrict());
+        customer.setAddressLine1(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine1()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine1());
+        customer.setAddressLine2(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine2()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine2());
+        customer.setAddressPostcode(Strings.isBlank(orderLineCSVWrapper.getShipToAddressPostcode()) ?
+                "" : orderLineCSVWrapper.getShipToAddressPostcode());
+
+
+        return commonServiceRestemplateClient.changeCustomer(customer.getWarehouseId(), customer);
+
+    }
+    private Customer createCustomerWhenUploadingOrderFile(Long companyId,
+                                                          Long warehouseId,
+                                                          OrderLineCSVWrapper orderLineCSVWrapper) {
+
+        Customer customer = new Customer();
+
+        customer.setCompanyId(companyId);
+        customer.setWarehouseId(warehouseId);
+
+        customer.setListPickEnabledFlag(false);
+
+        customer.setName(orderLineCSVWrapper.getShipToCustomer().trim());
+        customer.setDescription(Strings.isBlank(orderLineCSVWrapper.getShipToCustomerDescription()) ?
+                "" : orderLineCSVWrapper.getShipToCustomerDescription().trim());
+
+        customer.setContactorFirstname("");
+        customer.setContactorLastname("");
+
+        customer.setAddressCountry(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCountry()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCountry());
+        customer.setAddressState(Strings.isBlank(orderLineCSVWrapper.getShipToAddressState()) ?
+                "" : orderLineCSVWrapper.getShipToAddressState());
+        customer.setAddressCounty(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCounty()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCounty());
+        customer.setAddressCity(Strings.isBlank(orderLineCSVWrapper.getShipToAddressCity()) ?
+                "" : orderLineCSVWrapper.getShipToAddressCity());
+        customer.setAddressDistrict(Strings.isBlank(orderLineCSVWrapper.getShipToAddressDistrict()) ?
+                "" : orderLineCSVWrapper.getShipToAddressDistrict());
+        customer.setAddressLine1(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine1()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine1());
+        customer.setAddressLine2(Strings.isBlank(orderLineCSVWrapper.getShipToAddressLine2()) ?
+                "" : orderLineCSVWrapper.getShipToAddressLine2());
+        customer.setAddressPostcode(Strings.isBlank(orderLineCSVWrapper.getShipToAddressPostcode()) ?
+                "" : orderLineCSVWrapper.getShipToAddressPostcode());
+
+        return commonServiceRestemplateClient.addCustomer(warehouseId, customer);
+
+
     }
 
     public String getNextOrderLineNumber(Long id) {
@@ -1048,10 +1174,12 @@ public class OrderService {
     }
 
     @Transactional
-    public Order allocate(Long orderId) {
+    public Order allocate(Long orderId, Boolean asynchronous) {
+
         Order order = findById(orderId);
-        logger.debug(">>>    Start to allocate order  {}  <<<",
-                order.getNumber());
+
+        logger.debug(">>>    Start to allocate order  {} ,asynchronous? : {}  <<<",
+                order.getNumber(), asynchronous);
 
         // if the order is already cancelled or request cancellation,
         // raise an error
@@ -1077,24 +1205,69 @@ public class OrderService {
                 order.getOrderLines().stream().filter(
                         orderLine -> !Boolean.TRUE.equals(orderLine.getNonAllocatable())
                 ).collect(Collectors.toList());
+
         if (allocatableOrderLines.size() == 0) {
             throw OrderOperationException.raiseException("There's no allocatable order line in this order");
+        }
+
+        order.setStatus(OrderStatus.ALLOCATING);
+
+
+        // check if we will need to allocate asynchronously
+        // 1. if the client explicitly want asynchronous
+        // 2. if the warehouse is configured to allocate asynchronously
+        if (Objects.isNull(asynchronous)) {
+            // TO-DO: Will need to use pallet quantity instead of quantity
+            long totalPalletQuantity = allocatableOrderLines.stream().map(
+                    orderLine -> orderLineService.getPalletQuantityEstimation(
+                            orderLine, orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
+                    )
+            ).mapToLong(Long::longValue).sum();
+
+            asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
+                    order.getWarehouseId(),totalPalletQuantity);
+        }
+
+        logger.debug("allocate Asynchronously or Synchronously? {}",
+                Boolean.TRUE.equals(asynchronous) ? "Asynchronously" : "Synchronously");
+        if (Boolean.TRUE.equals(asynchronous)) {
+            new Thread(() -> {
+
+                logger.debug("start to allocate the order asynchronously");
+                allocate(order, allocatableOrderLines);
+
+                logger.debug("Asynchronously allocation is done");
+                order.setStatus(OrderStatus.INPROCESS);
+
+                saveOrUpdate(order);
+
+            }).start();
+        }
+        else {
+            allocate(order, allocatableOrderLines);
+            logger.debug("Synchronously allocation is done");
+            order.setStatus(OrderStatus.INPROCESS);
 
         }
+        return saveOrUpdate(order);
+    }
+
+    @Transactional
+    public void allocate(Order order, List<OrderLine> allocatableOrderLines) {
         shipmentService.planShipments(order.getWarehouseId(),allocatableOrderLines);
+
 
         // ok, if we are here, we may ends up with multiple shipments
         // with lines for the order,
         // let's allocate all of the shipment lines
         List<AllocationResult> allocationResults
-                    = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
-                        .stream()
-                         .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
-                        .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
-                        .collect(Collectors.toList());
+                = shipmentLineService.findByOrderNumber(order.getWarehouseId(), order.getNumber())
+                    .stream()
+                    .filter(shipmentLine -> shipmentLine.getOpenQuantity() >0)
+                    .map(shipmentLine -> shipmentLineService.allocateShipmentLine(shipmentLine))
+                    .collect(Collectors.toList());
 
         postAllocationProcess(allocationResults);
-        return order;
 
     }
 
@@ -1106,6 +1279,8 @@ public class OrderService {
      */
     private void postAllocationProcess(List<AllocationResult> allocationResults) {
 
+        logger.debug("start post allocation process for {} allocation result",
+                allocationResults.size());
 
         releaseSinglePicks(allocationResults);
 
@@ -1515,13 +1690,11 @@ public class OrderService {
     }
 
 
-    public ReportHistory generatePickReportByOrder(Long orderId, String locale)
-            throws JsonProcessingException {
+    public ReportHistory generatePickReportByOrder(Long orderId, String locale) {
 
         return generatePickReportByOrder(findById(orderId), locale);
     }
-    public ReportHistory generatePickReportByOrder(Order order, String locale)
-            throws JsonProcessingException {
+    public ReportHistory generatePickReportByOrder(Order order, String locale)  {
 
         Long warehouseId = order.getWarehouseId();
 
@@ -1601,16 +1774,24 @@ public class OrderService {
                 pick -> {
                     // set the inventory attribute in one string
                     StringBuilder inventoryAttribute = new StringBuilder()
-                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor()).append("    ")
-                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize()).append("    ")
-                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle())
+                            .append(Strings.isBlank(pick.getColor()) ? "" : pick.getColor() + "    ")
+                            .append(Strings.isBlank(pick.getProductSize()) ? "" : pick.getProductSize() + "    ")
+                            .append(Strings.isBlank(pick.getStyle()) ? "" : pick.getStyle() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute1()) ? "" : pick.getInventoryAttribute1() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute2()) ? "" : pick.getInventoryAttribute2() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute3()) ? "" : pick.getInventoryAttribute3() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute4()) ? "" : pick.getInventoryAttribute4() + "    ")
+                            .append(Strings.isBlank(pick.getInventoryAttribute5()) ? "" : pick.getInventoryAttribute5() + "    ")
                             .append(Strings.isBlank(pick.getAllocateByReceiptNumber()) ? "" : pick.getAllocateByReceiptNumber());
                     pick.setInventoryAttribute(inventoryAttribute.toString());
 
                     // setup the quantity by UOM from the pickable inventory in the source location
                     List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
                             pick.getItemId(), pick.getInventoryStatusId(), pick.getSourceLocationId(), null,
-                            pick.getColor(), pick.getProductSize(), pick.getStyle(), pick.getAllocateByReceiptNumber());
+                            pick.getColor(), pick.getProductSize(), pick.getStyle(),
+                            pick.getInventoryAttribute1(), pick.getInventoryAttribute2(),pick.getInventoryAttribute3(),
+                            pick.getInventoryAttribute4(), pick.getInventoryAttribute5(),
+                            pick.getAllocateByReceiptNumber());
 
                     StringBuilder pickQuantityByUOM = new StringBuilder();
                     pickQuantityByUOM.append(pick.getQuantity());
@@ -1622,7 +1803,7 @@ public class OrderService {
                         // has the same item UOM information. If the location is mixed with
                         // different package type, the warehouse may have some difficulty for picking
                         ItemUnitOfMeasure stockItemUnitOfMeasure =
-                                pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasures();
+                                pickableInventory.get(0).getItemPackageType().getStockItemUnitOfMeasure();
                         ItemUnitOfMeasure caseItemUnitOfMeasure =
                                 pickableInventory.get(0).getItemPackageType().getCaseItemUnitOfMeasure();
 
@@ -1658,6 +1839,127 @@ public class OrderService {
 
 
         report.setData(picks);
+    }
+
+    public ReportHistory generateManualPickReportByOrder(Long orderId, String locale)  {
+
+        return generateManualPickReportByOrder(findById(orderId), locale);
+    }
+    public ReportHistory generateManualPickReportByOrder(Order order, String locale)  {
+
+        Long warehouseId = order.getWarehouseId();
+
+
+        Report reportData = new Report();
+        setupOrderManualPickReportParameters(
+                reportData, order
+        );
+        setupOrderManualPickReportData(
+                reportData, order
+        );
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        // logger.debug("####   Report   Data  ######");
+        // logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.ORDER_MANUAL_PICK_SHEET, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+        return reportHistory;
+
+    }
+
+    private void setupOrderManualPickReportParameters(
+            Report report, Order order) {
+
+        // set the parameters to be the meta data of
+        // the order
+
+        report.addParameter("order_number", order.getNumber());
+
+        if (Objects.nonNull(order.getStageLocation())) {
+
+            report.addParameter("destination_location", order.getStageLocation().getName());
+        }
+        else if (Objects.nonNull(order.getStageLocationId())) {
+
+            report.addParameter("destination_location",
+                    warehouseLayoutServiceRestemplateClient.getLocationById(
+                            order.getStageLocationId()
+                    ).getName());
+        }
+        else {
+
+            report.addParameter("destination_location", "");
+        }
+
+    }
+
+    private void setupOrderManualPickReportData(Report report, Order order) {
+
+
+        order.getOrderLines().forEach(
+                orderLine -> {
+                    List<Inventory> inventories =
+                            inventoryServiceRestemplateClient.getPickableInventory(
+                                    orderLine.getItemId(),
+                                    orderLine.getInventoryStatusId(),
+                                    null,
+                                    orderLine.getColor(),
+                                    orderLine.getProductSize(),
+                                    orderLine.getStyle(),
+                                    orderLine.getInventoryAttribute1(),
+                                    orderLine.getInventoryAttribute2(),
+                                    orderLine.getInventoryAttribute3(),
+                                    orderLine.getInventoryAttribute4(),
+                                    orderLine.getInventoryAttribute5(),
+                                    null, null
+                            );
+                    // setup the locations for the inventory as we will need to
+                    // show the location as well
+                    Set<Long> locationIds = new HashSet<>();
+                    Map<Long, List<Inventory>> inventoryInLocation = new HashMap<>();
+                    for (Inventory inventory : inventories) {
+                        if (Objects.isNull(inventory.getLocation())) {
+                            locationIds.add(inventory.getLocationId());
+                            inventoryInLocation.computeIfAbsent(
+                                    inventory.getLocationId(),  key -> new ArrayList<>()).add(inventory);
+
+                        }
+                    }
+
+                    // setup the location for each inventory
+                    if (!locationIds.isEmpty()) {
+                        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
+                                order.getWarehouseId(),
+                                Strings.join(locationIds, ',')
+                        );
+                        locations.stream().filter(location -> inventoryInLocation.containsKey(location.getId()))
+                                .forEach(
+                                        location -> {
+                                            inventoryInLocation.get(location.getId()).forEach(
+                                                    inventory -> inventory.setLocation(location)
+                                            );
+                                        }
+                                );
+                    }
+
+                    orderLine.setupManualPickableInventoryForDisplay(inventories );
+
+                    orderLine.setupRequiredInventoryAttributes();
+
+
+                    logger.debug("get {} pickable inventory for display for order line # {}",
+                            orderLine.getManualPickableInventoryForDisplay().size(),
+                            orderLine.getNumber());
+                }
+        );
+
+        report.setData(order.getOrderLines());
     }
 
     /**
@@ -1784,7 +2086,7 @@ public class OrderService {
                         // let's estimate the item's volume by its first item package type
                         // and its smallest UOM
                         ItemPackageType itemPackageType = item.getItemPackageTypes().get(0);
-                        ItemUnitOfMeasure itemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+                        ItemUnitOfMeasure itemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
                         logger.debug("Start to estimate the volume of the item {} in order {}",
                                 item.getName(), order.getNumber());
                         logger.debug("based on uom {}, quantity {}, size: {} x {} x {}, line quantity {}",
@@ -2298,10 +2600,10 @@ public class OrderService {
             String stockUOM =
                     Objects.isNull(orderLine.getItem()) ? "N/A" :
                             Objects.isNull(orderLine.getItem().getDefaultItemPackageType()) ? "N/A" :
-                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) ? "N/A" :
+                                    Objects.isNull(orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure()) ? "N/A" :
                                             Objects.isNull(orderLine.getItem().getDefaultItemPackageType()
-                                                    .getStockItemUnitOfMeasures().getUnitOfMeasure()) ? "N/A" :
-                                                        orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+                                                    .getStockItemUnitOfMeasure().getUnitOfMeasure()) ? "N/A" :
+                                                        orderLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName();
             billOfLadingDataList.add(new BillOfLadingData(
                     orderLine.getItem().getName(),
                     orderLine.getItem().getDescription(),
@@ -2374,16 +2676,16 @@ public class OrderService {
             logger.debug("item name: {}", pickedInventory.getItem().getName());
             String stockUOMName = "N/A";
             if(Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType()) &&
-                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures()) &&
-                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure())) {
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure()) &&
+                   Objects.nonNull(pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure())) {
                 logger.debug("item default package type: {}",
                         pickedInventory.getItem().getDefaultItemPackageType().getName());
                 logger.debug("item default package type's item uom: {}",
-                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getId());
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getId());
                 logger.debug("item default package type's item stock uom: {}",
-                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName());
+                        pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
 
-                stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasures().getUnitOfMeasure().getName();
+                stockUOMName = pickedInventory.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName();
             }
 
             String itemFamilyName = "N/A";
@@ -2519,8 +2821,11 @@ public class OrderService {
     }
 
     public void assignTrailerAppointment(long orderId, TrailerAppointment trailerAppointment) {
+        assignTrailerAppointment(findById(orderId), trailerAppointment);
+    }
+    public void assignTrailerAppointment(Order order, TrailerAppointment trailerAppointment) {
         logger.debug("Start to assign order to trailer appointment");
-        Order order = findById(orderId);
+
         logger.debug("order: {}, trailer appointment: {}", order.getNumber(),
                 trailerAppointment.getNumber());
         // if we already have the shipment created, then raise error, right now we don't
@@ -2549,34 +2854,25 @@ public class OrderService {
         );
     }
 
-    /**
-     * Generate manual pick for the order
-     * @param orderId
-     * @param lpn
-     * @param pickWholeLPN
-     * @return
-     */
-    public List<Pick> generateManualPick(Long orderId, String lpn, Boolean pickWholeLPN) {
 
-        Order order = findById(orderId);
+    private void validateOrderForManualPick(Order order) {
+        if (!Boolean.TRUE.equals(order.getAllowForManualPick())) {
 
-        validateOrderStatusForManualPick(order);
-
-        List<Pick> picks = new ArrayList<>();
-        ///// TO-DO
-        return picks;
-    }
-
-    private void validateOrderStatusForManualPick(Order order) {
+            throw OrderOperationException.raiseException("Can't generate manual pick for order " +
+                    order.getNumber() + " as it is not marked for manual pick");
+        }
         if (order.getStatus().equals(OrderStatus.COMPLETE)) {
             throw OrderOperationException.raiseException("Can't generate manual pick for order " +
                     order.getNumber() + " as its status is " +
                     order.getStatus() + " and not suitable for pick");
         }
+
     }
 
     public String saveOrderData(Long warehouseId,
-                                     File localFile) throws IOException {
+                                File localFile,
+                                Boolean createCustomer,
+                                Boolean modifyCustomer) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -2595,8 +2891,10 @@ public class OrderService {
         new Thread(() -> {
             int totalCount = orderLineCSVWrappers.size();
             int index = 0;
+            Set<String> validatedOrderNumbers = new HashSet<>();
             for (OrderLineCSVWrapper orderLineCSVWrapper : orderLineCSVWrappers) {
 
+                orderLineCSVWrapper.trim();
                 try {
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index));
                     Client client = Strings.isNotBlank(orderLineCSVWrapper.getClient()) ?
@@ -2611,10 +2909,21 @@ public class OrderService {
 
                         // we have to do it manually since the user name is only available in the main http session
                         // but we will create the receipt / receipt line in a separate transaction
-                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper);
+                        order = convertFromWrapper(warehouseId, orderLineCSVWrapper, createCustomer,
+                                     modifyCustomer);
                         order.setCreatedBy(username);
                         order = saveOrUpdate(order);
                     }
+                    else if (!validatedOrderNumbers.contains(order.getNumber()) &&
+                            !validateOrderForModifyByUploadFile(order)) {
+                        // if we already have the receipt, and the system is setup to not change the receipt
+                        // of specific status
+                        throw OrderOperationException.raiseException("order with status " + order.getStatus() +
+                                " is not allowed to be changed when uploading file" );
+
+                    }
+                    validatedOrderNumbers.add(order.getNumber());
+
                     fileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalCount) * (index + 0.5));
                     logger.debug("start to create order line {} for item {}, quantity {}, for order {}",
                             orderLineCSVWrapper.getLine(),
@@ -2665,6 +2974,24 @@ public class OrderService {
 
     }
 
+
+    boolean validateOrderForModifyByUploadFile(Order order) {
+        OutboundConfiguration outboundConfiguration =
+                outboundConfigurationService.findByWarehouse(order.getWarehouseId());
+
+        if (Objects.isNull(outboundConfiguration)) {
+            // there's nothing configured yet, let's allow change as long as the receipt has not
+            // been started yet
+            return order.getStatus().noLaterThan(OrderStatus.OPEN);
+        }
+        // if status is not setup, then it means we don't allow any override of receipt
+        // when upload the file
+        if (Objects.isNull(outboundConfiguration.getStatusAllowOrderChangeWhenUploadFile())) {
+            return false;
+        }
+        return order.getStatus().noLaterThan(outboundConfiguration.getStatusAllowOrderChangeWhenUploadFile());
+
+    }
     private void clearFileUploadMap() {
 
         if (fileUploadProgress.size() > FILE_UPLOAD_MAP_SIZE_THRESHOLD) {
@@ -2791,11 +3118,11 @@ public class OrderService {
                                                      String status,
                                                      ClientRestriction clientRestriction) {
 
-        List<Order> orders = findAll(warehouseId, number, numbers,
+        List<Order> orders = findAll(warehouseId, null, number, numbers,
                 status, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                true, clientRestriction);
+                null, true, clientRestriction);
 
         return orders.stream().map(order -> convertForQuery(order)).collect(Collectors.toList());
     }
@@ -2961,7 +3288,11 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         // clear all shipment line assignment
         order.getOrderLines().forEach(
-                orderLine -> orderLine.setShipmentLines(new ArrayList<>())
+                orderLine -> {
+                    orderLine.setShipmentLines(new ArrayList<>());
+                    orderLine.setOpenQuantity(orderLine.getExpectedQuantity());
+                    orderLine.setInprocessQuantity(0l);
+                }
         );
 
 
@@ -3012,7 +3343,10 @@ public class OrderService {
      * @return
      */
     public Long getQuantityInOrder(Long warehouseId, Long clientId, Long itemId, Long inventoryStatusId,
-                                   String color, String productSize, String style, boolean exactMatch,
+                                   String color, String productSize, String style,
+                                   String inventoryAttribute1, String inventoryAttribute2, String inventoryAttribute3,
+                                   String inventoryAttribute4, String inventoryAttribute5,
+                                   boolean exactMatch,
                                    ClientRestriction clientRestriction) {
         List<OrderLine> orderLines = orderLineService.findAll(
                 warehouseId, clientId, null,
@@ -3025,7 +3359,12 @@ public class OrderService {
                 .filter(
                     orderLine -> matchOrderLineAttributeWithInventoryAttribute(orderLine.getColor(), color, exactMatch) &&
                             matchOrderLineAttributeWithInventoryAttribute(orderLine.getProductSize(), productSize, exactMatch) &&
-                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getStyle(), style, exactMatch)
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getStyle(), style, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute1(), inventoryAttribute1, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute2(), inventoryAttribute2, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute3(), inventoryAttribute3, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute4(), inventoryAttribute4, exactMatch) &&
+                            matchOrderLineAttributeWithInventoryAttribute(orderLine.getInventoryAttribute5(), inventoryAttribute5, exactMatch)
         ).collect(Collectors.toList());
 
         return orderLines.stream().map(orderLine -> orderLine.getExpectedQuantity() > orderLine.getShippedQuantity() ?
@@ -3056,7 +3395,8 @@ public class OrderService {
     public Integer getOpenOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, OrderStatus.OPEN.toString(),
+                null, null, null, OrderStatus.OPEN.toString(),
+                null,
                 null,
                 null,
                 null,
@@ -3073,16 +3413,36 @@ public class OrderService {
         return orders.size();
     }
 
+    public List<Order> findByOrderIds(Long warehouseId, String orderIds) {
+
+        return findAll(warehouseId,
+                orderIds, null, null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true, null);
+    }
+
     public Integer getTodayOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, null,
+                null, null, null, null,
                 null,
                 null,
                 null,
                 null,
                 null,
-                LocalDate.now(),
+                LocalDate.now().toString(),
+                null,
                 null,
                 null,
                 null,
@@ -3095,13 +3455,14 @@ public class OrderService {
     public Integer getTodayCompletedOrderCount(Long warehouseId, ClientRestriction clientRestriction) {
 
         List<Order> orders = findAll(warehouseId,
-                null, null, OrderStatus.COMPLETE.toString(),
+                null, null, null, OrderStatus.COMPLETE.toString(),
                 null,
                 null,
                 null,
                 null,
                 null,
-                LocalDate.now(),
+                LocalDate.now().toString(),
+                null,
                 null,
                 null,
                 null,
@@ -3112,21 +3473,62 @@ public class OrderService {
         return orders.size();
     }
 
+    /**
+     * Generate walmart shipping carton labels
+     * @param warehouseId
+     * @param id
+     * @param itemName
+     * @return
+     */
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                             int copies,
+                                                             String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)  {
+        return generateWalmartShippingCartonLabels(warehouseId,
+                findById(id), itemName, copies, locale, nonAssignedOnly, nonPrintedOnly, labelCount);
+    }
+
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
                                                              int copies,
                                                              String locale)  {
         return generateWalmartShippingCartonLabels(warehouseId,
-                findById(id), itemName, copies, locale);
+                findById(id), itemName, copies, locale, true, true, Integer.MAX_VALUE);
     }
 
+    /**
+     * Generate walmart shipping carton labels
+     * @param warehouseId
+     * @param itemName
+     * @return
+     */
     public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,Order order, String itemName,
-                                                             int copies, String locale)   {
+                                                             int copies, String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)   {
+
+        List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                walmartShippingCartonLabelService.findByPoNumberAndItem(
+                        warehouseId, order.getNumber(), itemName,
+                        nonAssignedOnly, nonPrintedOnly, labelCount);
+
+        return generateWalmartShippingCartonLabels(warehouseId,
+                copies, locale, walmartShippingCartonLabels);
+
+
+    }
+
+    public ReportHistory generateWalmartShippingCartonLabels(Long warehouseId,
+                                                             int copies, String locale,
+                                                             List<WalmartShippingCartonLabel> walmartShippingCartonLabels)   {
 
         Report reportData = new Report();
+
+
         setupWalmartShippingCartonLabelData(
-                        warehouseId,
-                reportData, order, itemName,  copies
-                );
+                reportData, copies, walmartShippingCartonLabels );
 
 
         logger.debug("will call resource service to print the report with locale: {}",
@@ -3141,38 +3543,226 @@ public class OrderService {
 
 
         logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+
+        // we will need to update the labels' print date as well
+        walmartShippingCartonLabels.forEach(
+                walmartShippingCartonLabel -> {
+                    logger.debug("start to set the print time for walmart shipping carton label with SSCC18: {}",
+                            walmartShippingCartonLabel.getSSCC18());
+                    walmartShippingCartonLabel.setLastPrintTime(ZonedDateTime.now(ZoneOffset.UTC));
+                    walmartShippingCartonLabelService.saveOrUpdate(walmartShippingCartonLabel);
+                }
+        );
         return reportHistory;
     }
 
-    private void setupWalmartShippingCartonLabelData(Long warehouseId,
-                                                     Report reportData, Order order,
-                                                     String itemName,
-                                                     int copies) {
+
+
+    /**
+     * Generate walmart shipping label along with pallet label. It will return a list of report history with
+     * one pallet label follow by shipping labels for cartons on this pallet
+     * a second pallet follow by shipping labels for cartons on this pallet
+     * a third pallet  follow by shipping labels for cartons on this pallet
+     * until it complete all the pallets for the order
+     * @param warehouseId
+     * @param id  order id
+     * @param copies
+     * @param locale
+     * @return
+     */
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
+                                                                                   int copies, String locale,
+                                                                                   Boolean regeneratePalletLabels) {
+
+        return generateWalmartShippingCartonLabelsWithPalletLabels(warehouseId,
+                findById(id),   copies, locale, regeneratePalletLabels);
+    }
+    public List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order,
+                                                                                   int copies, String locale,
+                                                                                   Boolean regeneratePalletLabels) {
+
+        logger.debug("Start to generate walmart shipping carton labels with pallet pick labels, for order {}",
+                order.getNumber());
+        // make sure we can start printing the shipping label with pallet labels for the order
+        validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(order);
+
+        // if the user would like to regenerate the pallet pick labels, let's just refresh
+        // the new pallet labels and assign the existing shipping carton label to this new
+        // pallet label
+        List<PalletPickLabelContent> palletPickLabelContents = new ArrayList<>();
+        if (!Boolean.TRUE.equals(regeneratePalletLabels)) {
+
+            // we will need to get the pallet information
+            // it can be an estimation or an input from the user
+            palletPickLabelContents =
+                    palletPickLabelContentService.findAll(
+                            warehouseId, order.getId(), order.getNumber());
+        }
+
+        if (palletPickLabelContents.isEmpty()) {
+            // there's no estimation yet, let's create one
+            logger.debug("There's no pallet pick label estimation for this order {} yet, " +
+                    "let's create one",
+                    order.getNumber());
+            palletPickLabelContents = palletPickLabelContentService.generateAndSavePalletPickLabelEstimation(order);
+        }
+        if (palletPickLabelContents.isEmpty()) {
+            throw OrderOperationException.raiseException("fail to generate pallet pick label for order " + order.getNumber());
+        }
+        int index = 0;
+        logger.debug("===       start to print label for pallet pick label   =====");
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+            index ++;
+            logger.debug("pallet {}: height = {}, size = {}", index, palletPickLabelContent.getHeight(),
+                    palletPickLabelContent.getVolume());
+            for (PalletPickLabelPickDetail palletPickLabelPickDetail : palletPickLabelContent.getPalletPickLabelPickDetails()) {
+                logger.debug(">> pick: {}, item = {}, quantity = {}, size = {} ",
+                        palletPickLabelPickDetail.getPick().getNumber(),
+                        Objects.nonNull(palletPickLabelPickDetail.getPick().getItem()) ?
+                            palletPickLabelPickDetail.getPick().getItem().getName() :
+                            palletPickLabelPickDetail.getPick().getItemId(),
+                        palletPickLabelPickDetail.getPick().getQuantity(),
+                        palletPickLabelPickDetail.getVolume());
+            }
+        }
+
+        List<ReportHistory> result = new ArrayList<>();
+        // see if we already have walmart shipping carton labels that attached to this pallet
+
+        // show 1 / 2, 2 / 2 on the pallet pick label so the user knows how many
+        // pallet labels being printed for this order
+        int labelIndex = 0;
+
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+
+            labelIndex++;
+            List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
+                    walmartShippingCartonLabelService.findByPalletPickLabel(
+                            palletPickLabelContent
+                    );
+            logger.debug("We got {} shipping carton labels that already assigned to current pallet pick label",
+                    walmartShippingCartonLabels.size());
+            if (walmartShippingCartonLabels.isEmpty()) {
+                // ok, we haven't assign any walmart shipping carton label to this
+                // pallet pick label yet, let's assign now
+                logger.debug("Since there's no shipping carton label assigned, yet, let's start to assign process" +
+                        " and find some available shipping carton labels for this pallet");
+                walmartShippingCartonLabels =
+                        walmartShippingCartonLabelService.assignShippingCartonLabel(
+                                order, palletPickLabelContent
+                        );
+                logger.debug("We got {} AVAILABLE shipping carton labels and assigned to the current pallet pick label {}",
+                        walmartShippingCartonLabels.size(),
+                        palletPickLabelContent.getNumber());
+            }
+            result.addAll(
+                    generateWalmartShippingCartonLabelsWithPalletLabel(
+                            warehouseId, palletPickLabelContent, walmartShippingCartonLabels,
+                            copies, locale, labelIndex, palletPickLabelContents.size())
+            );
+
+        }
+        logger.debug("we get {} labels to be printed",
+                result.size());
+        int i = 1;
+        for (ReportHistory reportHistory : result) {
+            logger.debug("==========  Label  " + i++ + ", type: " + reportHistory.getType() + "      ========");
+
+        }
+        return result;
+
+
+    }
+
+    /**
+     * Generate one pallet labels and all the walmart shipping carton labels for the cartons on this pallet
+     * @param palletPickLabelContent
+     * @param walmartShippingCartonLabels
+     * @return
+     */
+    private List<ReportHistory> generateWalmartShippingCartonLabelsWithPalletLabel(
+            Long warehouseId,
+            PalletPickLabelContent palletPickLabelContent,
+            List<WalmartShippingCartonLabel> walmartShippingCartonLabels,
+            int copies, String locale,
+            int index,
+            int totalLabelCount) {
+        List<ReportHistory> result = new ArrayList<>();
+        // we will generate the pallet pick label first
+
+        // note, if we will need multiple copies, then we will print one copy
+        // of pallet pick label following by one copy of shipping carton label
+        // then start a new copy of pallet pick label and so on
+        for (int i = 0; i < copies; i++) {
+
+            // generate the pallet pick label
+            // note: if the pallet contains multiple picks(as of now, more than 6)
+            // we may need to print multiple labels for the same pallet, each one with
+            // same header and footer but different contents of picks
+            result.addAll(
+                    palletPickLabelContentService.generatePalletPickLabel(warehouseId,
+                            1, locale,
+                            palletPickLabelContent,  index, totalLabelCount));
+
+            // let's generate the shipping labels
+            result.add(
+                    generateWalmartShippingCartonLabels(warehouseId,
+                            1, locale, walmartShippingCartonLabels));
+
+        }
+        return result;
+
+
+    }
+
+    private void validateOrdersForWalmartShippingCartonLabelsWithPalletLabels(Order order) {
+        logger.debug("validate order {} to see if it is a valid order for walmart shipping carton label" +
+                " and pallet pick label", order.getNumber());
+        if (Objects.nonNull(order.getShipToCustomer())) {
+            Customer customer = order.getShipToCustomer();
+            if(!Boolean.TRUE.equals(customer.getCustomerIsWalmart())) {
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is not walmart, " +
+                        " can't print walmart shipping carton for it");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabel())) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print walmart shipping label with pallet label");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabelWhenShort()) &&
+                  !isOrderFullyAllocated(order)) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print walmart shipping label with pallet label while the order is short allocated " +
+                        ", but the order is not fully allocated");
+            }
+        }
+
+        logger.debug(" order {} passed the validation. We can print walmart shipping carton label" +
+                " and pallet pick label", order.getNumber());
+    }
+
+    private void setupWalmartShippingCartonLabelData(Report reportData,
+                                                     int copies,
+                                                     List<WalmartShippingCartonLabel> walmartShippingCartonLabels) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
-        List<WalmartShippingCartonLabel> walmartShippingCartonLabels =
-                walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
 
         walmartShippingCartonLabels.forEach(
                 walmartShippingCartonLabel -> {
-                    // add the shipping label to the result only if
-                    // item name is not passed in
-                    // or item name passed in and the value match with the requirement
-                    if (Strings.isBlank(itemName) || itemName.equalsIgnoreCase(walmartShippingCartonLabel.getItemNumber())) {
-
-                        Map<String, Object> lpnLabelContent =   getWalmartShippingCartonLabelContent(
-                                walmartShippingCartonLabel
-                        );
                         for (int i = 0; i < copies; i++) {
 
-                            lpnLabelContents.add(lpnLabelContent);
+                            lpnLabelContents.add(getWalmartShippingCartonLabelContent(
+                                    walmartShippingCartonLabel
+                            ));
                         }
-                    }
 
                 }
         );
         reportData.setData(lpnLabelContents);
-
     }
 
     private Map<String, Object> getWalmartShippingCartonLabelContent(WalmartShippingCartonLabel walmartShippingCartonLabel) {
@@ -3193,18 +3783,1309 @@ public class OrderService {
         return lpnLabelContent;
     }
 
-    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName) {
+    public List<WalmartShippingCartonLabel> getWalmartShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                                           boolean nonAssignedOnly, boolean nonPrintedOnly) {
         Order order = findById(id);
-        if (Strings.isBlank(itemName)) {
+        // for walmart shipping carton label, we can only find by PO number
+        if (Strings.isBlank(order.getPoNumber())) {
+            logger.debug("Order {} doesn't have a PO number, return nothing",
+                    order.getNumber());
+            return new ArrayList<>();
+        }
+        if (Strings.isNotBlank(itemName)) {
 
-            return walmartShippingCartonLabelService.findByPoNumber(warehouseId, order.getNumber());
+            logger.debug("start to find walmart shipping carton labels for order {} with PO number {}, item name: {}",
+                    order.getNumber(), order.getPoNumber(), itemName);
+            return walmartShippingCartonLabelService.findByPoNumberAndItem(warehouseId, order.getPoNumber(),
+                    itemName, nonAssignedOnly, nonPrintedOnly);
         }
         else {
+            logger.debug("start to find walmart shipping carton labels for order {} with PO number {}, WITHOUT item",
+                    order.getNumber(), order.getPoNumber());
             return walmartShippingCartonLabelService.findAll(
                     warehouseId, null, null,
-                    order.getNumber(), null,null,
-                    itemName
+                    order.getPoNumber(), null,null,
+                    itemName, null, nonPrintedOnly, nonAssignedOnly,
+                    null
             );
         }
     }
+
+    /**
+     * Check if the order is fully allocated
+     * @param order
+     * @return
+     */
+    private boolean isOrderFullyAllocated(Order order) {
+        // get all the picks and sum up the pick quantity to match with the order line's required quantity
+        // and see if the order is fully allocated
+        List<Pick> picks = pickService.findByOrder(order);
+        // Map to save the required quantity and allocated quantity
+        // key: item id
+        // value: quantity
+        Map<Long, Long> requiredQuantitiesMap = new HashMap<>();
+        Map<Long, Long> allocatedQuantitiesMap = new HashMap<>();
+        order.getOrderLines().forEach(
+                orderLine -> {
+                    Long quantity = requiredQuantitiesMap.getOrDefault(orderLine.getItemId(), 0l);
+                    requiredQuantitiesMap.put(orderLine.getItemId(), quantity + orderLine.getExpectedQuantity());
+                }
+        );
+
+        picks.forEach(
+                pick -> {
+                    Long quantity = allocatedQuantitiesMap.getOrDefault(pick.getItemId(), 0l);
+                    allocatedQuantitiesMap.put(pick.getItemId(), quantity + pick.getQuantity());
+                }
+        );
+
+        // loop through each order line to make sure there's enough allocated quantity for each item
+        return requiredQuantitiesMap.entrySet().stream().noneMatch(
+                entry -> {
+                    Long itemId = entry.getKey();
+                    Long requiredQuantity = entry.getValue();
+                    Long allocatedQuantity = allocatedQuantitiesMap.getOrDefault(itemId, 0l);
+                    if (allocatedQuantity < requiredQuantity) {
+                        logger.debug("order {} with item id {} is short allocated, required quantity: {}, allocated quantity: {}",
+                                order.getNumber(),
+                                itemId,
+                                requiredQuantity, allocatedQuantity);
+                        return true;
+                    }
+                    // return false if the item is fully allocated
+                    return false;
+                }
+        );
+    }
+
+    public ReportHistory generateCombinedTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
+                                                                                  int copies, String locale,
+                                                                                  Boolean regeneratePalletLabels) {
+
+        List<ReportHistory> reportHistories =
+                generateTargetShippingCartonLabelsWithPalletLabels(
+                        warehouseId,
+                        id, copies, locale,
+                        regeneratePalletLabels);
+        // let's combine the labels into one label
+        // to make sure the labels will be printed all together in the right sequence
+        // otherwise, even we can make sure the client will send the print request to the printer
+        // in the right sequence, there's no grantee that the printer will process the request
+        // in the same sequence
+        logger.debug("get {} report history and we will try to combine into one file",
+                reportHistories.size());
+        Warehouse warehouse = warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
+        return resourceServiceRestemplateClient.combineLabels(
+                warehouse.getCompanyId(),
+                warehouseId,
+                reportHistories
+        );
+
+    }
+
+    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Long id ,
+                                                                                  int copies, String locale,
+                                                                                  Boolean regeneratePalletLabels) {
+
+        return generateTargetShippingCartonLabelsWithPalletLabels(warehouseId,
+                findById(id),   copies, locale, regeneratePalletLabels);
+    }
+
+    public List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabels(Long warehouseId, Order order,
+                                                                                   int copies, String locale,
+                                                                                   Boolean regeneratePalletLabels) {
+
+        logger.debug("Start to generate target shipping carton labels with pallet pick labels, for order {}",
+                order.getNumber());
+        // make sure we can start printing the shipping label with pallet labels for the order
+        validateOrdersForTargetShippingCartonLabelsWithPalletLabels(order);
+
+        // if the user would like to regenerate the pallet pick labels, let's just refresh
+        // the new pallet labels and assign the existing shipping carton label to this new
+        // pallet label
+        List<PalletPickLabelContent> palletPickLabelContents = new ArrayList<>();
+        if (!Boolean.TRUE.equals(regeneratePalletLabels)) {
+
+            // we will need to get the pallet information
+            // it can be an estimation or an input from the user
+            palletPickLabelContents =
+                    palletPickLabelContentService.findAll(
+                            warehouseId, order.getId(), order.getNumber());
+        }
+
+        if (palletPickLabelContents.isEmpty()) {
+            // there's no estimation yet, let's create one
+            logger.debug("There's no pallet pick label estimation for this order {} yet, " +
+                            "let's create one",
+                    order.getNumber());
+            palletPickLabelContents = palletPickLabelContentService.generateAndSavePalletPickLabelEstimation(order);
+        }
+        if (palletPickLabelContents.isEmpty()) {
+            throw OrderOperationException.raiseException("fail to generate pallet pick label for order " + order.getNumber());
+        }
+        String batchNumber = palletPickLabelContents.get(0).getBatchNumber();
+
+        int index = 0;
+        logger.debug("===       start to print label for pallet pick label   =====");
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+            index ++;
+            logger.debug("pallet {}: height = {}, size = {}", index, palletPickLabelContent.getHeight(),
+                    palletPickLabelContent.getVolume());
+            for (PalletPickLabelPickDetail palletPickLabelPickDetail : palletPickLabelContent.getPalletPickLabelPickDetails()) {
+                logger.debug(">> pick: {}, item = {}, quantity = {}, size = {} ",
+                        palletPickLabelPickDetail.getPick().getNumber(),
+                        Objects.nonNull(palletPickLabelPickDetail.getPick().getItem()) ?
+                                palletPickLabelPickDetail.getPick().getItem().getName() :
+                                palletPickLabelPickDetail.getPick().getItemId(),
+                        palletPickLabelPickDetail.getPick().getQuantity(),
+                        palletPickLabelPickDetail.getVolume());
+            }
+        }
+
+        List<ReportHistory> result = new ArrayList<>();
+        // see if we already have walmart shipping carton labels that attached to this pallet
+
+        // start with a summary label(or lots of summary label since each label can only display
+        // 6 items due to the size limit),
+        //
+        result.addAll(
+                palletPickLabelContentService.generatePalletPickSummaryLabel(
+                        warehouseId, copies, locale,
+                        batchNumber, order.getPoNumber(),
+                        palletPickLabelContents)
+        );
+        // show 1 / 2, 2 / 2 on the pallet pick label so the user knows how many
+        // pallet labels being printed for this order
+        int labelIndex = 0;
+
+        for (PalletPickLabelContent palletPickLabelContent : palletPickLabelContents) {
+
+            labelIndex++;
+            List<TargetShippingCartonLabel> targetShippingCartonLabels =
+                    targetShippingCartonLabelService.findByPalletPickLabel(
+                            palletPickLabelContent
+                    );
+            logger.debug("We got {} shipping carton labels that already assigned to current pallet pick label",
+                    targetShippingCartonLabels.size());
+            if (targetShippingCartonLabels.isEmpty()) {
+                // ok, we haven't assign any target shipping carton label to this
+                // pallet pick label yet, let's assign now
+                logger.debug("Since there's no shipping carton label assigned, yet, let's start to assign process" +
+                        " and find some available shipping carton labels for this pallet");
+                targetShippingCartonLabels =
+                        targetShippingCartonLabelService.assignShippingCartonLabel(
+                                order, palletPickLabelContent
+                        );
+                logger.debug("We got {} AVAILABLE shipping carton labels and assigned to the current pallet pick label {}",
+                        targetShippingCartonLabels.size(),
+                        palletPickLabelContent.getNumber());
+            }
+            result.addAll(
+                    generateTargetShippingCartonLabelsWithPalletLabel(
+                            warehouseId, palletPickLabelContent, targetShippingCartonLabels,
+                            copies, locale, labelIndex, palletPickLabelContents.size())
+            );
+
+        }
+        logger.debug("we get {} labels to be printed",
+                result.size());
+        int i = 1;
+        for (ReportHistory reportHistory : result) {
+            logger.debug("==========  Label  " + i++ + ", type: " + reportHistory.getType() + "      ========");
+
+        }
+        return result;
+
+
+    }
+
+    private void validateOrdersForTargetShippingCartonLabelsWithPalletLabels(Order order) {
+        logger.debug("validate order {} to see if it is a valid order for target shipping carton label" +
+                " and pallet pick label", order.getNumber());
+        if (Objects.nonNull(order.getShipToCustomer())) {
+            Customer customer = order.getShipToCustomer();
+            if(!Boolean.TRUE.equals(customer.getCustomerIsTarget())) {
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is not target, " +
+                        " can't print target shipping carton for it");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabel())) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print shipping label with pallet label");
+            }
+            if (!Boolean.TRUE.equals(customer.getAllowPrintShippingCartonLabelWithPalletLabelWhenShort()) &&
+                    !isOrderFullyAllocated(order)) {
+
+                throw OrderOperationException.raiseException("order " + order.getNumber()
+                        + "'s ship to customer " + customer.getName() + " is configured not to" +
+                        " print shipping label with pallet label while the order is short allocated " +
+                        ", but the order is not fully allocated");
+            }
+        }
+
+        logger.debug(" order {} passed the validation. We can print target shipping carton label" +
+                " and pallet pick label", order.getNumber());
+    }
+
+    /**
+     * Generate one pallet labels and all the walmart shipping carton labels for the cartons on this pallet
+     * @param palletPickLabelContent
+     * @return
+     */
+    private List<ReportHistory> generateTargetShippingCartonLabelsWithPalletLabel(
+            Long warehouseId,
+            PalletPickLabelContent palletPickLabelContent,
+            List<TargetShippingCartonLabel> targetShippingCartonLabels,
+            int copies, String locale,
+            int index,
+            int totalLabelCount) {
+        List<ReportHistory> result = new ArrayList<>();
+        // we will generate the pallet pick label first
+
+        // note, if we will need multiple copies, then we will print one copy
+        // of pallet pick label following by one copy of shipping carton label
+        // then start a new copy of pallet pick label and so on
+        for (int i = 0; i < copies; i++) {
+
+            // generate the pallet pick label
+            // note: if the pallet contains multiple picks(as of now, more than 6)
+            // we may need to print multiple labels for the same pallet, each one with
+            // same header and footer but different contents of picks
+            result.addAll(
+                    palletPickLabelContentService.generatePalletPickLabel(warehouseId,
+                            1, locale,
+                            palletPickLabelContent,  index, totalLabelCount));
+
+            // let's generate the shipping labels
+            result.add(
+                    generateTargetShippingCartonLabels(warehouseId,
+                            1, locale, targetShippingCartonLabels));
+
+        }
+        return result;
+
+    }
+
+
+    /**
+     * Generate target shipping carton labels
+     * @param warehouseId
+     * @param id
+     * @param itemName
+     * @return
+     */
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                             int copies,
+                                                             String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)  {
+        return generateTargetShippingCartonLabels(warehouseId,
+                findById(id), itemName, copies, locale, nonAssignedOnly, nonPrintedOnly, labelCount);
+    }
+
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                             int copies,
+                                                             String locale)  {
+        return generateTargetShippingCartonLabels(warehouseId,
+                findById(id), itemName, copies, locale, true, true, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Generate target shipping carton labels
+     * @param warehouseId
+     * @param itemName
+     * @return
+     */
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId,Order order, String itemName,
+                                                             int copies, String locale,
+                                                             boolean nonAssignedOnly,
+                                                             boolean nonPrintedOnly,
+                                                             int labelCount)   {
+
+        List<TargetShippingCartonLabel> targetShippingCartonLabels =
+                targetShippingCartonLabelService.findByPoNumberAndItem(
+                        warehouseId, order.getNumber(), itemName,
+                        nonAssignedOnly, nonPrintedOnly, labelCount);
+
+        return generateTargetShippingCartonLabels(warehouseId,
+                copies, locale, targetShippingCartonLabels);
+
+
+    }
+
+    public ReportHistory generateTargetShippingCartonLabels(Long warehouseId,
+                                                             int copies, String locale,
+                                                             List<TargetShippingCartonLabel> targetShippingCartonLabels)   {
+
+        Report reportData = new Report();
+
+
+        setupTargetShippingCartonLabelData(
+                reportData, copies, targetShippingCartonLabels );
+
+
+        logger.debug("will call resource service to print the report with locale: {}",
+                locale);
+        logger.debug("Will print {} labels", reportData.getData().size());
+        logger.debug("####   Report   Data  ######");
+        logger.debug(reportData.toString());
+        ReportHistory reportHistory =
+                resourceServiceRestemplateClient.generateReport(
+                        warehouseId, ReportType.TARGET_SHIPPING_CARTON_LABEL, reportData, locale
+                );
+
+
+        logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+
+        // we will need to update the labels' print date as well
+        targetShippingCartonLabels.forEach(
+                targetShippingCartonLabel -> {
+                    logger.debug("start to set the print time for target shipping carton label with SSCC18: {}",
+                            targetShippingCartonLabel.getSSCC18());
+                    targetShippingCartonLabel.setLastPrintTime(ZonedDateTime.now(ZoneOffset.UTC));
+                    targetShippingCartonLabelService.saveOrUpdate(targetShippingCartonLabel);
+                }
+        );
+        return reportHistory;
+    }
+
+    private void setupTargetShippingCartonLabelData(Report reportData,
+                                                     int copies,
+                                                     List<TargetShippingCartonLabel> targetShippingCartonLabels) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+
+        targetShippingCartonLabels.forEach(
+                targetShippingCartonLabel -> {
+                    for (int i = 0; i < copies; i++) {
+
+                        lpnLabelContents.add(getTargetShippingCartonLabelContent(
+                                targetShippingCartonLabel
+                        ));
+                    }
+
+                }
+        );
+        reportData.setData(lpnLabelContents);
+    }
+
+    private Map<String, Object> getTargetShippingCartonLabelContent(TargetShippingCartonLabel targetShippingCartonLabel) {
+        return targetShippingCartonLabelService.getTargetShippingCartonLabelContent(targetShippingCartonLabel);
+    }
+
+    public List<TargetShippingCartonLabel> getTargetShippingCartonLabels(Long warehouseId, Long id, String itemName,
+                                                                           boolean nonAssignedOnly, boolean nonPrintedOnly) {
+        Order order = findById(id);
+        // for walmart shipping carton label, we can only find by PO number
+        if (Strings.isBlank(order.getPoNumber())) {
+            logger.debug("Order {} doesn't have a PO number, return nothing",
+                    order.getNumber());
+            return new ArrayList<>();
+        }
+        if (Strings.isNotBlank(itemName)) {
+
+            logger.debug("start to find target shipping carton labels for order {} with PO number {}, item name: {}",
+                    order.getNumber(), order.getPoNumber(), itemName);
+            return targetShippingCartonLabelService.findByPoNumberAndItem(warehouseId, order.getPoNumber(),
+                    itemName, nonAssignedOnly, nonPrintedOnly);
+        }
+        else {
+            logger.debug("start to find target shipping carton labels for order {} with PO number {}, WITHOUT item",
+                    order.getNumber(), order.getPoNumber());
+            return targetShippingCartonLabelService.findAll(
+                    warehouseId, null, null,
+                    order.getPoNumber(),
+                    itemName, null, nonPrintedOnly, nonAssignedOnly,
+                    null
+            );
+        }
+    }
+
+    /**
+     * when the shipment line is cancelled, see if all shipment line has been cancelled for the order,
+     * if so, set the order back to PENDING
+     * @param order
+     */
+    public void registerShipmentLineCancelled(Order order) {
+        if (order.getStatus().equals(OrderStatus.INPROCESS)) {
+
+            logger.debug("order {}'s status is in process, let's see if we will need to set it back to OPEN",
+                    order.getNumber());
+            boolean setOrderToOpen =
+                    order.getOrderLines().stream().noneMatch(
+                            orderLine -> orderLine.getInprocessQuantity() > 0
+                    );
+
+            if (setOrderToOpen) {
+                logger.debug("we will set order {}'s status back to OPEN", order.getNumber());
+                order.setStatus(OrderStatus.OPEN);
+                saveOrUpdate(order, false);
+            }
+        }
+
+    }
+
+    /**
+     * Manually pick the LPN for the order, we will generate the picks, pick the LPN and then deposit to the
+     * ship stage
+     * @param warehouseId
+     * @param orderNumber
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public List<Pick> processManualPick(Long warehouseId, Long clientId, String orderNumber, String lpn, Boolean pickWholeLPN) {
+        Order order = findByNumber(warehouseId, clientId, orderNumber, false);
+        if (Objects.isNull(order)) {
+            throw OrderOperationException.raiseException("Can't find order by warehouse: " + warehouseId +
+                    ", client: " + clientId + ", number: " + orderNumber);
+        }
+        if (!Boolean.TRUE.equals(order.getAllowForManualPick())) {
+
+            throw OrderOperationException.raiseException("Can't process manual pick on the order: " + orderNumber + ", " +
+                    " as the order is not setup for manual pick");
+        }
+
+        validateOrderForManualPick(order);
+
+
+        List<Pick> picks = generateManualPick(order, lpn, pickWholeLPN);
+
+        logger.debug("# got {} manual picks for order {},  with LPN {}  ",
+                picks.size(),
+                order.getNumber());
+
+        if (picks.isEmpty()) {
+            throw OrderOperationException.raiseException("Fail to generate picks for this LPN " + lpn);
+        }
+        // we will confirm the pick automatically
+        return picks.stream().map(
+                pick -> confirmManualPick(pick, lpn)
+        ).collect(Collectors.toList());
+
+
+    }
+
+    private Pick confirmManualPick(Pick pick, String lpn) {
+        logger.debug("start to fully confirm the pick {} from the LPN {}",
+                pick.getNumber(), lpn);
+        return pickService.confirmPick(pick, pick.getQuantity() - pick.getPickedQuantity(),
+                lpn);
+    }
+
+    public List<Pick> generateManualPick(Long orderId,
+                                         String lpn,
+                                         Boolean pickWholeLPN) {
+
+
+        return generateManualPick(findById(orderId), lpn, pickWholeLPN);
+    }
+    public List<Pick> generateManualPick(Order order,
+                                         String lpn,
+                                         Boolean pickWholeLPN) {
+
+        validateOrderForManualPick(order);
+
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
+                order.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+            throw OrderOperationException.raiseException("Can't find the inventory by LPN " + lpn);
+        }
+        // let's make sure it simple. For now we only allow one item on the LPN for manual pick
+        if (inventories.stream().map(inventory -> inventory.getItem().getId()).distinct().count() > 1) {
+
+            throw OrderOperationException.raiseException("LPN "  + lpn + " is mixed with different item, fail to generate manual pick ");
+        }
+        Location sourceLocation = inventories.get(0).getLocation();
+        if(Objects.isNull(sourceLocation)) {
+            sourceLocation = warehouseLayoutServiceRestemplateClient.getLocationById(
+                    inventories.get(0).getLocationId()
+            );
+        }
+        Long itemId = inventories.get(0).getItem().getId();
+
+        logger.debug("Start to generate manual picks for order {}, from location {}, with LPN {} and item {}",
+                order.getNumber(), sourceLocation.getName(), lpn,
+                inventories.get(0).getItem().getName());
+
+        Long pickableQuantity = getPickableQuantityForManualPick(order, lpn, pickWholeLPN);
+
+        logger.debug("we will pick quantity {} from lpn {}, as the pickWholeLPN passed in is {}",
+                pickableQuantity, lpn, pickWholeLPN);
+        return generateManualPick(order, sourceLocation, lpn, itemId, pickableQuantity);
+    }
+    public List<Pick> generateManualPick(Order order,
+                                         Location sourceLocation,
+                                         String lpn, Long itemId,
+                                         Long pickableQuantity) {
+        logger.debug("start to generate picks from location {}, lpn {}, item id {}, pickable quantity {}" +
+                ", for order {}",
+                sourceLocation.getName(),
+                lpn,
+                itemId,
+                pickableQuantity,
+                order.getNumber());
+        // if not done yet, let's plan a shipment for it
+        // we will reasonable assume that for orders that allow manual pick, there's
+        // only one active shipment for it
+        List<Shipment> shipments  = shipmentService.findByOrder(order, false);
+
+        // only retain the active shipment
+        shipments = shipments.stream().filter(
+                shipment -> !shipment.getStatus().equals(ShipmentStatus.CANCELLED) &&
+                        !shipment.getStatus().equals(ShipmentStatus.DISPATCHED)
+        ).collect(Collectors.toList());
+
+        logger.debug("Found {} active shipment for this order {}",
+                shipments.size(), order.getNumber());
+
+        if (shipments.size() > 1) {
+            throw OrderOperationException.raiseException("multiple open shipments are found for the order " +
+                    order.getNumber() + ", we can't manual pick from this order");
+        }
+        Shipment shipment = shipments.size() == 0 ?
+                shipmentService.planShipments(order.getNumber(), order.getOrderLines()) :
+                shipments.get(0);
+
+        ShipmentLine shipmentLine = shipment.getShipmentLines().stream().filter(
+                sline -> sline.getOrderLine().getItemId().equals(itemId)
+        ).findFirst().orElseThrow(() -> MissingInformationException.raiseException(
+                "Can't find item for the LPN " + lpn + " with item id " + itemId + ", fail to generate the manual pick"));
+
+        logger.debug("Found the shipment line from this shipment {} for the item with id {}",
+                shipment.getNumber(), itemId);
+
+
+        // we will load the details for the shipment line since allocation may depend on some attribute
+        if (shipmentLine.getOrderLine() != null) {
+            orderLineService.loadOrderLineAttribute(shipmentLine.getOrderLine());
+        }
+        AllocationResult allocationResult = pickService.generateManualPickForOutboundShipment(shipmentLine,
+                sourceLocation,lpn, pickableQuantity);
+
+        logger.debug("Generate the allocation result: \n{}", allocationResult);
+
+        return allocationResult.getPicks();
+
+    }
+
+    /**
+     * Check how mnuch we can pick from this LPN for manual pick with the order
+     * @param orderId
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public Long getPickableQuantityForManualPick(Long orderId, String lpn, Boolean pickWholeLPN) {
+
+        return getPickableQuantityForManualPick(findById(orderId), lpn, pickWholeLPN);
+    }
+
+    /**
+     * Check how mnuch we can pick from this LPN for manual pick with the order
+     * @param order
+     * @param lpn
+     * @param pickWholeLPN
+     * @return
+     */
+    public Long getPickableQuantityForManualPick(Order order, String lpn,
+                                                 Boolean pickWholeLPN) {
+
+        validateOrderForManualPick(order);
+        // Make sure the production line passed in is valid
+
+        // make sure the LPN is valid LPN
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
+                order.getWarehouseId(), lpn
+        );
+        if (inventories.isEmpty()) {
+
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is invalid. Fail to generate manual pick for the order " + order.getNumber());
+        }
+
+        OrderLine matchedOrderLine = getMatchedOrderLineForManualPick(order, lpn, inventories);
+        // matchedOrderLineOptional.get();
+
+        // if the open quantity is 0, which means the order line is fully allocated,
+        // we either have pick or short allocation against the work order line
+        // we will not allow the user to manual pick
+        /**
+        if (matchedOrderLine.getExpectedQuantity() > 0 &&
+                matchedOrderLine.getInprocessQuantity() <= 0) {
+            throw OrderOperationException.raiseException("Order " + order.getNumber() +
+                    ", line " + matchedOrderLine.getNumber() + " is fully processed." +
+                    "Fail to generate manual pick");
+        }
+         **/
+        // if we have shipment lines, then we can only generate manual pick against the open
+        // quantity from the shipment line.
+        // otherwise, we can generate manual pick from the open order line and we will assume
+        // the system will generate a shipment line with the full open order line quantity
+        // later on
+        List<ShipmentLine> shipmentLines = shipmentLineService.findByOrderLineId(
+                order.getWarehouseId(), matchedOrderLine.getId()
+        );
+
+
+
+        // get all the open quantity for this order line.
+        // we can generate picks for any open quantity that still in shipment line
+
+        long quantityRequired = shipmentLines.isEmpty() ?
+                matchedOrderLine.getOpenQuantity() :
+                shipmentLines.stream().map(ShipmentLine::getOpenQuantity).mapToLong(Long::longValue).sum();
+
+        logger.debug("we still need {} of item with id {} from the order {}, line {}",
+                quantityRequired,
+                matchedOrderLine.getItemId(),
+                order.getNumber(),
+                matchedOrderLine.getNumber());
+        if (quantityRequired <= 0) {
+            throw OrderOperationException.raiseException("can't manual pick from LPN " + lpn +
+                    " as there's no open quantity " +
+                    "for the item from order  " + order.getNumber());
+        }
+
+        // get the pickable inventory
+        List<Inventory> pickableInventory = inventoryServiceRestemplateClient.getPickableInventory(
+                inventories.get(0).getItem().getId(),
+                inventories.get(0).getInventoryStatus().getId(),
+                inventories.get(0).getLocationId(),
+                lpn
+        );
+        if (pickableInventory.isEmpty()) {
+
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is not pickable. Fail to generate manual pick for the order " + order.getNumber());
+        }
+
+        // check if how much we can pick from this LPN
+        Long inventoryQuantity = pickableInventory.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+        if (Boolean.TRUE.equals(pickWholeLPN)) {
+            // if the user specify to pick the whole LPN
+            // then return the pickable quantity from this LPN
+            return inventoryQuantity;
+        }
+        return Math.min(inventoryQuantity, quantityRequired);
+    }
+
+    /**
+     * Get matched order line from an order, for manual pick from the inventory
+     * for now we don't allow mix of inventory attribute in the inventory
+     * @param inventories
+     * @return
+     */
+    private OrderLine getMatchedOrderLineForManualPick(Order order, String lpn, List<Inventory> inventories) {
+
+        // make sure there's only one item in the LPN
+        Map<String, String> nonMixedInventoryAttributeForManualPick =
+                getNonMixedInventoryAttributeForManualPick(order, lpn, inventories);
+
+        // mlet's find the matched order line from this order
+        return order.getOrderLines().stream().filter(
+                orderLine -> isOrderLineMatchesInventoryAttribute(orderLine, lpn, nonMixedInventoryAttributeForManualPick)
+        ).findFirst().orElseThrow(
+                () -> OrderOperationException.raiseException("can't find any order line from order " + order.getNumber() +
+                " match with the LPN " + lpn + ", fail to generate manual pick"));
+
+
+    }
+
+    /**
+     * for any inventory attribute, the order line match with the inventory if
+     * 1. order line requires a specific value and the inventory's attribute matches
+     * 2. the order line doesn't requires any specific value
+     */
+    private boolean isOrderLineMatchesInventoryAttribute(OrderLine orderLine, String lpn, Map<String, String> inventoryAttributeMap) {
+        // make sure the order line match with the item id and inventory status id
+        if (!orderLine.getItemId().equals(Long.parseLong(inventoryAttributeMap.get("itemId")))) {
+            logger.debug("order line {} / {} 's item id {} doesn't match with the LPN {} 's item id {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getItemId(),
+                    lpn,
+                    inventoryAttributeMap.get("itemId"));
+            return false;
+        }
+        if (!orderLine.getInventoryStatusId().equals(Long.parseLong(inventoryAttributeMap.get("inventoryStatusId")))) {
+            logger.debug("order line {} / {} 's inventory status id {} doesn't match with the LPN {} 's inventory status id {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryStatusId(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryStatusId"));
+            return false;
+        }
+        // for any inventory attribute, the order line match with the inventory if
+        // 1. order line requires a specific value and the inventory's attribute matches
+        // 2. the order line doesn't requires any specific value
+        if (Strings.isNotBlank(orderLine.getColor()) &&
+            !orderLine.getColor().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("color", ""))) {
+            logger.debug("order line {} / {} 's color {} doesn't match with the LPN {} 's color {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getColor(),
+                    lpn,
+                    inventoryAttributeMap.get("color"));
+            return false;
+        }
+
+        if (Strings.isNotBlank(orderLine.getStyle()) &&
+                !orderLine.getStyle().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("style", ""))) {
+            logger.debug("order line {} / {} 's style {} doesn't match with the LPN {} 's style {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getStyle(),
+                    lpn,
+                    inventoryAttributeMap.get("style"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getProductSize()) &&
+                !orderLine.getProductSize().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("productSize", ""))) {
+            logger.debug("order line {} / {} 's productSize {} doesn't match with the LPN {} 's productSize {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getProductSize(),
+                    lpn,
+                    inventoryAttributeMap.get("productSize"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute1()) &&
+                !orderLine.getInventoryAttribute1().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute1", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute1 {} doesn't match with the LPN {} 's inventoryAttribute1 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute1(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute1"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute2()) &&
+                !orderLine.getInventoryAttribute2().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute2", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute2 {} doesn't match with the LPN {} 's inventoryAttribute2 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute2(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute2"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute3()) &&
+                !orderLine.getInventoryAttribute3().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute3", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute3 {} doesn't match with the LPN {} 's inventoryAttribute3 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute3(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute3"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute4()) &&
+                !orderLine.getInventoryAttribute4().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute4", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute4 {} doesn't match with the LPN {} 's inventoryAttribute4 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute4(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute4"));
+            return false;
+        }
+        if (Strings.isNotBlank(orderLine.getInventoryAttribute5()) &&
+                !orderLine.getInventoryAttribute5().equalsIgnoreCase(inventoryAttributeMap.getOrDefault("inventoryAttribute5", ""))) {
+            logger.debug("order line {} / {} 's inventoryAttribute5 {} doesn't match with the LPN {} 's inventoryAttribute5 {}",
+                    orderLine.getOrder().getNumber(),
+                    orderLine.getNumber(),
+                    orderLine.getInventoryAttribute5(),
+                    lpn,
+                    inventoryAttributeMap.get("inventoryAttribute5"));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Return a non mixed inventory attribute from the inventory of the LPN. For manual pick, we don't allow pick from
+     * a LPN with mixed inventory, just to keep the coding and warehouse operation simple
+     * It will return a map of
+     * key: attribute name
+     * value: attribute value
+     *
+     * attribute will include
+     * itemId: required
+     * inventoryStatusId: required
+     * color / style / productSize: optional
+     * inventoryAttribute 1 ~ 5: optional
+     * @param lpn
+     * @param inventories
+     * @return
+     */
+    private Map<String, String> getNonMixedInventoryAttributeForManualPick(Order order, String lpn, List<Inventory> inventories) {
+
+        Map<String, String> inventoryAttributeMap = new HashMap<>();
+
+        Set<Long> itemIdSet = new HashSet<>();
+        Set<Long> inventoryStatusIdSet = new HashSet<>();
+        Set<String> colorSet = new HashSet<>();
+        Set<String> styleSet = new HashSet<>();
+        Set<String> productSizeSet = new HashSet<>();
+        Set<String> inventoryAttribute1Set = new HashSet<>();
+        Set<String> inventoryAttribute2Set = new HashSet<>();
+        Set<String> inventoryAttribute3Set = new HashSet<>();
+        Set<String> inventoryAttribute4Set = new HashSet<>();
+        Set<String> inventoryAttribute5Set = new HashSet<>();
+
+        for (Inventory inventory : inventories) {
+            itemIdSet.add(inventory.getItem().getId());
+            inventoryStatusIdSet.add(inventory.getInventoryStatus().getId());
+            if (Strings.isNotBlank(inventory.getColor())) {
+                colorSet.add(inventory.getColor());
+            }
+            if (Strings.isNotBlank(inventory.getStyle())) {
+                styleSet.add(inventory.getStyle());
+            }
+            if (Strings.isNotBlank(inventory.getProductSize())) {
+                productSizeSet.add(inventory.getProductSize());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute1())) {
+                inventoryAttribute1Set.add(inventory.getAttribute1());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute2())) {
+                inventoryAttribute2Set.add(inventory.getAttribute2());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute3())) {
+                inventoryAttribute3Set.add(inventory.getAttribute3());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute4())) {
+                inventoryAttribute4Set.add(inventory.getAttribute4());
+            }
+            if (Strings.isNotBlank(inventory.getAttribute5())) {
+                inventoryAttribute5Set.add(inventory.getAttribute5());
+            }
+        }
+
+        if (itemIdSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different items. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else {
+            inventoryAttributeMap.put("itemId", String.valueOf(itemIdSet.stream().findFirst().get()));
+        }
+        if (inventoryStatusIdSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different status. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else {
+            inventoryAttributeMap.put("inventoryStatusId", String.valueOf(inventoryStatusIdSet.stream().findFirst().get()));
+        }
+
+        if (colorSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different color. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (colorSet.size() == 1){
+            inventoryAttributeMap.put("color", colorSet.stream().findFirst().get());
+        }
+        if (styleSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different style. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (styleSet.size() == 1){
+            inventoryAttributeMap.put("style", styleSet.stream().findFirst().get());
+        }
+        if (productSizeSet.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different product size. Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (productSizeSet.size() == 1){
+            inventoryAttributeMap.put("productSize", productSizeSet.stream().findFirst().get());
+        }
+
+        InventoryConfiguration inventoryConfiguration =
+                inventoryServiceRestemplateClient.getInventoryConfiguration(order.getWarehouseId());
+
+        if (inventoryAttribute1Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute1DisplayName()) ?
+                        "attribute 1" : inventoryConfiguration.getInventoryAttribute1DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute1Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute1", inventoryAttribute1Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute2Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute2DisplayName()) ?
+                            "attribute 2" : inventoryConfiguration.getInventoryAttribute2DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute2Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute2", inventoryAttribute2Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute3Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute3DisplayName()) ?
+                            "attribute 3" : inventoryConfiguration.getInventoryAttribute3DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute3Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute3", inventoryAttribute3Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute4Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute4DisplayName()) ?
+                            "attribute 4" : inventoryConfiguration.getInventoryAttribute4DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute4Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute4", inventoryAttribute4Set.stream().findFirst().get());
+        }
+
+        if (inventoryAttribute5Set.size() > 1) {
+            throw OrderOperationException.raiseException("LPN " + lpn +
+                    " is mixed with different " +
+                    (Strings.isBlank(inventoryConfiguration.getInventoryAttribute5DisplayName()) ?
+                            "attribute 5" : inventoryConfiguration.getInventoryAttribute5DisplayName())
+                    +". Fail to generate manual pick for the order " + order.getNumber());
+        }
+        else if (inventoryAttribute5Set.size() == 1){
+            inventoryAttributeMap.put("inventoryAttribute5", inventoryAttribute5Set.stream().findFirst().get());
+        }
+
+        return inventoryAttributeMap;
+    }
+
+    /**
+     * Check if the order is fully picked
+     * @param id
+     * @return
+     */
+    public boolean validateOrderIsFullyStaged(Long id) {
+        // get all the picked inventory and make sure they are all staged
+        Order order = findById(id);
+        List<Pick> picks = pickService.findByOrder(order);
+        logger.debug("found {} picks for this order, let's see if there's any open picks that has not been done yet",
+                picks.size());
+        // make sure all picks are picked and match with the quantity of the order line
+        // key: order line id
+        // value: picked quantity
+        Map<Long, Long> pickedQuantityMap = new HashMap<>();
+        for (Pick pick : picks) {
+            if (pick.getPickedQuantity() < pick.getQuantity()) {
+                // quick check, if the pick is not completed yet, then
+                // the order is not fully picked and we are safe to say it is not
+                // fully staged
+                logger.debug("Pick {} is not fully picked. return false for order {} is not fully staged",
+                        pick.getNumber(), order.getNumber());
+                return false;
+            }
+            logger.debug("Pick {} is fully picked, let's add the quantity to the order line map to " +
+                    "keep track of the total picked quantity for order line ",
+                    pick.getNumber());
+            Long orderLineId = pick.getShipmentLine().getOrderLine().getId();
+            Long totalPickedQuantity = pickedQuantityMap.getOrDefault(orderLineId, 0l);
+            logger.debug("# So far order line {} 's total picked quantity is {}",
+                    orderLineId, totalPickedQuantity);
+            pickedQuantityMap.put(orderLineId, totalPickedQuantity + pick.getPickedQuantity());
+        }
+
+        // key: order line id
+        // value: required quantity
+        if (pickedQuantityMap.size() != order.getOrderLines().size()) {
+            logger.debug("The picked quantity map size {} is different from the order lines count {}, " +
+                    "which normally means that there's some order line not picked yet",
+                    pickedQuantityMap.size(), order.getOrderLines().size());
+            return false;
+        }
+        for (OrderLine orderLine : order.getOrderLines()) {
+            if (!pickedQuantityMap.getOrDefault(orderLine.getId(), 0l).equals(orderLine.getExpectedQuantity())) {
+                logger.debug("the picked quantity {} doesn't match with required quantity {} for order line {} / {}",
+                        pickedQuantityMap.getOrDefault(orderLine.getId(), 0l),
+                        orderLine.getExpectedQuantity(),
+                        order.getNumber(),
+                        orderLine.getNumber());
+                return false;
+            }
+        }
+
+        logger.debug("the quantity on the picks match with the quantities from the order lines, let's check" +
+                " if the inventory picked are in ship stage");
+
+        List<Inventory> inventories = inventoryServiceRestemplateClient.getPickedInventory(order.getWarehouseId(),
+                picks);
+
+        if (!inventoryInStageLocation(inventories)) {
+            return false;
+        }
+
+        logger.debug("Order {} is fully staged!", order.getNumber());
+        return true;
+
+
+    }
+
+    /**
+     * Check if the inventory is in ship stage location
+     * @param inventories
+     * @return
+     */
+    private boolean inventoryInStageLocation(List<Inventory> inventories) {
+
+        Map<Long, Location> locations = new HashMap<>();
+
+        for (Inventory inventory : inventories) {
+
+            if (Objects.isNull(inventory.getLocationId())) {
+                logger.debug("Inventory {} / {} doesn't have location information. not able to check if it is in stage location",
+                        inventory.getId(), inventory.getLpn());
+                return false;
+            }
+            if (Objects.nonNull(inventory.getLocation())) {
+                locations.putIfAbsent(inventory.getLocationId(), inventory.getLocation());
+
+            }
+            else if (locations.containsKey(inventory.getLocationId())) {
+                // the inventory doesn't have the location setup yet but we find it in the map, let's setup
+                // the location for the inventory
+                inventory.setLocation(
+                        locations.get(inventory.getLocationId())
+                );
+            }
+            else {
+                // the inventory has locationId but doesn't have the location. We can't find the
+                // location information in the map(cache)
+                inventory.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventory.getLocationId()
+                        )
+                );
+            }
+            // we should already have inventory's location here
+            if (Objects.isNull(inventory.getLocation())) {
+                logger.debug("fail to get location information for inventory {} / {}",
+                        inventory.getId(), inventory.getLpn());
+                return false;
+            }
+            if (Objects.isNull(inventory.getLocation().getLocationGroup()) ||
+                Objects.isNull(inventory.getLocation().getLocationGroup().getLocationGroupType())) {
+                // refresh the location to get the details
+                inventory.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                inventory.getLocationId()
+                        )
+                );
+            }
+            // return error if we still can't get the details
+            if (Objects.isNull(inventory.getLocation().getLocationGroup()) ||
+                    Objects.isNull(inventory.getLocation().getLocationGroup().getLocationGroupType())) {
+                logger.debug("fail to get location's information for location {}",
+                        inventory.getLocation().getName());
+                return false;
+            }
+            // check if the inventory is in the ship stage
+            if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getLocationGroupType().getShippingStage())) {
+
+                logger.debug("inventory {} / {} in the location {}, which is not a ship stage",
+                        inventory.getId(),
+                        inventory.getLpn(),
+                        inventory.getLocation().getName());
+                return false;
+            }
+
+        }
+        return true;
+    }
+
+    public void changeOrderStatusAfterShipment(Long orderId) {
+        Order order = findById(orderId);
+        if (order.getStatus().equals(OrderStatus.OPEN)) {
+            order.setStatus(OrderStatus.INPROCESS);
+        }
+        saveOrUpdate(order, false);
+    }
+
+    public List<Inventory> getPickedInventoriesByOrderIds(Long warehouseId, String orderIds) {
+
+        return getPickedInventoriesByOrderIds(warehouseId,
+                pickService.findByOrders(warehouseId, orderIds));
+
+    }
+
+    public List<Inventory> getPickedInventoriesByOrderIds(Long warehouseId, List<Pick> picks) {
+
+        List<Inventory> pickedInventories = new ArrayList<>();
+
+        if (picks.size() > 0) {
+            pickedInventories
+                    = inventoryServiceRestemplateClient.getPickedInventory(
+                    warehouseId, picks,
+                    true
+            );
+        }
+        return pickedInventories;
+    }
+
+
+    public List<Inventory> getPickedInventorySummaryByOrderIds(Long warehouseId, String orderIds) {
+        List<Pick> picks =
+                pickService.findByOrders(warehouseId, orderIds);
+        // save the pick in a map so that we can get the pick information
+        // later on
+        // we will need the pick information to get the related shipping information like
+        // wave, BOL and load number
+        Map<Long, Pick> pickMap = new HashMap<>();
+        picks.forEach(
+                pick -> pickMap.put(pick.getId(), pick)
+        );
+
+        List<Inventory> pickedInventories = getPickedInventoriesByOrderIds(warehouseId, picks);
+        // setup the shipping related field for the inventory
+        for (Inventory pickedInventory :
+                pickedInventories.stream().filter(
+                        inventory -> Objects.nonNull(inventory.getPickId())).collect(Collectors.toList())) {
+
+            ShipmentLine shipmentLine = Objects.nonNull(pickedInventory.getPick()) &&
+                    Objects.nonNull(pickedInventory.getPick().getShipmentLine()) ?
+                    pickedInventory.getPick().getShipmentLine() :
+                    pickMap.get(pickedInventory.getPickId()).getShipmentLine();
+
+
+            pickedInventory.setWaveNumber(
+                    Objects.isNull(shipmentLine.getWave()) ? "" : shipmentLine.getWave().getNumber()
+            );
+            pickedInventory.setWaveComment(
+                    Objects.isNull(shipmentLine.getWave()) ? "" : shipmentLine.getWave().getComment()
+            );
+            pickedInventory.setShipmentLoadNumber(
+                    shipmentLine.getShipmentLoadNumber()
+            );
+            pickedInventory.setShipmentBillOfLadingNumber(
+                    shipmentLine.getShipmentBillOfLadingNumber()
+            );
+
+            logger.debug("LPN {}'s shipping information is setup to ",
+                    pickedInventory.getLpn());
+            logger.debug("wave number = {}, wave comment = {}, shipment load number = {}, shipment BOL Number = {}",
+                    pickedInventory.getWaveNumber(),
+                    pickedInventory.getWaveComment(),
+                    pickedInventory.getShipmentLoadNumber(),
+                    pickedInventory.getShipmentBillOfLadingNumber());
+        }
+        // we will save the mapping between the pick and the order number so that
+        // we will be able to get the order number from the pick
+        // key: pick id
+        // value: order number
+
+        Map<Long, String> pickOrderNumberMap = new HashMap<>();
+        for (Pick pick : picks) {
+            pickOrderNumberMap.put(pick.getId(), pick.getOrderNumber());
+        }
+
+        logger.debug("Got {} picked inventory from order id list {}",
+                pickedInventories.size(),
+                orderIds);
+
+        // group by inventory attribute
+        // client
+        // order number
+        // item
+        // color
+        // product size
+        // style
+        // case quantity
+        // in warehouse date(date)
+
+        // we will use the warehouse's timezone and convert the
+        // in warehouse date into the date
+        WarehouseConfiguration warehouseConfiguration
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+
+        TimeZone timeZone = TimeZone.getDefault();
+        if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
+            timeZone = TimeZone.getTimeZone(warehouseConfiguration.getTimeZone());
+        }
+
+        // key: group of the inventory attribute
+        // value: inventory with total quantity
+        Map<String, Inventory> inventoryMap = new HashMap<>();
+        for (Inventory pickedInventory : pickedInventories) {
+            String orderNumber = Strings.isBlank(pickedInventory.getOrderNumber()) ?
+                    pickOrderNumberMap.getOrDefault(pickedInventory.getPickId(), "") : pickedInventory.getOrderNumber();
+
+            String key = new StringBuilder()
+                    .append(Objects.isNull(pickedInventory.getClientId()) ? "----" : pickedInventory.getClientId()).append("_")
+                    .append(Strings.isBlank(orderNumber) ? "----" : orderNumber).append("_")
+                    .append(Strings.isBlank(pickedInventory.getWaveNumber()) ? "----" : pickedInventory.getWaveNumber()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getWaveComment()) ? "----" : pickedInventory.getWaveComment()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getShipmentLoadNumber()) ? "----" : pickedInventory.getShipmentLoadNumber()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getShipmentBillOfLadingNumber()) ? "----" : pickedInventory.getShipmentBillOfLadingNumber()).append("_")
+                    .append(Objects.isNull(pickedInventory.getItem()) ? "----" : pickedInventory.getItem().getId()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getColor()) ? "----" : pickedInventory.getColor()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getProductSize()) ? "----" : pickedInventory.getProductSize()).append("_")
+                    .append(Strings.isBlank(pickedInventory.getStyle()) ? "----" : pickedInventory.getStyle()).append("_")
+                    .append(Objects.isNull(pickedInventory.getItemPackageType().getCaseItemUnitOfMeasure()) ? "----" : pickedInventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity()).append("_")
+                    .append(Objects.isNull(pickedInventory.getInWarehouseDatetime()) ? "----" :
+                            pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate()).append("_")
+                    .toString();
+            // logger.debug("Key for lpn {} is {}",
+            //         pickedInventory.getLpn(), key);
+            // logger.debug("> outbound : {}", pickedInventory.getOrderNumber());
+            // logger.debug("in warehouse date: {}",
+            //         pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate().atStartOfDay().atZone(timeZone.toZoneId()));
+
+
+            Inventory inventory = inventoryMap.get(key);
+            if (Objects.isNull(inventory)) {
+                inventory = new Inventory();
+                inventory.setClientId(pickedInventory.getClientId());
+                inventory.setClient(pickedInventory.getClient());
+                inventory.setOrderNumber(orderNumber);
+                inventory.setWaveNumber(pickedInventory.getWaveNumber());
+                inventory.setWaveComment(pickedInventory.getWaveComment());
+                inventory.setShipmentLoadNumber(pickedInventory.getShipmentLoadNumber());
+                inventory.setShipmentBillOfLadingNumber(pickedInventory.getShipmentBillOfLadingNumber());
+                inventory.setItem(pickedInventory.getItem());
+                inventory.setItemPackageType(pickedInventory.getItemPackageType());
+                inventory.setColor(pickedInventory.getColor());
+                inventory.setProductSize(pickedInventory.getProductSize());
+                inventory.setStyle(pickedInventory.getStyle());
+                if (Objects.nonNull(pickedInventory.getInWarehouseDatetime())) {
+
+                    inventory.setInWarehouseDatetime(
+                            pickedInventory.getInWarehouseDatetime().withZoneSameInstant(timeZone.toZoneId()).toLocalDate().atStartOfDay().atZone(timeZone.toZoneId())
+                    );
+                }
+                inventory.setQuantity(0l);
+            }
+            inventory.setQuantity(inventory.getQuantity() + pickedInventory.getQuantity());
+            inventoryMap.put(key, inventory);
+        }
+        logger.debug("group   picked inventory into {} summary from order id list {}",
+                inventoryMap.size(),
+                orderIds);
+
+        return new ArrayList<>(inventoryMap.values());
+
+
+    }
+
+    public Order changeCompletedTime(Long id, ZonedDateTime completedTime) {
+        Order order = findById(id);
+        order.setCompleteTime(completedTime);
+        return saveOrUpdate(order);
+    }
+
+
 }

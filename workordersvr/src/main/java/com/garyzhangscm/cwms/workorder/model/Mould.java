@@ -2,11 +2,11 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+
+import jakarta.persistence.*;
+
 
 @Entity
 @Table(name = "mould")
@@ -24,6 +24,12 @@ public class Mould extends AuditibleEntity<String>{
     @Column(name = "warehouse_id")
     private Long warehouseId;
 
+    @Column(name = "cavity")
+    private Integer cavity;
+
+    @Column(name = "description")
+    private String description;
+
     @Override
     public String toString() {
         try {
@@ -33,9 +39,6 @@ public class Mould extends AuditibleEntity<String>{
         }
         return null;
     }
-
-    @Column(name = "description")
-    private String description;
 
     public Long getId() {
         return id;
@@ -67,5 +70,13 @@ public class Mould extends AuditibleEntity<String>{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public Integer getCavity() {
+        return cavity;
+    }
+
+    public void setCavity(Integer cavity) {
+        this.cavity = cavity;
     }
 }

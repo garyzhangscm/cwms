@@ -55,7 +55,8 @@ public class StorageFeeByAgingPalletBillingService extends  StorageFeeBillingSer
     @Override
     public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
                                                  Long companyId, Long warehouseId, Long clientId,
-                                                 String number, Boolean serialize) {
+                                                 String number, Boolean serialize,
+                                                 Boolean includeDaysSinceInWarehouseForStorageFee) {
 
         logger.debug("start to generate billing request for aging pallet");
         // progressive rate

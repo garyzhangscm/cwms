@@ -26,9 +26,7 @@ import com.garyzhangscm.cwms.workorder.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderByProductRepository;
-import com.garyzhangscm.cwms.workorder.repository.WorkOrderLineRepository;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +34,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.Objects;
 

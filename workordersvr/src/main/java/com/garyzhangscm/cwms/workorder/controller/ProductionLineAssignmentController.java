@@ -41,8 +41,10 @@ public class ProductionLineAssignmentController {
                 @RequestParam(name="workOrderId", required = false, defaultValue = "") Long workOrderId,
                 @RequestParam(name="productionLineId", required = false, defaultValue = "") Long productionLineId,
                 @RequestParam(name="productionLineIds", required = false, defaultValue = "") String productionLineIds,
-                @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames) {
-        return productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, workOrderId, productionLineNames);
+                @RequestParam(name="productionLineNames", required = false, defaultValue = "") String productionLineNames,
+                @RequestParam(name="includeDeassigned", required = false, defaultValue = "") Boolean includeDeassigned) {
+        return productionLineAssignmentService.findAll(warehouseId, productionLineId, productionLineIds, workOrderId,
+                productionLineNames, includeDeassigned);
     }
 
 
@@ -72,12 +74,12 @@ public class ProductionLineAssignmentController {
 
     @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/deassign", method = RequestMethod.POST)
-    public ProductionLineAssignment deassignWorkOrderToProductionLines(
+    public ProductionLineAssignment deassignWorkOrderFromProductionLines(
             @RequestParam Long workOrderId,
             @RequestParam Long productionLineId,
             @RequestBody List<Inventory> returnableMaterial) {
 
-        return productionLineAssignmentService.deassignWorkOrderToProductionLines(workOrderId,
+        return productionLineAssignmentService.deassignWorkOrderFromProductionLines(workOrderId,
                 productionLineId, returnableMaterial);
     }
 
@@ -94,6 +96,17 @@ public class ProductionLineAssignmentController {
                 printerName);
     }
 
+    @BillableEndpoint
+    @RequestMapping(value="/production-line-assignments/{id}/manual-pick-sheet", method = RequestMethod.POST)
+    public ReportHistory generateWorkOrderManualPickReport(
+            @PathVariable Long id,
+            @RequestParam(name = "locale", defaultValue = "", required = false) String locale,
+            @RequestParam(name = "printerName", defaultValue = "", required = false) String printerName
+    ) throws JsonProcessingException {
+
+        return productionLineAssignmentService.generateManualPickReportByWorkOrder(id, locale,
+                printerName);
+    }
 
     @BillableEndpoint
     @RequestMapping(value="/production-line-assignments/{id}/label", method = RequestMethod.POST)

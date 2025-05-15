@@ -40,6 +40,7 @@ public class OrderLine implements Serializable {
     private String companyCode;
     private Long companyId;
 
+    private String orderNumber;
 
     private Long expectedQuantity;
 
@@ -172,6 +173,14 @@ public class OrderLine implements Serializable {
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     public Long getCarrierId() {

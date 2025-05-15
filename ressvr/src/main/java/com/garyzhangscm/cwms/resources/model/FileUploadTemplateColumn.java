@@ -1,6 +1,5 @@
 package com.garyzhangscm.cwms.resources.model;
 
-import java.lang.reflect.Type;
 
 public class FileUploadTemplateColumn {
 

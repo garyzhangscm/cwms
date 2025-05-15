@@ -72,6 +72,14 @@ public class DBBasedSupplier implements Serializable {
     @Column(name = "zip")
     private String addressPostcode;
 
+    // whether the supplier will be used by
+    // FAY or Colton.
+    // Note: FAY and Colton are using 2 different MES server but
+    //    share the same integration table in Oracle side
+    @Column(name = "location_name")
+    private String locationName;
+
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private IntegrationStatus status;
@@ -141,6 +149,14 @@ public class DBBasedSupplier implements Serializable {
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 
     public String getAddressCountry() {

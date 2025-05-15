@@ -19,6 +19,8 @@
 package com.garyzhangscm.cwms.integration.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ public class Order implements Serializable {
     private String shipToCustomerName;
 
 
+    private String poNumber;
+
     private String category;
     private Long transferReceiptWarehouseId;
     private String transferReceiptWarehouseName;
@@ -48,7 +52,7 @@ public class Order implements Serializable {
 
     private OrderStatus status = OrderStatus.OPEN;
 
-
+    private Boolean allowForManualPick;
 
     private Long billToCustomerId;
     private String billToCustomerName;
@@ -110,6 +114,17 @@ public class Order implements Serializable {
     private String quickbookTxnID;
     private String quickbookCustomerListId;
 
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     public Long getId() {
         return id;
     }
@@ -124,6 +139,14 @@ public class Order implements Serializable {
 
     public void setTransferReceiptWarehouseName(String transferReceiptWarehouseName) {
         this.transferReceiptWarehouseName = transferReceiptWarehouseName;
+    }
+
+    public String getPoNumber() {
+        return poNumber;
+    }
+
+    public void setPoNumber(String poNumber) {
+        this.poNumber = poNumber;
     }
 
     public String getNumber() {
@@ -494,5 +517,13 @@ public class Order implements Serializable {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public Boolean getAllowForManualPick() {
+        return allowForManualPick;
+    }
+
+    public void setAllowForManualPick(Boolean allowForManualPick) {
+        this.allowForManualPick = allowForManualPick;
     }
 }

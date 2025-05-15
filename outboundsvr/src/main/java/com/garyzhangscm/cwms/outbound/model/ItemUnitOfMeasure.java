@@ -46,6 +46,7 @@ public class ItemUnitOfMeasure implements Serializable {
     private Boolean trackingLpn;
 
     private Boolean caseFlag;
+    private Boolean packFlag;
 
 
     public Long getId() {
@@ -167,5 +168,13 @@ public class ItemUnitOfMeasure implements Serializable {
 
     public void setHeightUnit(String heightUnit) {
         this.heightUnit = heightUnit;
+    }
+
+    public Boolean getPackFlag() {
+        return packFlag;
+    }
+
+    public void setPackFlag(Boolean packFlag) {
+        this.packFlag = packFlag;
     }
 }

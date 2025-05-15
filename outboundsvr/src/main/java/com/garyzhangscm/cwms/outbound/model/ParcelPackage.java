@@ -22,7 +22,7 @@ import com.easypost.model.Shipment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.outbound.model.hualei.*;
 import org.apache.logging.log4j.util.Strings;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 

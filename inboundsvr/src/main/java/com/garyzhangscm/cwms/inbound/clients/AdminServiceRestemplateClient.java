@@ -43,7 +43,7 @@ public class AdminServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/admin/billable-activity-types/{id}");
 /**
         ResponseBodyWrapper<BillableActivityType> responseBodyWrapper

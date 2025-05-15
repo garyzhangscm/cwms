@@ -21,7 +21,7 @@ package com.garyzhangscm.cwms.outbound.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
@@ -79,6 +79,9 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     @Column(name = "inprocess_quantity")
     private Long inprocessQuantity;
 
+
+    @Transient
+    private Long stagedQuantity;
 
     @Column(name = "loaded_quantity")
     private Long loadedQuantity;
@@ -215,7 +218,13 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     }
 
     public Long getOrderLineId() {
-        return orderLineId;
+        if (Objects.nonNull(orderLineId)) {
+            return orderLineId;
+        }
+        if (Objects.nonNull(getOrderLine())) {
+            return getOrderLine().getId();
+        }
+        return null;
     }
 
     public void setOrderLineId(Long orderLineId) {
@@ -231,6 +240,10 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
     }
 
     public String getShipmentNumber() {return Objects.nonNull(shipment) ? shipment.getNumber() : "";}
+
+    public String getShipmentLoadNumber() {return Objects.nonNull(shipment) ? shipment.getLoadNumber() : "";}
+
+    public String getShipmentBillOfLadingNumber() {return Objects.nonNull(shipment) ? shipment.getBillOfLadingNumber() : "";}
 
     public Long getOpenQuantity() {
         return openQuantity;
@@ -325,5 +338,13 @@ public class ShipmentLine  extends AuditibleEntity<String> implements Serializab
 
     public void setStageLocation(Location stageLocation) {
         this.stageLocation = stageLocation;
+    }
+
+    public Long getStagedQuantity() {
+        return stagedQuantity;
+    }
+
+    public void setStagedQuantity(Long stagedQuantity) {
+        this.stagedQuantity = stagedQuantity;
     }
 }

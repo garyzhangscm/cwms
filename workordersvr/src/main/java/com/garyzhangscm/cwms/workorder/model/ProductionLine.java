@@ -3,11 +3,17 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import org.apache.logging.log4j.util.Strings;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "production_line")
@@ -48,10 +54,14 @@ public class ProductionLine extends AuditibleEntity<String>{
     private Location productionLineLocation;
 
 
+    @ManyToOne
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "production_line_type_id")
+    private ProductionLineType type;
+
     @OneToMany(mappedBy = "productionLine")
     @JsonIgnore
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
-
 
     @OneToMany(mappedBy = "productionLine", cascade = CascadeType.ALL,
             orphanRemoval = true)
@@ -176,6 +186,7 @@ public class ProductionLine extends AuditibleEntity<String>{
     }
 
     public List<ProductionLineAssignment> getProductionLineAssignments() {
+
         return productionLineAssignments;
     }
 
@@ -237,5 +248,31 @@ public class ProductionLine extends AuditibleEntity<String>{
 
     public void setGenericPurpose(Boolean genericPurpose) {
         this.genericPurpose = genericPurpose;
+    }
+
+    public ProductionLineType getType() {
+        return type;
+    }
+
+    public void setType(ProductionLineType type) {
+        this.type = type;
+    }
+
+    /**
+     * return assigned work order's name and finish good name & description
+     */
+    public List<Sixtuple<String, String, String, Long, Long, Long>> getAssignedWorkOrders() {
+        return getProductionLineAssignments().stream()
+                .filter(productionLineAssignment -> !Boolean.TRUE.equals(productionLineAssignment.getDeassigned())
+                        && Objects.isNull(productionLineAssignment.getDeassignedTime()))  // only return the work order that is not deassigned yet
+                .map(productionLineAssignment ->
+                        new Sixtuple<String, String, String, Long, Long, Long>(
+                                Strings.isBlank(productionLineAssignment.getWorkOrderNumber()) ? "" : productionLineAssignment.getWorkOrderNumber(),
+                                Strings.isBlank(productionLineAssignment.getItemName()) ? "" : productionLineAssignment.getItemName(),
+                                Strings.isBlank(productionLineAssignment.getItemDescription()) ? "" : productionLineAssignment.getItemDescription(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getProducedQuantity(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? 0l : productionLineAssignment.getWorkOrder().getExpectedQuantity(),
+                                Objects.isNull(productionLineAssignment.getWorkOrder()) ? null : productionLineAssignment.getWorkOrder().getItemId())
+        ).collect(Collectors.toList());
     }
 }

@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garyzhangscm.cwms.integration.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.integration.service.ObjectCopyUtil;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;

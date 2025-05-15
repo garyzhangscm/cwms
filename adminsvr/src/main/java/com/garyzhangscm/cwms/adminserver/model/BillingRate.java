@@ -1,9 +1,10 @@
 package com.garyzhangscm.cwms.adminserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.garyzhangscm.cwms.adminserver.model.wms.Client;
 import com.garyzhangscm.cwms.adminserver.model.wms.Company;
 import com.garyzhangscm.cwms.adminserver.model.wms.Warehouse;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -49,12 +50,25 @@ public class BillingRate extends AuditibleEntity<String>{
     @Column(name = "rate")
     private Double rate;
 
+    @Column(name = "rate_unit")
+    private String rateUnitName;
+
+    @Column(name = "rate_by_quantity")
+    private Boolean rateByQuantity;
+
     @Column(name = "billing_cycle")
     @Enumerated(EnumType.STRING)
     private BillingCycle billingCycle;
 
     @Column(name = "enabled")
     private Boolean enabled;
+
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "billing_rate_by_inventory_age_id")
+    private BillingRateByInventoryAge billingRateByInventoryAge;
+
 
 
     public BillingRate(){}
@@ -161,5 +175,29 @@ public class BillingRate extends AuditibleEntity<String>{
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public BillingRateByInventoryAge getBillingRateByInventoryAge() {
+        return billingRateByInventoryAge;
+    }
+
+    public void setBillingRateByInventoryAge(BillingRateByInventoryAge billingRateByInventoryAge) {
+        this.billingRateByInventoryAge = billingRateByInventoryAge;
+    }
+
+    public String getRateUnitName() {
+        return rateUnitName;
+    }
+
+    public void setRateUnitName(String rateUnitName) {
+        this.rateUnitName = rateUnitName;
+    }
+
+    public Boolean getRateByQuantity() {
+        return rateByQuantity;
+    }
+
+    public void setRateByQuantity(Boolean rateByQuantity) {
+        this.rateByQuantity = rateByQuantity;
     }
 }

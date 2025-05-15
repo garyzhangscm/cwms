@@ -207,19 +207,38 @@ public class AllocationConfigurationService implements TestDataInitiableService 
     private void loadAttribute(AllocationConfiguration allocationConfiguration) {
 
         if (allocationConfiguration.getItemId() != null && allocationConfiguration.getItem() == null) {
-            allocationConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(allocationConfiguration.getItemId()));
+            try {
+                allocationConfiguration.setItem(inventoryServiceRestemplateClient.getItemById(allocationConfiguration.getItemId()));
+            }
+            catch (Exception ex) {}
         }
         if (allocationConfiguration.getItemFamilyId() != null && allocationConfiguration.getItemFamily() == null) {
-            allocationConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(allocationConfiguration.getItemFamilyId()));
+            try {
+                allocationConfiguration.setItemFamily(inventoryServiceRestemplateClient.getItemFamilyById(
+                        allocationConfiguration.getItemFamilyId()));
+            }
+            catch (Exception ex) {}
         }
         if (allocationConfiguration.getLocationId() != null && allocationConfiguration.getLocation() == null) {
-            allocationConfiguration.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(allocationConfiguration.getLocationId()));
+            try {
+                allocationConfiguration.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(
+                        allocationConfiguration.getLocationId()));
+            }
+            catch (Exception ex) {}
         }
         if (allocationConfiguration.getLocationGroupId() != null && allocationConfiguration.getLocationGroup() == null) {
-            allocationConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(allocationConfiguration.getLocationGroupId()));
+            try {
+                allocationConfiguration.setLocationGroup(warehouseLayoutServiceRestemplateClient.getLocationGroupById(
+                        allocationConfiguration.getLocationGroupId()));
+            }
+            catch (Exception ex) {}
         }
         if (allocationConfiguration.getLocationGroupTypeId() != null && allocationConfiguration.getLocationGroupType() == null) {
-            allocationConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(allocationConfiguration.getLocationGroupTypeId()));
+            try {
+                allocationConfiguration.setLocationGroupType(warehouseLayoutServiceRestemplateClient.getLocationGroupTypeById(
+                        allocationConfiguration.getLocationGroupTypeId()));
+            }
+            catch (Exception ex) {}
         }
         pickableUnitOfMeasureService.loadAttribute(allocationConfiguration.getAllocationConfigurationPickableUnitOfMeasures());
 
@@ -404,7 +423,7 @@ public class AllocationConfigurationService implements TestDataInitiableService 
         // Get all pickable inventory
         List<Inventory> pickableInventory
                 = inventoryServiceRestemplateClient.getPickableInventory(
-                itemId, inventoryStatusId, null, null, null, null, null, null);
+                itemId, inventoryStatusId, null, null, null, null, null, null,null,null,null,null,null);
         logger.debug("We have {} pickable inventory against the item with id {}",
                 pickableInventory.size(), itemId);
         return pickableInventory;

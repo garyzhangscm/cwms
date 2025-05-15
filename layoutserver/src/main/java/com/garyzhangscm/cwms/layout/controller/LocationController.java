@@ -24,11 +24,11 @@ import com.garyzhangscm.cwms.layout.model.FileUploadResult;
 import com.garyzhangscm.cwms.layout.model.Location;
 import com.garyzhangscm.cwms.layout.service.FileService;
 import com.garyzhangscm.cwms.layout.service.LocationService;
+import com.garyzhangscm.cwms.layout.service.UploadFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +50,8 @@ public class LocationController {
 
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
     @RequestMapping(value="/locations/{id}", method = RequestMethod.GET)
     public Location getLocationById(@PathVariable Long id) {
@@ -84,21 +86,23 @@ public class LocationController {
                     @CacheEvict(cacheNames = "ResourceService_Location", allEntries = true),
             }
     )
-    public ResponseBodyWrapper uploadLocations(Long warehouseId,
+    public ResponseBodyWrapper uploadLocations(Long companyId, Long warehouseId,
+                                               @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "locations", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "locations", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        // List<Location> locations = locationService.loadLocationData(warehouseId, localFile);
 
-        String fileUploadProgressKey = locationService.uploadLocationData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
 
     }
 
@@ -122,8 +126,10 @@ public class LocationController {
 
     @RequestMapping(method=RequestMethod.GET, value="/location-ids")
     public List<Long> findLocationIds(@RequestParam Long warehouseId,
+                                      @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
+                                      @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "code", required = false, defaultValue = "") String code,
                                         @RequestParam(name = "locationStatus", required = false, defaultValue = "") String locationStatus,
@@ -143,16 +149,18 @@ public class LocationController {
     ) {
         return locationService.findAll(
                 warehouseId,
-                locationGroupTypeIds, locationGroupIds, name,
+                locationGroupTypeIds, locationGroupIds, pickZoneIds, name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus).stream()
+                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus, ids).stream()
                 .map(Location::getId).collect(Collectors.toList());
     }
     @RequestMapping(method=RequestMethod.GET, value="/locations")
     public List<Location> findLocations(@RequestParam Long warehouseId,
+                                        @RequestParam(name = "ids", required = false, defaultValue = "") String ids,
                                         @RequestParam(name = "locationGroupTypeIds", required = false, defaultValue = "") String locationGroupTypeIds,
                                         @RequestParam(name = "locationGroupIds", required = false, defaultValue = "") String locationGroupIds,
+                                        @RequestParam(name = "pickZoneIds", required = false, defaultValue = "") String pickZoneIds,
                                         @RequestParam(name = "name", required = false, defaultValue = "") String name,
                                         @RequestParam(name = "code", required = false, defaultValue = "") String code,
                                         @RequestParam(name = "locationStatus", required = false, defaultValue = "") String locationStatus,
@@ -174,8 +182,10 @@ public class LocationController {
         StringBuilder params = new StringBuilder()
                 .append("Start to find location with params:")
                 .append("\nwarehouseId: ").append(warehouseId)
+                .append("\nids: ").append(ids)
                 .append("\nlocationGroupTypeIds: ").append(locationGroupTypeIds)
                 .append("\nlocationGroupIds: ").append(locationGroupIds)
+                .append("\npickZoneIds: ").append(pickZoneIds)
                 .append("\nname: ").append(name)
                 .append("\ncode: ").append(code)
                 .append("\nbeginSequence: ").append(beginSequence)
@@ -195,10 +205,11 @@ public class LocationController {
 
         List<Location> locations = locationService.findAll(
                 warehouseId,
-                locationGroupTypeIds, locationGroupIds, name,
+                locationGroupTypeIds, locationGroupIds, pickZoneIds,
+                name,
                 beginSequence, endSequence, beginAisle, endAisle, sequenceType,
                 includeEmptyLocation, emptyLocationOnly, minEmptyCapacity,pickableLocationOnly,  reservedCode,
-                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus);
+                includeDisabledLocation, emptyReservedCodeOnly, code, locationStatus, ids);
 
         logger.debug(">> Find {} locations", locations.size());
         if (locations.size() == 0) {
@@ -606,4 +617,53 @@ public class LocationController {
 
         return locationService.findReceivingStageLocations(warehouseId);
     }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line")
+    public Location getOrCreateProductionLineLocation(@RequestParam Long warehouseId,
+                                                      @RequestParam String locationName,
+                                                      @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineLocation(warehouseId, locationName, location);
+    }
+
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line-inbound")
+    public Location getOrCreateProductionLineInboundLocation(@RequestParam Long warehouseId,
+                                                      @RequestParam String locationName,
+                                                      @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineInboundLocation(warehouseId, locationName, location);
+    }
+    @BillableEndpoint
+    @RequestMapping(method=RequestMethod.POST, value="/locations/production-line-outbound")
+    public Location getOrCreateProductionLineOutboundLocation(@RequestParam Long warehouseId,
+                                                             @RequestParam String locationName,
+                                                             @RequestBody Location location) {
+
+        return locationService.getOrCreateProductionLineOutboundLocation(warehouseId, locationName, location);
+    }
+
+
+    @RequestMapping(value = "/validate/locations", method = RequestMethod.GET)
+    public Boolean validateLocation(Long warehouseId, String locationName) {
+        // return ApplicationInformation.getApplicationInformation();
+        return locationService.validateLocation(warehouseId, locationName);
+    }
+
+    @RequestMapping(value = "/locations/copy", method = RequestMethod.GET)
+    public Boolean copyLocations(Long warehouseId,
+                                Long locationId, // copy from location
+                                String startNumber,
+                                @RequestParam(name = "endNumber", required = false, defaultValue = "") String endNumber,
+                                @RequestParam(name = "prefix", required = false, defaultValue = "") String prefix,
+                                @RequestParam(name = "postfix", required = false, defaultValue = "") String postfix) {
+        // return ApplicationInformation.getApplicationInformation();
+        locationService.copyLocations(warehouseId, locationId,
+                startNumber, endNumber, prefix, postfix);
+
+        return true;
+    }
+
+
 }

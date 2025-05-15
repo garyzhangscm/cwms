@@ -19,9 +19,18 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.logging.log4j.util.Strings;
+
+import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -31,7 +40,10 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private Long id;
 
-    private String lpn;
+    private String lpn = "";
+
+    private Long clientId;
+    private Client client;
 
     private Long locationId;
 
@@ -40,11 +52,20 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
     private Long receiptId;
     private Receipt receipt;
 
+    private String orderNumber;
+
+    // shipping related field.
+    // for report purpose
+    private String waveNumber;
+    private String waveComment;
+    private String shipmentLoadNumber;
+    private String shipmentBillOfLadingNumber;;
+
     private Item item;
 
     private ItemPackageType itemPackageType;
 
-    private Long quantity;
+    private Long quantity = 0l;
 
     private Boolean virtual;
 
@@ -63,18 +84,44 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     private Long warehouseId;
 
+    private Long quantityPerCase;
+
 
     private Warehouse warehouse;
 
 
-    private String color;
-    private String productSize;
-    private String style;
+    private String color = "";
+    private String productSize = "";
+    private String style = "";
 
+    private String attribute1 = "";
+    private String attribute2 = "";
+    private String attribute3 = "";
+    private String attribute4 = "";
+    private String attribute5 = "";
+
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime inWarehouseDatetime;
 
     List<InventoryMovement> inventoryMovements = new ArrayList<>();
 
+    private double caseQuantity = 0.0;
 
+    private double packQuantity = 0.0;
+
+
+    public void copyAttribute(Inventory anotherInvenotry) {
+        setColor(anotherInvenotry.getColor());
+        setProductSize(anotherInvenotry.getProductSize());
+        setStyle(anotherInvenotry.getStyle());
+        setAttribute1(anotherInvenotry.getAttribute1());
+        setAttribute2(anotherInvenotry.getAttribute2());
+        setAttribute3(anotherInvenotry.getAttribute3());
+        setAttribute4(anotherInvenotry.getAttribute4());
+        setAttribute5(anotherInvenotry.getAttribute5());
+    }
     public Long getId() {
         return id;
     }
@@ -110,12 +157,60 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
         }
     }
 
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
     public Item getItem() {
         return item;
     }
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
     }
 
     public ItemPackageType getItemPackageType() {
@@ -144,12 +239,26 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public Double getSize() {
 
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+        if (Objects.isNull(itemPackageType)) {
+            return 0.0;
+        }
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
+        if (Objects.isNull(stockItemUnitOfMeasure)) {
+            return 0.0;
+        }
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()
                 * stockItemUnitOfMeasure.getWidth()
                 * stockItemUnitOfMeasure.getHeight();
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 
     public Boolean getVirtual() {
@@ -190,6 +299,14 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setInventoryMovements(List<InventoryMovement> inventoryMovements) {
         this.inventoryMovements = inventoryMovements;
+    }
+
+    public String getWaveNumber() {
+        return waveNumber;
+    }
+
+    public void setWaveNumber(String waveNumber) {
+        this.waveNumber = waveNumber;
     }
 
     public Long getWarehouseId() {
@@ -254,5 +371,114 @@ public class Inventory extends AuditibleEntity<String> implements Serializable {
 
     public void setReceipt(Receipt receipt) {
         this.receipt = receipt;
+    }
+
+    public long getQuantityPerCase() {
+        if (Objects.nonNull(quantityPerCase)) {
+            return quantityPerCase;
+        }
+        if (Objects.isNull(getItemPackageType()) ||
+                Objects.isNull(getItemPackageType().getCaseItemUnitOfMeasure())) {
+            return 0;
+        }
+        return getItemPackageType().getCaseItemUnitOfMeasure().getQuantity();
+    }
+    public void setQuantityPerCase(Long quantityPerCase) {
+        this.quantityPerCase = quantityPerCase;
+    }
+
+
+    public double getCaseQuantity() {
+        if (caseQuantity > 0) {
+            return caseQuantity;
+        }
+        long quantityPerCase = getQuantityPerCase();
+        if (quantityPerCase == 0) {
+            return 0;
+        }
+        return getQuantity() * 1.0 / quantityPerCase;
+    }
+    public long getQuantityPerPack() {
+        if (Objects.isNull(getItemPackageType()) ||
+                Objects.isNull(getItemPackageType().getPackItemUnitOfMeasure())) {
+            return 0;
+        }
+        return getItemPackageType().getPackItemUnitOfMeasure().getQuantity();
+    }
+
+    public String getOrderNumber() {
+        if (Strings.isNotBlank(orderNumber)) {
+            return  orderNumber;
+        }
+        if (Objects.nonNull(pick)) {
+            return pick.getOrderNumber();
+        }
+        return "";
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public double getPackQuantity() {
+        if (packQuantity > 0) {
+            return packQuantity;
+        }
+        long quantityPerPack= getQuantityPerPack();
+        if (quantityPerPack == 0) {
+            return 0;
+        }
+        return getQuantity() * 1.0 / quantityPerPack;
+    }
+
+    public long getPackPerCase() {
+
+        long quantityPerPack= getQuantityPerPack();
+        if (quantityPerPack == 0) {
+            return 0;
+        }
+        long quantityPerCase = getQuantityPerCase();
+        return quantityPerCase / quantityPerPack;
+
+    }
+
+    public ZonedDateTime getInWarehouseDatetime() {
+        return inWarehouseDatetime;
+    }
+
+    public void setInWarehouseDatetime(ZonedDateTime inWarehouseDatetime) {
+        this.inWarehouseDatetime = inWarehouseDatetime;
+    }
+
+    public void setCaseQuantity(double caseQuantity) {
+        this.caseQuantity = caseQuantity;
+    }
+
+    public void setPackQuantity(double packQuantity) {
+        this.packQuantity = packQuantity;
+    }
+
+    public String getWaveComment() {
+        return waveComment;
+    }
+
+    public void setWaveComment(String waveComment) {
+        this.waveComment = waveComment;
+    }
+
+    public String getShipmentLoadNumber() {
+        return shipmentLoadNumber;
+    }
+
+    public void setShipmentLoadNumber(String shipmentLoadNumber) {
+        this.shipmentLoadNumber = shipmentLoadNumber;
+    }
+
+    public String getShipmentBillOfLadingNumber() {
+        return shipmentBillOfLadingNumber;
+    }
+
+    public void setShipmentBillOfLadingNumber(String shipmentBillOfLadingNumber) {
+        this.shipmentBillOfLadingNumber = shipmentBillOfLadingNumber;
     }
 }

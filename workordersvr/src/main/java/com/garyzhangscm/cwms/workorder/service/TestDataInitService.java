@@ -104,11 +104,11 @@ public class TestDataInitService {
         this.workOrderConfigurationService = workOrderConfigurationService;
 
 
-        initiableServices.put("Bill_Of_Material", billOfMaterialService);
-        serviceNames.add("Bill_Of_Material");
+        // initiableServices.put("Bill_Of_Material", billOfMaterialService);
+        // serviceNames.add("Bill_Of_Material");
 
-        initiableServices.put("Bill_Of_Material_Line", billOfMaterialLineService);
-        serviceNames.add("Bill_Of_Material_Line");
+        // initiableServices.put("Bill_Of_Material_Line", billOfMaterialLineService);
+        // serviceNames.add("Bill_Of_Material_Line");
 
         initiableServices.put("Bill_Of_Material_By_Product", billOfMaterialByProductService);
         serviceNames.add("Bill_Of_Material_By_Product");

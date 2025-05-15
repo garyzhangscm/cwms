@@ -47,6 +47,7 @@
         <module>dblink</module>
         <module>QuickBook</module>
         <module>zuulsvr</module>
+        <module>APIGateway</module>
         <!--
         <module>licensing-service</module>
         -->

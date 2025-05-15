@@ -18,12 +18,10 @@
 
 package com.garyzhangscm.cwms.common.controller;
 
-import com.garyzhangscm.cwms.common.exception.GenericException;
+import com.garyzhangscm.cwms.common.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.common.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.common.model.BillableEndpoint;
-import com.garyzhangscm.cwms.common.model.Client;
 import com.garyzhangscm.cwms.common.model.ReasonCode;
-import com.garyzhangscm.cwms.common.service.ClientService;
 import com.garyzhangscm.cwms.common.service.ReasonCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -39,12 +37,8 @@ public class ReasonCodeController {
     @RequestMapping(value="/reason-codes", method = RequestMethod.GET)
     public List<ReasonCode> findAllReasonCodes(@RequestParam Long warehouseId,
                                                @RequestParam(value = "type", required = false, defaultValue = "") String type) {
-        if (type.isEmpty()) {
-            return reasonCodeService.findAll(warehouseId);
-        }
-        else {
-            return reasonCodeService.findByType(type);
-        }
+
+        return reasonCodeService.findAll(warehouseId, type);
 
     }
 
@@ -57,13 +51,15 @@ public class ReasonCodeController {
 
     @BillableEndpoint
     @RequestMapping(value="/reason-codes", method = RequestMethod.POST)
-    public ReasonCode addReasonCode(@RequestBody ReasonCode reasonCode) {
-        return reasonCodeService.save(reasonCode);
+    public ReasonCode addReasonCode(@RequestParam Long warehouseId,
+                                    @RequestBody ReasonCode reasonCode) {
+        return reasonCodeService.addReasonCode(reasonCode);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/reason-codes/{id}", method = RequestMethod.PUT)
-    public ReasonCode changeReasonCode(@PathVariable Long id, @RequestBody ReasonCode reasonCode) {
+    public ReasonCode changeReasonCode(@RequestParam Long warehouseId,
+                                       @PathVariable Long id, @RequestBody ReasonCode reasonCode) {
         if (Objects.nonNull(reasonCode.getId()) && !Objects.equals(reasonCode.getId(), id)) {
             throw RequestValidationFailException.raiseException(
                     "id(in URI): " + id + "; reasonCode.getId(): " + reasonCode.getId());
@@ -72,8 +68,10 @@ public class ReasonCodeController {
     }
 
     @BillableEndpoint
-    @RequestMapping(method=RequestMethod.DELETE, value="/reason-codes")
-    public void deleteReasonCodes(@RequestParam(name = "client_ids", required = false, defaultValue = "") String reasonCodeIds) {
-        reasonCodeService.delete(reasonCodeIds);
+    @RequestMapping(method=RequestMethod.DELETE, value="/reason-codes/{id}")
+    public ResponseBodyWrapper<String> deleteReasonCode(@RequestParam Long warehouseId,
+                                                        @PathVariable Long id) {
+        reasonCodeService.removeReasonCode(id);
+        return ResponseBodyWrapper.success("reason code " + id + " is removed");
     }
 }

@@ -51,7 +51,7 @@ public class HostRestemplateClient {
                 subUrl);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/dblink/integration-data/" + subUrl);
 /**
         ResponseBodyWrapper<String> responseBodyWrapper

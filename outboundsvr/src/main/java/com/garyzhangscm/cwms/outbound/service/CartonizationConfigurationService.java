@@ -160,11 +160,15 @@ public class CartonizationConfigurationService implements TestDataInitiableServi
 
         if (Objects.nonNull(cartonizationConfiguration.getWarehouseId()) &&
                 Objects.isNull(cartonizationConfiguration.getWarehouse())) {
+
             cartonizationConfiguration.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(cartonizationConfiguration.getWarehouseId()));
         }
         if (Objects.nonNull(cartonizationConfiguration.getClientId()) &&
                 Objects.isNull(cartonizationConfiguration.getClient())) {
-            cartonizationConfiguration.setClient(commonServiceRestemplateClient.getClientById(cartonizationConfiguration.getClientId()));
+            try {
+                cartonizationConfiguration.setClient(commonServiceRestemplateClient.getClientById(cartonizationConfiguration.getClientId()));
+            }
+            catch (Exception ex) {}
         }
     }
 

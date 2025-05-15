@@ -1,53 +1,87 @@
 package com.garyzhangscm.cwms.auth.security;
 
-import com.garyzhangscm.cwms.auth.controller.LoginController;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
+import com.garyzhangscm.cwms.auth.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Objects;
 
-
 @Configuration
-public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+@EnableMethodSecurity
+public class WebSecurityConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfigurer.class);
 
     @Autowired
     UserRepository userRepository;
 
-    @Override
+
+    @Autowired
+    private UserService userService;
+
+
     @Bean
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
+                // permit all request. we will handle the permission in api gateway
+                .authorizeHttpRequests(
+                        auth -> auth.anyRequest().permitAll()
+                                //.requestMatchers("/**", "/app", "/login/**", "/oauth/**",
+                                //        "/actuator", "/probe/**", "/users/company-access-validation",
+                                //        "/users/username-by-token").permitAll()
+                        // .anyRequest().authenticated()
+                )
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions
+                )
+                .authenticationProvider(authenticationProvider()); // Custom authentication provider
+                // .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
-    // Only for un-encrypted password
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        // return new BCryptPasswordEncoder();
+        // return new BCryptPasswordEncoder(); // Password encoding
     }
 
-    @Override
+
     @Bean
-    public UserDetailsService userDetailsServiceBean() throws Exception {
-        return super.userDetailsServiceBean();
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return new CWMSAuthenticationManager();
+    }
+
 
 
     /**
@@ -56,7 +90,6 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
      * @param auth
      * @throws Exception
      */
-    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(
                 new UserDetailsService() {
@@ -91,16 +124,6 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 }).passwordEncoder(passwordEncoder());
     }
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception{
-        http
-                .authorizeRequests()
-                .antMatchers("/site-information/default").permitAll()
-                .antMatchers("/probe/**").permitAll()
-                .antMatchers("/users/company-access-validation").permitAll()
-                .antMatchers("/users/username-by-token").permitAll()
-                .anyRequest()
-                .authenticated();
-    }
+
 
 }

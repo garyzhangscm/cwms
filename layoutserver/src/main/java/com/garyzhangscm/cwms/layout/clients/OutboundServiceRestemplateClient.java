@@ -19,26 +19,14 @@
 package com.garyzhangscm.cwms.layout.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.layout.model.Policy;
 import com.garyzhangscm.cwms.layout.model.ShippingStageAreaConfiguration;
-import com.garyzhangscm.cwms.layout.model.Warehouse;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 
 
 @Component
@@ -46,13 +34,8 @@ public class OutboundServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(OutboundServiceRestemplateClient.class);
 
-    @Qualifier("getObjMapper")
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
 
     public ShippingStageAreaConfiguration addShippingStageAreaConfiguration(
@@ -60,27 +43,17 @@ public class OutboundServiceRestemplateClient {
     ) throws JsonProcessingException {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/shipping-stage-area-configuration");
 
-        ResponseBodyWrapper<ShippingStageAreaConfiguration> responseBodyWrapper
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                ShippingStageAreaConfiguration.class,
                 builder.toUriString(),
                 HttpMethod.PUT,
-                getHttpEntity(objectMapper.writeValueAsString(shippingStageAreaConfiguration)),
-                new ParameterizedTypeReference<ResponseBodyWrapper<ShippingStageAreaConfiguration>>() {}).getBody();
+                shippingStageAreaConfiguration
+        );
 
-        return responseBodyWrapper.getData();
-
-    }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
     }
 
 

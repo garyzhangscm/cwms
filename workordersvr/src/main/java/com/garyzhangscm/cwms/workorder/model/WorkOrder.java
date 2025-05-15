@@ -1,10 +1,12 @@
 package com.garyzhangscm.cwms.workorder.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Where;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -64,6 +66,7 @@ public class WorkOrder extends AuditibleEntity<String>{
      ***/
 
     @OneToMany(mappedBy = "workOrder")
+    @Where(clause = "deassigned = null or deassigned = false")
     private List<ProductionLineAssignment> productionLineAssignments = new ArrayList<>();
 
     @Column(name = "item_id")
@@ -80,6 +83,11 @@ public class WorkOrder extends AuditibleEntity<String>{
     @ManyToOne
     @JoinColumn(name = "bill_of_material_id")
     private BillOfMaterial billOfMaterial;
+
+    @ManyToOne
+    @JoinColumn(name = "work_order_flow_line_id")
+    @JsonIgnore
+    private WorkOrderFlowLine workOrderFlowLine;
 
     // When the work order is created from a specific
     // production plan
@@ -101,6 +109,7 @@ public class WorkOrder extends AuditibleEntity<String>{
     private String poNumber;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Column(name = "expected_quantity")
@@ -114,6 +123,7 @@ public class WorkOrder extends AuditibleEntity<String>{
     private List<WorkOrderAssignment> assignments = new ArrayList<>();
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private WorkOrderStatus status;
 
     @Column(name = "consume_by_bom_only")
@@ -469,5 +479,13 @@ public class WorkOrder extends AuditibleEntity<String>{
 
     public void setShortAllocationId(Long shortAllocationId) {
         this.shortAllocationId = shortAllocationId;
+    }
+
+    public WorkOrderFlowLine getWorkOrderFlowLine() {
+        return workOrderFlowLine;
+    }
+
+    public void setWorkOrderFlowLine(WorkOrderFlowLine workOrderFlowLine) {
+        this.workOrderFlowLine = workOrderFlowLine;
     }
 }

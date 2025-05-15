@@ -7,13 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.transaction.Transactional;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -32,21 +30,25 @@ public class AllocationService {
 
 
     @Autowired
-    KafkaSender kafkaSender;
+    private AllocationRequestService allocationRequestService;
+
     @Autowired
-    @Qualifier("oauth2ClientContext")
-    OAuth2ClientContext oauth2ClientContext;
+    KafkaSender kafkaSender;
+
 
 
     /**
      * Allocate the shipment line
      * @param shipmentLine shipment line to be allocated
      */
-    public AllocationResult allocate(ShipmentLine shipmentLine){
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     Set<Long> skipLocations){
         // Allocate the shipment with the allocation strategyp type specified in the order line
-        logger.debug("start to allocate shipment line: {} / {}",
-                shipmentLine.getShipmentNumber(), shipmentLine.getNumber());
-        return allocate(shipmentLine, shipmentLine.getOrderLine().getAllocationStrategyType());
+        logger.debug("start to allocate shipment line: {} / {}, with skip locations {}",
+                shipmentLine.getShipmentNumber(), shipmentLine.getNumber(),
+                skipLocations);
+        return allocate(shipmentLine, shipmentLine.getOrderLine().getAllocationStrategyType(),
+                skipLocations);
     }
 
     /**
@@ -54,8 +56,10 @@ public class AllocationService {
      * @param shipmentLine shipment line to be allocated
      * @param allocationStrategyType user specified allocation stratetyp type
      */
-    public AllocationResult allocate(ShipmentLine shipmentLine, AllocationStrategyType allocationStrategyType){
-        AllocationRequest allocationRequest = new AllocationRequest(shipmentLine);
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     AllocationStrategyType allocationStrategyType,
+                                     Set<Long> skipLocations){
+        AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(shipmentLine, skipLocations);
 
 
         // save the allocate request to Kafka so that we will allocate later
@@ -76,6 +80,32 @@ public class AllocationService {
         persistAllocationResult(allocationResult);
         return allocationResult;
     }
+
+    @Transactional
+    public AllocationResult allocate(ShipmentLine shipmentLine,
+                                     Location sourceLocation,
+                                     boolean manualAllocation,
+                                     String lpn, Long pickableQuantity){
+
+        AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(shipmentLine);
+        allocationRequest.setQuantity(pickableQuantity);
+        allocationRequest.setManualAllocation(manualAllocation);
+        allocationRequest.setLpn(lpn);
+
+        // If we specify the allocation strategy type, then override the one
+        // from the shipment line(order line)
+
+        AllocationResult allocationResult = tryAllocate(allocationRequest, sourceLocation);
+
+        logger.debug("We got {} picks, {} short allocations for order line {} / {}, ",
+                allocationResult.getPicks().size(),
+                allocationResult.getShortAllocations().size(),
+                shipmentLine.getOrderLine().getOrderNumber(),
+                shipmentLine.getOrderLine().getNumber());
+
+        return allocationResult;
+    }
+
 
     public AllocationResult allocate(Long workOrderId, WorkOrderLine workOrderLine, Long productionLineId, Long allocatingWorkOrderLineQuantity){
         logger.debug("Start to allocate Work Order Line {} ", workOrderLine.getId());
@@ -223,8 +253,10 @@ public class AllocationService {
                             Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
 
 
-                    AllocationRequest allocationRequest = new AllocationRequest(workOrder, workOrderLine, item, productionLineAssignment
+                    AllocationRequest allocationRequest = allocationRequestService.getAllocationRequest(
+                            workOrder, workOrderLine, item, productionLineAssignment
                             , allocatingWorkOrderQuantity, allocatingWorkingOrderLineQuantity);
+
                     allocationRequest.setManualAllocation(manualAllocation);
                     allocationRequest.setLpn(lpn);
 

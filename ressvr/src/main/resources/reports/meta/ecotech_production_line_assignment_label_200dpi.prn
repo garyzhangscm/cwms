@@ -14,5 +14,9 @@
 ^FH\^FD>:$lpn$^FS
 ^FT37,142^A0N,39,68^FH\^CI28^FD$item_family$^FS^CI27
 ^FT64,842^A0N,49,56^FH\^CI28^FD$production_line_name$^FS^CI27
+^SLS,1
+^FT479,64^A0N,39,84
+^FC%,{,#
+^FH\^CI28^FD%m/%d/%y^FS^CI27
 ^PQ1,0,1,Y
 ^XZ

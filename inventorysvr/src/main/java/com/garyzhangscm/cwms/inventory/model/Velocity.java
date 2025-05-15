@@ -19,9 +19,9 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 
 public class Velocity extends AuditibleEntity<String> implements Serializable {

@@ -18,6 +18,11 @@
 
 package com.garyzhangscm.cwms.workorder.controller;
 
+import com.garyzhangscm.cwms.workorder.clients.InventoryServiceRestemplateClient;
+import org.hibernate.jdbc.Work;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
@@ -30,6 +35,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -47,16 +56,34 @@ public class WorkOrderController {
     @Autowired
     WorkOrderLineService workOrderLineService;
 
+    @Autowired
+    private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
+
+
 
     @RequestMapping(value="/work-orders", method = RequestMethod.GET)
     public List<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
                                              @RequestParam(name="number", required = false, defaultValue = "") String number,
                                              @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
                                              @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
+                                             @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId) {
+
+        return workOrderService.findAll(warehouseId, number, itemName, statusList, productionPlanId);
+
+    }
+
+    @RequestMapping(value="/work-orders/pagination", method = RequestMethod.GET)
+    public Page<WorkOrder> findAllWorkOrders(@RequestParam Long warehouseId,
+                                             @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                             @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
+                                             @RequestParam(name="statusList", required = false, defaultValue = "") String statusList,
                                              @RequestParam(name="productionPlanId", required = false, defaultValue = "") Long productionPlanId,
-                                             @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
-                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") boolean loadDetails) {
-        return workOrderService.findAll(warehouseId, number, itemName, statusList, productionPlanId, genericQuery, loadDetails);
+                                             @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                             @RequestParam(name = "pageSize", required = false, defaultValue = "20") int pageSize) {
+        Pageable paging = PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number"));
+        return workOrderService.findAllByPagination(warehouseId, number, itemName, statusList, productionPlanId,paging);
+
+
     }
 
     @BillableEndpoint
@@ -448,12 +475,38 @@ public class WorkOrderController {
                                          @RequestParam String lpn,
                                          @RequestParam Long productionLineId,
                                          @RequestParam Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to generateManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
         logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
         return workOrderService.generateManualPick(workOrderId, lpn, productionLineId, pickWholeLPN);
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/work-orders/{workOrderId}/process-manual-pick", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "IntegrationService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "InventoryService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrder", allEntries = true),
+                    @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
+            }
+    )
+    public List<Pick> processManualPick(@RequestParam Long warehouseId,
+                                        @PathVariable  Long workOrderId,
+                                        @RequestParam String lpn,
+                                        @RequestParam Long productionLineId,
+                                        @RequestParam Long nextLocationId,
+                                        @RequestParam Boolean pickWholeLPN) {
+        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("=> workOrderId: {}", workOrderId);
+        logger.debug("=> lpn: {}", lpn);
+        logger.debug("=> productionLineId: {}", productionLineId);
+        logger.debug("=> pickWholeLPN: {}", pickWholeLPN);
+        logger.debug("=> nextLocationId: {}", nextLocationId);
+        return workOrderService.processManualPick(warehouseId, workOrderId, lpn, productionLineId, nextLocationId, pickWholeLPN);
     }
 
     @BillableEndpoint
@@ -462,7 +515,7 @@ public class WorkOrderController {
                                                  @RequestParam String lpn,
                                                  @RequestParam Long productionLineId,
                                                  @RequestParam(name = "pickWholeLPN", required = false, defaultValue = "") Boolean pickWholeLPN) {
-        logger.debug("======        Start to processManualPick pick   ========");
+        logger.debug("======        Start to getPickableQuantityForManualPick pick   ========");
         logger.debug("=> workOrderId: {}", workOrderId);
         logger.debug("=> lpn: {}", lpn);
         logger.debug("=> productionLineId: {}", productionLineId);
@@ -508,5 +561,34 @@ public class WorkOrderController {
         return ResponseBodyWrapper.success("success");
     }
 
+
+    // Graphql
+    @QueryMapping
+    public WorkOrder workOrderById(@Argument Long id) {
+        return workOrderService.findById(id);
+    }
+
+    @QueryMapping
+    public List<WorkOrder> findWorkOrders(@Argument Long warehouseId,
+                                          @Argument  String number,
+                                          @Argument  String itemName,
+                                          @Argument  String statusList,
+                                          @Argument  Long productionPlanId,
+                                          @Argument  int pageIndex,
+                                          @Argument  int pageSize) {
+        return workOrderService.findAll(warehouseId, number,
+                itemName, statusList, productionPlanId,
+                PageRequest.of(pageIndex, pageSize, Sort.by(Sort.Direction.DESC, "number")));
+    }
+
+    @SchemaMapping(typeName="WorkOrder", field="item")
+    public Item item(WorkOrder workOrder) {
+        return inventoryServiceRestemplateClient.getItemById(workOrder.getItemId());
+    }
+
+    @SchemaMapping
+    public InventoryStatus inventoryStatus(WorkOrderLine workOrderLine) {
+        return inventoryServiceRestemplateClient.getInventoryStatusById(workOrderLine.getInventoryStatusId());
+    }
 
 }

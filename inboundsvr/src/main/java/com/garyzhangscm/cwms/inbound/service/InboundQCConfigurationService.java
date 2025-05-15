@@ -73,7 +73,7 @@ public class InboundQCConfigurationService {
         InboundQCConfiguration inboundQCConfiguration = inboundQCConfigurationRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.raiseException("inbound qc configuration not found by id: " + id));
         if (includeDetails) {
-            loadReceiptLineAttribute(inboundQCConfiguration);
+            loadAttribute(inboundQCConfiguration);
         }
         return inboundQCConfiguration;
     }
@@ -131,19 +131,19 @@ public class InboundQCConfigurationService {
 
 
         if (inboundQCConfigurations.size() > 0 && includeDetails) {
-            loadReceiptLineAttribute(inboundQCConfigurations);
+            loadAttribute(inboundQCConfigurations);
         }
         return inboundQCConfigurations;
     }
 
 
-    public void loadReceiptLineAttribute(List<InboundQCConfiguration> inboundQCConfigurations) {
+    public void loadAttribute(List<InboundQCConfiguration> inboundQCConfigurations) {
         for(InboundQCConfiguration inboundQCConfiguration : inboundQCConfigurations) {
-            loadReceiptLineAttribute(inboundQCConfiguration);
+            loadAttribute(inboundQCConfiguration);
         }
     }
 
-    public void loadReceiptLineAttribute(InboundQCConfiguration inboundQCConfiguration) {
+    public void loadAttribute(InboundQCConfiguration inboundQCConfiguration) {
 
         if (inboundQCConfiguration.getSupplierId() != null && inboundQCConfiguration.getSupplier() == null) {
             inboundQCConfiguration.setSupplier(

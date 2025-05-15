@@ -511,7 +511,7 @@ public class OrderLineService{
             int maxExistingOrderLineNumber = 0;
             for (OrderLine existingOrderLine : order.getOrderLines()) {
                 try {
-                    int orderLineNumber = Integer.parseInt(existingOrderLine.getNumber());
+                    int orderLineNumber = Integer.parseInt(existingOrderLine.getNumber().trim());
                     maxExistingOrderLineNumber = Math.max(maxExistingOrderLineNumber, orderLineNumber);
                 }
                 catch (Exception ex) {
@@ -530,9 +530,23 @@ public class OrderLineService{
         }
 
 
-        orderLine.setColor(orderLineCSVWrapper.getColor());
-        orderLine.setProductSize(orderLineCSVWrapper.getProductSize());
-        orderLine.setStyle(orderLineCSVWrapper.getStyle());
+        orderLine.setColor(
+                Strings.isBlank(orderLineCSVWrapper.getColor()) ? "" : orderLineCSVWrapper.getColor().trim());
+        orderLine.setProductSize(
+                Strings.isBlank(orderLineCSVWrapper.getProductSize()) ? "" : orderLineCSVWrapper.getProductSize().trim());
+        orderLine.setStyle(
+                Strings.isBlank(orderLineCSVWrapper.getStyle()) ? "" : orderLineCSVWrapper.getStyle().trim());
+
+        orderLine.setInventoryAttribute1(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute1()) ? "" : orderLineCSVWrapper.getInventoryAttribute1().trim());
+        orderLine.setInventoryAttribute2(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute2()) ? "" : orderLineCSVWrapper.getInventoryAttribute2().trim());
+        orderLine.setInventoryAttribute3(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute3()) ? "" : orderLineCSVWrapper.getInventoryAttribute3().trim());
+        orderLine.setInventoryAttribute4(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute4()) ? "" : orderLineCSVWrapper.getInventoryAttribute4().trim());
+        orderLine.setInventoryAttribute5(
+                Strings.isBlank(orderLineCSVWrapper.getInventoryAttribute5()) ? "" : orderLineCSVWrapper.getInventoryAttribute5().trim());
 
         orderLine.setInprocessQuantity(0L);
         orderLine.setShippedQuantity(0L);
@@ -667,6 +681,26 @@ public class OrderLineService{
         orderLine.setInprocessQuantity(
                 Math.max(0, orderLine.getInprocessQuantity() - reducedInprocessQuantity));
         saveOrUpdate(orderLine);
+
+
+    }
+    /**
+     * Return the inprocess quantity back to open quantity. This is normally happens when we
+     * cancel the shipment line for the order line
+     * @param orderLine
+     * @param reducedInprocessQuantity
+     */
+    public void registerShipmentLineCancelled(OrderLine orderLine, Long reducedInprocessQuantity) {
+        returnInProcessQuantity(orderLine, reducedInprocessQuantity);
+        // see if we need to set the order back to 'PENDING' if all shipment line
+        // has been cancelled and there's no in process quantity
+
+        logger.debug("after we return the in process quantity back to the order line {} / {}, " +
+                "see if we can reset the order {}'s status",
+                orderLine.getOrder().getNumber(), orderLine.getNumber(),
+                orderLine.getOrder().getNumber());
+        orderService.registerShipmentLineCancelled(orderLine.getOrder());
+
     }
 
 
@@ -783,15 +817,55 @@ public class OrderLineService{
         );
     }
 
-    /**
-     * Assign order line to the trailer appointment
-     * @param orderLineId
-     * @param trailerAppointment
-     */
-    public void assignTrailerAppointment(long orderLineId, TrailerAppointment trailerAppointment) {
+    public Long getPalletQuantityEstimation(OrderLine orderLine, Long quantity) {
+        return getPalletQuantityEstimation(orderLine.getItemId(), quantity);
+    }
+    public Long getPalletQuantityEstimation(Long itemId, Long quantity) {
+        Item item = inventoryServiceRestemplateClient.getItemById(itemId);
+        if (Objects.isNull(item)) {
+            return quantity;
+        }
+        // get the default item package type from the item
+        return getPalletQuantityEstimation(item, quantity);
+    }
+    public Long getPalletQuantityEstimation(Item item, Long quantity) {
+        ItemPackageType defaultItemPackageType = item.getDefaultItemPackageType();
+        if (Objects.isNull(defaultItemPackageType)) {
+            logger.debug("Can't find default item package type for item {}", item.getName());
+            return quantity;
+        }
+        return getPalletQuantityEstimation(defaultItemPackageType, quantity);
+
+    }
+
+    public Long getPalletQuantityEstimation(ItemPackageType itemPackageType, Long quantity) {
+        // get the LPN uom or max UOM
+        Long palletQuantity = 1l;
+        if (Objects.nonNull(itemPackageType.getTrackingLpnUOM())) {
+            palletQuantity = itemPackageType.getTrackingLpnUOM().getQuantity();
+        }
+        else {
+            for (ItemUnitOfMeasure itemUnitOfMeasure : itemPackageType.getItemUnitOfMeasures()) {
+                if (itemUnitOfMeasure.getQuantity() > palletQuantity) {
+                    palletQuantity = itemUnitOfMeasure.getQuantity();
+                }
+            }
+        }
+        return (long)Math.ceil(quantity * 1.0 / palletQuantity);
+    }
+
+
+    public OrderLine changeAllocationStrategyType(Long warehouseId, Long orderLineId, String allocationStrategyType) {
         OrderLine orderLine = findById(orderLineId);
+        if (Strings.isNotBlank(allocationStrategyType)) {
 
-        // see if we have shipment lines for this order line
-
+            orderLine.setAllocationStrategyType(
+                    AllocationStrategyType.valueOf(allocationStrategyType)
+            );
+        }
+        else {
+            orderLine.setAllocationStrategyType(null);
+        }
+        return saveOrUpdate(orderLine);
     }
 }

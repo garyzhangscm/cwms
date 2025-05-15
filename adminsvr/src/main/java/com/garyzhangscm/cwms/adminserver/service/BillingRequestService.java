@@ -159,11 +159,11 @@ public class BillingRequestService {
     public List<BillingRequest> generateBillingRequest(
             ZonedDateTime startTime, ZonedDateTime endTime,
             Long companyId, Long warehouseId, Long clientId,
-            String number, Boolean serialize) {
+            String number, Boolean serialize, Boolean includeDaysSinceInWarehouseForStorageFee) {
         return billingServices.stream().map(
                 billingService -> billingService.generateBillingRequest(
                         startTime, endTime, companyId, warehouseId,
-                        clientId, number, serialize
+                        clientId, number, serialize, includeDaysSinceInWarehouseForStorageFee
                 )
         ).filter(billingRequest -> Objects.nonNull(billingRequest)).collect(Collectors.toList());
     }

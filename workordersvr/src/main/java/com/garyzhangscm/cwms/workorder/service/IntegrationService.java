@@ -41,7 +41,7 @@ public class IntegrationService {
     public void process(WorkOrder workOrder) {
         // let's see if we already have this work order in system
         WorkOrder existingWorkOrder = workOrderService.findByNumber(
-                workOrder.getWarehouseId(), workOrder.getNumber(), false);
+                workOrder.getWarehouseId(), workOrder.getNumber());
         if (Objects.nonNull(existingWorkOrder) && !existingWorkOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
             logger.debug("We are not allow the user to override an existing work order once it is not in PENDING STATUS");
             throw WorkOrderException.raiseException("work order " + existingWorkOrder.getNumber() +

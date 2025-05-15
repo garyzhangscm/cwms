@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,9 +129,9 @@ public class FileService {
     }
 
 
-    public void validateCSVFile(Long warehouseId,
+    public void validateCSVFile(Long companyId, Long warehouseId,
                                 String type,
-                                File file) {
+                                File file, Boolean ignoreUnknownFields) {
         // we will assume the first line of the file is the hader of the CSV file
 
         BufferedReader br = null;
@@ -137,7 +139,7 @@ public class FileService {
             br = new BufferedReader(new FileReader(file));
             String header = br.readLine();
             if (header != null) {
-                validateCSVFile(warehouseId, type, header);
+                validateCSVFile(companyId, warehouseId, type, header, ignoreUnknownFields);
             }
             else {
                 logger.debug("Can't get header information from file {}", file);
@@ -158,13 +160,31 @@ public class FileService {
         }
     }
 
-    public void validateCSVFile(Long warehouseId,
-                                String type, String headers) {
-        String result = resourceServiceRestemplateClient.validateCSVFile(warehouseId, type, headers);
+    public void validateCSVFile(Long companyId, Long warehouseId,
+                                String type, String headers, Boolean ignoreUnknownFields) {
+        String result = resourceServiceRestemplateClient.validateCSVFile(
+                companyId, warehouseId, type, headers, ignoreUnknownFields);
         if (Strings.isNotBlank(result)) {
             logger.debug("Get error while validate CSV file of type {}, \n{}",
                     type, result);
             throw SystemFatalException.raiseException(result);
         }
+    }
+
+    public File saveCSVFile(String fileName, String content) throws IOException {
+        String destination = destinationFolder  + System.currentTimeMillis() + "_" + fileName;
+        File localFile = new File(destination);
+
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+
+
+        Files.write(Paths.get(destination), content.getBytes("UTF-8"));
+
+        localFile = new File(destination);
+        logger.debug("The content is saved to the file {}, \n{}",
+                destination, content);
+        return localFile;
     }
 }

@@ -22,6 +22,10 @@ import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryAgingSnapshotRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -153,12 +154,15 @@ public class InventoryAgingSnapshotService {
 
         if (Objects.nonNull(clientInventoryAgingSnapshot.getClientId()) &&
                 Objects.isNull(clientInventoryAgingSnapshot.getClient())) {
-            Client client = commonServiceRestemplateClient.getClientById(
-                    clientInventoryAgingSnapshot.getClientId()
-            );
-            if (Objects.nonNull(client)) {
-                clientInventoryAgingSnapshot.setClient(client);
+            try {
+                Client client = commonServiceRestemplateClient.getClientById(
+                        clientInventoryAgingSnapshot.getClientId()
+                );
+                if (Objects.nonNull(client)) {
+                    clientInventoryAgingSnapshot.setClient(client);
+                }
             }
+            catch (Exception ex){}
         }
 
     }

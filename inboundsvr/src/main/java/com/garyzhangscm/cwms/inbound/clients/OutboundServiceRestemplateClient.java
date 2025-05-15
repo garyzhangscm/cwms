@@ -41,7 +41,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}/add-request-return-quantity")
                 .queryParam("warehouseId", warehouseId)
                 .queryParam("requestReturnQuantity", requestReturnQuantity);
@@ -63,7 +63,7 @@ public class OutboundServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/outbound/orders/lines/{id}/add-actual-return-quantity")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("actualReturnQuantity", actualReturnQuantity);

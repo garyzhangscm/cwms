@@ -59,10 +59,11 @@ public class WorkOrderIntegrationDataController {
             @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  ZonedDateTime endTime,
             @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date,
             @RequestParam(name = "statusList", required = false, defaultValue = "")   String statusList,
+            @RequestParam(name = "workOrderNumber", required = false, defaultValue = "")   String workOrderNumber,
             @RequestParam(name = "id", required = false, defaultValue = "")   Long id) {
 
         return integrationDataService.getWorkOrderData(
-                companyCode, warehouseId, startTime, endTime, date, statusList, id);
+                companyCode, warehouseId, startTime, endTime, date, statusList, id, workOrderNumber);
     }
 
     @RequestMapping(value="/work-orders/{id}", method = RequestMethod.GET)

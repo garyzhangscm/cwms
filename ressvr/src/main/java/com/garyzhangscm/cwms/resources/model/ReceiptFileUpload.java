@@ -16,7 +16,7 @@ public class ReceiptFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                  "client", "Client name(3PL)",
-                String.class, 100, false
+                String.class, 100, true
         ));
 
         addColumn(new FileUploadTemplateColumn(
@@ -27,22 +27,22 @@ public class ReceiptFileUpload extends FileUploadType {
 
         addColumn(new FileUploadTemplateColumn(
                 "receipt", "Receipt Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "line", "Receipt Line Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "item", "Item Number",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
                 "expectedQuantity", "Quantity",
-                String.class, 100, true
+                String.class, 100, false
         ));
 
         addColumn(new FileUploadTemplateColumn(
@@ -64,6 +64,50 @@ public class ReceiptFileUpload extends FileUploadType {
                 "overReceivingPercent", "Over Receiving Allowed By Percentage",
                 String.class, 100, true
         ));
+        addColumn(new FileUploadTemplateColumn(
+                "color", "Color",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "productSize", "Product Size",
+                String.class, 100, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "style", "Style",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "itemPackageType", "itemPackageType",
+                String.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "cubicMeter", "cubicMeter",
+                Double.class, 100, true
+        ));
+
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute1", "Inventory Attribute 1",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute2", "Inventory Attribute 2",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute3", "Inventory Attribute 3",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute4", "Inventory Attribute 4",
+                String.class, 200, true
+        ));
+        addColumn(new FileUploadTemplateColumn(
+                "inventoryAttribute5", "Inventory Attribute 5",
+                String.class, 200, true
+        ));
+
     }
 
 

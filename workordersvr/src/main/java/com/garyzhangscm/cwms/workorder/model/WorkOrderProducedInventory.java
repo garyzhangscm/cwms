@@ -1,11 +1,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "work_order_produced_inventory")
@@ -60,6 +58,9 @@ public class WorkOrderProducedInventory extends AuditibleEntity<String> {
         inventory.setWarehouseId(workOrder.getWarehouseId());
 
         inventory.setCreateInventoryTransactionId(workOrderProduceTransaction.getId());
+
+        inventory.setReasonCodeId(workOrderProduceTransaction.getReasonCodeId());
+
         return inventory;
     }
     public Long getId() {

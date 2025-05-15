@@ -20,13 +20,14 @@ package com.garyzhangscm.cwms.workorder.controller;
 
 
 import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterial;
-import com.garyzhangscm.cwms.workorder.model.BillOfMaterialLine;
-import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
+import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialLineService;
 import com.garyzhangscm.cwms.workorder.service.BillOfMaterialService;
 import com.garyzhangscm.cwms.workorder.service.FileService;
+import com.garyzhangscm.cwms.workorder.service.UploadFileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,14 +43,21 @@ public class BillOfMaterialController {
     private BillOfMaterialLineService billOfMaterialLineService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
 
+    @ClientValidationEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.GET)
     public List<BillOfMaterial> findAllBillOfMaterials(@RequestParam Long warehouseId,
                                                        @RequestParam(name="number", required = false, defaultValue = "") String number,
+                                                       @RequestParam(name="numbers", required = false, defaultValue = "") String numbers,
                                                        @RequestParam(name="itemName", required = false, defaultValue = "") String itemName,
-                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
-        return billOfMaterialService.findAll(warehouseId, number, itemName, genericQuery);
+                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery,
+                                                       @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
+                                                       ClientRestriction clientRestriction) {
+        return billOfMaterialService.findAll(warehouseId, number, numbers,
+                itemName, genericQuery, loadDetails, clientRestriction);
     }
 
     @RequestMapping(value="/bill-of-materials/matched-with-work-order", method = RequestMethod.GET)
@@ -65,18 +73,29 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.POST)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public BillOfMaterial addBillOfMaterials(@RequestBody BillOfMaterial billOfMaterial) {
         return billOfMaterialService.addBillOfMaterials(billOfMaterial);
     }
 
 
     @RequestMapping(value="/bill-of-materials/{id}", method = RequestMethod.GET)
-    public BillOfMaterial findBillOfMaterial(@PathVariable Long id) {
-        return billOfMaterialService.findById(id);
+    public BillOfMaterial findBillOfMaterial(@PathVariable Long id,
+                                             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails) {
+        return billOfMaterialService.findById(id, loadDetails);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/{id}", method = RequestMethod.PUT)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public BillOfMaterial changeBillOfMaterial(@PathVariable Long id,
                                                @RequestBody BillOfMaterial billOfMaterial){
         return billOfMaterialService.changeBillOfMaterial(id, billOfMaterial);
@@ -84,6 +103,11 @@ public class BillOfMaterialController {
 
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials", method = RequestMethod.DELETE)
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
     public void removeBillOfMaterials(@RequestParam(name = "billOfMaterialIds", required = false, defaultValue = "") String billOfMaterialIds) {
         billOfMaterialService.delete(billOfMaterialIds);
     }
@@ -91,26 +115,57 @@ public class BillOfMaterialController {
     @BillableEndpoint
     @RequestMapping(value="/bill-of-materials/validate-new-number", method = RequestMethod.POST)
     public ResponseBodyWrapper<String> validateNewBOMNumber(@RequestParam Long warehouseId,
+                                                            @RequestParam(name="clientId", required = false, defaultValue = "") Long clientId,
                                                             @RequestParam String number) {
-        return ResponseBodyWrapper.success(billOfMaterialService.validateNewBOMNumber(warehouseId, number));
+        return ResponseBodyWrapper.success(billOfMaterialService.validateNewBOMNumber(warehouseId, clientId, number));
     }
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/bill-of-materials/upload")
-    public ResponseBodyWrapper uploadBillOfMaterials(Long warehouseId,
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = "InventoryService_BillOfMaterial", allEntries = true),
+            }
+    )
+    public ResponseBodyWrapper uploadBillOfMaterials(Long companyId, Long warehouseId,
+                                                     @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                      @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "BOMs", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "BOMs", fileService.saveFile(file), ignoreUnknownFields);
+
+
+            String fileUploadProgressKey = billOfMaterialLineService.saveBOMLineData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
+            // return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
 
-        List<BillOfMaterialLine> billOfMaterialLines = billOfMaterialLineService.saveBOMLineData(localFile);
-        return  ResponseBodyWrapper.success(billOfMaterialLines.size() + "");
+
     }
+
+    @RequestMapping(method=RequestMethod.GET, value="/bill-of-materials/upload/progress")
+    public ResponseBodyWrapper getBillOfMaterialsFileUploadProgress(Long warehouseId,
+                                                            String key) throws IOException {
+
+
+
+        return  ResponseBodyWrapper.success(
+                String.format("%.2f",billOfMaterialLineService.getBillOfMaterialsFileUploadProgress(key)));
+    }
+    @RequestMapping(method=RequestMethod.GET, value="/bill-of-materials/upload/result")
+    public List<FileUploadResult> getBillOfMaterialsFileUploadResult(Long warehouseId,
+                                                                     String key) throws IOException {
+
+
+        return billOfMaterialLineService.getBillOfMaterialsFileUploadResult(warehouseId, key);
+    }
+
 
 }

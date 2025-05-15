@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Column;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class AllocationRequest {
 
@@ -23,6 +20,8 @@ public class AllocationRequest {
     private Warehouse warehouse;
 
     private InventoryStatus inventoryStatus;
+
+    private Long inventoryStatusId;
 
     Long quantity = 0L;
 
@@ -48,7 +47,16 @@ public class AllocationRequest {
     private String productSize;
     private String style;
 
+    private String inventoryAttribute1;
+    private String inventoryAttribute2;
+    private String inventoryAttribute3;
+    private String inventoryAttribute4;
+    private String inventoryAttribute5;
+
     private String allocateByReceiptNumber;
+
+    // if the allocation needs to skip certain locations
+    private Set<Long> skipLocations = new HashSet<>();
 
 
     // will be setup if the allocation request is a
@@ -75,6 +83,11 @@ public class AllocationRequest {
     }
 
     public AllocationRequest(ShipmentLine shipmentLine) {
+        this(shipmentLine, new HashSet<>());
+    }
+
+    public AllocationRequest(ShipmentLine shipmentLine,
+                             Set<Long> skipLocations) {
         this.item = shipmentLine.getOrderLine().getItem();
         this.warehouse = shipmentLine.getWarehouse();
         this.shipmentLines = Collections.singletonList(shipmentLine);
@@ -88,9 +101,15 @@ public class AllocationRequest {
         this.productSize = shipmentLine.getOrderLine().getProductSize();
         this.style = shipmentLine.getOrderLine().getStyle();
 
-        this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
-    }
+        this.inventoryAttribute1 = shipmentLine.getOrderLine().getInventoryAttribute1();
+        this.inventoryAttribute2 = shipmentLine.getOrderLine().getInventoryAttribute2();
+        this.inventoryAttribute3 = shipmentLine.getOrderLine().getInventoryAttribute3();
+        this.inventoryAttribute4 = shipmentLine.getOrderLine().getInventoryAttribute4();
+        this.inventoryAttribute5 = shipmentLine.getOrderLine().getInventoryAttribute5();
 
+        this.allocateByReceiptNumber = shipmentLine.getOrderLine().getAllocateByReceiptNumber();
+        this.skipLocations = skipLocations;
+    }
 
     public AllocationRequest(WorkOrder workOrder, WorkOrderLine workOrderLine, Item item,
                              ProductionLineAssignment productionLineAssignment,
@@ -302,5 +321,61 @@ public class AllocationRequest {
 
     public void setAllocateByReceiptNumber(String allocateByReceiptNumber) {
         this.allocateByReceiptNumber = allocateByReceiptNumber;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
+    }
+
+    public Set<Long> getSkipLocations() {
+        return skipLocations;
+    }
+
+    public void setSkipLocations(Set<Long> skipLocations) {
+        this.skipLocations = skipLocations;
+    }
+
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
     }
 }

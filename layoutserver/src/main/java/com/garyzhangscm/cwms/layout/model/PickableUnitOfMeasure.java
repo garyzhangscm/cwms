@@ -27,6 +27,11 @@ public class PickableUnitOfMeasure extends AuditibleEntity<String>{
     @JsonIgnore
     private LocationGroup locationGroup;
 
+    @ManyToOne
+    @JoinColumn(name="pick_zone_id")
+    @JsonIgnore
+    private PickZone pickZone;
+
     public Long getId() {
         return id;
     }
@@ -57,5 +62,13 @@ public class PickableUnitOfMeasure extends AuditibleEntity<String>{
 
     public void setLocationGroup(LocationGroup locationGroup) {
         this.locationGroup = locationGroup;
+    }
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
     }
 }

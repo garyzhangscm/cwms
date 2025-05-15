@@ -12,6 +12,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "LocationGroup",menu.main.layout.location.group,/warehouse-layout/location-group,2,Main-Menu-Layout,Layout-Location-Group,,true,false
 "WarehouseLocation",menu.main.layout.location,/warehouse-layout/warehouse-location,3,Main-Menu-Layout,Layout-Location,,true,false
 "Warehouse Configuration",menu.main.layout.warehouse-configuration,/warehouse-layout/warehouse-configuration,4,Main-Menu-Layout,Warehouse-Config,,true,false
+"Pick Zone",menu.main.layout.location.pick-zone,/warehouse-layout/pick-zone,5,Main-Menu-Layout,Layout-Location-PickZone,,true,false
 "Item Family",menu.main.inventory.item-family,/inventory/item-family,1,Main-Menu-Inventory,Inventory-ItemFamily,,true,false
 "Item",menu.main.inventory.item,/inventory/item,2,Main-Menu-Inventory,Inventory-Item,,true,false
 "inventory",menu.main.inventory.inventory,/inventory/inventory,3,Main-Menu-Inventory,Inventory-Inventory,,true,false
@@ -33,6 +34,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Inventory Aging Snapshot",menu.main.inventory.inventory-aging-snapshot,/inventory/inventory-aging-snapshot,19,Main-Menu-Inventory,Inventory-Aging-Snapshot,,true,false
 "Inventory Status",menu.main.inventory.status,/inventory/status,20,Main-Menu-Inventory,Inventory-Status,,true,false
 "Lock",menu.main.inventory.lock,/inventory/lock,21,Main-Menu-Inventory,Inventory-Lock,,true,false
+"Item Barcode Type",menu.main.inventory.item-barcode-type,/inventory/item-barcode-type,22,Main-Menu-Inventory,Inventory-ItemBarcodeType,,true,false
 "QC Rule Maintenance",menu.main.qc.qc-rule,/qc/rules,1,Main-Menu-QC,QC-Rule,,true,false
 "QC Rule Configuration",menu.main.qc.qc-rule-configuration,/qc/rules/configuration,2,Main-Menu-QC,QC-Rule-Configuration,,true,false
 "QC Configuration",menu.main.qc.qc-configuration,/qc/configuration,2,Main-Menu-QC,QC-Configuration,,true,false
@@ -41,8 +43,9 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Receipt",menu.main.inbound.receipt,/inbound/receipt,1,Main-Menu-Inbound,Inbound-receipt,,true,false
 "Customer Return",menu.main.inbound.customer-return,/inbound/customer-return,2,Main-Menu-Inbound,Inbound-CustomerReturn,,true,false
 "Putaway Configuration",menu.main.inbound.putaway-configuration,/inbound/putaway-configuration,3,Main-Menu-Inbound,Inbound-PutawayConfig,,true,false
-"QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,4,Main-Menu-Inbound,Inbound-QCConfig,,true,false
+"Inbound QC Configuration",menu.main.inbound.qc-configuration,/inbound/inbound-qc-configuration,4,Main-Menu-Inbound,Inbound-QCConfig,,true,false
 "Purchase Order",menu.main.inbound.purchaseOrder,/inbound/purchase-order,5,Main-Menu-Inbound,Inbound-PurchaseOrder,,true,false
+"Inbound Receiving Configuration",menu.main.inbound.inbound-receiving-configuration,/inbound/inbound-receiving-configuration,4,Main-Menu-Inbound,Inbound-ReceivingConfig,,true,false
 "Order",menu.main.outbound.order,/outbound/order,1,Main-Menu-Outbound,Outbound-Order,,true,false
 "Shipment",menu.main.outbound.shipment,/outbound/shipment,2,Main-Menu-Outbound,Outbound-Shipment,,true,false
 "Wave",menu.main.outbound.wave,/outbound/wave,3,Main-Menu-Outbound,Outbound-Wave,,true,false
@@ -62,10 +65,14 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Order Activity",menu.main.outbound.order-activity,/outbound/order-activity,15,Main-Menu-Outbound,Outbound-OrderActivity,,true,false
 "Allocation Transaction History",menu.main.outbound.allocation-transaction-history,/outbound/allocation-transaction-history,16,Main-Menu-Outbound,Outbound-AllocTransHistory,,true,false
 "Pick Configuration",menu.main.outbound.pick-configuration,/outbound/pick-configuration,16,Main-Menu-Outbound,Outbound-PickConfiguration,,true,false
-"Hualei Configuration",menu.main.outbound.hualei-configuration,/outbound/hualei-configuration,17,Main-Menu-Outbound,Outbound-HualeiConfiguration,,true,false
+"Outbound Configuration",menu.main.outbound.outbound-configuration,/outbound/outbound-configuration,17,Main-Menu-Outbound,Outbound-OutboundConfiguration,,true,false
+"Pick Confirm Strategy",menu.main.outbound.pick-confirm-strategy,/outbound/pick-confirm-strategy,18,Main-Menu-Outbound,Outbound-PickConfirmStrategy,,true,false
+"Hualei Configuration",menu.main.outbound.hualei-configuration,/outbound/hualei-configuration,19,Main-Menu-Outbound,Outbound-HualeiConfiguration,,true,false
+"Sortation",menu.main.outbound.sortation,/outbound/sortation,20,Main-Menu-Outbound,Outbound-Sortation,,true,false
 "Bill Of Material",menu.main.work-order.bill-of-material,/work-order/bill-of-material,1,Main-Menu-WorkOrder,Bill-Of-Material,,true,false
 "Production Plan",menu.main.work-order.production-plan,/work-order/production-plan,2,Main-Menu-WorkOrder,Production-Plan,,true,false
 "Work Order",menu.main.work-order.work-order,/work-order/work-order,3,Main-Menu-WorkOrder,Work-Order,,true,false
+"Work Order Flow",menu.main.work-order.work-order-flow,/work-ordefr/work-order-flow,4,Main-Menu-WorkOrder,Work-Order-Flow,,true,false
 "Production Line",menu.main.work-order.production-line,/work-order/production-line,4,Main-Menu-WorkOrder,Production-Line,,true,false
 "Work Order Produce Transaction",menu.main.work-order.wo-produce-transaction,/work-order/produce-transaction,5,Main-Menu-WorkOrder,Produce-Transaction,,true,false
 "Production Kanban",menu.dashboard.production-kanban,/work-order/production-kanban,6,Main-Menu-WorkOrder,Production-Kanban,,true,false
@@ -84,13 +91,21 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Production Line Status Display",menu.main.work-order.production-line-status-display,/work-order/production-line-status/display,19,Main-Menu-WorkOrder,Production-Line-Status-Display,,true,false
 "Silo",menu.main.work-order.silo,/work-order/silo,20,Main-Menu-WorkOrder,Work-Order-Silo,,true,false
 "Silo Configuration",menu.main.work-order.silo-configuration,/work-order/silo-configuration,21,Main-Menu-WorkOrder,Work-Order-SiloConfiguration,,true,false
+"Light MES Status Dashboard",menu.main.work-order.light-mes-status-dashboard,/work-order/light-mes-status-dashboard,22,Main-Menu-WorkOrder,Work-Order-LightMESStatusDashboard,,true,false
+"Light MES Configuration",menu.main.work-order.light-mes-configuration,/work-order/light-mes-configuration,23,Main-Menu-WorkOrder,Work-Order-LightMESConfiguration,,true,false
+"Production Line Type",menu.main.work-order.production-line-type,/work-order/production-line-type,24,Main-Menu-WorkOrder,Work-Order-ProductionLineType,,true,false
+"Finish Goods Productivity Report",menu.main.work-order.finish-good-productivity-report,/work-order/finish-good-productivity-report,25,Main-Menu-WorkOrder,Work-Order-FinishGoodsProductivityReport,,true,false
+"Production Mold Count History",menu.main.work-order.production-mold-count-history,/work-order/production-mold-count-history,26,Main-Menu-WorkOrder,Work-Order-ProductionMoldCountHistory,,true,false
 "Integration Data",menu.main.integration.data,/integration/integration-data,1,Main-Menu-Integration,Integration-Data,,true,false
+"Tiktok Seller Shop Integration Configuration",menu.main.integration.tiktok-tts-config,/integration/tiktok/tts/config,2,Main-Menu-Integration,Integration-TTS-CONFIG,
+"Shopify Integration Configuration",menu.main.integration.shopify-config,/integration/shopify/integration-configuration,3,Main-Menu-Integration,Integration-Shopify-CONFIG,
 "Client",menu.main.common.client,/common/client,1,Main-Menu-Common,Common-Client,,true,false
 "Supplier",menu.main.common.supplier,/common/supplier,2,Main-Menu-Common,Common-Supplier,,true,false
 "Customer",menu.main.common.customer,/common/customer,3,Main-Menu-Common,Common-Customer,,true,false
 "Unit Of Measure",menu.main.common.unit-of-measure,/common/unit-of-measure,4,Main-Menu-Common,Common-UnitOfMeasure,,true,false
 "ABC Category",menu.main.common.abc-category,/common/abc-category,5,Main-Menu-Common,Common-ABCCategory,,true,false
 "Velocity",menu.main.common.velocity,/common/velocity,6,Main-Menu-Common,Common-Velocity,,true,false
+"Reason Code",menu.main.common.reason-code,/common/reason-code,7,Main-Menu-Common,Common-ReasonCode,,true,false
 "Tractor",menu.main.transport.tractor,/transportation/tractor,1,Main-Menu-transport,transport-Tractor,,true,false
 "Trailer",menu.main.transport.trailer,/transportation/trailer,2,Main-Menu-transport,transport-Trailer,,true,false
 "Carrier",menu.main.transport.carrier,/transportation/carrier,3,Main-Menu-transport,transport-carrier,,true,false
@@ -111,6 +126,7 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Data Transfer",menu.main.util.data-transfer,/util/data-transfer,14,Main-Menu-Util,Util-DataTransfer,,true,true
 "QuickBook Auth",menu.main.util.quickbook-auth,/util/quickbook-auth,15,Main-Menu-Util,Util-QuickBookAuth,,true,true
 "QuickBook Configuration",menu.main.util.quickbook-config,/util/quickbook/configuration,16,Main-Menu-Util,Util-QuickbookConfig,,true,true
+"Custom Report",menu.main.util.custom-report,/util/custom-report,17,Main-Menu-Util,Util-CustomReport,,true,false
 "Alert",menu.main.alert.alert,/alert/alert,1,Main-Menu-Alert,Alert-Alert,,true,true
 "Alert Configuration",menu.main.alert.config,/alert/configuration,2,Main-Menu-Alert,Alert-Config,,true,true
 "Alert Subscription",menu.main.alert.subscription,/alert/subscription,3,Main-Menu-Alert,Alert-Subscription,,true,false
@@ -130,11 +146,14 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Receive",menu.mobile.inbound.receive,receive,1,Mobile-Menu-Inbound,Mobile-Inbound-Receive,menu_inbound_receive.png,true,false
 "Barcode Receiving",menu.mobile.inbound.barcode-receiving,barcode_receiving,2,Mobile-Menu-Inbound,Mobile-Inbound-BarcodeReceiving,menu_inbound_barcode_receiving.png,true,false
 "Reverse Receiving",menu.mobile.inbound.reverse-receiving,reverse_receiving,3,Mobile-Menu-Inbound,Mobile-Inbound-ReverseReceiving,menu_reverse.png,true,false
+"Inbound QC",menu.mobile.inbound.qc,inbound_qc,4,Mobile-Menu-Inbound,Mobile-Inbound-QC,menu_inventory_qc.png,true,false
 "Pick By Order",menu.mobile.outbound.pick-by-order,pick_by_order,1,Mobile-Menu-Outbound,Mobile-Outbound-PickByOrder,menu_outbound_pick_order.png,true,false
 "Pick By List",menu.mobile.outbound.pick-by-list,pick_by_list,2,Mobile-Menu-Outbound,Mobile-Outbound-PickByList,menu_outbound_pick_list.png,true,false
 "Pick By Tote",menu.mobile.outbound.pick-by-tote,pick_by_tote,3,Mobile-Menu-Outbound,Mobile-Outbound-PickByTote,menu_outbound_pick_tote.png,true,false
 "Batch Pick",menu.mobile.outbound.pick-by-number,pick_by_number,4,Mobile-Menu-Outbound,Mobile-Outbound-PickByNumber,menu_outbound_pick_by_number.png,true,false
 "Bulk Pick",menu.mobile.outbound.bulk-pick,pick_by_bulk,5,Mobile-Menu-Outbound,Mobile-Outbound-BulkPick,menu_outbound_bulk_pick.png,true,false
+"Pick By Wave",menu.mobile.outbound.pick-by-wave,pick_by_wave,6,Mobile-Menu-Outbound,Mobile-Outbound-PickByWave,menu_outbound_pick_order.png,true,false
+"Manual Pick",menu.mobile.outbound.manual-pick,order_manual_pick,7,Mobile-Menu-Outbound,Mobile-Outbound-ManualPick,menu_outbound_pick_order.png,true,false
 "Inventory",menu.mobile.inventory.inventory,inventory,1,Mobile-Menu-Inventory,Mobile-Inventory-Inventory,menu_inventory.png,true,false
 "Count",menu.mobile.inventory.count,cycle_count_batch,2,Mobile-Menu-Inventory,Mobile-Inventory-Count,menu_inventory_count.png,true,false
 "Audit Count",menu.mobile.inventory.audit-count,audit_count_batch,3,Mobile-Menu-Inventory,Mobile-Inventory-AuditCount,menu_inventory_audit.png,true,false

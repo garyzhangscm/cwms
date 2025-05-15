@@ -22,11 +22,10 @@ package com.garyzhangscm.cwms.workorder.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.*;
+
 import java.io.Serializable;
 
 public class InventoryMovement implements Serializable {
@@ -40,7 +39,7 @@ public class InventoryMovement implements Serializable {
 
     private Long locationId;
 
-    @Transient
+
     private Location location;
 
 
@@ -48,7 +47,7 @@ public class InventoryMovement implements Serializable {
 
     private Long warehouseId;
 
-    @Transient
+
     private Warehouse warehouse;
 
 

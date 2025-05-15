@@ -5,19 +5,26 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!--<version>2.2.1.RELEASE</version>-->
+		<!--
+		<version>2.2.1.RELEASE</version>
 		<version>2.7.8</version>
+		-->
+		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>inventoryserver</artifactId>
-	<version>v1.16</version>
+	<version>v1.63</version>
 	<name>Inventory  Server</name>
 	<description>Inventory Server - Item / Inventory / Replenishment / Cycle Count</description>
 
 	<properties>
+
+		<java.version>17</java.version>
+		<!--
 		<java.version>13</java.version>
 		<spring-cloud.version>2021.0.5</spring-cloud.version>
+		-->
 		<maven.test.skip>true</maven.test.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.garyzhangscm.cwms.inventory.InventoryServerApplication</start-class>
@@ -26,6 +33,7 @@
 	<!--
     https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-dependencies/2021.0.5/pom
     -->
+	<!--
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -37,6 +45,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+-->
 
 	<dependencies>
 		<dependency>
@@ -47,10 +56,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		-->
 		<!-- redis cache -->
 		<!--
 -->
@@ -93,7 +104,7 @@
         <artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
         -->
-
+<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -109,7 +120,7 @@
 			<artifactId>spring-security-oauth2-autoconfigure</artifactId>
 			<version>2.1.6.RELEASE</version>
 		</dependency>
-
+-->
 		<!-- MySQL DB -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -119,16 +130,25 @@
 		</dependency>
 
 		<!-- decrypt for message from config server-->
+		<!--
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-rsa</artifactId>
 		</dependency>
+		-->
 		<!-- upload CSV files-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-csv</artifactId>
 		</dependency>
 
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version>
+		</dependency>
 
 		<!-- Support serialize / deserialize LocalDateTime-->
 		<dependency>
@@ -169,32 +189,60 @@
 		</dependency>
 
 		<!-- sleuth for logging -->
+		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
-
+-->
 		<!-- thumbnail -->
 		<dependency>
 			<groupId>net.coobird</groupId>
 			<artifactId>thumbnailator</artifactId>
 			<version>0.4.8</version>
 		</dependency>
-
+		<!--
+                <dependency>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                    <version>2.7</version>
+                    <scope>compile</scope>
+                </dependency>
+        -->
+                <!-- Apache POI to process excel -->
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-			<scope>compile</scope>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.5</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
-			<scope>compile</scope>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
 		</dependency>
 
-	</dependencies>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.12.2</version>
+		</dependency>
+		<!--
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        -->
+
+		<!--    GRAPHQL -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-graphql</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -202,7 +250,23 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<!-- We use the Resources plugin to filer Dockerfile and run.sh, it inserts actual JAR filename -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+            <!-- We use the Resources plugin to filer Dockerfile and run.sh, it inserts actual JAR filename -->
 			<!-- The final Dockerfile will be created in target/dockerfile/Dockerfile -->
 			<!--
 			<plugin>
@@ -245,7 +309,7 @@
 			-->
 		</plugins>
 	</build>
-
+<!--
 	<repositories>
 		<repository>
 			<id>spring-milestones</id>
@@ -253,5 +317,5 @@
 			<url>https://repo.spring.io/milestone</url>
 		</repository>
 	</repositories>
-
+-->
 </project>

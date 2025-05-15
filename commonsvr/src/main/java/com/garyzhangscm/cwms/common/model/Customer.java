@@ -21,7 +21,7 @@ package com.garyzhangscm.cwms.common.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -95,6 +95,30 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
     // quickbook unique id
     @Column(name = "quickbook_listid")
     private String quickbookListId;
+
+    // if the customer is target
+    // if so, we will allow the user to print
+    // target specific labels
+    @Column(name = "is_target")
+    private Boolean customerIsTarget;
+    // if the customer is walmart
+    // if so, we will allow the user to print
+    // walmart specific labels
+    @Column(name = "is_walmart")
+    private Boolean customerIsWalmart;
+
+    @Column(name = "allow_print_shipping_carton_label")
+    private Boolean allowPrintShippingCartonLabel;
+    @Column(name = "allow_print_shipping_carton_label_with_pallet_label")
+    private Boolean allowPrintShippingCartonLabelWithPalletLabel;
+    @Column(name = "print_shipping_carton_label_with_pallet_label_when_short")
+    private Boolean allowPrintShippingCartonLabelWithPalletLabelWhenShort;
+
+    @Column(name = "max_pallet_size")
+    private Double maxPalletSize;
+
+    @Column(name = "max_pallet_height")
+    private Double maxPalletHeight;
 
     @Override
     public String toString() {
@@ -297,5 +321,61 @@ public class Customer extends AuditibleEntity<String> implements Serializable {
 
     public void setQuickbookListId(String quickbookListId) {
         this.quickbookListId = quickbookListId;
+    }
+
+    public Boolean getCustomerIsTarget() {
+        return customerIsTarget;
+    }
+
+    public void setCustomerIsTarget(Boolean customerIsTarget) {
+        this.customerIsTarget = customerIsTarget;
+    }
+
+    public Boolean getCustomerIsWalmart() {
+        return customerIsWalmart;
+    }
+
+    public void setCustomerIsWalmart(Boolean customerIsWalmart) {
+        this.customerIsWalmart = customerIsWalmart;
+    }
+
+    public Boolean getAllowPrintShippingCartonLabel() {
+        return allowPrintShippingCartonLabel;
+    }
+
+    public void setAllowPrintShippingCartonLabel(Boolean allowPrintShippingCartonLabel) {
+        this.allowPrintShippingCartonLabel = allowPrintShippingCartonLabel;
+    }
+
+    public Boolean getAllowPrintShippingCartonLabelWithPalletLabel() {
+        return allowPrintShippingCartonLabelWithPalletLabel;
+    }
+
+    public void setAllowPrintShippingCartonLabelWithPalletLabel(Boolean allowPrintShippingCartonLabelWithPalletLabel) {
+        this.allowPrintShippingCartonLabelWithPalletLabel = allowPrintShippingCartonLabelWithPalletLabel;
+    }
+
+    public Boolean getAllowPrintShippingCartonLabelWithPalletLabelWhenShort() {
+        return allowPrintShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public void setAllowPrintShippingCartonLabelWithPalletLabelWhenShort(Boolean allowPrintShippingCartonLabelWithPalletLabelWhenShort) {
+        this.allowPrintShippingCartonLabelWithPalletLabelWhenShort = allowPrintShippingCartonLabelWithPalletLabelWhenShort;
+    }
+
+    public Double getMaxPalletSize() {
+        return maxPalletSize;
+    }
+
+    public void setMaxPalletSize(Double maxPalletSize) {
+        this.maxPalletSize = maxPalletSize;
+    }
+
+    public Double getMaxPalletHeight() {
+        return maxPalletHeight;
+    }
+
+    public void setMaxPalletHeight(Double maxPalletHeight) {
+        this.maxPalletHeight = maxPalletHeight;
     }
 }

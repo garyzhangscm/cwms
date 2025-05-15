@@ -18,7 +18,8 @@
 
 package com.garyzhangscm.cwms.layout.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -62,6 +63,10 @@ public class LocationGroup extends AuditibleEntity<String>{
     private Boolean trackingVolume;
     @Column(name = "allow_empty_location")
     private Boolean allowEmptyLocation = false;
+
+    // allow outbound sorting
+    @Column(name = "allow_outbound_sort")
+    private Boolean allowOutboundSort;
 
     // Whether we tracking location's utilization
     // in this location group
@@ -170,6 +175,14 @@ public class LocationGroup extends AuditibleEntity<String>{
 
     public void setVolumeTrackingPolicy(LocationVolumeTrackingPolicy volumeTrackingPolicy) {
         this.volumeTrackingPolicy = volumeTrackingPolicy;
+    }
+
+    public Boolean getAllowOutboundSort() {
+        return allowOutboundSort;
+    }
+
+    public void setAllowOutboundSort(Boolean allowOutboundSort) {
+        this.allowOutboundSort = allowOutboundSort;
     }
 
     public Warehouse getWarehouse() {

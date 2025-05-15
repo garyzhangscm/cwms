@@ -4,12 +4,8 @@ import com.garyzhangscm.cwms.resources.model.Alert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

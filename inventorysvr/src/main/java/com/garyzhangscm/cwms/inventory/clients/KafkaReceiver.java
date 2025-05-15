@@ -17,7 +17,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+
 
 @Component
 
@@ -47,7 +47,7 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_ITEM_FAMILY"})
     public void processItemFamily(@Payload String itemFamilyJsonRepresent,
-                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+                                  @Header(KafkaHeaders.RECEIVED_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received integration - item family data: {}", itemFamilyJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
@@ -86,7 +86,7 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_ITEM"})
     public void processItem(@Payload String itemJsonRepresent,
-                            @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
+                            @Header(KafkaHeaders.RECEIVED_KEY) String integrationIdJsonRepresent) throws JsonProcessingException {
         logger.info("# received integration - item data: {}", itemJsonRepresent);
         logger.info("with id {}", objectMapper.readValue(integrationIdJsonRepresent, String.class));
 
@@ -128,7 +128,7 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_ITEM_PACKAGE_TYPE"})
     public void processItemPackageTypeIntegration(@Payload String itemPackageTypeRepresent,
-                                                  @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String itemJsonRepresent)  {
+                                                  @Header(KafkaHeaders.RECEIVED_KEY) String itemJsonRepresent)  {
         logger.debug("# received item package type data's  header: {}", itemPackageTypeRepresent);
         logger.debug("# received item unit of measure data's  header: {}", itemJsonRepresent);
         try {
@@ -148,7 +148,7 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = {"INTEGRATION_ITEM_UNIT_OF_MEASURE"})
     public void processItemUnitOfMeasureIntegration(@Payload String itemUnitOfMeasureJsonRepresent,
-                                                    @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String itemJsonRepresent)  {
+                                                    @Header(KafkaHeaders.RECEIVED_KEY) String itemJsonRepresent)  {
         logger.info("# received item unit of measure data: {}", itemUnitOfMeasureJsonRepresent);
         logger.debug("# received item unit of measure data's  header: {}", itemJsonRepresent);
         try {

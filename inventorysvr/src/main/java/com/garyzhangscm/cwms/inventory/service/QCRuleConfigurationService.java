@@ -23,14 +23,13 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.QCRuleConfigurationRepository;
-import com.garyzhangscm.cwms.inventory.repository.QCRuleRepository;
-import org.apache.commons.lang.StringUtils;
+
+import jakarta.persistence.criteria.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,11 +72,14 @@ public class QCRuleConfigurationService {
     private void loadAttribute(QCRuleConfiguration qcRuleConfiguration) {
         if (Objects.nonNull(qcRuleConfiguration.getSupplierId()) &&
                 Objects.isNull(qcRuleConfiguration.getSupplier())) {
-            qcRuleConfiguration.setSupplier(
-                    commonServiceRestemplateClient.getSupplierById(
-                            qcRuleConfiguration.getSupplierId()
-                    )
-            );
+            try {
+                qcRuleConfiguration.setSupplier(
+                        commonServiceRestemplateClient.getSupplierById(
+                                qcRuleConfiguration.getSupplierId()
+                        )
+                );
+            }
+            catch (Exception ex) {}
         }
     }
 

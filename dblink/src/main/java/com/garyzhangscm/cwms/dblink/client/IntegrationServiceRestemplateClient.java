@@ -53,6 +53,8 @@ public class IntegrationServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
+    @Autowired
+    private RestTemplateProxy restTemplateProxy;
 
     @Value("${cwms_app_server:prod.claytechsuite.com}")
     String appServerURL;
@@ -69,8 +71,6 @@ public class IntegrationServiceRestemplateClient {
     @Value("${cwms_warehouse_name:NotExist}")
     String warehouseName;
 
-    @Autowired
-    RestTemplate restTemplate;
     /***
     @Value("${integration.host.ip}")
     private String hostIP;
@@ -78,28 +78,21 @@ public class IntegrationServiceRestemplateClient {
     private String hostPort;
 **/
 
-    public <T> String sendIntegrationData(String subUrl, T data) throws JsonProcessingException {
+    public <T> String sendIntegrationData(String subUrl, T data)   {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         // .scheme("http").host("10.0.10.37").port(32262)
 
                         // .path("/api/integration/integration-data/dblink/" + subUrl);
                         .path("/api/integration/integration-data/" + subUrl);
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
+        return restTemplateProxy.exchangeForString(
                 builder.toUriString(),
                 HttpMethod.PUT,
-                getHttpEntity(objectMapper.writeValueAsString(data)),
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        if (responseBodyWrapper.getResult() == 0) {
-
-            return responseBodyWrapper.getData();
-        }
-        throw SystemFatalException.raiseException("fail to send integration data for " + subUrl);
+                data
+        );
     }
 
     public String saveIntegrationResult(String subUrl, long id, boolean succeed, String errorMessage) {
@@ -113,14 +106,11 @@ public class IntegrationServiceRestemplateClient {
                         .queryParam("errorMessage", errorMessage);
 
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
+        return restTemplateProxy.exchangeForString(
                 builder.buildAndExpand(id).toUriString(),
                 HttpMethod.POST,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
     }
 
 
@@ -134,14 +124,13 @@ public class IntegrationServiceRestemplateClient {
                         .queryParam("companyCode", companyCode)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseBodyWrapper<List<DBBasedInventoryAdjustmentConfirmation>> responseBodyWrapper
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchangeList(
+                DBBasedInventoryAdjustmentConfirmation.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedInventoryAdjustmentConfirmation>>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
     }
     public List<DBBasedReceiptConfirmation> getPendingReceiptConfirmationIntegrationData() {
 
@@ -151,7 +140,7 @@ public class IntegrationServiceRestemplateClient {
                         .path("/api/integration/integration-data/receipt-confirmations/query/pending")
                         .queryParam("companyCode", companyCode)
                         .queryParam("warehouseName", warehouseName);
-
+/**
         ResponseBodyWrapper<List<DBBasedReceiptConfirmation>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -160,6 +149,13 @@ public class IntegrationServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedReceiptConfirmation>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+**/
+        return restTemplateProxy.exchangeList(
+                DBBasedReceiptConfirmation.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
     public List<DBBasedOrderConfirmation> getPendingSalesOrderConfirmationIntegrationData() {
@@ -169,7 +165,7 @@ public class IntegrationServiceRestemplateClient {
                         .path("/api/integration/integration-data/order-confirmations/query/pending")
                         .queryParam("companyCode", companyCode)
                         .queryParam("warehouseName", warehouseName);
-
+/**
         ResponseBodyWrapper<List<DBBasedOrderConfirmation>> responseBodyWrapper
                 = restTemplate.exchange(
                 builder.toUriString(),
@@ -178,9 +174,17 @@ public class IntegrationServiceRestemplateClient {
                 new ParameterizedTypeReference<ResponseBodyWrapper<List<DBBasedOrderConfirmation>>>() {}).getBody();
 
         return responseBodyWrapper.getData();
+ ***/
+
+        return restTemplateProxy.exchangeList(
+                DBBasedOrderConfirmation.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
     }
 
-
+/**
     private HttpEntity<String> getHttpEntity(String requestBody) {
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
@@ -188,5 +192,6 @@ public class IntegrationServiceRestemplateClient {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return new HttpEntity<String>(requestBody, headers);
     }
+ ***/
 
 }

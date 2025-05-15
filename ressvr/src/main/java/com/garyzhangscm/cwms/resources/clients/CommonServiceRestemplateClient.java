@@ -18,20 +18,15 @@
 
 package com.garyzhangscm.cwms.resources.clients;
 
-import com.garyzhangscm.cwms.resources.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.resources.model.SystemControlledNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 @Component
 public class CommonServiceRestemplateClient implements  InitiableServiceRestemplateClient{
@@ -39,59 +34,61 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
 
     public String initTestData(Long companyId, String warehouseName) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/test-data/init")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.toUriString(),
+                HttpMethod.POST,
+                null
+        );
+
     }
 
     public String initTestData(Long companyId, String name, String warehouseName) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/test-data/init/{name}")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseName", warehouseName);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
-                        builder.buildAndExpand(name).toUriString(),
-                        HttpMethod.POST,
-                        null,
-                        String.class);
-        return restExchange.getBody();
+
+        return restTemplateProxy.exchange(
+                String.class,
+                builder.buildAndExpand(name).toUriString(),
+                HttpMethod.POST,
+                null
+        );
     }
 
     public String[] getTestDataNames() {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/test-data");
 
-        ResponseBodyWrapper<String[]> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<String[]>>() {}).getBody();
 
-        return responseBodyWrapper.getData();
+
+        return restTemplateProxy.exchange(
+                String[].class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
+
     }
     public boolean contains(String name) {
         return Arrays.stream(getTestDataNames()).anyMatch(dataName -> dataName.equals(name));
@@ -100,17 +97,17 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
     public String clearData(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/test-data/clear")
                         .queryParam("warehouseId", warehouseId);
 
-        ResponseEntity<String> restExchange
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                null,
-                String.class);
-        return restExchange.getBody();
+                null
+        );
     }
 
     public String getNextNumber(Long warehouseId, String variable) {
@@ -119,18 +116,18 @@ public class CommonServiceRestemplateClient implements  InitiableServiceRestempl
                 warehouseId, variable);
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/system-controlled-number/{variable}/next")
                         .queryParam("warehouseId", warehouseId);
-        ResponseBodyWrapper<SystemControlledNumber> responseBodyWrapper
-                = restTemplate.exchange(
+
+
+        return restTemplateProxy.exchange(
+                SystemControlledNumber.class,
                 builder.buildAndExpand(variable).toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<SystemControlledNumber>>() {}).getBody();
+                null
+        ).getNextNumber();
 
-        logger.debug(">> Next number is: {}", responseBodyWrapper.getData().getNextNumber());
-        return responseBodyWrapper.getData().getNextNumber();
     }
 
 }

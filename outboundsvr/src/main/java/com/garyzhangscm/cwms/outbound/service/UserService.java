@@ -2,15 +2,19 @@ package com.garyzhangscm.cwms.outbound.service;
 
 import com.garyzhangscm.cwms.outbound.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.model.User;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class UserService {
@@ -18,12 +22,23 @@ public class UserService {
 
     @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
+    @Autowired
+    HttpServletRequest request;
+
+    @Value("${outbound.login.username}")
+    private String outboundUsername;
 
     private static Map<String, ServletRequestAttributes> userServletRequestAttributes = new HashMap<>();
 
+
     public String getCurrentUserName() {
+        if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+
+            return request.getHeader("username");
+        }
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
+
 
     public void addUserServletRequestAttribute(String token, ServletRequestAttributes servletRequestAttributes) {
         userServletRequestAttributes.put(token, servletRequestAttributes);

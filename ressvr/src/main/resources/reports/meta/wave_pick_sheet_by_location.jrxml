@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="wave_pick_sheet_by_location" pageWidth="792" pageHeight="612" orientation="Landscape" columnWidth="752" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" resourceBundle="wave_pick_sheet_by_location" uuid="8baec34c-04ec-43d7-a345-5e1fed03731b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="net.sf.jasperreports.export.character.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="waveNumber" class="java.lang.String"/>
+	<parameter name="totalUnitQuantity" class="java.lang.Integer"/>
+	<parameter name="totalCaseQuantity" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="orderNumber" class="java.lang.String"/>
+	<field name="sourceLocation.name" class="java.lang.String"/>
+	<field name="inventoryAttribute1" class="java.lang.String"/>
+	<field name="style" class="java.lang.String"/>
+	<field name="color" class="java.lang.String"/>
+	<field name="quantityPerCase" class="java.lang.String"/>
+	<field name="caseQuantity" class="java.lang.String"/>
+	<field name="quantity" class="java.lang.Integer"/>
+	<field name="packQuantity" class="java.lang.String"/>
+	<field name="quantityPerPack" class="java.lang.String"/>
+	<field name="packPerCase" class="java.lang.String"/>
+	<pageHeader>
+		<band height="80" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField>
+				<reportElement x="0" y="10" width="140" height="40" uuid="a92d8d79-8a80-4625-a839-fb50ee77387d">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="SimSun" size="29" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{wave}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="10" width="300" height="39" uuid="0fd5a6a4-8365-437d-9d5f-f0fcadff9d43"/>
+				<textElement>
+					<font size="29" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{waveNumber}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="440" y="0" width="300" height="80" uuid="d5676d36-5236-4f08-9781-d71fd86b7556">
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="60">
+					<jr:codeExpression><![CDATA[$P{waveNumber}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="40" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<rectangle>
+				<reportElement x="620" y="0" width="50" height="40" uuid="d868a6f1-e3c6-4f9a-b049-62eebda7847d">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="670" y="0" width="80" height="40" uuid="b9156419-6480-4d39-a2ba-48f7b01bd750">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="0" width="110" height="40" uuid="4e66c551-12f3-4cae-81d7-ff6ffb6b9d3b">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="300" y="0" width="120" height="40" uuid="0ee38e7c-ee2b-4226-812c-2d0d75b59e59">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="420" y="0" width="50" height="40" uuid="9aba802c-7639-41f8-a85b-b492f3f1b97d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="470" y="0" width="50" height="40" uuid="3bee54b0-3069-41b6-9115-4d21d49bfee9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="0" y="0" width="110" height="40" uuid="ffc77b0a-bb96-4309-9213-bd8fb90ef81c">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{orderNumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="120" height="40" uuid="160d7854-4092-485d-8090-d71d609ca52f">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{color}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="0" width="50" height="40" uuid="8b3edbc6-ddb4-4066-85fc-78c2488055d2">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalUnits}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="110" y="0" width="90" height="40" uuid="dc85076c-908c-4a21-ba96-12d8b6121ba9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="110" y="0" width="90" height="40" uuid="f90b8ef0-68fa-4fca-aee0-93c325363b00">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{purchaseOrder}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="200" y="0" width="100" height="40" uuid="510622d7-dfa5-4a2f-a7cd-38bd693016d9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="200" y="0" width="100" height="40" uuid="44d4a310-7188-40ff-bb69-e222b6830303">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{style}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="620" y="0" width="50" height="40" uuid="179704cd-85f6-4a67-a6dc-de4307dffb2e">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cartons}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="670" y="0" width="80" height="40" uuid="d785e22a-e0b7-4c10-82a6-6bbf6add9436">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{location}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="570" y="0" width="50" height="40" uuid="05392161-69db-4b19-9194-0ec4aa728f26">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="520" y="0" width="50" height="40" uuid="83b1af8c-b1c3-4a53-92f1-a798234b359d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="520" y="0" width="50" height="40" uuid="ee1666a9-ac4a-4ba9-a235-a6096a6b1a8d">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packs}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="470" y="0" width="50" height="40" uuid="7a64daf1-ffeb-4db1-895e-86a20e0955a2">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packPerCarton}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="570" y="0" width="50" height="40" uuid="0ad24d9c-fbd0-41cb-a76e-4196d0f3ac47">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{unitsPerCarton}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="40" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<rectangle>
+				<reportElement x="570" y="0" width="50" height="40" uuid="7a6831e0-a881-4ce3-bd84-73a02a91d050">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="520" y="0" width="50" height="40" uuid="32efa016-a659-437c-9041-aafd58b9ffb5">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="670" y="0" width="80" height="40" uuid="fc328735-5828-4840-b038-e626b8ab104b">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="420" y="0" width="50" height="40" uuid="74e70bb0-de5e-4c7b-9a6b-0be1824b08bf">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="300" y="0" width="120" height="40" uuid="3684ddb6-201e-4cb6-a38a-a3ddd5703854">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="0" width="110" height="40" uuid="c57c29d5-bd60-4cf2-bab5-065aa5aedbec">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="110" y="0" width="90" height="40" uuid="a8333490-1915-499c-806b-fa1f9015c217">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="200" y="0" width="100" height="40" uuid="64c1ccce-2374-414b-aac6-e4ec22daf571">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="620" y="0" width="50" height="40" uuid="468f6da1-901c-4e9f-b6f5-bcb18cf81cc9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="470" y="0" width="50" height="40" uuid="71f36efe-83ea-4f88-8128-b4c59b6e87ad">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="0" y="0" width="110" height="40" uuid="a83a6777-bba0-4d19-83cc-7ebc588bc4d9">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="90ab2008-0a75-412b-97b0-88e7a2e64667"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{orderNumber}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="670" y="0" width="80" height="40" uuid="43343e18-2d40-42fe-9a7e-36819e84aebb">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="07235930-e65e-4b26-9288-0045a379d141"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{sourceLocation.name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="0" width="90" height="40" uuid="81a77e56-4051-449c-b9b8-d2c3459dd713">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7a0caa82-b36e-4394-866b-10d2fd893219"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{inventoryAttribute1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="0" width="100" height="40" uuid="0ea8f6e1-2fe1-4c64-a703-5013285b3d1b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d2a98be8-c4cd-40fd-b3bb-1ee03b7b7997"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{style}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="0" width="120" height="40" uuid="6c3b646a-9deb-4359-8522-39a688e0eb84">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="c1631d20-3ea9-43bb-9b24-326c201ffdca"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{color}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="470" y="0" width="50" height="40" uuid="02b43d68-7d9b-48ba-9704-a50aba797e6e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b39353d6-d272-4fbb-838d-4265c23b6b5b"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{packPerCase}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="620" y="0" width="50" height="40" uuid="8b07fb32-485b-47ef-b303-98b45b518d43">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a3db5154-f2f4-4e40-87da-80ab61aa9ace"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{caseQuantity}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="420" y="0" width="50" height="40" uuid="56c2215d-6372-4e81-b1f2-50903a31f4f5">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4840585-0ed5-4f86-8a03-b04d315c8edc"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="520" y="0" width="50" height="40" uuid="56b1475c-152a-4005-8cfb-edf6079ac25e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b39353d6-d272-4fbb-838d-4265c23b6b5b"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{packQuantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="570" y="0" width="50" height="40" uuid="52654d4a-9884-407a-aa30-6a29e8202506">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b39353d6-d272-4fbb-838d-4265c23b6b5b"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{quantityPerCase}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="50">
+			<textField>
+				<reportElement x="0" y="13" width="110" height="25" uuid="37097948-6993-4193-a290-4c219282c077">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalCaseQuantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="240" y="10" width="110" height="25" uuid="5309af04-5884-4e55-8500-f3d6c46c4055">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalUnitQuantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="10" width="100" height="30" uuid="01c9d911-2c83-4188-8a88-9b5787fe9b25"/>
+				<textFieldExpression><![CDATA[$P{totalUnitQuantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="14" width="100" height="23" uuid="2103b1bc-b043-40ec-8f9a-abaee9749781"/>
+				<textFieldExpression><![CDATA[$P{totalCaseQuantity}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

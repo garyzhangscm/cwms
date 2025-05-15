@@ -236,6 +236,9 @@ public class BillingRateService {
     }
 
     public BillingRate saveBillingRate(BillingRate billingRate) {
+        if (Objects.isNull(billingRate.getRateByQuantity())) {
+            billingRate.setRateByQuantity(billingRate.getBillableCategory().isRateByQuantity());
+        }
         return saveOrUpdate(billingRate);
     }
 
@@ -267,4 +270,5 @@ public class BillingRateService {
         );
         return  progressiveBillingRates;
     }
+
 }

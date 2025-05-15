@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -122,6 +122,21 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
     @JoinColumn(name="stop_id")
     @JsonIgnore
     private Stop stop;
+
+
+    // shipping related information.
+    // in case the user don't want to go through
+    // the stop / trailer / load structure,
+    // we provide a way to simplify the process
+    // for small business so that the user
+    // can specify the load number and
+    // bol number at the shipment level
+    @Column(name = "load_number")
+    private String loadNumber;
+
+    @Column(name = "bill_of_lading_number")
+    private String billOfLadingNumber;
+
 
     // order id, used by stop integration
     @Transient
@@ -423,5 +438,19 @@ public class Shipment  extends AuditibleEntity<String> implements Serializable {
         this.client = client;
     }
 
+    public String getLoadNumber() {
+        return loadNumber;
+    }
 
+    public void setLoadNumber(String loadNumber) {
+        this.loadNumber = loadNumber;
+    }
+
+    public String getBillOfLadingNumber() {
+        return billOfLadingNumber;
+    }
+
+    public void setBillOfLadingNumber(String billOfLadingNumber) {
+        this.billOfLadingNumber = billOfLadingNumber;
+    }
 }

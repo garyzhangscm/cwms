@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -93,6 +93,10 @@ public class Location extends AuditibleEntity<String>{
     @JoinColumn(name="location_group_id")
     private LocationGroup locationGroup;
 
+    @ManyToOne
+    @JoinColumn(name="pick_zone_id")
+    private PickZone pickZone;
+
     @Column(name = "enabled")
     private Boolean enabled = true;
 
@@ -117,6 +121,56 @@ public class Location extends AuditibleEntity<String>{
         this.warehouse = warehouse;
         this.locationGroup = locationGroup;
 
+    }
+
+
+    /**
+     * Create a new location from an existing location
+     * with some default values
+     * @param name
+     * @return
+     */
+    public Location copy(String name) {
+        Location newLocation = new Location();
+
+        newLocation.setName(name);
+
+        newLocation.setCode("");
+
+        newLocation.setAisle(getAisle());
+
+        // x.y.z coordinator normally
+        // different for each location so
+        // we won't setup here
+        newLocation.setLength(getLength());
+        newLocation.setWidth(getWidth());
+        newLocation.setHeight(getHeight());
+        newLocation.setLengthUnit(getLengthUnit());
+        newLocation.setWidthUnit(getWidthUnit());
+        newLocation.setHeightUnit(getHeightUnit());
+
+        newLocation.setPickSequence(getPickSequence());
+        newLocation.setCountSequence(getCountSequence());
+        newLocation.setPutawaySequence(getPutawaySequence());
+
+        newLocation.setCapacity(getCapacity());
+        newLocation.setCapacityUnit(getCapacityUnit());
+        newLocation.setFillPercentage(getFillPercentage());
+
+
+        newLocation.setCurrentVolume(0.0);
+        newLocation.setPendingVolume(0.0);
+        newLocation.setLocationGroup(getLocationGroup());
+
+        newLocation.setPickZone(getPickZone());
+
+        newLocation.setEnabled(getEnabled());
+        newLocation.setReservedCode("");
+        newLocation.setLocked(getLocked());
+        newLocation.setErrorFlag(getErrorFlag());
+
+        newLocation.setWarehouse(getWarehouse());
+        return newLocation;
     }
 
     @JsonIgnore
@@ -344,4 +398,13 @@ public class Location extends AuditibleEntity<String>{
     public void setErrorFlag(Boolean errorFlag) {
         this.errorFlag = errorFlag;
     }
+
+    public PickZone getPickZone() {
+        return pickZone;
+    }
+
+    public void setPickZone(PickZone pickZone) {
+        this.pickZone = pickZone;
+    }
+
 }

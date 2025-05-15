@@ -50,6 +50,8 @@ public class CartonizationService {
     private CartonizationConfigurationService cartonizationConfigurationService;
     @Autowired
     private CartonService cartonService;
+    @Autowired
+    private UnitService unitService;
 
 
     @Autowired
@@ -265,8 +267,8 @@ public class CartonizationService {
      */
     private boolean findBestCartonizationBySpace(Cartonization cartonization, Pick pick) {
         double totalSpace = cartonization.getTotalSpace();
-        double usedSpace = cartonization.getUsedSpace();
-        double size = pick.getSize();
+        double usedSpace = cartonization.getUsedSpace(unitService);
+        double size = pick.getSize(unitService).getFirst();
 
         logger.debug("cartonization's id : {}, carton's name : {}, total space: {}, used space: {}, pick's size: {}",
                 cartonization.getId(),

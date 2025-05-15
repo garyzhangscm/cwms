@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.workorder.model;
 
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import java.io.Serializable;
 
 // Entity that will be persist in Common service

@@ -20,12 +20,7 @@ package com.garyzhangscm.cwms.outbound.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
-import com.garyzhangscm.cwms.outbound.model.Report;
-import com.garyzhangscm.cwms.outbound.model.ReportHistory;
-import com.garyzhangscm.cwms.outbound.model.ReportType;
 import com.garyzhangscm.cwms.outbound.model.shipengine.RateRequest;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +31,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 
 @Component
@@ -53,9 +45,6 @@ public class ShipEngineRestemplateClient {
     @Value("${parcel.shipEngine.apiKey}")
     private String apiKey;
 
-    @Autowired
-    @Qualifier("noTokenRestTemplate")
-    RestTemplate restTemplate;
 
     @Qualifier("getObjMapper")
     @Autowired
@@ -71,6 +60,8 @@ public class ShipEngineRestemplateClient {
 
         String rateRequestJSON = objectMapper.writeValueAsString(rateRequest);
         logger.debug("send request to the server \n{}", rateRequestJSON);
+
+        RestTemplate restTemplate = new RestTemplate();
 
         String result =
                 restTemplate.exchange(

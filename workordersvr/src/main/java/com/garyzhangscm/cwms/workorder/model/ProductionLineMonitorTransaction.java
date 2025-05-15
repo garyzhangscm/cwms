@@ -1,15 +1,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.annotation.CreatedDate;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+
 
 /**
  * Hardware that we are using to monitor the status of the production line

@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.outbound.service;
 
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.outbound.clients.WarehouseLayoutServiceRestemplateClient;
@@ -177,10 +178,21 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                 Objects.isNull(listPickConfiguration.getWarehouse())) {
             listPickConfiguration.setWarehouse(warehouseLayoutServiceRestemplateClient.getWarehouseById(listPickConfiguration.getWarehouseId()));
         }
-        if (Objects.nonNull(listPickConfiguration.getCustomerId()) &&
-                Objects.isNull(listPickConfiguration.getCustomer())) {
-            listPickConfiguration.setCustomer(commonServiceRestemplateClient.getCustomerById(listPickConfiguration.getCustomerId()));
+        try {
+            if (Objects.nonNull(listPickConfiguration.getCustomerId()) &&
+                    Objects.isNull(listPickConfiguration.getCustomer())) {
+                listPickConfiguration.setCustomer(commonServiceRestemplateClient.getCustomerById(listPickConfiguration.getCustomerId()));
+            }
         }
+        catch (Exception ex) {}
+        try {
+            if (Objects.nonNull(listPickConfiguration.getClientId()) &&
+                    Objects.isNull(listPickConfiguration.getClient())) {
+                listPickConfiguration.setClient(
+                        commonServiceRestemplateClient.getClientById(listPickConfiguration.getClientId()));
+            }
+        }
+        catch (Exception ex) {}
     }
 
     private void loadAttribute(List<ListPickConfiguration> listPickConfigurations) {
@@ -319,6 +331,16 @@ public class ListPickConfigurationService implements TestDataInitiableService {
                     listPickConfiguration.getPickType(), pick.getPickType());
             return false;
         }
+
+        if (Objects.nonNull(listPickConfiguration.getClientId()) &&
+            !listPickConfiguration.getClientId().equals(pick.getClientId())) {
+
+            logger.debug("The client id doesn't match! client id in configuration {} " +
+                            "doesnt match with pick's type {}",
+                    listPickConfiguration.getClientId(), pick.getClientId());
+            return false;
+        }
+
         logger.debug(">> list picking configuraiton matches with the pick!");
         return true;
 
@@ -343,5 +365,9 @@ public class ListPickConfigurationService implements TestDataInitiableService {
         );
         return saveOrUpdate(listPickConfiguration);
 
+    }
+
+    public void removeListPickConfiguration(Long id) {
+        delete(id);
     }
 }

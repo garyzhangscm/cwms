@@ -3,7 +3,6 @@ package com.garyzhangscm.cwms.resources.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 // A place hold of information that we will return to

@@ -19,7 +19,7 @@
 package com.garyzhangscm.cwms.inbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -52,7 +52,7 @@ public class ReceiptLine extends AuditibleEntity<String>{
             mappedBy = "receiptLine",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<ReceiptLineBillableActivity> receiptLineBillableActivities = new ArrayList<>();
 
@@ -71,6 +71,8 @@ public class ReceiptLine extends AuditibleEntity<String>{
     @Column(name = "expected_quantity")
     private Long expectedQuantity;
 
+    @Column(name = "arrived_quantity")
+    private Long arrivedQuantity;
 
     @Column(name = "received_quantity")
     private Long receivedQuantity = 0L;
@@ -109,6 +111,34 @@ public class ReceiptLine extends AuditibleEntity<String>{
     private String style;
 
 
+    @Column(name="item_package_type_id")
+    private Long itemPackageTypeId;
+
+    @Transient
+    private ItemPackageType itemPackageType;
+
+    @Column(name="cubic_meter")
+    private Double cubicMeter;
+
+    @Column(name="inventory_attribute_1")
+    private String inventoryAttribute1;
+    @Column(name="inventory_attribute_2")
+    private String inventoryAttribute2;
+    @Column(name="inventory_attribute_3")
+    private String inventoryAttribute3;
+    @Column(name="inventory_attribute_4")
+    private String inventoryAttribute4;
+    @Column(name="inventory_attribute_5")
+    private String inventoryAttribute5;
+
+
+    // the inventory status that will be
+    // received from this line
+    @Column(name="inventory_status_id")
+    private Long inventoryStatusId;
+
+    @Transient
+    private InventoryStatus inventoryStatus;
 
     public Long getId() {
         return id;
@@ -166,6 +196,22 @@ public class ReceiptLine extends AuditibleEntity<String>{
         this.purchaseOrderLine = purchaseOrderLine;
     }
 
+    public Long getInventoryStatusId() {
+        return inventoryStatusId;
+    }
+
+    public void setInventoryStatusId(Long inventoryStatusId) {
+        this.inventoryStatusId = inventoryStatusId;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
+    }
+
     public Receipt getReceipt() {
         return receipt;
     }
@@ -204,6 +250,38 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setOverReceivingPercent(Double overReceivingPercent) {
         this.overReceivingPercent = overReceivingPercent;
+    }
+
+    public Long getArrivedQuantity() {
+        return arrivedQuantity;
+    }
+
+    public void setArrivedQuantity(Long arrivedQuantity) {
+        this.arrivedQuantity = arrivedQuantity;
+    }
+
+    public Double getCubicMeter() {
+        return cubicMeter;
+    }
+
+    public void setCubicMeter(Double cubicMeter) {
+        this.cubicMeter = cubicMeter;
+    }
+
+    public Long getItemPackageTypeId() {
+        return itemPackageTypeId;
+    }
+
+    public void setItemPackageTypeId(Long itemPackageTypeId) {
+        this.itemPackageTypeId = itemPackageTypeId;
+    }
+
+    public ItemPackageType getItemPackageType() {
+        return itemPackageType;
+    }
+
+    public void setItemPackageType(ItemPackageType itemPackageType) {
+        this.itemPackageType = itemPackageType;
     }
 
     public Long getQcQuantity() {
@@ -276,5 +354,45 @@ public class ReceiptLine extends AuditibleEntity<String>{
 
     public void setStyle(String style) {
         this.style = style;
+    }
+
+    public String getInventoryAttribute1() {
+        return inventoryAttribute1;
+    }
+
+    public void setInventoryAttribute1(String inventoryAttribute1) {
+        this.inventoryAttribute1 = inventoryAttribute1;
+    }
+
+    public String getInventoryAttribute2() {
+        return inventoryAttribute2;
+    }
+
+    public void setInventoryAttribute2(String inventoryAttribute2) {
+        this.inventoryAttribute2 = inventoryAttribute2;
+    }
+
+    public String getInventoryAttribute3() {
+        return inventoryAttribute3;
+    }
+
+    public void setInventoryAttribute3(String inventoryAttribute3) {
+        this.inventoryAttribute3 = inventoryAttribute3;
+    }
+
+    public String getInventoryAttribute4() {
+        return inventoryAttribute4;
+    }
+
+    public void setInventoryAttribute4(String inventoryAttribute4) {
+        this.inventoryAttribute4 = inventoryAttribute4;
+    }
+
+    public String getInventoryAttribute5() {
+        return inventoryAttribute5;
+    }
+
+    public void setInventoryAttribute5(String inventoryAttribute5) {
+        this.inventoryAttribute5 = inventoryAttribute5;
     }
 }

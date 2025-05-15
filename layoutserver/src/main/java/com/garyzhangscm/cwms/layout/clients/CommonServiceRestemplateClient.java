@@ -18,9 +18,6 @@
 
 package com.garyzhangscm.cwms.layout.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.layout.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.layout.model.Client;
 import com.garyzhangscm.cwms.layout.model.Policy;
 import com.garyzhangscm.cwms.layout.model.Warehouse;
@@ -28,16 +25,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -49,32 +38,28 @@ public class CommonServiceRestemplateClient {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonServiceRestemplateClient.class);
 
-    @Qualifier("getObjMapper")
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
-    // OAuth2RestTemplate restTemplate;
-    private OAuth2RestOperations restTemplate;
+    private RestTemplateProxy restTemplateProxy;
+
 
     @Cacheable(cacheNames = "LayoutService_Client", unless="#result == null")
     public Client getClientByName(Long warehouseId, String name) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/clients")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("name", name);
 
-        ResponseBodyWrapper<List<Client>> responseBodyWrapper
-                = restTemplate.exchange(
+        List<Client> clients
+                = restTemplateProxy.exchangeList(
+                Client.class,
                 builder.toUriString(),
                 HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Client>>>() {}).getBody();
+                null);
 
-        List<Client> clients = responseBodyWrapper.getData();
         if (clients.size() == 0) {
             return null;
         }
@@ -83,41 +68,23 @@ public class CommonServiceRestemplateClient {
         }
     }
 
-    @Cacheable(cacheNames = "LayoutService_Client", unless="#result == null")
-    public Client getClientById(Long id) {
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
-                        .path("/api/common/clients/{id}");
-
-        ResponseBodyWrapper<Client> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(id).toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Client>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-
-    }
 
     @Cacheable(cacheNames = "LayoutService_Policy", unless="#result == null")
     public Policy getPolicyByKey(Long warehouseId, String key) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/policies")
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("key", key);
 
-        ResponseBodyWrapper<List<Policy>> responseBodyWrapper
-                = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<ResponseBodyWrapper<List<Policy>>>() {}).getBody();
 
-        List<Policy> policies = responseBodyWrapper.getData();
+        List<Policy> policies = restTemplateProxy.exchangeList(
+                Policy.class,
+                builder.toUriString(),
+                HttpMethod.GET,
+                null
+        );
         if (policies.size() > 0) {
 
             logger.debug("Find result {} for policy {}",
@@ -131,37 +98,27 @@ public class CommonServiceRestemplateClient {
 
     }
 
-    public Policy createPolicy(Policy policy) throws JsonProcessingException {
+    public Policy createPolicy(Policy policy)  {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/common/policies");
 
-        ResponseBodyWrapper<Policy> responseBodyWrapper
-                = restTemplate.exchange(
+
+        return restTemplateProxy.exchange(
+                Policy.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                getHttpEntity(objectMapper.writeValueAsString(policy)),
-                new ParameterizedTypeReference<ResponseBodyWrapper<Policy>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
-    }
-
-
-    private HttpEntity<String> getHttpEntity(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        return new HttpEntity<String>(requestBody, headers);
+                policy
+        );
     }
 
 
     public String removePolicy(Warehouse warehouse, String key) {
         UriComponentsBuilder builder =
             UriComponentsBuilder.newInstance()
-                    .scheme("http").host("zuulserver").port(5555)
+                    .scheme("http").host("apigateway").port(5555)
                     .path("/api/common/policies")
                 .queryParam("warehouseId", warehouse.getId());
 
@@ -169,13 +126,13 @@ public class CommonServiceRestemplateClient {
             builder = builder.queryParam("key", key);
         }
 
-        ResponseBodyWrapper<String> responseBodyWrapper
-                = restTemplate.exchange(
+
+
+        return restTemplateProxy.exchange(
+                String.class,
                 builder.toUriString(),
                 HttpMethod.DELETE,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<String>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
+                null
+        );
     }
 }

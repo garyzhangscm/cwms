@@ -64,6 +64,12 @@ public class DBBasedItem implements Serializable{
     @Column(name = "item_family_id")
     private Long itemFamilyId;
 
+    // whether the item will be used by
+    // FAY or Colton.
+    // Note: FAY and Colton are using 2 different MES server but
+    //    share the same integration table in Oracle side
+    @Column(name = "location_name")
+    private String locationName;
 
     @OneToMany(
         mappedBy = "item",
@@ -254,5 +260,13 @@ public class DBBasedItem implements Serializable{
 
     public void setItemFamilyId(Long itemFamilyId) {
         this.itemFamilyId = itemFamilyId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 }

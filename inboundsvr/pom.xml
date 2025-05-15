@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>inboundserver</artifactId>
-	<version>v1.16</version>
+	<version>v1.63</version>
 	<name>Inbound Server</name>
 	<description>Inbound Server</description>
 
@@ -101,7 +101,7 @@
 		</dependency>
         -->
 
-
+<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -117,7 +117,7 @@
 			<artifactId>spring-security-oauth2-autoconfigure</artifactId>
 			<version>2.1.6.RELEASE</version>
 		</dependency>
-
+-->
 		<!-- MySQL DB -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -135,6 +135,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-csv</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- Kafka -->
@@ -170,17 +177,29 @@
 
 
 		<!-- sleuth for logging -->
+		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
+		-->
+
+		<!-- Apache POI to process excel -->
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-			<scope>compile</scope>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.5</version>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>

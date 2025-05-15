@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ResourceServiceRestemplateClient {
@@ -41,7 +42,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/{id}");
 
         return restTemplateProxy.exchange(
@@ -57,7 +58,7 @@ public class ResourceServiceRestemplateClient {
     public User getUserByUsername(Long companyId, String username) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users")
                         .queryParam("username", username)
                         .queryParam("companyId", companyId);
@@ -91,7 +92,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles/{id}");
 
         ResponseBodyWrapper<Role> responseBodyWrapper
@@ -111,7 +112,7 @@ public class ResourceServiceRestemplateClient {
     public Role getRoleByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/roles")
                         .queryParam("name", name)
                         .queryParam("companyId", companyId);
@@ -139,7 +140,7 @@ public class ResourceServiceRestemplateClient {
     public WorkingTeam getWorkingTeamById(Long id) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/working-teams/{id}");
 
         ResponseBodyWrapper<WorkingTeam> responseBodyWrapper
@@ -158,7 +159,7 @@ public class ResourceServiceRestemplateClient {
     public WorkingTeam getWorkingTeamByName(Long companyId, String name) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/working-teams")
                         .queryParam("name", name)
                         .queryParam("companyId", companyId);
@@ -185,7 +186,7 @@ public class ResourceServiceRestemplateClient {
     public String validateNewUsername(Long companyId, Long warehouseId, String value) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/users/validate-new-username")
                         .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
@@ -209,16 +210,21 @@ public class ResourceServiceRestemplateClient {
         );
     }
 
-    public String validateCSVFile(Long warehouseId,
-                                  String type, String headers) {
+    public String validateCSVFile(Long companyId, Long warehouseId,
+                                  String type, String headers, Boolean ignoreUnknownFields) {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         .path("/api/resource/file-upload/validate-csv-file")
+                        .queryParam("companyId", companyId)
                         .queryParam("warehouseId", warehouseId)
                         .queryParam("type", type)
                         .queryParam("headers", headers);
+
+        if (Objects.nonNull(ignoreUnknownFields)) {
+            builder = builder.queryParam("ignoreUnknownFields", ignoreUnknownFields);
+        }
 
         return restTemplateProxy.exchange(
                 String.class,

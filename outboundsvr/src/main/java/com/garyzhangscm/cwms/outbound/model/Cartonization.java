@@ -1,7 +1,8 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.garyzhangscm.cwms.outbound.service.UnitService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -63,8 +64,9 @@ public class Cartonization  extends AuditibleEntity<String> implements Serializa
     public Double getTotalSpace() {
         return carton.getTotalSpace();
     }
-    public Double getUsedSpace() {
-        return picks.stream().map(Pick::getSize).mapToDouble(Double::doubleValue).sum();
+    public Double getUsedSpace(UnitService unitService) {
+        return picks.stream().map(pick -> pick.getSize(unitService, false, false).getFirst())
+                .mapToDouble(Double::doubleValue).sum();
 
     }
 

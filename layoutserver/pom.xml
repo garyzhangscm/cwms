@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>layoutserver</artifactId>
-	<version>v1.16</version>
+	<version>v1.63</version>
 	<name>Layout Server</name>
 	<description>Layout Server - including warehouse / building / area / etc</description>
 
@@ -94,6 +94,7 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
 		</dependency>
         -->
 
+		<!--
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -110,6 +111,7 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
 			<version>2.1.6.RELEASE</version>
 		</dependency>
 
+        -->
 		<!-- MySQL DB -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -162,6 +164,19 @@ https://search.maven.org/artifact/org.springframework.cloud/spring-cloud-depende
             <version>2.6</version>
             <scope>compile</scope>
         </dependency>
+
+
+		<!-- Apache POI to process excel -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
+		</dependency>
     </dependencies>
 
 

@@ -19,34 +19,59 @@
 package com.garyzhangscm.cwms.auth.service;
 
 import com.garyzhangscm.cwms.auth.clients.KafkaSender;
+import com.garyzhangscm.cwms.auth.exception.SystemFatalException;
+import com.garyzhangscm.cwms.auth.model.JWTToken;
+import com.garyzhangscm.cwms.auth.model.UserAuthentication;
 import com.garyzhangscm.cwms.auth.model.User;
 import com.garyzhangscm.cwms.auth.model.UserLoginEvent;
 import com.garyzhangscm.cwms.auth.repository.UserRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.*;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private UserRepository userRepository;
+
+    @Value("${auth.jwt.refresh_token.expire_time_in_minutes:30}")
+    public int jwtRefreshTokenExpireTimeInMinutes;
+    @Value("${auth.jwt.token.expire_time_in_minutes:30}")
+    public int jwtTokenExpireTimeInMinutes;
 
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     private KafkaSender kafkaSender;
 
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    HttpServletRequest request;
 
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
@@ -135,9 +160,15 @@ public class UserService {
         }
     }
 
+
     public String getCurrentUserName() {
+        if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+
+            return request.getHeader("username");
+        }
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
+
 
     /**
      * Record the event that a certain user login to some company / warehouse
@@ -170,4 +201,64 @@ public class UserService {
     public Boolean validateCompanyAccess(Long companyId, String token) {
         return Objects.nonNull(findByToken(companyId, token));
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return findByUsername(1l, username);
+
+    }
+
+
+    public UserAuthentication generateJWTToken(Long companyId, String username) {
+        User user = findByUsername(companyId, username);
+        if(Objects.isNull(user)) {
+            throw SystemFatalException.raiseException("can't find user " + username);
+        }
+
+        String jwtToken = jwtService.generateToken(user.getCompanyId(), user.getUsername());
+        String refreshToken = UUID.randomUUID().toString();
+
+        logger.debug("will return JWT token: " + jwtToken + " with refresh token: " + refreshToken);
+
+        user.setCurrentToken(jwtToken);
+        user.setCurrentTokenExpireTime(jwtService.extractExpiration(jwtToken).toInstant().atZone(ZoneOffset.UTC));
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpireTime(ZonedDateTime.now().plusMinutes(jwtRefreshTokenExpireTimeInMinutes));
+
+        saveOrUpdate(user);
+
+        UserAuthentication userAuthentication = new UserAuthentication(user);
+        userAuthentication.setRefreshIn(jwtTokenExpireTimeInMinutes / 2);
+        userAuthentication.setExpiredIn(jwtTokenExpireTimeInMinutes);
+        return userAuthentication;
+    }
+    public UserAuthentication refreshJWTToken(JWTToken jwtToken, String refreshToken) {
+        if (Objects.isNull(jwtToken.getCompanyId())) {
+            throw SystemFatalException.raiseException("can't refresh the token as the company id " +
+                    " in current JWT token is empty");
+        }
+
+        User user = findByUsername(jwtToken.getCompanyId(), jwtToken.getUsername());
+        if(Objects.isNull(user)) {
+            throw SystemFatalException.raiseException("can't find the user, fail to refresh the current token");
+        }
+        if (Strings.isBlank(user.getRefreshToken()) || Objects.isNull(user.getRefreshTokenExpireTime()) ) {
+
+            throw SystemFatalException.raiseException("the current user's refresh token is not valid, please login again");
+        }
+        if (user.getRefreshTokenExpireTime().isBefore(ZonedDateTime.now())) {
+
+            throw SystemFatalException.raiseException("the current user's refresh token is expired, please login again");
+        }
+        if (!user.getRefreshToken().equals(refreshToken)) {
+            throw SystemFatalException.raiseException("invalid refresh token, fail to refresh the current token");
+        }
+
+        // at this point we know we got a valid refresh token, let's start to generate a new
+        // jwt token
+        UserAuthentication userAuthentication = generateJWTToken(jwtToken.getCompanyId(), jwtToken.getUsername());
+        return userAuthentication;
+    }
+
+
 }

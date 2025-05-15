@@ -24,6 +24,7 @@ import com.garyzhangscm.cwms.inbound.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.InventoryServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inbound.exception.GenericException;
+import com.garyzhangscm.cwms.inbound.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
 import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inbound.model.*;
@@ -40,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -51,11 +53,17 @@ public class ReceiptLineService {
 
     @Autowired
     private ReceiptLineRepository receiptLineRepository;
+    @Autowired
+    private ReceivingTransactionService receivingTransactionService;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ReceiptService receiptService;
     @Autowired
     private InboundQCConfigurationService inboundQCConfigurationService;
+    @Autowired
+    private InboundReceivingConfigurationService inboundReceivingConfigurationService;
 
     @Autowired
     private InventoryServiceRestemplateClient inventoryServiceRestemplateClient;
@@ -120,6 +128,18 @@ public class ReceiptLineService {
             receiptLine.setItem(inventoryServiceRestemplateClient.getItemById(receiptLine.getItemId()));
 
         }
+
+        // Load Item information
+        if (receiptLine.getItemPackageTypeId() != null && receiptLine.getItemPackageType() == null) {
+            ItemPackageType itemPackageType = receiptLine.getItem().getItemPackageTypes().stream().filter(
+                    existingItemPackageType -> existingItemPackageType.getId().equals(
+                            receiptLine.getItemPackageTypeId()
+                    )
+            ).findFirst().orElse(null);
+            receiptLine.setItemPackageType(itemPackageType);
+
+        }
+
         // load the receipt number
         if (Objects.nonNull(receiptLine.getReceipt())) {
             receiptLine.setReceiptNumber(receiptLine.getReceipt().getNumber());
@@ -238,6 +258,7 @@ public class ReceiptLineService {
                 0.0d :
                 receiptLineCSVWrapper.getOverReceivingPercent());
 
+
         // Warehouse is mandate
         Warehouse warehouse =
                 warehouseLayoutServiceRestemplateClient.getWarehouseById(warehouseId);
@@ -274,7 +295,39 @@ public class ReceiptLineService {
                         .findFirst().orElse(1);
             }
             receiptLine.setExpectedQuantity(receiptLineCSVWrapper.getExpectedQuantity() * unitOfMeasureQuantity);
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
         }
+
+        InventoryStatus inventoryStatus;
+        if (Strings.isBlank(receiptLineCSVWrapper.getInventoryStatus())) {
+            inventoryStatus = inventoryServiceRestemplateClient.getAvailableInventoryStatus(
+                    warehouseId
+            );
+            if (Objects.isNull(inventoryStatus)) {
+                throw MissingInformationException.raiseException("Can't find the default available inventory." +
+                        "please specify the inventory status, or configure at the warehouse");
+            }
+        }
+        else {
+            inventoryStatus = inventoryServiceRestemplateClient.getInventoryStatusByName(
+                    warehouseId, receiptLineCSVWrapper.getInventoryStatus()
+            );
+            if (Objects.isNull(inventoryStatus)) {
+                throw MissingInformationException.raiseException("Can't find inventory status by name " +
+                        receiptLineCSVWrapper.getInventoryStatus());
+            }
+        }
+        receiptLine.setInventoryStatusId(inventoryStatus.getId());
+
+        receiptLine.setColor(receiptLineCSVWrapper.getColor());
+        receiptLine.setProductSize(receiptLineCSVWrapper.getProductSize());
+        receiptLine.setStyle(receiptLineCSVWrapper.getStyle());
+
+        receiptLine.setInventoryAttribute1(receiptLineCSVWrapper.getInventoryAttribute1());
+        receiptLine.setInventoryAttribute2(receiptLineCSVWrapper.getInventoryAttribute2());
+        receiptLine.setInventoryAttribute3(receiptLineCSVWrapper.getInventoryAttribute3());
+        receiptLine.setInventoryAttribute4(receiptLineCSVWrapper.getInventoryAttribute4());
+        receiptLine.setInventoryAttribute5(receiptLineCSVWrapper.getInventoryAttribute5());
         return receiptLine;
     }
 
@@ -286,40 +339,66 @@ public class ReceiptLineService {
         if (receiptLine.getItemId() == null && receiptLine.getItem() != null) {
             receiptLine.setItemId(receiptLine.getItem().getId());
         }
+        // default the arrived quantity to the expected quantity
+        if (Objects.isNull(receiptLine.getArrivedQuantity())) {
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
+        }
         return saveOrUpdate(receiptLine);
     }
 
     @Transactional
     public List<Inventory> receive(Long receiptId, Long receiptLineId,
-                             List<Inventory> inventoryList){
+                             List<Inventory> inventoryList, String rfCode){
 
 
         return inventoryList.stream().map(
-                inventory -> receive(receiptId, receiptLineId, inventory)).collect(Collectors.toList());
+                inventory -> receive(receiptId, receiptLineId, inventory, rfCode)).collect(Collectors.toList());
     }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
-                             Inventory inventory) {
-        return receive(receiptId, receiptLineId, inventory, false, "");
+                             Inventory inventory, String rfCode) {
+        return receive(receiptId, receiptLineId, inventory, false, "", rfCode);
     }
     @Transactional
     public Inventory receive(Long receiptId, Long receiptLineId,
                              Inventory inventory,
                              Boolean receiveToStage,
-                             String stageLocation) {
+                             String stageLocation,
+                             String rfCode) {
         // Receive inventory and save it on the receipt
 
         Receipt receipt = receiptService.findById(receiptId);
         ReceiptLine receiptLine = findById(receiptLineId);
-        return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation);
+
+        InboundReceivingConfiguration inboundReceivingConfiguration =
+                inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(receipt);
+
+        Boolean validateOverReceivingAgainstArrivedQuantity = Objects.isNull(inboundReceivingConfiguration) ?
+                false : inboundReceivingConfiguration.getValidateOverReceivingAgainstArrivedQuantity();
+        // setup the in warehouse date for the inventory, if not setup yet
+        // we will use the check in time as the inventory's in warehouse date
+        // if setup by policy. Otherwise, we will leave it blank and let the
+        // inventory service handle it
+        if (Objects.isNull(inventory.getInWarehouseDatetime())) {
+
+            if (Objects.nonNull(inboundReceivingConfiguration) &&
+                    Boolean.TRUE.equals(inboundReceivingConfiguration.getUseReceiptCheckInTimeAsInWarehouseDateTime()))
+            inventory.setInWarehouseDatetime(receipt.getCheckInTime());
+        }
+
+        return receive(receipt, receiptLine, inventory, receiveToStage, stageLocation,
+                validateOverReceivingAgainstArrivedQuantity, rfCode);
 
     }
+
     @Transactional
     public Inventory receive(Receipt receipt,
                              ReceiptLine receiptLine,
                              Inventory inventory,
                              Boolean receiveToStage,
-                             String stageLocationName){
+                             String stageLocationName,
+                             Boolean validateOverReceivingAgainstArrivedQuantity,
+                             String rfCode){
         // Receive inventory and save it on the receipt
 
         // If the inventory has location passed in, we will directly receive the inventory into
@@ -330,7 +409,7 @@ public class ReceiptLineService {
         // Validate if we can receive the inventory
         // 1. over receiving?
         // 3. unexpected item number?
-        validateReceiving(receipt, receiptLine, inventory);
+        validateReceiving(receipt, receiptLine, inventory, validateOverReceivingAgainstArrivedQuantity);
         boolean qcRequired = checkQCRequired(receipt, receiptLine, inventory);
         logger.debug("inventory {} received from receipt line {} / {} needs QC? {}",
                 inventory.getLpn(), receipt.getNumber(), receiptLine.getNumber(),
@@ -396,7 +475,7 @@ public class ReceiptLineService {
                     receiptLine.getQcQuantityRequested() +  inventory.getQuantity()
             );
         }
-        save(receiptLine);
+        receiptLine = save(receiptLine);
         receipt.setReceiptStatus(ReceiptStatus.RECEIVING);
         receiptService.saveOrUpdate(receipt);
 
@@ -417,6 +496,8 @@ public class ReceiptLineService {
         if (Boolean.TRUE.equals(receiveToStage)) {
             newInventory = moveReceivedInventoryToStage(newInventory, stageLocationName);
         }
+        receivingTransactionService.createReceivingTransaction(receiptLine, newInventory,
+                userService.getCurrentUserName(), rfCode);
         return newInventory;
     }
 
@@ -508,7 +589,13 @@ public class ReceiptLineService {
     // validate whether we can receive inventory against this receipt line
     // 1. over receiving?
     // 3. unexpected item number?
-    private void validateReceiving(Receipt receipt, ReceiptLine receiptLine, Inventory inventory) {
+    private void validateReceiving(Receipt receipt, ReceiptLine receiptLine,
+                                   Inventory inventory, Boolean validateOverReceivingAgainstArrivedQuantity) {
+        // make sure the receipt is already checked in
+        if (receipt.getReceiptStatus().equals(ReceiptStatus.OPEN)) {
+            throw ReceiptOperationException.raiseException("Please check in the receipt before you can receive");
+        }
+
         // unexpected item number?
 
         if (!receipt.getAllowUnexpectedItem() &&
@@ -520,21 +607,26 @@ public class ReceiptLineService {
         // check how many more we can receive against this receipt line
         Long maxOverReceivingQuantityAllowedByQuantity = 0L;
         Long maxOverReceivingQuantityAllowedByPercentage = 0L;
+        Long expectedReceivingQuantity =
+                Boolean.TRUE.equals(validateOverReceivingAgainstArrivedQuantity) ?
+                        receiptLine.getArrivedQuantity() : receiptLine.getExpectedQuantity();
 
         if (receiptLine.getOverReceivingQuantity() > 0) {
             maxOverReceivingQuantityAllowedByQuantity = receiptLine.getOverReceivingQuantity();
         }
 
+
+
         if (receiptLine.getOverReceivingPercent() > 0) {
             maxOverReceivingQuantityAllowedByPercentage =
-                    (long) (receiptLine.getExpectedQuantity() * receiptLine.getOverReceivingPercent() / 100);
+                    (long) (expectedReceivingQuantity * receiptLine.getOverReceivingPercent() / 100);
         }
         Long maxOverReceivingQuantityAllowed = Math.max(
                 maxOverReceivingQuantityAllowedByQuantity, maxOverReceivingQuantityAllowedByPercentage);
 
         // See should we receive this inventory, will the quantity maximum the total quantity allowed
         if (receiptLine.getReceivedQuantity() + inventory.getQuantity() >
-                receiptLine.getExpectedQuantity() + maxOverReceivingQuantityAllowed) {
+                expectedReceivingQuantity + maxOverReceivingQuantityAllowed) {
             if (maxOverReceivingQuantityAllowed == 0) {
                 // over receiving is not allowed in this receipt line
                 throw ReceiptOperationException.raiseException("Over receiving is not allowed");
@@ -697,5 +789,61 @@ public class ReceiptLineService {
         }
         return (receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity()) > 0 ?
                 receiptLine.getExpectedQuantity() + overReceivingQuantityAllowed - receiptLine.getReceivedQuantity() : 0;
+    }
+
+    public ReceiptLine changeReceiptLine(Long receiptId, Long receiptLineId, ReceiptLine receiptLine) {
+        ReceiptLine exisitingReceiptLine = findById(receiptLineId);
+        // we will only allow the user to change the
+        if (Objects.nonNull(receiptLine.getCubicMeter())) {
+            exisitingReceiptLine.setCubicMeter(receiptLine.getCubicMeter());
+        }
+        if (Objects.nonNull(receiptLine.getExpectedQuantity())) {
+            exisitingReceiptLine.setExpectedQuantity(receiptLine.getExpectedQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getArrivedQuantity())) {
+            exisitingReceiptLine.setArrivedQuantity(receiptLine.getArrivedQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getOverReceivingPercent())) {
+            exisitingReceiptLine.setOverReceivingPercent(receiptLine.getOverReceivingPercent());
+        }
+        if (Objects.nonNull(receiptLine.getOverReceivingQuantity())) {
+            exisitingReceiptLine.setOverReceivingQuantity(receiptLine.getOverReceivingQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getQcQuantity())) {
+            exisitingReceiptLine.setQcQuantity(receiptLine.getQcQuantity());
+        }
+        if (Objects.nonNull(receiptLine.getQcPercentage())) {
+            exisitingReceiptLine.setQcPercentage(receiptLine.getQcPercentage());
+        }
+        if (Objects.nonNull(receiptLine.getColor())) {
+            exisitingReceiptLine.setColor(receiptLine.getColor());
+        }
+        if (Objects.nonNull(receiptLine.getStyle())) {
+            exisitingReceiptLine.setStyle(receiptLine.getStyle());
+        }
+        if (Objects.nonNull(receiptLine.getProductSize())) {
+            exisitingReceiptLine.setProductSize(receiptLine.getProductSize());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute1())) {
+            exisitingReceiptLine.setInventoryAttribute1(receiptLine.getInventoryAttribute1());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute2())) {
+            exisitingReceiptLine.setInventoryAttribute2(receiptLine.getInventoryAttribute2());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute3())) {
+            exisitingReceiptLine.setInventoryAttribute3(receiptLine.getInventoryAttribute3());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute4())) {
+            exisitingReceiptLine.setInventoryAttribute4(receiptLine.getInventoryAttribute4());
+        }
+        if (Objects.nonNull(receiptLine.getInventoryAttribute5())) {
+            exisitingReceiptLine.setInventoryAttribute5(receiptLine.getInventoryAttribute5());
+        }
+
+        if (Objects.nonNull(receiptLine.getInventoryStatusId())) {
+            exisitingReceiptLine.setInventoryStatusId(receiptLine.getInventoryStatusId());
+        }
+
+        return saveOrUpdate(exisitingReceiptLine);
     }
 }

@@ -51,6 +51,8 @@ public class OrderActivityService {
     private OrderActivityRepository orderActivityRepository;
 
     @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
+    @Autowired
     private HttpSession httpSession;
     @Autowired
     private KafkaSender kafkaSender;
@@ -226,6 +228,12 @@ public class OrderActivityService {
 
                     }
 
+
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+                    /**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -235,6 +243,7 @@ public class OrderActivityService {
                             predicate :
                             clientRestriction.addClientRestriction(predicate,
                                     root, criteriaBuilder);
+                     **/
                 }
                 ,
                 Sort.by(Sort.Direction.DESC, "activityDateTime")

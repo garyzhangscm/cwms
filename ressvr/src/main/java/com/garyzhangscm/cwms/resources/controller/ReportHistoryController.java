@@ -78,6 +78,30 @@ public class ReportHistoryController {
                 .body(resource);
     }
 
+    @RequestMapping(value="/report-histories/preview/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
+    public ResponseEntity<Resource>  previewReport(@PathVariable String filename,
+                                                    @PathVariable String type,
+                                                    @PathVariable Long companyId,
+                                                    @PathVariable Long warehouseId)
+            throws FileNotFoundException {
+
+
+        logger.debug("start to preview report file. To preview a label file, we will convert from lbl into PDF " +
+                " so that the client can preview in the web client");
+        File reportResultFile = reportHistoryService.getReportFile(companyId, warehouseId, type, filename, "", true);
+        InputStreamResource resource
+                = new InputStreamResource(new FileInputStream(reportResultFile));
+
+        logger.debug(" we will return file {} to the user, length is {} ",
+                reportResultFile.getName(),
+                reportResultFile.length());
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
+                .contentLength(reportResultFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
 
     @RequestMapping(value="/report-histories/download/{companyId}/{warehouseId}/{type}/{filename}", method = RequestMethod.GET)
     public ResponseEntity<Resource>  downloadReport(@PathVariable String filename,
@@ -90,8 +114,13 @@ public class ReportHistoryController {
         File reportResultFile = reportHistoryService.getReportFile(companyId, warehouseId, type, filename);
         InputStreamResource resource
                 = new InputStreamResource(new FileInputStream(reportResultFile));
+
+        logger.debug(" we will return file {} to the user, length is {} ",
+                reportResultFile.getName(),
+                reportResultFile.length());
+
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;fileName=" + filename)
+                .header("Content-Disposition", "attachment;fileName=" + reportResultFile.getName())
                 .contentLength(reportResultFile.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
@@ -105,7 +134,8 @@ public class ReportHistoryController {
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
                                                     @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
-                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies,
+                                                    @RequestParam(name = "collated", required = false, defaultValue = "false") Boolean collated)
             throws FileNotFoundException, IOException {
 
         logger.debug("Start to print report for {} / {}, copies: {}",
@@ -116,7 +146,7 @@ public class ReportHistoryController {
         // print the report from the printer attached to the server
         File reportResultFile =
                 reportHistoryService.printReport(companyId, warehouseId, type, filename,
-                        findPrinterBy, printerName, copies);
+                        findPrinterBy, printerName, copies, collated);
         return ResponseBodyWrapper.success(reportResultFile.getName() + " printed!");
 
     }
@@ -129,7 +159,8 @@ public class ReportHistoryController {
                                                     @PathVariable Long warehouseId,
                                                     @RequestParam(name = "findPrinterBy", required = false, defaultValue = "") String findPrinterBy,
                                                     @RequestParam(name = "printerName", required = false, defaultValue = "") String printerName,
-                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies)
+                                                    @RequestParam(name = "copies", required = false, defaultValue = "") Integer copies,
+                                                           @RequestParam(name = "collated", required = false, defaultValue = "false") Boolean collated)
             throws FileNotFoundException, IOException {
 
         logger.debug("Start to print report for {} / {}, copies: {}",
@@ -139,8 +170,27 @@ public class ReportHistoryController {
                 printerName, findPrinterBy);
         // print the report from the printer attached to the server
         reportHistoryService.printReportInBatch(companyId, warehouseId, type, filenames,
-                        findPrinterBy, printerName, copies);
+                        findPrinterBy, printerName, copies, collated);
         return ResponseBodyWrapper.success(filenames + " printed!");
+
+    }
+
+
+    /**
+     * Combine labels into one label file and return
+     * @param companyId
+     * @param warehouseId
+     * @return
+     * @throws FileNotFoundException
+     */
+    @RequestMapping(value="/report-histories/labels/combine", method = RequestMethod.POST)
+    public ReportHistory combineLabels(@RequestParam Long companyId,
+                                       @RequestParam Long warehouseId,
+                                       @RequestBody List<ReportHistory> reportHistories)
+            throws IOException {
+
+
+        return reportHistoryService.combineLabels(companyId, warehouseId, reportHistories);
 
     }
 

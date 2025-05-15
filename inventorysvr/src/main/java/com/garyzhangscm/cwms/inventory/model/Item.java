@@ -19,15 +19,13 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garyzhangscm.cwms.inventory.service.ItemService;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +33,10 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "item")
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"hibernateLazyInitializer"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Item extends AuditibleEntity<String> implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,9 +55,19 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Transient
     private Client client;
 
+
+
     @ManyToOne
     @JoinColumn(name="item_family_id")
     private ItemFamily itemFamily;
+
+    @OneToMany(
+            mappedBy = "item",
+            //cascade = CascadeType.ALL,
+            //orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ItemBarcode> itemBarcodes = new ArrayList<>();
 
     @OneToMany(
         mappedBy = "item",
@@ -99,6 +107,32 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name="default_style")
     private String defaultStyle;
 
+
+    @Column(name="tracking_inventory_attribute_1_flag")
+    private boolean trackingInventoryAttribute1Flag = false;
+    @Column(name="default_inventory_attribute_1")
+    private String defaultInventoryAttribute1;
+
+    @Column(name="tracking_inventory_attribute_2_flag")
+    private boolean trackingInventoryAttribute2Flag = false;
+    @Column(name="default_inventory_attribute_2")
+    private String defaultInventoryAttribute2;
+
+    @Column(name="tracking_inventory_attribute_3_flag")
+    private boolean trackingInventoryAttribute3Flag = false;
+    @Column(name="default_inventory_attribute_3")
+    private String defaultInventoryAttribute3;
+
+    @Column(name="tracking_inventory_attribute_4_flag")
+    private boolean trackingInventoryAttribute4Flag = false;
+    @Column(name="default_inventory_attribute_4")
+    private String defaultInventoryAttribute4;
+
+    @Column(name="tracking_inventory_attribute_5_flag")
+    private boolean trackingInventoryAttribute5Flag = false;
+    @Column(name="default_inventory_attribute_5")
+    private String defaultInventoryAttribute5;
+
     @Column(name="shelf_life_days")
     private Integer shelfLifeDays = 0;
 
@@ -110,12 +144,14 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     private Long abcCategoryId;
 
     @Transient
+    @JsonIgnore
     private ABCCategory abcCategory;
 
     @Column(name="velocity_id")
     private Long velocityId;
 
     @Transient
+    @JsonIgnore
     private Velocity velocity;
 
 
@@ -155,6 +191,9 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Column(name = "work_order_sop_url")
+    private String workOrderSOPUrl;
+
     @Column(name = "active_flag")
     private Boolean activeFlag = true;
 
@@ -175,7 +214,40 @@ public class Item extends AuditibleEntity<String> implements Serializable {
     @Column(name="handling_rate_by_unit")
     private Double handlingRateByUnit;
 
+
+    // for kit item, the parent - children
+    // relationship will be maintained by the
+    // bill of material
+    @Column(name = "kit_item_flag")
+    private Boolean kitItemFlag = false;
+
+
+    @Column(name = "bill_of_material_id")
+    private Long billOfMaterialId;
     @Transient
+    private BillOfMaterial billOfMaterial;
+
+    @Transient
+    private List<Item> kitInnerItems = new ArrayList<>();
+
+    @Transient
+    private List<Double> kitInnerItemQuanties = new ArrayList<>();
+
+    // whether allow the operator to break the kit
+    // and process the individuals
+    // only when it is a kit item
+    @Column(name = "kit_allow_break_flag")
+    private Boolean kitAllowBreakFlag = false;
+    // whether allow the operator to break the kit
+    // and ship the individuals
+    // only when it is a kit item
+    @Column(name = "kit_allow_ship_individual_flag")
+    private Boolean kitAllowShipIndividualFlag = false;
+
+
+
+    @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     @Override
@@ -308,6 +380,103 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         return quickbookListId;
     }
 
+
+    public boolean isTrackingInventoryAttribute1Flag() {
+        return trackingInventoryAttribute1Flag;
+    }
+
+    public void setTrackingInventoryAttribute1Flag(boolean trackingInventoryAttribute1Flag) {
+        this.trackingInventoryAttribute1Flag = trackingInventoryAttribute1Flag;
+    }
+
+    public String getDefaultInventoryAttribute1() {
+        return defaultInventoryAttribute1;
+    }
+
+    public void setDefaultInventoryAttribute1(String defaultInventoryAttribute1) {
+        this.defaultInventoryAttribute1 = defaultInventoryAttribute1;
+    }
+
+    public boolean isTrackingInventoryAttribute2Flag() {
+        return trackingInventoryAttribute2Flag;
+    }
+
+    public void setTrackingInventoryAttribute2Flag(boolean trackingInventoryAttribute2Flag) {
+        this.trackingInventoryAttribute2Flag = trackingInventoryAttribute2Flag;
+    }
+
+    public String getDefaultInventoryAttribute2() {
+        return defaultInventoryAttribute2;
+    }
+
+    public void setDefaultInventoryAttribute2(String defaultInventoryAttribute2) {
+        this.defaultInventoryAttribute2 = defaultInventoryAttribute2;
+    }
+
+    public boolean isTrackingInventoryAttribute3Flag() {
+        return trackingInventoryAttribute3Flag;
+    }
+
+    public void setTrackingInventoryAttribute3Flag(boolean trackingInventoryAttribute3Flag) {
+        this.trackingInventoryAttribute3Flag = trackingInventoryAttribute3Flag;
+    }
+
+    public String getDefaultInventoryAttribute3() {
+        return defaultInventoryAttribute3;
+    }
+
+    public void setDefaultInventoryAttribute3(String defaultInventoryAttribute3) {
+        this.defaultInventoryAttribute3 = defaultInventoryAttribute3;
+    }
+
+    public boolean isTrackingInventoryAttribute4Flag() {
+        return trackingInventoryAttribute4Flag;
+    }
+
+    public void setTrackingInventoryAttribute4Flag(boolean trackingInventoryAttribute4Flag) {
+        this.trackingInventoryAttribute4Flag = trackingInventoryAttribute4Flag;
+    }
+
+    public String getDefaultInventoryAttribute4() {
+        return defaultInventoryAttribute4;
+    }
+
+    public void setDefaultInventoryAttribute4(String defaultInventoryAttribute4) {
+        this.defaultInventoryAttribute4 = defaultInventoryAttribute4;
+    }
+
+    public Long getBillOfMaterialId() {
+        return billOfMaterialId;
+    }
+
+    public void setBillOfMaterialId(Long billOfMaterialId) {
+        this.billOfMaterialId = billOfMaterialId;
+    }
+
+    public Boolean getKitItemFlag() {
+        return kitItemFlag;
+    }
+
+    public void setKitItemFlag(Boolean kitItemFlag) {
+        this.kitItemFlag = kitItemFlag;
+    }
+
+    public boolean isTrackingInventoryAttribute5Flag() {
+        return trackingInventoryAttribute5Flag;
+    }
+
+    public void setTrackingInventoryAttribute5Flag(boolean trackingInventoryAttribute5Flag) {
+        this.trackingInventoryAttribute5Flag = trackingInventoryAttribute5Flag;
+    }
+
+    public String getDefaultInventoryAttribute5() {
+        return defaultInventoryAttribute5;
+    }
+
+    public void setDefaultInventoryAttribute5(String defaultInventoryAttribute5) {
+        this.defaultInventoryAttribute5 = defaultInventoryAttribute5;
+    }
+
     public void setQuickbookListId(String quickbookListId) {
         this.quickbookListId = quickbookListId;
     }
@@ -404,9 +573,18 @@ public class Item extends AuditibleEntity<String> implements Serializable {
         this.abcCategory = abcCategory;
     }
 
+    public List<ItemBarcode> getItemBarcodes() {
+        return itemBarcodes;
+    }
+
+    public void setItemBarcodes(List<ItemBarcode> itemBarcodes) {
+        this.itemBarcodes = itemBarcodes;
+    }
+
     public Velocity getVelocity() {
         return velocity;
     }
+
 
     public void setVelocity(Velocity velocity) {
         this.velocity = velocity;
@@ -538,5 +716,67 @@ public class Item extends AuditibleEntity<String> implements Serializable {
 
     public void setHandlingRateByUnit(Double handlingRateByUnit) {
         this.handlingRateByUnit = handlingRateByUnit;
+    }
+
+    public String getWorkOrderSOPUrl() {
+        return workOrderSOPUrl;
+    }
+
+    public void setWorkOrderSOPUrl(String workOrderSOPUrl) {
+        this.workOrderSOPUrl = workOrderSOPUrl;
+    }
+
+    public List<Item> getKitInnerItems() {
+        return kitInnerItems;
+    }
+
+    public void setKitInnerItems(List<Item> kitInnerItems) {
+        this.kitInnerItems = kitInnerItems;
+    }
+    public void addKitInnerItem(Item kitInnerItem) {
+        this.kitInnerItems.add(kitInnerItem);
+    }
+
+    public BillOfMaterial getBillOfMaterial() {
+        return billOfMaterial;
+    }
+
+    public void setBillOfMaterial(BillOfMaterial billOfMaterial) {
+        this.billOfMaterial = billOfMaterial;
+    }
+
+    public Double getBillOfMaterialQuantity() {
+        if (Objects.isNull(billOfMaterial)) {
+            return null;
+        }
+        return billOfMaterial.getExpectedQuantity();
+    }
+
+    public List<Double> getKitInnerItemQuanties() {
+        return kitInnerItemQuanties;
+    }
+
+    public void setKitInnerItemQuanties(List<Double> kitInnerItemQuanties) {
+        this.kitInnerItemQuanties = kitInnerItemQuanties;
+    }
+
+    public void addKitInnerItemQuanty(Double quantity) {
+        this.kitInnerItemQuanties.add(quantity);
+    }
+
+    public Boolean getKitAllowBreakFlag() {
+        return kitAllowBreakFlag;
+    }
+
+    public void setKitAllowBreakFlag(Boolean kitAllowBreakFlag) {
+        this.kitAllowBreakFlag = kitAllowBreakFlag;
+    }
+
+    public Boolean getKitAllowShipIndividualFlag() {
+        return kitAllowShipIndividualFlag;
+    }
+
+    public void setKitAllowShipIndividualFlag(Boolean kitAllowShipIndividualFlag) {
+        this.kitAllowShipIndividualFlag = kitAllowShipIndividualFlag;
     }
 }

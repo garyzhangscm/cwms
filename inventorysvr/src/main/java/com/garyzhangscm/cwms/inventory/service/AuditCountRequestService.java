@@ -19,14 +19,13 @@
 package com.garyzhangscm.cwms.inventory.service;
 
 
-import ch.qos.logback.core.util.StringCollectionUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.garyzhangscm.cwms.inventory.clients.ResourceServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.AuditCountRequestRepository;
-import io.micrometer.core.instrument.util.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,16 +84,19 @@ public class AuditCountRequestService {
 
         if (Objects.nonNull(auditCountRequest.getLocationId())) {
 
-            logger.debug(">> location id is not null: {}",
-                    auditCountRequest.getLocationId());
-            auditCountRequest.setLocation(
-                    warehouseLayoutServiceRestemplateClient.getLocationById(
-                            auditCountRequest.getLocationId()
-                    )
-            );
-            logger.debug("Get location {} by id {}",
-                    auditCountRequest.getLocation().getName(),
-                    auditCountRequest.getLocationId());
+            try {
+                logger.debug(">> location id is not null: {}",
+                        auditCountRequest.getLocationId());
+                auditCountRequest.setLocation(
+                        warehouseLayoutServiceRestemplateClient.getLocationById(
+                                auditCountRequest.getLocationId()
+                        )
+                );
+                logger.debug("Get location {} by id {}",
+                        auditCountRequest.getLocation().getName(),
+                        auditCountRequest.getLocationId());
+            }
+            catch (Exception ex){}
         }
     }
 
@@ -197,7 +199,7 @@ public class AuditCountRequestService {
 
 
         List<AuditCountRequest> auditCountRequests;
-        if (StringUtils.isNotBlank(auditCountRequestIds)) {
+        if (Strings.isNotBlank(auditCountRequestIds)) {
             auditCountRequests =
                     Arrays.stream(auditCountRequestIds.split(","))
                             .map(Long::parseLong)

@@ -18,11 +18,6 @@
 
 package com.garyzhangscm.cwms.resources.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LocationGroup extends AuditibleEntity<String>{
 

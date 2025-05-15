@@ -51,7 +51,8 @@ public class OrderBillingService implements BillingService {
     @Override
     public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
                                                  Long companyId, Long warehouseId, Long clientId,
-                                                 String number, Boolean serialize) {
+                                                 String number, Boolean serialize,
+                                                 Boolean includeDaysSinceInWarehouseForStorageFee) {
 
         // we have 2 type of receiving billable activity.
         // 1. item level: every time we receive the item, the system generates record in

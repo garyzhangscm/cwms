@@ -18,28 +18,20 @@
 
 package com.garyzhangscm.cwms.inventory.service;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inventory.clients.CommonServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryConfigurationRepository;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.util.Strings;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.*;
-import java.io.*;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 

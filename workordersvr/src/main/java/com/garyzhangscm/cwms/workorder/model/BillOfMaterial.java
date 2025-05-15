@@ -2,9 +2,9 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +58,13 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
     @Transient
     private Item item;
+
+    @Column(name = "client_id")
+    private Long clientId;
+
+    @Transient
+    private Client client;
+
 
 
     @Column(name = "expected_quantity")
@@ -159,5 +166,21 @@ public class BillOfMaterial extends AuditibleEntity<String>{
 
     public void setBillOfMaterialByProducts(List<BillOfMaterialByProduct> billOfMaterialByProducts) {
         this.billOfMaterialByProducts = billOfMaterialByProducts;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

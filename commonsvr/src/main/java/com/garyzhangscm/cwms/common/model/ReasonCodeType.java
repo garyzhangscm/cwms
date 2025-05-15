@@ -19,5 +19,6 @@
 package com.garyzhangscm.cwms.common.model;
 
 public enum ReasonCodeType {
+    Inventory_Status,
     Inventory_Adjust;
 }

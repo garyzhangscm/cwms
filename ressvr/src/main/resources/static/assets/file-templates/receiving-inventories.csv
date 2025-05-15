@@ -1,1 +1,1 @@
-receipt,lpn,location,item,itemPackageType,quantity,unitOfMeasure,inventoryStatus,fifoDate,color,productSize,style
+receipt,lpn,location,item,itemPackageType,quantity,unitOfMeasure,inventoryStatus,fifoDate,color,productSize,style,inventoryAttribute1,inventoryAttribute2,inventoryAttribute3,inventoryAttribute4,inventoryAttribute5,inWarehouseDatetime

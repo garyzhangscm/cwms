@@ -1,7 +1,7 @@
 package com.garyzhangscm.cwms.outbound.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -130,5 +130,12 @@ public class PickList  extends AuditibleEntity<String>{
 
     public void setAcknowledgedUsername(String acknowledgedUsername) {
         this.acknowledgedUsername = acknowledgedUsername;
+    }
+
+    public void addPick(Pick pick) {
+        // only add if the pick is not in the list yet
+        if (getPicks().stream().noneMatch(existingPick -> existingPick.getId().equals(pick.getId()))) {
+            getPicks().add(pick);
+        }
     }
 }

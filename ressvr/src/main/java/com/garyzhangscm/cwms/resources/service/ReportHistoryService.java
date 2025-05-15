@@ -1,11 +1,14 @@
 package com.garyzhangscm.cwms.resources.service;
 
+import com.garyzhangscm.cwms.resources.clients.LabelaryRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.LayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.clients.PrintingServiceRestemplateClient;
 import com.garyzhangscm.cwms.resources.exception.ReportAccessPermissionException;
 import com.garyzhangscm.cwms.resources.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.resources.exception.SystemFatalException;
 import com.garyzhangscm.cwms.resources.model.*;
 import com.garyzhangscm.cwms.resources.repository.ReportHistoryRepository;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -20,7 +23,11 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,6 +53,8 @@ public class ReportHistoryService {
     @Autowired
     private PrintingServiceRestemplateClient printingServiceRestemplateClient;
 
+    @Autowired
+    private LabelaryRestemplateClient labelaryRestemplateClient;
 
 
     public ReportHistory findById(Long id) {
@@ -169,11 +178,31 @@ public class ReportHistoryService {
     }
     public File getReportFile(Long companyId, Long warehouseId, String type,
                               String filename, String printerName) {
+        return getReportFile(companyId, warehouseId, type, filename, printerName,
+                false);
+    }
+
+    /**
+     * return the report file, which is already filled with data.
+     * if it is to preview and the report is actually a label, we will try to convert it to
+     * PDF so the client can review it but for print purpose, we will still return .lbl file
+     * so that zebra printer can accept the print job
+     * @param companyId
+     * @param warehouseId
+     * @param type
+     * @param filename
+     * @param printerName
+     * @param preview
+     * @return
+     */
+    public File getReportFile(Long companyId, Long warehouseId, String type,
+                              String filename, String printerName, Boolean preview) {
         if (!verifyReportResultFileAccess(filename)) {
             throw ReportAccessPermissionException.raiseException(
                     "Current user doesn't have access to the report file"
             );
         }
+
 
         // get the meta data of the report so we know where to get the
         // report result file
@@ -193,7 +222,44 @@ public class ReportHistoryService {
 
         logger.debug("Will return {} to the client",
                 fileUrl);
-        return new File(fileUrl);
+
+        ReportType reportType = ReportType.valueOf(type);
+        File file = new File(fileUrl);
+        logger.debug("see if we will need to convert a label file to PDF");
+        logger.debug("preview mode? {}", preview );
+        logger.debug("file is label? {}", reportType.isLabel() );
+        logger.debug("file {}'s extension is prn / lbl? {}",
+                file.getAbsolutePath(),
+                fileIsLabel(file));
+
+        if (Boolean.TRUE.equals(preview) &&
+                reportType.isLabel() &&
+                fileIsLabel(file)) {
+            logger.debug("OK, we will need to convert the label files to PDF and return");
+                return convertLabelFileToPDF(file);
+        }
+
+
+        return  file;
+
+
+    }
+
+    private boolean fileIsLabel(File file) {
+        return FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("prn") ||
+                FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("lbl");
+    }
+    /**
+     * Convert label file (ext with PRN) to PDF file
+     * @param zplFile
+     * @return
+     */
+    private File convertLabelFileToPDF(File zplFile) {
+        // use labelary.com to convert from ZPL into PDF
+        // May consider https://www.labelzoom.net/ as well
+        return labelaryRestemplateClient.convertZPLToPDF(zplFile);
+
+
     }
 
     private String getReportResultFolder(Long companyId, Long warehouseId) {
@@ -230,7 +296,7 @@ public class ReportHistoryService {
                             String type, String filenames,
                             String findPrinterBy,
                             String printerName,
-                            Integer copies) {
+                            Integer copies, Boolean collated) {
         String[] fileNameArray = filenames.split(",");
 
         String printer = printerName;
@@ -261,7 +327,8 @@ public class ReportHistoryService {
                     companyId, warehouseId, type, findPrinterBy, printerName, printer);
             logger.debug("and will printer copies: {} ", copies );
 
-            printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
+            printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer,
+                    copies, collated);
 
             // we will send the printing request to the remote printing service
 
@@ -272,7 +339,7 @@ public class ReportHistoryService {
                             String type, String filename,
                             String findPrinterBy,
                             String printerName,
-                            Integer copies)
+                            Integer copies, Boolean collated)
         throws  IOException{
 
 
@@ -308,7 +375,8 @@ public class ReportHistoryService {
                 companyId, warehouseId, type, findPrinterBy, printerName, printer);
         logger.debug("and will printer copies: {} ", copies );
 
-        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type), printer, copies);
+        printingServiceRestemplateClient.sendPrintingRequest(reportResultFile, ReportType.valueOf(type),
+                printer, copies, collated);
 
         // we will send the printing request to the remote printing service
 
@@ -316,4 +384,61 @@ public class ReportHistoryService {
         return reportResultFile;
     }
 
+    /**
+     * Combine multiple labels into one label file so that we can print in one printer queue and make sure
+     * all the related labels can be printed together
+     * @param companyId
+     * @param warehouseId
+     * @return
+     */
+    public ReportHistory combineLabels(Long companyId, Long warehouseId, List<ReportHistory> reportHistories) throws IOException {
+
+        StringBuilder labelsContent = new StringBuilder();
+        for(ReportHistory reportHistory : reportHistories) {
+            logger.debug("Start to get label file by reportHistory {}", reportHistory);
+            if (!reportHistory.getType().isLabel()) {
+                throw SystemFatalException.raiseException("fail to combine as the type " +
+                        reportHistory.getType() + " is not a label");
+            }
+
+            File file = getReportFile(companyId, warehouseId, reportHistory.getType().name(), reportHistory.getFileName());
+
+            logger.debug("get file {}", file.getAbsolutePath());
+            String labelContent = new String(
+                    Files.readAllBytes(
+                            Paths.get(file.getAbsolutePath())));
+            logger.debug("=========    label content =========\n{}", labelContent);
+            labelsContent.append(labelContent);
+        }
+        int hashCode = reportHistories.hashCode();
+
+        // let's combine all the file together
+        String reportFileName = "LABEL_COMBINED" + "_" + System.currentTimeMillis() + "_" + hashCode
+                + ".lbl";
+        String reportResultAbsoluteFileName =
+                getReportResultFolder(companyId, warehouseId)
+                        + reportFileName;
+
+        logger.debug("start to save the new combined file {}", reportResultAbsoluteFileName);
+
+        // save the result to local file
+        String reportResultFileName = reportService.writeResultFile(
+                reportFileName, reportResultAbsoluteFileName, labelsContent.toString());
+
+
+        // save the history information
+        ReportHistory reportHistory =
+                new ReportHistory();
+        reportHistory.setCompanyId(companyId);
+        reportHistory.setWarehouseId(warehouseId);
+        reportHistory.setPrintedDate(ZonedDateTime.now());
+        reportHistory.setPrintedUsername(userService.getCurrentUserName());
+        reportHistory.setType(ReportType.COMBINED_LABELS);
+        reportHistory.setFileName(reportResultFileName);
+        reportHistory.setDescription(ReportType.COMBINED_LABELS.toString());
+        reportHistory.setReportOrientation(ReportOrientation.PORTRAIT);
+
+        return save(reportHistory);
+
+    }
 }

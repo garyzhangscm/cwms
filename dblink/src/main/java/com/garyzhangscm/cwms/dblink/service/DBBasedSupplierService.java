@@ -40,20 +40,43 @@ public class DBBasedSupplierService {
     @Value("${integration.record.process.limit:100}")
     int recordLimit;
 
+    // filter will be in the format of
+    // foo1=bar1&foo2=bar2, the same format like URL parameters
+    @Value("${integration.filter.supplier:\"\"}")
+    String filter;
+
+
     public List<DBBasedSupplier> findAll() {
         return dbBasedSupplierRepository.findAll();
     }
 
 
 
-    private List<DBBasedSupplier> findPendingIntegration() {
+    private List<DBBasedSupplier> findPendingIntegration(String filter) {
         Pageable limit = PageRequest.of(0,recordLimit);
+
+        logger.debug("start to find pending supplier integration by filter: {}",
+                filter);
 
         Page<DBBasedSupplier> dbBasedSuppliers =  dbBasedSupplierRepository.findAll(
                 (Root<DBBasedSupplier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
                     List<Predicate> predicates = new ArrayList<Predicate>();
 
                     predicates.add(criteriaBuilder.equal(root.get("status"), IntegrationStatus.PENDING));
+
+                    if (Strings.isNotBlank(filter)) {
+                        String[] parameters = filter.split("&");
+                        for(String parameter : parameters) {
+                            String[] nameValue = parameter.split("=");
+                            if (nameValue.length != 2) {
+                                continue;
+                            }
+                            logger.debug("apply filter {} = {} to find pending item integration",
+                                    nameValue[0], nameValue[1]);
+
+                            predicates.add(criteriaBuilder.equal(root.get(nameValue[0]), nameValue[1]));
+                        }
+                    }
 
                     Predicate[] p = new Predicate[predicates.size()];
                     return criteriaBuilder.and(predicates.toArray(p));
@@ -69,7 +92,7 @@ public class DBBasedSupplierService {
     }
 
     public void sendIntegrationData() {
-        List<DBBasedSupplier> pendingDBBasedSuppliers = findPendingIntegration();
+        List<DBBasedSupplier> pendingDBBasedSuppliers = findPendingIntegration(filter);
         logger.debug("# find " +  pendingDBBasedSuppliers.size() + " pendingDBBasedSupplier");
         AtomicReference<LocalDateTime> startProcessingDateTime = new AtomicReference<>(LocalDateTime.now());
         AtomicReference<LocalDateTime> lastProcessingDateTime = new AtomicReference<>(LocalDateTime.now());

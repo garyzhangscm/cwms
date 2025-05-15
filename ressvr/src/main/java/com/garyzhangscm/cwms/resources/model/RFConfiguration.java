@@ -69,6 +69,23 @@ public class RFConfiguration extends AuditibleEntity<String>  {
     @Column(name = "list_pick_batch_picking")
     private Boolean listPickBatchPicking = true;
 
+    // auto deposit all LPNs in the deposit
+    // page, when the LPNs has the same destination
+    // as the current LPN that is being deposit
+    @Column(name = "auto_deposit_for_lpn_with_same_destination")
+    private Boolean autoDepositForLpnWithSameDestination = false;
+
+    // order - manual pick, whether
+    // check the partial LPN if whole LPN is too much
+    // for the current pick
+    @Column(name = "outbound_order_validate_partial_lpn_pick")
+    private Boolean outboundOrderValidatePartialLPNPick = false;
+
+    // during outbound picking, whether directly pick to ship stage
+    // if NO, then pick to RF and the user has to deposit
+    @Column(name = "pick_to_ship_stage")
+    private Boolean pickToShipStage = false;
+
     @Column(name = "printer_name")
     private String printerName;
 
@@ -134,5 +151,29 @@ public class RFConfiguration extends AuditibleEntity<String>  {
 
     public void setPrinterName(String printerName) {
         this.printerName = printerName;
+    }
+
+    public Boolean getAutoDepositForLpnWithSameDestination() {
+        return autoDepositForLpnWithSameDestination;
+    }
+
+    public void setAutoDepositForLpnWithSameDestination(Boolean autoDepositForLpnWithSameDestination) {
+        this.autoDepositForLpnWithSameDestination = autoDepositForLpnWithSameDestination;
+    }
+
+    public Boolean getOutboundOrderValidatePartialLPNPick() {
+        return outboundOrderValidatePartialLPNPick;
+    }
+
+    public void setOutboundOrderValidatePartialLPNPick(Boolean outboundOrderValidatePartialLPNPick) {
+        this.outboundOrderValidatePartialLPNPick = outboundOrderValidatePartialLPNPick;
+    }
+
+    public Boolean getPickToShipStage() {
+        return pickToShipStage;
+    }
+
+    public void setPickToShipStage(Boolean pickToShipStage) {
+        this.pickToShipStage = pickToShipStage;
     }
 }

@@ -1,6 +1,6 @@
 package com.garyzhangscm.cwms.layout.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -59,6 +59,10 @@ public class Company extends AuditibleEntity<String> {
     @Column(name = "enabled")
     private Boolean enabled = true;
 
+    @Column(name = "api_key")
+    private String apiKey;
+    @Column(name = "api_secret")
+    private String apiSecret;
 
     public Long getId() {
         return id;
@@ -194,5 +198,21 @@ public class Company extends AuditibleEntity<String> {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiSecret() {
+        return apiSecret;
+    }
+
+    public void setApiSecret(String apiSecret) {
+        this.apiSecret = apiSecret;
     }
 }

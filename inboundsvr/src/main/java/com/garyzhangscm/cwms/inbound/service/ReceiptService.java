@@ -22,8 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.garyzhangscm.cwms.inbound.clients.*;
 
-import com.garyzhangscm.cwms.inbound.exception.ReceiptOperationException;
-import com.garyzhangscm.cwms.inbound.exception.ResourceNotFoundException;
+import com.garyzhangscm.cwms.inbound.exception.*;
 import com.garyzhangscm.cwms.inbound.model.*;
 import com.garyzhangscm.cwms.inbound.repository.ReceiptRepository;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ import javax.persistence.criteria.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -64,6 +66,8 @@ public class ReceiptService {
     private PurchaseOrderService purchaseOrderService;
 
     @Autowired
+    private ReceivingLPNLabelFontSizeService receivingLPNLabelFontSizeService;
+    @Autowired
     private CommonServiceRestemplateClient commonServiceRestemplateClient;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
@@ -77,12 +81,16 @@ public class ReceiptService {
     private IntegrationService integrationService;
     @Autowired
     private KafkaSender kafkaSender;
+    @Autowired
+    private InboundReceivingConfigurationService inboundReceivingConfigurationService;
 
     @Autowired
     private UserService userService;
     @Autowired
     private AdminServiceRestemplateClient adminServiceRestemplateClient;
 
+    @Autowired
+    private ClientRestrictionUtil clientRestrictionUtil;
 
     private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> receiptFileUploadProgress = new ConcurrentHashMap<>();
@@ -90,6 +98,7 @@ public class ReceiptService {
 
     private Map<String, Double> receivingInventoryFileUploadProgress = new ConcurrentHashMap<>();
     private Map<String, List<FileUploadResult>> receivingInventoryFileUploadResult = new ConcurrentHashMap<>();
+
 
 
 
@@ -113,10 +122,11 @@ public class ReceiptService {
                                  ZonedDateTime checkInStartTime,
                                  ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate, Long purchaseOrderId,
+                                 String ids,
                                  ClientRestriction clientRestriction) {
         return findAll(warehouseId, number, receiptStatusList, supplierId, supplierName,
                 clientId, clientName,
-                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, true, clientRestriction);
+                checkInStartTime, checkInEndTime, checkInDate, purchaseOrderId, ids, true, clientRestriction);
     }
 
     public List<Receipt> findAll(Long warehouseId, String number, String receiptStatusList,
@@ -126,6 +136,7 @@ public class ReceiptService {
                                  ZonedDateTime checkInEndTime,
                                  LocalDate checkInDate,
                                  Long purchaseOrderId,
+                                 String ids,
                                  boolean loadDetails, ClientRestriction clientRestriction) {
 
 
@@ -136,6 +147,16 @@ public class ReceiptService {
 
                     predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
 
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
+
+                        for(String id : ids.split(",")) {
+                            inIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inIds));
+                    }
                     if (StringUtils.isNotBlank(number)) {
 
                         if (number.contains("*")) {
@@ -215,7 +236,12 @@ public class ReceiptService {
 
                     }
 
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
 
+/**
                     Predicate[] p = new Predicate[predicates.size()];
 
                     // special handling for 3pl
@@ -262,7 +288,7 @@ public class ReceiptService {
                                         criteriaBuilder.isNotNull(root.get("clientId")),
                                         accessibleClientListPredicate));
                     }
-
+**/
                 }
         );
         if (receipts.size() > 0 && loadDetails) {
@@ -270,6 +296,127 @@ public class ReceiptService {
         }
         return receipts;
     }
+    public Page<Receipt> findAllByPagination(Long warehouseId, String number, String receiptStatusList,
+                                             Long supplierId, String supplierName,
+                                             Long clientId, String clientName,
+                                             ZonedDateTime checkInStartTime,
+                                             ZonedDateTime checkInEndTime,
+                                             LocalDate checkInDate,
+                                             Long purchaseOrderId,
+                                             String ids,
+                                             boolean loadDetails,
+                                             ClientRestriction clientRestriction,
+                                             Pageable pageable) {
+
+
+
+        return receiptRepository.findAll(
+                (Root<Receipt> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Strings.isNotBlank(ids)) {
+
+                        CriteriaBuilder.In<Long> inIds = criteriaBuilder.in(root.get("id"));
+
+                        for(String id : ids.split(",")) {
+                            inIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inIds));
+                    }
+                    if (StringUtils.isNotBlank(number)) {
+
+                        if (number.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("number"), number.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("number"), number));
+                        }
+                    }
+
+                    if (Objects.nonNull(supplierId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplierId));
+
+                    }
+                    if (StringUtils.isNotBlank(supplierName)) {
+
+                        Supplier supplier = commonServiceRestemplateClient.getSupplierByName(warehouseId, supplierName);
+                        if (Objects.nonNull(supplier)) {
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), supplier.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the supplier by name,
+                            predicates.add(criteriaBuilder.equal(root.get("supplierId"), -1));
+                        }
+                    }
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+
+                    }
+                    if (StringUtils.isNotBlank(clientName)) {
+
+                        Client client = commonServiceRestemplateClient.getClientByName(warehouseId, clientName);
+                        if (Objects.nonNull(client)) {
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), client.getId()));
+
+                        }
+                        else {
+
+                            // we can't find the client by name,
+                            predicates.add(criteriaBuilder.equal(root.get("clientId"), -1));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(receiptStatusList)) {
+                        CriteriaBuilder.In<ReceiptStatus> inReceiptStatuses = criteriaBuilder.in(root.get("receiptStatus"));
+                        for(String receiptStatus : receiptStatusList.split(",")) {
+                            inReceiptStatuses.value(ReceiptStatus.valueOf(receiptStatus));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptStatuses));
+                    }
+
+                    if (Objects.nonNull(checkInStartTime)) {
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                root.get("checkInTime"), checkInStartTime));
+
+                    }
+
+                    if (Objects.nonNull(checkInEndTime)) {
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                root.get("checkInTime"), checkInEndTime));
+
+                    }
+                    logger.debug(">> Check In Date is passed in {}", checkInDate);
+                    if (Objects.nonNull(checkInDate)) {
+                        LocalDateTime dateStartTime = checkInDate.atStartOfDay();
+                        LocalDateTime dateEndTime = checkInDate.atStartOfDay().plusDays(1).minusSeconds(1);
+                        predicates.add(criteriaBuilder.between(
+                                root.get("checkInTime"), dateStartTime.atZone(ZoneOffset.UTC), dateEndTime.atZone(ZoneOffset.UTC)));
+
+                    }
+                    if (Objects.nonNull(purchaseOrderId)) {
+                        Join<Receipt, PurchaseOrder> joinPurchaseOrder = root.join("purchaseOrder", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinPurchaseOrder.get("id"), purchaseOrderId));
+
+                    }
+
+                    return clientRestrictionUtil.addClientRestriction(root,
+                            predicates,
+                            clientRestriction,
+                            criteriaBuilder);
+
+
+                }
+                ,
+                pageable
+        );
+    }
+
 
     public Receipt findByNumber(Long warehouseId, Long clientId, String number, boolean loadDetails) {
         Receipt receipt = receiptRepository.findByNumber(warehouseId, clientId, number);
@@ -854,6 +1001,7 @@ public class ReceiptService {
                         receiptLine.setNumber(receiptLineSequence.toString());
                         receiptLineSequence.getAndIncrement();
                         receiptLine.setExpectedQuantity(quantity);
+                        receiptLine.setArrivedQuantity(quantity);
                         // over receive is normally disallowed for warehouse transfer order
                         receiptLine.setOverReceivingQuantity(0L);
                         receiptLine.setOverReceivingPercent(0.0);
@@ -874,42 +1022,44 @@ public class ReceiptService {
     }
 
 
-    public ReportHistory generatePrePrintLPNReport(Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
-            throws JsonProcessingException {
-        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_REPORT, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+    public ReportHistory generatePrePrintLPNReport(Long id, String lpnNumber, Long inventoryQuantity, Boolean ignoreInventoryQuantity,
+                                                   String locale, String printerName) {
+        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_REPORT, receiptLineService.findById(id),
+                lpnNumber, inventoryQuantity, ignoreInventoryQuantity, locale, printerName);
     }
-    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
-            throws JsonProcessingException {
-        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_LABEL, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+    public ReportHistory generatePrePrintLPNLabel(Long id, String lpnNumber, Long inventoryQuantity,
+                                                  Boolean ignoreInventoryQuantity,  String locale, String printerName) {
+        return generatePrePrintLPNDocument(ReportType.RECEIVING_LPN_LABEL, receiptLineService.findById(id),
+                lpnNumber, inventoryQuantity, ignoreInventoryQuantity, locale, printerName);
     }
     /**
      * Print LPN label or document
      * @param id
      * @param lpnNumber
-     * @param lpnQuantity
+     * @param inventoryQuantity
      * @param locale
      * @param printerName
      * @return
      * @throws JsonProcessingException
      */
-    public ReportHistory generatePrePrintLPNDocument(ReportType reportType, Long id, String lpnNumber, Long lpnQuantity, String locale, String printerName)
-            throws JsonProcessingException {
-        return generatePrePrintLPNDocument(reportType, receiptLineService.findById(id), lpnNumber, lpnQuantity, locale, printerName);
+    public ReportHistory generatePrePrintLPNDocument(
+            ReportType reportType, Long id, String lpnNumber, Long inventoryQuantity, Boolean ignoreInventoryQuantity, String locale, String printerName)  {
+        return generatePrePrintLPNDocument(reportType, receiptLineService.findById(id), lpnNumber,
+                inventoryQuantity, ignoreInventoryQuantity, locale, printerName);
     }
 
     public ReportHistory generatePrePrintLPNDocument(ReportType reportType,
                                                      ReceiptLine receiptLine,
                                                      String lpnNumber,
-                                                     Long lpnQuantity, String locale,
-                                                  String printerName)
-            throws JsonProcessingException {
+                                                     Long inventoryQuantity, Boolean ignoreInventoryQuantity, String locale,
+                                                  String printerName) {
         Long warehouseId = receiptLine.getWarehouseId();
 
         Report reportData = new Report();
         // setup the parameters for the label;
         // for label, we don't need the actual data.
         setupPrePrintLPNLabelParameters(
-                reportData, receiptLine, lpnNumber, lpnQuantity
+                reportData, receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity
         );
         logger.debug("will call resource service to print the report with locale: {}",
                 locale);
@@ -931,22 +1081,30 @@ public class ReceiptService {
 
     private void setupPrePrintLPNLabelParameters(
             Report report, ReceiptLine receiptLine, String lpnNumber,
-            Long lpnQuantity) {
+            Long lpnQuantity, Boolean ignoreInventoryQuantity) {
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
 
         Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                receiptLine, lpnNumber, lpnQuantity
+                receiptLine, lpnNumber, lpnQuantity, ignoreInventoryQuantity,
+                colorFontSize, styleFontSize, productSizeFontSize
         );
         for(Map.Entry<String, Object> entry : lpnLabelContent.entrySet()) {
 
             report.addParameter(entry.getKey(), entry.getValue());
         }
-
-
-
     }
 
     private Map<String, Object> getLPNDocumentContent(ReceiptLine receiptLine, String lpnNumber,
-                                                   Long lpnQuantity) {
+                                                   Long inventoryQuantity, Boolean ignoreInventoryQuantity,
+                                                      ReceivingLPNLabelFontSize colorFontSize,
+                                                      ReceivingLPNLabelFontSize styleFontSize,
+                                                      ReceivingLPNLabelFontSize productSizeFontSize) {
 
         // QC barcode
         StringBuilder qrCode = new StringBuilder();
@@ -960,12 +1118,158 @@ public class ReceiptService {
         lpnLabelContent.put("item_family", Objects.nonNull(receiptLine.getItem().getItemFamily()) ?
                 receiptLine.getItem().getItemFamily().getDescription() : "");
         lpnLabelContent.put("item_name", receiptLine.getItem().getName());
+        lpnLabelContent.put("item_description", receiptLine.getItem().getDescription());
+
+        // if item description is too long, split into multiple lines
+        lpnLabelContent.put("item_description_1", receiptLine.getItem().getDescription());
+        // logger.debug("item_description_1 passed in: {}", receiptLine.getItem().getDescription());
+
+        if (Strings.isNotBlank(receiptLine.getItem().getDescription().trim()) &&
+                receiptLine.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = receiptLine.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    // logger.debug("item_description_" + lineIndex + " passed in: {}", line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+            // logger.debug("item_description_" + lineIndex + " passed in: {}", line);
+        }
+
         qrCode.append("itemName=").append(receiptLine.getItem().getName()).append(";");
+
+        lpnLabelContent.put("item_id", receiptLine.getItemId());
+        qrCode.append("itemId=").append(receiptLine.getItemId()).append(";");
 
         lpnLabelContent.put("receipt_number", receiptLine.getReceipt().getNumber());
         qrCode.append("receiptId=").append(receiptLine.getReceipt().getId()).append(";");
         qrCode.append("receiptLineId=").append(receiptLine.getId()).append(";");
 
+        if (Objects.nonNull(receiptLine.getItemPackageTypeId()) &&
+                Objects.isNull(receiptLine.getItemPackageType())) {
+            receiptLine.setItemPackageType(
+                    inventoryServiceRestemplateClient.getItemPackageTypeById(receiptLine.getItemPackageTypeId())
+            );
+
+        }
+        if (Objects.nonNull(receiptLine.getItemPackageType())) {
+
+            lpnLabelContent.put("item_package_type_id", receiptLine.getItemPackageType().getId());
+            qrCode.append("itemPackageTypeId=").append(receiptLine.getItemPackageType().getId()).append(";");
+
+            lpnLabelContent.put("item_package_type_name", receiptLine.getItemPackageType().getName());
+            qrCode.append("itemPackageTypeName=").append(receiptLine.getItemPackageType().getName()).append(";");
+
+            ItemUnitOfMeasure caseItemUnitOfMeasure = receiptLine.getItemPackageType().getItemUnitOfMeasures().stream().filter(
+                    itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+            ).findFirst().orElse(null);
+            if (Objects.nonNull(caseItemUnitOfMeasure)) {
+
+                logger.debug("Find case quantity {} for this item package type {} / {}",
+                        caseItemUnitOfMeasure.getQuantity(), receiptLine.getItem().getName(),
+                        receiptLine.getItemPackageType().getName());
+                lpnLabelContent.put("caseQuantity", caseItemUnitOfMeasure.getQuantity());
+                qrCode.append("caseQuantity=").append(receiptLine.getItemPackageType().getName()).append(";");
+            }
+            else {
+
+                logger.debug("Fail to find case quantity  for this item package type {} / {}",
+                        receiptLine.getItem().getName(),
+                        receiptLine.getItemPackageType().getName());
+            }
+
+
+        }
+
+        if (Objects.nonNull(receiptLine.getReceipt().getClient())) {
+
+            lpnLabelContent.put("client", receiptLine.getReceipt().getClient().getName());
+        }
+        else if (Objects.nonNull(receiptLine.getReceipt().getClientId())) {
+            Client client = commonServiceRestemplateClient.getClientById(
+                    receiptLine.getReceipt().getClientId()
+            );
+            if (Objects.nonNull(client)) {
+
+                lpnLabelContent.put("client", client.getName());
+            }
+        }
+        else {
+
+            lpnLabelContent.put("client", "");
+        }
+
+        if (Strings.isNotBlank(receiptLine.getColor())) {
+            // we may need to automatically adjust the font size of the color
+            // so that the label can display all characters when it is too long
+
+            lpnLabelContent.put("color", receiptLine.getColor().trim().replace(" ", "\\\\&"));
+            lpnLabelContent.put("color_font_size", getLabelFontSize(
+                    receiptLine.getColor().trim().replace(" ", "\\\\&"),
+                    colorFontSize.getCharactersPerLine(),
+                    colorFontSize.getBaseSize(),
+                    colorFontSize.getBaseSizeLineCount(),
+                    colorFontSize.getStep()));
+
+            qrCode.append("color=").append(receiptLine.getColor()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getProductSize())) {
+            lpnLabelContent.put("productSize", receiptLine.getProductSize());
+
+            lpnLabelContent.put("productSize_font_size", getLabelFontSize(
+                    receiptLine.getProductSize().trim(),
+                    productSizeFontSize.getCharactersPerLine(),
+                    productSizeFontSize.getBaseSize(),
+                    productSizeFontSize.getBaseSizeLineCount(),
+                    productSizeFontSize.getStep()));
+
+            qrCode.append("productSize=").append(receiptLine.getProductSize()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getStyle())) {
+            lpnLabelContent.put("style", receiptLine.getStyle());
+            lpnLabelContent.put("style_font_size", getLabelFontSize(
+                    receiptLine.getStyle().trim(),
+                    styleFontSize.getCharactersPerLine(),
+                    styleFontSize.getBaseSize(),
+                    styleFontSize.getBaseSizeLineCount(),
+                    styleFontSize.getStep()));
+            qrCode.append("style=").append(receiptLine.getStyle()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
+            lpnLabelContent.put("inventoryAttribute1", receiptLine.getInventoryAttribute1());
+            qrCode.append("inventoryAttribute1=").append(receiptLine.getInventoryAttribute1()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute2())) {
+            lpnLabelContent.put("inventoryAttribute2", receiptLine.getInventoryAttribute2());
+            qrCode.append("inventoryAttribute2=").append(receiptLine.getInventoryAttribute2()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute3())) {
+            lpnLabelContent.put("inventoryAttribute3", receiptLine.getInventoryAttribute3());
+            qrCode.append("inventoryAttribute3=").append(receiptLine.getInventoryAttribute3()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute4())) {
+            lpnLabelContent.put("inventoryAttribute4", receiptLine.getInventoryAttribute4());
+            qrCode.append("inventoryAttribute4=").append(receiptLine.getInventoryAttribute4()).append(";");
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute5())) {
+            lpnLabelContent.put("inventoryAttribute5", receiptLine.getInventoryAttribute5());
+            qrCode.append("inventoryAttribute5=").append(receiptLine.getInventoryAttribute5()).append(";");
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
 
@@ -999,10 +1303,18 @@ public class ReceiptService {
             lpnLabelContent.put("supplier",  "");
         }
 
-        if (Objects.nonNull(lpnQuantity)) {
-            logger.debug("LPN Quantity is passed in: {}", lpnQuantity);
-            lpnLabelContent.put("quantity", lpnQuantity);
-            qrCode.append("quantity=").append(lpnQuantity).append(";");
+
+        lpnLabelContent.put("stockUOM", receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+        logger.debug("stockUOM is passed in: {}",
+                receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+
+        if(Boolean.TRUE.equals(ignoreInventoryQuantity)) {
+            lpnLabelContent.put("quantity", "");
+        }
+        else if (Objects.nonNull(inventoryQuantity)) {
+            logger.debug("LPN Quantity is passed in: {}", inventoryQuantity);
+            lpnLabelContent.put("quantity", inventoryQuantity);
+            qrCode.append("quantity=").append(inventoryQuantity).append(";");
 
         }
         else if (receiptLine.getItem().getItemPackageTypes().size() > 0){
@@ -1038,22 +1350,52 @@ public class ReceiptService {
 
     }
 
-    public ReportHistory generatePrePrintLPNLabelInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale,
-                                                         String printerName) throws JsonProcessingException {
-        return generatePrePrintLPNDocumentInBatch(
+    /**
+     * Get the font size for long string to be printed on the label
+     * when we need more than 4 lines to display the value, then we will shrink the size
+     * everytime we need more lines to display the string.
+     * @param value
+     * @param charactersPerLine
+     * @return
+     */
+    private int getLabelFontSize(String value, int charactersPerLine, int baseSize, int baseSizeLineCount, int step) {
+        if (Strings.isBlank(value)) {
+            return baseSize;
+        }
+        int lineNeeded = (int)Math.ceil(value.length() * 1.0 / charactersPerLine);
+        logger.debug("value: {}, charactersPerLine: {}, lineNeeded: {}",
+                value, charactersPerLine, lineNeeded);
+
+        // if we don't need too many lines to display the value
+        if (lineNeeded <= baseSizeLineCount) {
+            return baseSize;
+        }
+        logger.debug("label font size {}", (baseSize - step * (lineNeeded - baseSizeLineCount)));
+        return baseSize - step * (lineNeeded - baseSizeLineCount);
+
+
+    }
+
+    public ReportHistory generateReceiptLinePrePrintLPNLabelInBatch(Long id, String lpn, Long inventoryQuantity,
+                                                         Boolean ignoreInventoryQuantity, Integer count,
+                                                         String locale,
+                                                         String printerName) {
+        return generateReceiptLinePrePrintLPNDocumentInBatch(
                 ReportType.RECEIVING_LPN_LABEL, id,
-                lpn, lpnQuantity, count, copies, locale, printerName
+                lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,  locale, printerName
         );
     }
 
 
-    public ReportHistory generatePrePrintLPNReportInBatch(Long id, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale,
-                                                         String printerName) throws JsonProcessingException {
-        return generatePrePrintLPNDocumentInBatch(
+    public ReportHistory generateReceiptLinePrePrintLPNReportInBatch(Long id, String lpn, Long inventoryQuantity, Boolean ignoreInventoryQuantity,
+                                                          Integer count,
+                                                          String locale,
+                                                         String printerName)  {
+        return generateReceiptLinePrePrintLPNDocumentInBatch(
                 ReportType.RECEIVING_LPN_REPORT, id,
-                lpn, lpnQuantity, count, copies, locale, printerName
+                lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count,  locale, printerName
         );
     }
 
@@ -1061,25 +1403,29 @@ public class ReceiptService {
      * Generate multiple labels in a batch, one for each lpn
      * @param id
      * @param lpn
-     * @param lpnQuantity
+     * @param inventoryQuantity
      * @param count
      * @param locale
      * @return
      */
-    public ReportHistory generatePrePrintLPNDocumentInBatch(ReportType reportType,
-                                                         Long id, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale,
-                                                         String printerName) throws JsonProcessingException {
-        return generatePrePrintLPNDocumentInBatch(
+    public ReportHistory generateReceiptLinePrePrintLPNDocumentInBatch(ReportType reportType,
+                                                         Long id, String lpn, Long inventoryQuantity,
+                                                            Boolean ignoreInventoryQuantity, Integer count,
+                                                            String locale,
+                                                         String printerName)   {
+        return generateReceiptLinePrePrintLPNDocumentInBatch(
                 reportType, receiptLineService.findById(id),
-                lpn, lpnQuantity, count, copies, locale, printerName
+                lpn, inventoryQuantity, ignoreInventoryQuantity,
+                count, locale, printerName
         );
     }
 
-    public ReportHistory generatePrePrintLPNDocumentInBatch(ReportType reportType,
-                                                         ReceiptLine receiptLine, String lpn, Long lpnQuantity, Integer count,
-                                                         Integer copies, String locale,
-                                                         String printerName) throws JsonProcessingException {
+    public ReportHistory generateReceiptLinePrePrintLPNDocumentInBatch(ReportType reportType,
+                                                         ReceiptLine receiptLine, String lpn,
+                                                            Long inventoryQuantity, Boolean ignoreInventoryQuantity,
+                                                            Integer count,
+                                                            String locale,
+                                                         String printerName)  {
 
         Long warehouseId = receiptLine.getWarehouseId();
         List<String> lpnNumbers;
@@ -1100,14 +1446,14 @@ public class ReceiptService {
             // for label, we don't need the actual data.
             if (reportType.isLabel()) {
 
-                setupPrePrintLPNLabelData(
-                        reportData, receiptLine, lpnNumbers, lpnQuantity, copies
+                setupReceiptLinePrePrintLPNLabelData(
+                        reportData, receiptLine, lpnNumbers, inventoryQuantity, ignoreInventoryQuantity
                 );
             }
             else {
 
-                setupPrePrintLPNDocumentData(
-                        reportData, receiptLine, lpnNumbers, lpnQuantity, copies
+                setupReceiptLinePrePrintLPNDocumentData(
+                        reportData, receiptLine, lpnNumbers, inventoryQuantity, ignoreInventoryQuantity
                 );
             }
             logger.debug("will call resource service to print the report with locale: {}",
@@ -1127,37 +1473,149 @@ public class ReceiptService {
         throw ReceiptOperationException.raiseException("Can't get lpn numbers");
     }
 
-    private void setupPrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
-                                           Long lpnQuantity, Integer copies) {
+    private void setupReceiptLinePrePrintLPNLabelData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
+                                           Long inventoryQuantity, Boolean ignoreInventoryQuantity) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
         lpnNumbers.forEach(
                 lpnNumber -> {
-
                     Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                            receiptLine, lpnNumber, lpnQuantity
+                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                            colorFontSize, styleFontSize, productSizeFontSize
                     );
-                    for (int i = 0; i < copies; i++) {
-
-                        lpnLabelContents.add(lpnLabelContent);
-                    }
+                    lpnLabelContents.add(lpnLabelContent);
                 }
         );
+
         reportData.setData(lpnLabelContents);
 
     }
 
-    private void setupPrePrintLPNDocumentData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
-                                           Long lpnQuantity, Integer copies) {
+    private void setupReceiptPrePrintLPNLabelData(Report reportData, Receipt receipt, List<String> lpnNumbers,
+                                                  PrintingLPNByReceiptParameters printingLPNByReceiptParameters) {
+
+        List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
+        int lpnNumbersStartIndex = 0;
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
+
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+
+            Long inventoryQuantity =  printingLPNByReceiptParameters.getLpnQuantityOnLabelByReceiptLines().get(receiptLine.getId());
+            Boolean ignoreInventoryQuantity =  printingLPNByReceiptParameters.getIgnoreInventoryQuantityByReceiptLines().get(receiptLine.getId());
+            Integer lpnCount = printingLPNByReceiptParameters.getLpnLabelCountByReceiptLines().get(receiptLine.getId());
+            int lpnNumbersEndIndex = lpnNumbersStartIndex + lpnCount;
+
+            if (lpnNumbersEndIndex > lpnNumbers.size()) {
+                throw SystemFatalException.raiseException("fail to generate labels for receipt. Get less LPN labels " +
+                        lpnNumbers.size() + " than needed. we need at least " + lpnNumbersEndIndex + " labels ");
+            }
+            List<String> lpnNumbersForReceiptLine = lpnNumbers.subList(lpnNumbersStartIndex, lpnNumbersEndIndex);
+
+            lpnNumbersForReceiptLine.forEach(
+                    lpnNumber -> {
+                        Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
+                                receiptLine, lpnNumber,
+                                inventoryQuantity,
+                                ignoreInventoryQuantity,
+                                colorFontSize, styleFontSize, productSizeFontSize
+                        );
+                        lpnLabelContents.add(lpnLabelContent);
+                    }
+            );
+            lpnNumbersStartIndex = lpnNumbersEndIndex;
+
+
+        }
+
+        logger.debug("We got {} LPN labels for this receipt {}", lpnLabelContents.size(),
+                receipt.getNumber());
+
+        reportData.setData(lpnLabelContents);
+
+    }
+
+    private void setupReceiptLinePrePrintLPNDocumentData(Report reportData, ReceiptLine receiptLine, List<String> lpnNumbers,
+                                           Long inventoryQuantity, Boolean ignoreInventoryQuantity ) {
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receiptLine.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
 
         List<ReceivingLPNReportData> receivingLPNReportData = new ArrayList<>();
         lpnNumbers.forEach(
                 lpnNumber -> {
 
                     Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
-                            receiptLine, lpnNumber, lpnQuantity
+                            receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                            colorFontSize, styleFontSize, productSizeFontSize
                     );
-                    for (int i = 0; i < copies; i++) {
+
+                        receivingLPNReportData.add(
+                                new ReceivingLPNReportData(
+                                        lpnLabelContent.get("item_family").toString(),
+                                        lpnLabelContent.get("item_name").toString(),
+                                        lpnLabelContent.get("receipt_number").toString(),
+                                        lpnLabelContent.get("supplier").toString(),
+                                        lpnLabelContent.get("check_in_date").toString(),
+                                        lpnLabelContent.get("quantity").toString(),
+                                        lpnLabelContent.get("lpn").toString()));
+
+                }
+        );
+        reportData.setData(receivingLPNReportData);
+
+    }
+
+    private void setupReceiptPrePrintLPNDocumentData(Report reportData, Receipt receipt, List<String> lpnNumbers,
+                                                     PrintingLPNByReceiptParameters printingLPNByReceiptParameters) {
+
+        List<ReceivingLPNReportData> receivingLPNReportData = new ArrayList<>();
+
+        ReceivingLPNLabelFontSize colorFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.COLOR);
+        ReceivingLPNLabelFontSize styleFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.STYLE);
+        ReceivingLPNLabelFontSize productSizeFontSize = receivingLPNLabelFontSizeService.getReceivingLPNLabelFontSize(
+                receipt.getWarehouseId(), ReceivingLPNLabelFontType.PRODUCT_SIZE);
+
+        int lpnNumbersStartIndex = 0;
+
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+
+            Long inventoryQuantity =  printingLPNByReceiptParameters.getLpnQuantityOnLabelByReceiptLines().get(receiptLine.getId());
+            Boolean ignoreInventoryQuantity =  printingLPNByReceiptParameters.getIgnoreInventoryQuantityByReceiptLines().get(receiptLine.getId());
+            Integer lpnCount = printingLPNByReceiptParameters.getLpnLabelCountByReceiptLines().get(receiptLine.getId());
+            int lpnNumbersEndIndex = lpnNumbersStartIndex + lpnCount;
+
+            if (lpnNumbersEndIndex > lpnNumbers.size()) {
+                throw SystemFatalException.raiseException("fail to generate labels for receipt. Get less LPN labels " +
+                        lpnNumbers.size() + " than needed. we need at least " + lpnNumbersEndIndex + " labels ");
+            }
+            List<String> lpnNumbersForReceiptLine = lpnNumbers.subList(lpnNumbersStartIndex, lpnNumbersEndIndex);
+
+            lpnNumbersForReceiptLine.forEach(
+                    lpnNumber -> {
+
+                        Map<String, Object> lpnLabelContent =   getLPNDocumentContent(
+                                receiptLine, lpnNumber, inventoryQuantity, ignoreInventoryQuantity,
+                                colorFontSize, styleFontSize, productSizeFontSize
+                        );
 
                         receivingLPNReportData.add(
                                 new ReceivingLPNReportData(
@@ -1170,11 +1628,20 @@ public class ReceiptService {
                                         lpnLabelContent.get("lpn").toString()));
 
                     }
-                }
-        );
+            );
+            lpnNumbersStartIndex = lpnNumbersEndIndex;
+
+
+        }
+
+        logger.debug("We got {} LPN document for this receipt {}", receivingLPNReportData.size(),
+                receipt.getNumber());
+
+
         reportData.setData(receivingLPNReportData);
 
     }
+
     private List<String> getNextLPNNumbers(String lpn, Integer count) {
 
 
@@ -1225,7 +1692,7 @@ public class ReceiptService {
         }
         return findAll(warehouseId, null, null, supplierId,
                 supplierName, null, null, null,
-                null, null, null, false, null).size();
+                null, null, null, null,false, null).size();
     }
 
     /**
@@ -1263,6 +1730,7 @@ public class ReceiptService {
             receiptLine.setWarehouseId(purchaseOrderLine.getWarehouseId());
             receiptLine.setItemId(purchaseOrderLine.getItemId());
             receiptLine.setExpectedQuantity(receiptQuantity);
+            receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
             receiptLine.setPurchaseOrderLine(purchaseOrderLine);
             receipt.addReceiptLines(receiptLine);
 
@@ -1365,6 +1833,13 @@ public class ReceiptService {
                         receipt.setCreatedBy(username);
                         receipt = saveOrUpdate(receipt);
                     }
+                    else if (!validateReceiptForModifyByUploadFile(receipt)) {
+                        // if we already have the receipt, and the system is setup to not change the receipt
+                        // of specific status
+                        throw ReceiptOperationException.raiseException("receipt with status " + receipt.getReceiptStatus() +
+                                " is not allowed to be changed when uploading file" );
+
+                    }
                     receiptFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalReceiptLineCount) * (index + 0.5));
                     logger.debug("start to create receipt line {} for item {}, quantity {}, for receipt {}",
                             receiptLineCSVWrapper.getLine(),
@@ -1406,12 +1881,30 @@ public class ReceiptService {
 
                     index++;
                 }
-                // after we process all inventory, mark the progress to 100%
-                receiptFileUploadProgress.put(fileUploadProgressKey, 100.0);
             }
+            // after we process all inventory, mark the progress to 100%
+            receiptFileUploadProgress.put(fileUploadProgressKey, 100.0);
 
         }).start();
         return fileUploadProgressKey;
+
+    }
+
+    boolean validateReceiptForModifyByUploadFile(Receipt receipt) {
+        InboundReceivingConfiguration inboundReceivingConfiguration =
+                inboundReceivingConfigurationService.getBestMatchedInboundReceivingConfiguration(
+                        receipt);
+        if (Objects.isNull(inboundReceivingConfiguration)) {
+            // there's nothing configured yet, let's allow change as long as the receipt has not
+            // been started yet
+            return receipt.getReceiptStatus().noLaterThan(ReceiptStatus.OPEN);
+        }
+        // if status is not setup, then it means we don't allow any override of receipt
+        // when upload the file
+        if (Objects.isNull(inboundReceivingConfiguration.getStatusAllowReceiptChangeWhenUploadFile())) {
+            return false;
+        }
+        return receipt.getReceiptStatus().noLaterThan(inboundReceivingConfiguration.getStatusAllowReceiptChangeWhenUploadFile());
 
     }
 
@@ -1422,7 +1915,9 @@ public class ReceiptService {
         return fileService.loadData(file, ReceiptLineCSVWrapper.class);
     }
 
-    public String saveReceivingInventoryData(Long warehouseId, File file) throws IOException {
+    public String saveReceivingInventoryData(Long warehouseId, File file,
+                                             Boolean removeExistingInventoryWithSameLPN,
+                                             Boolean emptyLocation) throws IOException {
 
         String username = userService.getCurrentUserName();
         String fileUploadProgressKey = warehouseId + "-" + username + "-" + System.currentTimeMillis();
@@ -1432,19 +1927,27 @@ public class ReceiptService {
 
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 0.0);
 
-        List<InventoryCSVWrapper> inventoryCSVWrappers =
-                fileService.loadData(file, InventoryCSVWrapper.class).stream().filter(
-                        inventoryCSVWrapper -> validateInventoryCSVWrapperForReceiving(inventoryCSVWrapper)
-                ).map(InventoryCSVWrapper::trim).collect(Collectors.toList());
-
+        List<InventoryCSVWrapper> inventoryCSVWrappers = fileService.loadData(file, InventoryCSVWrapper.class);
         receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0);
 
 
         new Thread(() -> {
             int totalInventoryCount = inventoryCSVWrappers.size();
             int index = 0;
+
+            if (Boolean.TRUE.equals(removeExistingInventoryWithSameLPN)) {
+                logger.debug("we will remove existing inventory with same LPNs as the ones from the uploaded file");
+                removeInventoryByLpnForUploadReceivingInventory(fileUploadProgressKey, warehouseId, inventoryCSVWrappers);
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 15.0);
+            }
+            if (Boolean.TRUE.equals(emptyLocation)) {
+                logger.debug("we will empty locations as the ones from the uploaded file");
+                emptyLocationForUploadReceivingInventory(fileUploadProgressKey, warehouseId, inventoryCSVWrappers);
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0);
+            }
+
             for (InventoryCSVWrapper inventoryCSVWrapper : inventoryCSVWrappers) {
-                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index));
+                receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index));
                 try {
                     // let's get the receipt and reciept line
                     // make sure all the necessary data exists
@@ -1470,7 +1973,7 @@ public class ReceiptService {
 
                     Item item = inventoryServiceRestemplateClient.getItemByName(warehouseId,
                             Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getItem());
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.2));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.2));
                     if (Objects.isNull(item)) {
                         // skip the item if the name is wrong
                         logger.debug("can't find item by name {}, skip current line",
@@ -1484,7 +1987,7 @@ public class ReceiptService {
                     logger.debug("got item {} by name {}", item.getId(), item.getName());
                     Receipt receipt = findByNumber(warehouseId,
                             Objects.isNull(client) ? null : client.getId(), inventoryCSVWrapper.getReceipt());
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.4));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.4));
 
                     if (Objects.isNull(receipt)) {
                         throw ReceiptOperationException.raiseException(
@@ -1495,14 +1998,8 @@ public class ReceiptService {
                     }
                     logger.debug("got receipt by number {}", receipt.getNumber());
                     // get the first matched line that has enough open quantity
-                    Optional<ReceiptLine> matchedReceiptLineOptional = receipt.getReceiptLines().stream().filter(
-                            receiptLine ->
-                                    receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) &&
-                                            item.getId().equals(receiptLine.getItemId()) &&
-                                            receiptLineService.getOpenQuantity(receiptLine) > 0
-                    ).sorted(Comparator.comparing(a -> receiptLineService.getOpenQuantity(a)))
-                            .findFirst();
-                    if (matchedReceiptLineOptional.isEmpty()) {
+                    ReceiptLine matchedReceiptLine = getBestMatchReceiptLineForReceiving(receipt, item, inventoryCSVWrapper);
+                    if (Objects.isNull(matchedReceiptLine)) {
                         logger.debug("can't find an open line from receipt {} for item {} with quantity",
                                 receipt.getNumber(),
                                 inventoryCSVWrapper.getItem(),
@@ -1513,9 +2010,8 @@ public class ReceiptService {
                                         + " with quantity " + inventoryCSVWrapper.getQuantity());
                     }
 
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.6));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.6));
 
-                    ReceiptLine matchedReceiptLine = matchedReceiptLineOptional.get();
                     logger.debug("we found the matched line, number is {}",
                             matchedReceiptLine.getNumber());
 
@@ -1529,16 +2025,17 @@ public class ReceiptService {
                                   + " for the inventory. " +
                                 "if receive into the receipt, make sure that the receipt is already check in");
                     }
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 +  (90.0 / totalInventoryCount) * (index + 0.75));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 +  (80.0 / totalInventoryCount) * (index + 0.75));
                     logger.debug("created inventory from the csv line, will start to receive against this inventory" +
                                     " ================           Inventory ================\nlpn： {} , qty: {}, location: {}",
                             inventory.getLpn(),
                             inventory.getQuantity(),
                             inventory.getLocation().getName());
-                    receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory);
+
+                    receiptLineService.receive(receipt.getId(), matchedReceiptLine.getId(), inventory, "");
                     // we complete this inventory
                     logger.debug("Inventory received, continue with next line");
-                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
+                    receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 20.0 + (80.0 / totalInventoryCount) * (index + 1));
 
                     List<FileUploadResult> fileUploadResults = receivingInventoryFileUploadResult.getOrDefault(
                             fileUploadProgressKey, new ArrayList<>()
@@ -1583,6 +2080,236 @@ public class ReceiptService {
 
     }
 
+    private void emptyLocationForUploadReceivingInventory(String fileUploadProgressKey,
+                                                          Long warehouseId, List<InventoryCSVWrapper> inventoryCSVWrappers) {
+        Set<String> locationNameSet =
+                inventoryCSVWrappers.stream().map(inventoryCSVWrapper -> inventoryCSVWrapper.getLocation())
+                        .filter(name -> Strings.isNotBlank(name)).collect(Collectors.toSet());
+
+        logger.debug("We will empty {} locations when we upload the files", locationNameSet.size());
+        int index = 0;
+
+        for (String locationName : locationNameSet) {
+            inventoryServiceRestemplateClient.removeInventoryAtLocation(warehouseId, locationName);
+            logger.debug("# location {} is emptied", locationName);
+            receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 15.0 +  (5.0 / locationNameSet.size()) * (index));
+            index++;
+        }
+    }
+
+    /**
+     * Remove all LPNs in the uploaded File before we create the new inventory
+     * @param inventoryCSVWrappers
+     */
+    private void removeInventoryByLpnForUploadReceivingInventory(String fileUploadProgressKey,
+                                                                 Long warehouseId,
+                                                                 List<InventoryCSVWrapper> inventoryCSVWrappers) {
+
+        Set<String> lpnSet = inventoryCSVWrappers.stream()
+                .map(inventoryCSVWrapper -> inventoryCSVWrapper.getLpn())
+                .filter(lpn -> Strings.isNotBlank(lpn)).collect(Collectors.toSet());
+        logger.debug("We will remove {} LPNs when we upload the files", lpnSet.size());
+        int index = 0;
+        for (String lpn : lpnSet) {
+            inventoryServiceRestemplateClient.removeInventoryByLpn(warehouseId, lpn);
+            logger.debug("# lpn {} is removed", lpn);
+
+            receivingInventoryFileUploadProgress.put(fileUploadProgressKey, 5.0 +  (10.0 / lpnSet.size()) * (index));
+            index++;
+        }
+    }
+
+
+    public ReceiptLine getBestMatchReceiptLineForReceiving(Receipt receipt, Item item, InventoryCSVWrapper inventoryCSVWrapper) {
+
+        ReceiptLine bestMatchReceiptLine = null;
+        int bestMatchReceiptLineScore = 0;
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+            // get the matching score of the inventory to the receipt. The one
+            // with highest score is the receipt line that best match with the inventory
+            // score = 0 means not match
+            int score = getMatchingScore(receiptLine, item, inventoryCSVWrapper);
+            if (score <= bestMatchReceiptLineScore) {
+                continue;
+            }
+            bestMatchReceiptLine = receiptLine;
+            bestMatchReceiptLineScore = score;
+        }
+
+        return bestMatchReceiptLine;
+    }
+
+    /**
+     * Return the matching score of the inventory to be received against the receipt line
+     * 0: not match
+     * 1: the receipt line doesn't have the trait but the inventory has
+     * 2: the receipt line has the trait and its value is the same as inventory
+     * @param receiptLine
+     * @param item
+     * @param inventoryCSVWrapper
+     * @return
+     */
+    public int getMatchingScore(ReceiptLine receiptLine, Item item, InventoryCSVWrapper inventoryCSVWrapper) {
+        // make sure the item matches
+        int score = 0;
+
+        if (!receiptLine.getItem().getName().equalsIgnoreCase(inventoryCSVWrapper.getItem()) ||
+                !item.getId().equals(receiptLine.getItemId())) {
+            logger.debug("Receipt line {} / {} doesn't match with inventory's item {} as the line's item id is {} " +
+                            " while the inventory's item id is {}",
+                    receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                    inventoryCSVWrapper.getItem(),
+                    receiptLine.getItemId(), item.getId());
+            return 0;
+        }
+        // if the receipt line has item package type, make sure it matches
+        if (Objects.nonNull(receiptLine.getItemPackageType())) {
+            if (!receiptLine.getItemPackageType().getName().equalsIgnoreCase(inventoryCSVWrapper.getItemPackageType())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's item package type {} as the line's item package type is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getItemPackageType(),
+                        receiptLine.getItemPackageType().getName());
+                return 0;
+            } else {
+                // the receipt line doesn't have restriction on the item package type
+                score += 1;
+            }
+        }
+
+        // make sure the inventory and receipt line matches with any required attribute
+        if (Strings.isNotBlank(receiptLine.getColor())) {
+            if (!receiptLine.getColor().equalsIgnoreCase(inventoryCSVWrapper.getColor())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's color {} as the line's color is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getColor(),
+                        receiptLine.getColor());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+        if (Strings.isNotBlank(receiptLine.getStyle())) {
+            if (!receiptLine.getStyle().equalsIgnoreCase(inventoryCSVWrapper.getStyle())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's style {} as the line's style is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getStyle(),
+                        receiptLine.getStyle());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+        if (Strings.isNotBlank(receiptLine.getProductSize())) {
+            if (!receiptLine.getProductSize().equalsIgnoreCase(inventoryCSVWrapper.getProductSize())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's product size {} as the line's product size is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getProductSize(),
+                        receiptLine.getProductSize());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute1())) {
+            if (!receiptLine.getInventoryAttribute1().equalsIgnoreCase(inventoryCSVWrapper.getAttribute1())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 1 {} as the line's attribute 1  is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute1(),
+                        receiptLine.getInventoryAttribute1());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute2())) {
+            if (!receiptLine.getInventoryAttribute2().equalsIgnoreCase(inventoryCSVWrapper.getAttribute2())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 2 {} as the line's attribute 2  is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute2(),
+                        receiptLine.getInventoryAttribute2());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute3())) {
+            if (!receiptLine.getInventoryAttribute3().equalsIgnoreCase(inventoryCSVWrapper.getAttribute3())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 3 {} as the line's attribute 3 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute3(),
+                        receiptLine.getInventoryAttribute3());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute4())) {
+            if (!receiptLine.getInventoryAttribute4().equalsIgnoreCase(inventoryCSVWrapper.getAttribute4())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 4 {} as the line's attribute 4 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute4(),
+                        receiptLine.getInventoryAttribute4());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+        if (Strings.isNotBlank(receiptLine.getInventoryAttribute5())) {
+            if (!receiptLine.getInventoryAttribute5().equalsIgnoreCase(inventoryCSVWrapper.getAttribute5())) {
+                logger.debug("Receipt line {} / {} doesn't match with inventory's attribute 5 {} as the line's attribute 5 is {} ",
+                        receiptLine.getReceiptNumber(), receiptLine.getNumber(),
+                        inventoryCSVWrapper.getAttribute5(),
+                        receiptLine.getInventoryAttribute5());
+                return 0;
+            } else {
+                score += 1;
+            }
+        }
+
+
+        return score;
+    }
+
+    public int getMatchingScoreForInventoryAttribute(ReceiptLine receiptLine, InventoryCSVWrapper inventoryCSVWrapper,
+                                                     String receiptLineAttributeName, String inventoryAttributeName) throws NoSuchFieldException, IllegalAccessException {
+
+        Field receiptLineField = receiptLine.getClass().getField(receiptLineAttributeName);
+        receiptLineField.setAccessible(true);
+        Field inventoryField = receiptLine.getClass().getField(inventoryAttributeName);
+        inventoryField.setAccessible(true);
+
+        String receiptLineAttributeValue = (String)receiptLineField.get(receiptLine);
+        String inventoryAttributeValue = (String)inventoryField.get(inventoryCSVWrapper);
+
+        int score = 0;
+        // for any trait, if
+        // the receipt line doesn't have any restriction but the inventory has value: 1 score
+        // the receipt line doesn't have any restriction and the inventory doens't have value: 2 score
+        // the receipt line has restriction but the inventory doesn't match: return with 0 overall score
+        // the receipt line has restriction and the inventory matches: 2 score
+
+        if (Strings.isBlank(receiptLineAttributeValue)) {
+            if (Strings.isBlank(inventoryAttributeValue)) {
+                score = 2;
+            }
+            else {
+                score = 1;
+            }
+        }
+        else {
+            if (receiptLineAttributeValue.equalsIgnoreCase(inventoryAttributeValue)) {
+                score = 0;
+            }
+            else {
+                score = 2;
+            }
+        }
+        return  score;
+
+    }
     private boolean validateInventoryCSVWrapperForReceiving(InventoryCSVWrapper inventoryCSVWrapper) {
         if (Strings.isBlank(inventoryCSVWrapper.getReceipt())) {
             return false;
@@ -1628,6 +2355,12 @@ public class ReceiptService {
         inventory.setColor(inventoryCSVWrapper.getColor());
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
+
+        inventory.setAttribute1(inventoryCSVWrapper.getAttribute1());
+        inventory.setAttribute2(inventoryCSVWrapper.getAttribute2());
+        inventory.setAttribute3(inventoryCSVWrapper.getAttribute3());
+        inventory.setAttribute4(inventoryCSVWrapper.getAttribute4());
+        inventory.setAttribute5(inventoryCSVWrapper.getAttribute5());
 
         inventory.setWarehouseId(warehouseId);
 
@@ -1694,10 +2427,29 @@ public class ReceiptService {
             inventory.setInventoryStatus(inventoryStatus);
         }
 
+        // in order to convert the date time, we may need to convert it to UTC by
+        // the warehouse's configuration(timezone) or local time zone if there's no
+        // timezone configured at the warehouse
+        WarehouseConfiguration warehouseConfiguration
+                = warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+        TimeZone timeZone = TimeZone.getDefault();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        if (Objects.nonNull(warehouseConfiguration) && Strings.isNotBlank(warehouseConfiguration.getTimeZone())) {
+            timeZone = TimeZone.getTimeZone(warehouseConfiguration.getTimeZone());
+        }
         if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
-            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
-            if (Objects.nonNull(localDate)) {
-                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+            LocalDateTime localDateTime = LocalDate.parse(inventoryCSVWrapper.getFifoDate(), formatter).atStartOfDay();
+            if (Objects.nonNull(localDateTime)) {
+                inventory.setFifoDate(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
+            }
+        }
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
+
+            LocalDateTime localDateTime = LocalDate.parse(inventoryCSVWrapper.getInWarehouseDatetime(), formatter).atStartOfDay();
+            // ZonedDateTime zonedDateTime = ZonedDateTime.parse(inventoryCSVWrapper.getInWarehouseDatetime());
+            if (Objects.nonNull(localDateTime)) {
+                inventory.setInWarehouseDatetime(ZonedDateTime.of(localDateTime, timeZone.toZoneId()));
             }
         }
 
@@ -1861,4 +2613,183 @@ public class ReceiptService {
         }
     }
 
+    public ReportHistory generateReceiptPrePrintLPNLabelInBatch(Long id, String lpn,
+                                                                PrintingLPNByReceiptParameters printingLPNByReceiptParameters,
+                                                                String locale,
+                                                                String printerName ) {
+        return generateReceiptPrePrintLPNLabelInBatch(
+                ReportType.RECEIVING_LPN_LABEL, id, lpn,
+                printingLPNByReceiptParameters, locale,
+                printerName
+        );
+    }
+
+    public ReportHistory generateReceiptPrePrintLPNLabelInBatch(ReportType reportType,
+                                                                Long id, String lpn,
+                                                                PrintingLPNByReceiptParameters printingLPNByReceiptParameters,
+                                                                String locale,
+                                                                String printerName)   {
+        return generateReceiptPrePrintLPNDocumentInBatch(
+                reportType, findById(id), lpn,
+                printingLPNByReceiptParameters,
+                locale, printerName
+        );
+    }
+
+    public ReportHistory generateReceiptPrePrintLPNDocumentInBatch(ReportType reportType,
+                                                                   Receipt receipt,
+                                                                   String lpn,
+                                                                   PrintingLPNByReceiptParameters printingLPNByReceiptParameters,
+                                                                   String locale,
+                                                                   String printerName)  {
+
+        validatePrintingLPNByReceiptParameters(receipt, printingLPNByReceiptParameters);
+        Long warehouseId = receipt.getWarehouseId();
+        int totalLPNCount = printingLPNByReceiptParameters.getTotalLPNCount();
+
+        List<String> lpnNumbers;
+        if (Strings.isNotBlank(lpn)) {
+            // if the user specify the start lpn, then generate lpns based on this
+            lpnNumbers = getNextLPNNumbers(lpn, totalLPNCount);
+        }
+        else {
+            lpnNumbers = commonServiceRestemplateClient.getNextNumberInBatch(warehouseId, "receiving-lpn-number", totalLPNCount);
+        }
+        logger.debug("we will print document for lpn : {}, by document type {}",
+                lpnNumbers, reportType);
+        if (lpnNumbers.size() > 0) {
+
+            Report reportData = new Report();
+            // setup the parameters for the label;
+            // for label, we don't need the actual data.
+
+            if (reportType.isLabel()) {
+
+                setupReceiptPrePrintLPNLabelData(reportData, receipt, lpnNumbers,
+                        printingLPNByReceiptParameters
+                );
+            }
+            else {
+
+                setupReceiptPrePrintLPNDocumentData(reportData, receipt, lpnNumbers,
+                        printingLPNByReceiptParameters
+                );
+            }
+            logger.debug("will call resource service to print the report with locale: {}",
+                    locale);
+            logger.debug("####   Report   Data  ######");
+            logger.debug(reportData.toString());
+            ReportHistory reportHistory =
+                    resourceServiceRestemplateClient.generateReport(
+                            warehouseId, reportType, reportData, locale,
+                            printerName
+                    );
+
+
+            logger.debug("####   Report   printed: {}", reportHistory.getFileName());
+            return reportHistory;
+        }
+        throw ReceiptOperationException.raiseException("Can't get lpn numbers");
+    }
+
+    /**
+     * Make sure all the receipt lines has the following value
+     * 1. LPN label count
+     * 2. either ignore the quantity on the LPN label, or specified the quantity to be printed
+     *     on the label
+     * @param receipt
+     * @param printingLPNByReceiptParameters
+     */
+    private void validatePrintingLPNByReceiptParameters(Receipt receipt,
+                                                        PrintingLPNByReceiptParameters printingLPNByReceiptParameters) {
+
+        // key: receipt line id
+        // value: lable count
+        Map<Long, Integer> lpnLabelCountByReceiptLines =
+                Objects.isNull(printingLPNByReceiptParameters.getLpnLabelCountByReceiptLines()) ?
+                        new HashMap<>() : printingLPNByReceiptParameters.getLpnLabelCountByReceiptLines();
+
+
+        // key: receipt line id
+        // value: quantity to be printedon label, can be null
+        Map<Long, Long> lpnQuantityOnLabelByReceiptLines =
+            Objects.isNull(printingLPNByReceiptParameters.getLpnQuantityOnLabelByReceiptLines()) ?
+                    new HashMap<>() : printingLPNByReceiptParameters.getLpnQuantityOnLabelByReceiptLines();
+
+        // key: receipt line id
+        // value: whether to ignore the lpn quantity on the label
+        Map<Long, Boolean> ignoreInventoryQuantityByReceiptLines=
+                Objects.isNull(printingLPNByReceiptParameters.getIgnoreInventoryQuantityByReceiptLines()) ?
+                        new HashMap<>() : printingLPNByReceiptParameters.getIgnoreInventoryQuantityByReceiptLines();
+
+        for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+            if (!lpnLabelCountByReceiptLines.containsKey(receiptLine.getId()) || lpnLabelCountByReceiptLines.get(receiptLine.getId()) <= 0) {
+                throw MissingInformationException.raiseException("please specify the LPN Label count for receipt " +
+                        receipt.getNumber() + " and line " + receiptLine.getNumber());
+            }
+            if (ignoreInventoryQuantityByReceiptLines.containsKey(receiptLine.getId())) {
+                // continue if the user choose to ignore the quantity to be printed on the LPN label
+                continue;
+            }
+            if (!lpnQuantityOnLabelByReceiptLines.containsKey(receiptLine.getId())) {
+                throw MissingInformationException.raiseException("please either choose to ignore the quantity on the LPN label, or " +
+                        " specify the quantity on the LPN label for " +
+                        receipt.getNumber() + " and line " + receiptLine.getNumber());
+
+            }
+        }
+
+    }
+
+    public List<Inventory> findInventoryByReceipts(Long warehouseId, String receiptIds) {
+
+
+        List<Inventory> receivedInventory =  inventoryServiceRestemplateClient
+                .findInventoryByReceipts(warehouseId, receiptIds);
+
+        receivedInventory.sort((inventory1, inventory2) -> {
+                    if (inventory1.getReceiptId().equals(inventory2.getReceiptId())) {
+                        inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn());
+                    }
+                    return inventory1.getReceiptId().compareTo(inventory2.getReceiptId());
+                }
+        );
+        // we may want to setup the receipt number and receipt line numbers
+        // for the inventory as well
+
+        List<Receipt> receipts =  findAll(warehouseId, null, null, null,
+                null, null, null, null,
+                null, null, null, receiptIds,false, null);
+        // convert the list into map to increase the performance
+        // key: receipt id
+        // value: receipt number
+        Map<Long, String> receiptMap = new HashMap<>();
+        // key: receipt line id
+        // value: receipt line number
+        Map<Long, String> receiptLineMap = new HashMap<>();
+        for (Receipt receipt : receipts) {
+            receiptMap.put(receipt.getId(), receipt.getNumber());
+            for (ReceiptLine receiptLine : receipt.getReceiptLines()) {
+                receiptLineMap.put(receiptLine.getId(), receiptLine.getNumber());
+            }
+        }
+        for (Inventory inventory : receivedInventory) {
+            if (Objects.nonNull(inventory.getReceiptId())) {
+                inventory.setReceiptNumber(
+                        receiptMap.getOrDefault(
+                                inventory.getReceiptId(), ""
+                        )
+                );
+            }
+            if (Objects.nonNull(inventory.getReceiptLineId())) {
+                inventory.setReceiptLineNumber(
+                        receiptLineMap.getOrDefault(
+                                inventory.getReceiptLineId(), ""
+                        )
+                );
+            }
+        }
+
+        return receivedInventory;
+    }
 }

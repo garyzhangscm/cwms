@@ -19,9 +19,11 @@
 package com.garyzhangscm.cwms.inventory.model;
 
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import java.io.Serializable;
 
 // Entity that will be persist in Common service
@@ -74,8 +76,8 @@ public class ClientRestriction extends  AuditibleEntity<String> implements Seria
 
 
     public <T> Predicate addClientRestriction(Predicate predicate,
-                                           Root<T> root,
-                                           CriteriaBuilder criteriaBuilder) {
+                                              Root<T> root,
+                                              CriteriaBuilder criteriaBuilder) {
         if (!Boolean.TRUE.equals(getThreePartyLogisticsFlag()) ||
                 Boolean.TRUE.equals(getAllClientAccess())) {
             // not a 3pl warehouse, let's not put any restriction on the client

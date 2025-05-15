@@ -19,14 +19,15 @@
 package com.garyzhangscm.cwms.inventory.repository;
 
 import com.garyzhangscm.cwms.inventory.model.Inventory;
-import com.garyzhangscm.cwms.inventory.model.QuickbookDesktopInventorySummary;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -35,12 +36,29 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     List<Inventory> findByLocationId(Long locationId);
 
-    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId and inv.inventoryStatus.id = :inventoryStatusId")
-    List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId);
+    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
+            " and inv.inventoryStatus.id = :inventoryStatusId ")
+    List<Inventory> findByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
-            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId")
-    List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId);
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId" )
+    List<Inventory> findByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId, Pageable pageable);
+
+    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.pickId is null " +
+            " and inv.allocatedByPickId is null and inv.virtual = false " +
+            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false " +
+            " and (:locationId is null or  inv.locationId = :locationId) " +
+            " and  (:lpn is null or :lpn = '' or  inv.lpn = :lpn) ")
+    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusId(Long itemId, Long inventoryStatusId,
+                                                                      Long locationId, String lpn,
+                                                                      Pageable pageable);
+
+    @Query("select inv from Inventory inv inner join inv.item i where i.id = :itemId " +
+            " and inv.inventoryStatus.id = :inventoryStatusId and inv.locationId = :locationId  and inv.pickId is null " +
+            " and inv.allocatedByPickId is null and inv.virtual = false " +
+            " and inv.inboundQCRequired = false and inv.lockedForAdjust = false ")
+    List<Inventory> findPickableInventoryByItemIdAndInventoryStatusIdAndLocationId(Long itemId, Long inventoryStatusId, Long locationId, Pageable pageable);
 
     @Query("select inv from Inventory inv inner join inv.item i where inv.warehouseId = :warehouseId" +
             "    and inv.inventoryStatus.id = :inventoryStatusId " +
@@ -102,4 +120,11 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
 
     @Transactional
     long deleteByLocationId(Long locationId);
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "update Inventory inv set inv.markedForRemove = true, inv.virtual = true " +
+            " where inv.id in :ids")
+    void markAsRemoved(List<Long> ids);
 }

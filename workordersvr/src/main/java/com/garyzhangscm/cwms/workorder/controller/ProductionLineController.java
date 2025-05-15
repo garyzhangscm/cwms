@@ -43,8 +43,10 @@ public class ProductionLineController {
     public List<ProductionLine> findAllProductionLines(@RequestParam Long warehouseId,
                                                        @RequestParam(name="name", required = false, defaultValue = "") String name,
                                                        @RequestParam(name="ids", required = false, defaultValue = "") String productionLineIds,
-                                                       @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericMatch) {
-        return productionLineService.findAll(warehouseId, name, productionLineIds, genericMatch);
+                                                       @RequestParam(name="names", required = false, defaultValue = "") String productionLineNames,
+                                                       @RequestParam(name="type", required = false, defaultValue = "") String type,
+                                                       @RequestParam(name="enabled", required = false, defaultValue = "") Boolean enabled) {
+        return productionLineService.findAll(warehouseId, name, productionLineIds, productionLineNames, type, enabled);
     }
 
     @RequestMapping(value="/production-lines/available", method = RequestMethod.GET)

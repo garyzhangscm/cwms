@@ -56,6 +56,9 @@ public interface IntegrationOrderData {
     Long getCarrierId() ;
 
     String getCarrierName();
+
+    String getPoNumber();
+
     Long getCarrierServiceLevelId();
 
     String getCarrierServiceLevelName();
@@ -65,7 +68,7 @@ public interface IntegrationOrderData {
 
     String getStageLocationGroupName();
     List<? extends IntegrationOrderLineData> getOrderLines() ;
-
+    public Boolean getAllowForManualPick();
 
     public IntegrationStatus getStatus() ;
     public String getErrorMessage();

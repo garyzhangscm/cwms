@@ -2,13 +2,9 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import jakarta.persistence.*;
 /**
  *
  */
@@ -42,6 +38,9 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
 
     @Column(name = "image_urls")
     private String imageUrls;
+
+    @Column(name = "removed")
+    private Boolean removed = false;
 
     @Override
     public String toString() {
@@ -106,5 +105,13 @@ public class WorkOrderQCSample extends AuditibleEntity<String>{
 
     public void setProductionLine(ProductionLine productionLine) {
         this.productionLine = productionLine;
+    }
+
+    public Boolean getRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(Boolean removed) {
+        this.removed = removed;
     }
 }

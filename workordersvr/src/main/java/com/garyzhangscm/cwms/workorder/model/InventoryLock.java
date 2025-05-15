@@ -21,9 +21,7 @@ package com.garyzhangscm.cwms.workorder.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 public class InventoryLock extends AuditibleEntity<String> implements Serializable {

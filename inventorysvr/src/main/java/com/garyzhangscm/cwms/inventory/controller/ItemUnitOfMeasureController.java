@@ -22,10 +22,7 @@ import com.garyzhangscm.cwms.inventory.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplateClient;
 import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.model.*;
-import com.garyzhangscm.cwms.inventory.service.FileService;
-import com.garyzhangscm.cwms.inventory.service.ItemPackageTypeService;
-import com.garyzhangscm.cwms.inventory.service.ItemUnitOfMeasureService;
-import com.garyzhangscm.cwms.inventory.service.UserService;
+import com.garyzhangscm.cwms.inventory.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,26 +41,31 @@ public class ItemUnitOfMeasureController {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/item-unit-of-measures/upload")
-    public ResponseBodyWrapper uploadItemUnitOfMeasures(Long warehouseId,
+    public ResponseBodyWrapper uploadItemUnitOfMeasures(Long companyId, Long warehouseId,
+                                                        @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                                         @RequestParam("file") MultipartFile file) throws IOException {
 
 
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "itemUnitOfMeasure", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "itemUnitOfMeasure", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = itemUnitOfMeasureService.uploadItemUnitOfMeasureData(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        // List<ItemUnitOfMeasure> itemUnitOfMeasures = itemUnitOfMeasureService.saveItemUnitOfMeasureData(warehouseId, localFile);
-        // return  ResponseBodyWrapper.success(itemUnitOfMeasures.size() + "");
 
-        String fileUploadProgressKey = itemUnitOfMeasureService.uploadItemUnitOfMeasureData(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
+
 
     }
 

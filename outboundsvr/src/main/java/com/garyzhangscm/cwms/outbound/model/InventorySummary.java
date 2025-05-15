@@ -53,6 +53,13 @@ public class InventorySummary implements Serializable {
     private String color;
     private String productSize;
     private String style;
+
+    private String attribute1;
+    private String attribute2;
+    private String attribute3;
+    private String attribute4;
+    private String attribute5;
+
     private String allocateByReceiptNumber;
 
     public InventorySummary(){}
@@ -69,6 +76,11 @@ public class InventorySummary implements Serializable {
         setColor(inventory.getColor());
         setProductSize(inventory.getProductSize());
         setStyle(inventory.getStyle());
+        setAttribute1(inventory.getAttribute1());
+        setAttribute2(inventory.getAttribute2());
+        setAttribute3(inventory.getAttribute3());
+        setAttribute4(inventory.getAttribute4());
+        setAttribute5(inventory.getAttribute5());
         addInventory(inventory);
     }
 
@@ -138,6 +150,46 @@ public class InventorySummary implements Serializable {
         return itemPackageType;
     }
 
+    public String getAttribute1() {
+        return attribute1;
+    }
+
+    public void setAttribute1(String attribute1) {
+        this.attribute1 = attribute1;
+    }
+
+    public String getAttribute2() {
+        return attribute2;
+    }
+
+    public void setAttribute2(String attribute2) {
+        this.attribute2 = attribute2;
+    }
+
+    public String getAttribute3() {
+        return attribute3;
+    }
+
+    public void setAttribute3(String attribute3) {
+        this.attribute3 = attribute3;
+    }
+
+    public String getAttribute4() {
+        return attribute4;
+    }
+
+    public void setAttribute4(String attribute4) {
+        this.attribute4 = attribute4;
+    }
+
+    public String getAttribute5() {
+        return attribute5;
+    }
+
+    public void setAttribute5(String attribute5) {
+        this.attribute5 = attribute5;
+    }
+
     public void setItemPackageType(ItemPackageType itemPackageType) {
         this.itemPackageType = itemPackageType;
     }
@@ -160,7 +212,7 @@ public class InventorySummary implements Serializable {
 
     public Double getSize() {
 
-        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasures();
+        ItemUnitOfMeasure stockItemUnitOfMeasure = itemPackageType.getStockItemUnitOfMeasure();
 
         return (quantity / stockItemUnitOfMeasure.getQuantity())
                 * stockItemUnitOfMeasure.getLength()

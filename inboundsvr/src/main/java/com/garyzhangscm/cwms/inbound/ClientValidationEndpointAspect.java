@@ -133,7 +133,8 @@ public class ClientValidationEndpointAspect {
 
 
             User user = userService.getCurrentUser(companyId);
-            if (Boolean.TRUE.equals(user.getAdmin()) ||
+            if (Objects.isNull(user) ||
+                    Boolean.TRUE.equals(user.getAdmin()) ||
                     Boolean.TRUE.equals(user.getSystemAdmin()) ||
                     user.getCompanyId() < 0) {
                 // user is admin, admin has full access to everything inside the company

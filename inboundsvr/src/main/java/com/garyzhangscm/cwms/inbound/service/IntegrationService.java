@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Objects;
+
 @Service
 public class IntegrationService {
 
@@ -29,6 +31,9 @@ public class IntegrationService {
         // Setup the receipt line so it can be serialized along with the receipt
         receipt.getReceiptLines().forEach(receiptLine -> {
             receiptLine.setReceipt(receipt);
+            if (Objects.isNull(receiptLine.getArrivedQuantity())) {
+                receiptLine.setArrivedQuantity(receiptLine.getExpectedQuantity());
+            }
         });
         receiptService.processIntegration(receipt);
         logger.debug(">> receipt information saved!");

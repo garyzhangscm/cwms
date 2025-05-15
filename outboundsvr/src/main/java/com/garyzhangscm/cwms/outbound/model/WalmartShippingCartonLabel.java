@@ -18,9 +18,14 @@
 
 package com.garyzhangscm.cwms.outbound.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "walmart_shipping_carton_label")
@@ -162,11 +167,23 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
     @Column(name = "seal_number")
     private String sealNumber;
 
-    @Column(name = "FOB_Mira")
-    private String fobMira;
+    @Column(name = "fob_miraloma_colton_fayeteville")
+    private String fobMiralomaColtonFayeteville;
 
-    @Column(name = "LOMA_COLTON_FAYETEVILLE")
-    private String lomaColtonFayeteville;
+
+    // only if the carton label is attached to
+    // certain pallet pick label so that the
+    // pallet pick label will be printed along with
+    // all the shipping labels that attached to it
+    @ManyToOne
+    @JoinColumn(name="pallet_pick_label_content_id")
+    private PalletPickLabelContent palletPickLabelContent;
+
+    @Column(name = "last_print_time")
+    @JsonDeserialize(using = CustomZonedDateTimeDeserializer.class)
+    @JsonSerialize(using = CustomZonedDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime lastPrintTime;
 
     public Long getId() {
         return id;
@@ -496,19 +513,27 @@ public class WalmartShippingCartonLabel extends AuditibleEntity<String> implemen
         this.sealNumber = sealNumber;
     }
 
-    public String getFobMira() {
-        return fobMira;
+    public PalletPickLabelContent getPalletPickLabelContent() {
+        return palletPickLabelContent;
     }
 
-    public void setFobMira(String fobMira) {
-        this.fobMira = fobMira;
+    public void setPalletPickLabelContent(PalletPickLabelContent palletPickLabelContent) {
+        this.palletPickLabelContent = palletPickLabelContent;
     }
 
-    public String getLomaColtonFayeteville() {
-        return lomaColtonFayeteville;
+    public ZonedDateTime getLastPrintTime() {
+        return lastPrintTime;
     }
 
-    public void setLomaColtonFayeteville(String lomaColtonFayeteville) {
-        this.lomaColtonFayeteville = lomaColtonFayeteville;
+    public void setLastPrintTime(ZonedDateTime lastPrintTime) {
+        this.lastPrintTime = lastPrintTime;
+    }
+
+    public String getFobMiralomaColtonFayeteville() {
+        return fobMiralomaColtonFayeteville;
+    }
+
+    public void setFobMiralomaColtonFayeteville(String fobMiralomaColtonFayeteville) {
+        this.fobMiralomaColtonFayeteville = fobMiralomaColtonFayeteville;
     }
 }

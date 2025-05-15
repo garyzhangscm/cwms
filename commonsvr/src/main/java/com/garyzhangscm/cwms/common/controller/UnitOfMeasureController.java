@@ -88,6 +88,7 @@ public class UnitOfMeasureController {
                     @CacheEvict(cacheNames = "AdminService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_UnitOfMeasure", allEntries = true),
             }
@@ -107,6 +108,7 @@ public class UnitOfMeasureController {
                     @CacheEvict(cacheNames = "AdminService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "IntegrationService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "InventoryService_UnitOfMeasure", allEntries = true),
+                    @CacheEvict(cacheNames = "InboundService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "OutboundService_UnitOfMeasure", allEntries = true),
                     @CacheEvict(cacheNames = "WorkOrderService_UnitOfMeasure", allEntries = true),
             }

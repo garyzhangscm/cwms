@@ -34,7 +34,7 @@ public class RFController {
 
     @RequestMapping(value="/rfs", method = RequestMethod.GET)
     public List<RF> findAllRFs(@RequestParam Long warehouseId,
-                                   @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode) {
+                               @RequestParam(name="rfCode", required = false, defaultValue = "") String rfCode) {
         return rfService.findAll(warehouseId, rfCode);
     }
 
@@ -62,6 +62,14 @@ public class RFController {
     public Boolean removeRF(@PathVariable Long id) {
         rfService.delete(id);
         return true;
+    }
+
+    @BillableEndpoint
+    @RequestMapping(value="/rfs/{id}/change-location", method = RequestMethod.POST)
+    public RF changeLocation(@PathVariable Long id,
+                             @RequestParam Long warehouseId,
+                             @RequestParam Long locationId) {
+        return rfService.changeLocation(id, locationId);
     }
 
 }

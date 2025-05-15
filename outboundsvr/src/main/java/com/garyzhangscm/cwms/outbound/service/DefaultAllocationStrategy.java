@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -39,7 +38,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
     @Override
     public AllocationStrategyType getType() {
-        return AllocationStrategyType.FIRST_IN_FIRST_OUT;
+        return AllocationStrategyType.DEFAULT;
     }
 
     @Override
@@ -61,12 +60,25 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         Long openQuantity = allocationRequest.getQuantity();
         InventoryStatus inventoryStatus = allocationRequest.getInventoryStatus();
 
-        logger.debug("Start to allocate request with FIFO. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
+        logger.debug("Start to allocate request. \n item: {} / {} \n quantity: {} \n inventory status: {}, from location {}",
                 item.getId(),
                 allocationRequest.getItem().getName(),
                 allocationRequest.getQuantity(),
                 inventoryStatus.getName(),
                 Objects.isNull(sourceLocation) ? "N/A" : sourceLocation.getName());
+        logger.debug(">> with inventory attribute: \n" +
+                "color: {} \nproduction size: {}\nstyle: {} \n inventory attribute 1 ~ 5 {}, {}, {}, {}, {}",
+                Strings.isBlank(allocationRequest.getColor()) ? "N/A" : allocationRequest.getColor(),
+                Strings.isBlank(allocationRequest.getProductSize()) ? "N/A" : allocationRequest.getProductSize(),
+                Strings.isBlank(allocationRequest.getStyle()) ? "N/A" : allocationRequest.getStyle(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute1()) ? "N/A" : allocationRequest.getInventoryAttribute1(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute2()) ? "N/A" : allocationRequest.getInventoryAttribute2(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute3()) ? "N/A" : allocationRequest.getInventoryAttribute3(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute4()) ? "N/A" : allocationRequest.getInventoryAttribute4(),
+                Strings.isBlank(allocationRequest.getInventoryAttribute5()) ? "N/A" : allocationRequest.getInventoryAttribute5()
+                );
+        logger.debug("Will skip locations : {}",
+                allocationRequest.getSkipLocations());
 
 
         List<Pick> existingPicks =
@@ -76,11 +88,11 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
         // will make the criteria the same so that we can calculate the available quantity based on
         // the existing pick and existing inventory
         existingPicks = existingPicks.stream().filter(
-                pick -> (Strings.isBlank(allocationRequest.getColor()) || allocationRequest.getColor().equalsIgnoreCase(pick.getColor())) &&
-                        (Strings.isBlank(allocationRequest.getStyle()) || allocationRequest.getStyle().equalsIgnoreCase(pick.getStyle())) &&
-                        (Strings.isBlank(allocationRequest.getProductSize()) || allocationRequest.getProductSize().equalsIgnoreCase(pick.getProductSize())) &&
-                        (Strings.isBlank(allocationRequest.getAllocateByReceiptNumber()) || allocationRequest.getAllocateByReceiptNumber().equalsIgnoreCase(pick.getAllocateByReceiptNumber()))
-
+                pick -> isPickMatchWithAllocationRequest(pick, allocationRequest)
+        ).filter(
+                // make sure the pick is not from the location that we would like to skip
+                pick -> allocationRequest.getSkipLocations().isEmpty() ||
+                        !allocationRequest.getSkipLocations().contains(pick.getSourceLocationId())
         ).collect(Collectors.toList());
 
         // Let's get all the pickable inventory and existing picks to the trace file
@@ -89,7 +101,8 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         existingPicks.stream().forEach(pick -> {
             logger.debug("pick # {}, source location: {}, destination location: {}, quantity: {}, picked quantity: {}, " +
-                            "attribute: color = {}, style = {}, production size = {}, allocate by receipt number = {}",
+                            "attribute: color = {}, style = {}, production size = {}, allocate by receipt number = {} " +
+                            " inventory attribute 1 ~ 5: {}, {}, {}, {}, {}",
                     pick.getNumber(), pick.getSourceLocation().getName(),
                     Objects.isNull(pick.getDestinationLocation()) ?
                     "N/A" : pick.getDestinationLocation().getName(),
@@ -97,7 +110,13 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                     pick.getColor(),
                     pick.getStyle(),
                     pick.getProductSize(),
-                    pick.getAllocateByReceiptNumber());
+                    pick.getAllocateByReceiptNumber(),
+                    Strings.isBlank(pick.getInventoryAttribute1()) ? "N/A" : pick.getInventoryAttribute1(),
+                    Strings.isBlank(pick.getInventoryAttribute2()) ? "N/A" : pick.getInventoryAttribute2(),
+                    Strings.isBlank(pick.getInventoryAttribute3()) ? "N/A" : pick.getInventoryAttribute3(),
+                    Strings.isBlank(pick.getInventoryAttribute4()) ? "N/A" : pick.getInventoryAttribute4(),
+                    Strings.isBlank(pick.getInventoryAttribute5()) ? "N/A" : pick.getInventoryAttribute5()
+            );
         });
 
         List<Inventory> pickableInventory
@@ -108,7 +127,13 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
                 allocationRequest.getColor(),
                 allocationRequest.getProductSize(),
                 allocationRequest.getStyle(),
-                allocationRequest.getAllocateByReceiptNumber());
+                allocationRequest.getInventoryAttribute1(),
+                allocationRequest.getInventoryAttribute2(),
+                allocationRequest.getInventoryAttribute3(),
+                allocationRequest.getInventoryAttribute4(),
+                allocationRequest.getInventoryAttribute5(),
+                allocationRequest.getAllocateByReceiptNumber(),
+                String.join(",", allocationRequest.getSkipLocations().stream().map(String::valueOf).collect(Collectors.toSet())));
 
         // for manual pick, we will filter out the inventory to specific LPN
         if (Boolean.TRUE.equals(allocationRequest.isManualAllocation()) &&
@@ -136,6 +161,32 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
         return allocate(allocationRequest, item, openQuantity,
                 inventorySummaries, existingPicks);
+    }
+
+    /**
+     * Check if the pick matches with the allocation request when either the allocation request's field
+     * is empty, or both pick and allocation request has the same value
+     * # color
+     * # style
+     * # product size
+     * # receipt number
+     * # inventory attribute 1 ~ 5
+     * @param pick
+     * @param allocationRequest
+     * @return
+     */
+    private boolean isPickMatchWithAllocationRequest(Pick pick, AllocationRequest allocationRequest) {
+        return (Strings.isBlank(allocationRequest.getColor()) || allocationRequest.getColor().equalsIgnoreCase(pick.getColor())) &&
+               (Strings.isBlank(allocationRequest.getStyle()) || allocationRequest.getStyle().equalsIgnoreCase(pick.getStyle())) &&
+               (Strings.isBlank(allocationRequest.getProductSize()) || allocationRequest.getProductSize().equalsIgnoreCase(pick.getProductSize())) &&
+               (Strings.isBlank(allocationRequest.getAllocateByReceiptNumber()) || allocationRequest.getAllocateByReceiptNumber().equalsIgnoreCase(pick.getAllocateByReceiptNumber())) &&
+               (Strings.isBlank(allocationRequest.getInventoryAttribute1()) || allocationRequest.getInventoryAttribute1().equalsIgnoreCase(pick.getInventoryAttribute1())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute2()) || allocationRequest.getInventoryAttribute2().equalsIgnoreCase(pick.getInventoryAttribute2())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute3()) || allocationRequest.getInventoryAttribute3().equalsIgnoreCase(pick.getInventoryAttribute3())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute4()) || allocationRequest.getInventoryAttribute4().equalsIgnoreCase(pick.getInventoryAttribute4())) &&
+                (Strings.isBlank(allocationRequest.getInventoryAttribute5()) || allocationRequest.getInventoryAttribute5().equalsIgnoreCase(pick.getInventoryAttribute5()));
+
+
     }
 
     @Override
@@ -324,6 +375,13 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             // of picks
             List<Pick> existingPicksByInventorySummary = getExistingPicksByInventorySummary(inventorySummary, existingPicks);
 
+            logger.debug("We have {} existing picks against the location {}",
+                    existingPicksByInventorySummary.size(),
+                    inventorySummary.getLocation().getName());
+            existingPicksByInventorySummary.forEach(
+                    pick -> logger.debug(">> pick: {}, quantity: {}, picked quantity: {}",
+                            pick.getNumber(), pick.getQuantity(), pick.getPickedQuantity())
+            );
             // pickByQuantityPicksTotalOpenQuantity will return all open quantity that allocated
             // by NON LPN picks
             // if we are working on a manual picking process, then we will ignore the existing picks
@@ -334,9 +392,14 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
             long pickByQuantityPicksTotalOpenQuantity =
                     Boolean.TRUE.equals(allocationRequest.isManualAllocation()) ?
                             0 : pickByQuantityPicksTotalOpenQuantity(existingPicksByInventorySummary);
+            logger.debug("Total open quantity still need to be picked: {}", pickByQuantityPicksTotalOpenQuantity);
             long totalInventoryQuantity =
                     inventorySummary.getInventories().values().stream().flatMap(List::stream).mapToLong(Inventory::getQuantity).sum();
+            logger.debug("total inventory quantity: {}", totalInventoryQuantity);
             long availableInventoryQuantity = getAvailableInventoryQuantity(inventorySummary);
+
+            logger.debug("We still have {} left that can be picked in the location {}",
+                    availableInventoryQuantity, inventorySummary.getLocation().getName());
 
             long allocatibleQuantity = getAllocatiableQuantityByUnitOfMeasure(
                     (availableInventoryQuantity - pickByQuantityPicksTotalOpenQuantity),
@@ -851,12 +914,12 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
 
             stringBuilder.append("location group:").append(inventorySummary.getLocation().getLocationGroup().getName()).append("\n")
                     .append("Location: ").append(inventorySummary.getLocation().getName()).append("\n")
-                    .append("Item: ").append(inventorySummary.getItem().getName())
-                    .append("Color: ").append(inventorySummary.getColor())
-                    .append("Product Size: ").append(inventorySummary.getProductSize())
-                    .append("Style: ").append(inventorySummary.getStyle())
-                    .append("allocate by receipt number: ").append(inventorySummary.getAllocateByReceiptNumber())
-                    .append(", Total Quantity: ").append(inventorySummary.getQuantity())
+                    .append("Item: ").append(inventorySummary.getItem().getName()).append(";")
+                    .append("Color: ").append(inventorySummary.getColor()).append(";")
+                    .append("Product Size: ").append(inventorySummary.getProductSize()).append(";")
+                    .append("Style: ").append(inventorySummary.getStyle()).append(";")
+                    .append("allocate by receipt number: ").append(inventorySummary.getAllocateByReceiptNumber()).append(";")
+                    .append(", Total Quantity: ").append(inventorySummary.getQuantity()).append(";")
                     .append(", inventory: \n");
             Iterator<Map.Entry<String, List<Inventory>>> lpnIterator = inventorySummary.getInventories().entrySet().iterator();
             int index = 1;
@@ -1015,18 +1078,24 @@ public class DefaultAllocationStrategy implements AllocationStrategy {
      * @return
      */
     private long getAvailableInventoryQuantity(InventorySummary inventorySummary) {
+        logger.debug("start to get invenotry quantity available for allocation from " +
+                " invenotry summary of location {}", inventorySummary.getLocation().getName());
         return inventorySummary.getInventories().entrySet().stream()
                 .filter(entry -> {
                     List<Inventory> inventories = entry.getValue();
                     if(inventories.stream().anyMatch(inventory -> Objects.nonNull(inventory.getAllocatedByPickId()))) {
                         // the LPN is allocated, let's ignore this as it is not valid
+                        logger.debug("inventory in LPN {} has record that already allocated by certain pick, skip the whole LPN",
+                               entry.getKey() );
                         return false;
                     }
                     return true;
                 }).mapToLong(entry -> {
                     // return the total quantity of this LPN
                     List<Inventory> inventories = entry.getValue();
-                    return inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+                    Long quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
+                    logger.debug("# quantity from LPN {} is {}", entry.getKey(), quantity);
+                    return quantity;
                 }).sum();
     }
 

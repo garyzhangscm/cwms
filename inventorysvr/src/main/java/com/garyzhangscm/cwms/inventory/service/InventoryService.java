@@ -28,34 +28,33 @@ import com.garyzhangscm.cwms.inventory.exception.MissingInformationException;
 import com.garyzhangscm.cwms.inventory.exception.ResourceNotFoundException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.repository.InventoryRepository;
+import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
+ import org.springframework.stereotype.Service;
 
 
-import javax.persistence.criteria.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+// import javax.persistence.criteria.*;
+// import javax.servlet.http.HttpServletRequest;
+// import javax.transaction.Transactional;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -74,6 +73,8 @@ public class InventoryService {
     @Autowired
     HttpServletRequest httpServletRequest;
 
+    @Autowired
+    private DateTimeService dateTimeService;
     @Autowired
     private ItemService itemService;
     @Autowired
@@ -98,6 +99,8 @@ public class InventoryService {
     private InventoryConfigurationService inventoryConfigurationService;
     @Autowired
     private QCRuleConfigurationService qcRuleConfigurationService;
+    @Autowired
+    private LPNLabelFontSizeService lpnLabelFontSizeService;
 
     private final static int INVENTORY_FILE_UPLOAD_MAP_SIZE_THRESHOLD = 20;
     private Map<String, Double> inventoryFileUploadProgress = new ConcurrentHashMap<>();
@@ -169,7 +172,9 @@ public class InventoryService {
                                    Long locationId,
                                    String locationIds,
                                    Long locationGroupId,
+                                   Long pickZoneId,
                                    String receiptId,
+                                   String receiptIds,
                                    String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
@@ -180,22 +185,28 @@ public class InventoryService {
                                    String color,
                                    String productSize,
                                    String style,
+                                   String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
-                                   ClientRestriction clientRestriction) {
+                                   ClientRestriction clientRestriction,
+                                   Integer maxLPNCount) {
         return findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationIds, locationGroupId,
-                receiptId, receiptNumber,
+                locationName, locationId, locationIds, locationGroupId, pickZoneId,
+                receiptId, receiptIds, receiptNumber,
                 customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
-                true);
+                true, maxLPNCount);
     }
-
 
     public List<Inventory> findAll(Long warehouseId,
                                    Long itemId,
@@ -210,7 +221,9 @@ public class InventoryService {
                                    Long locationId,
                                    String locationIds,
                                    Long locationGroupId,
+                                   Long pickZoneId,
                                    String receiptId,
+                                   String receiptIds,
                                    String receiptNumber,
                                    String customerReturnOrderId,
                                    Long workOrderId,
@@ -221,11 +234,17 @@ public class InventoryService {
                                    String color,
                                    String productSize,
                                    String style,
+                                   String attribute1,
+                                   String attribute2,
+                                   String attribute3,
+                                   String attribute4,
+                                   String attribute5,
                                    String inventoryIds,
                                    Boolean notPutawayInventoryOnly,
                                    Boolean includeVirturalInventory,
                                    ClientRestriction clientRestriction,
-                                   boolean includeDetails) {
+                                   boolean includeDetails,
+                                   Integer maxLPNCount) {
 
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
         logger.debug("====> Start to find all inventory that match criteria @ {}", currentLocalDateTime );
@@ -254,16 +273,16 @@ public class InventoryService {
 
                     }
                     if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds) ||
-                       Strings.isNotBlank(itemNames)) {
+                            Strings.isNotBlank(itemNames)) {
                         Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
                         if (StringUtils.isNotBlank(itemName)) {
 
-                                if (itemName.contains("*")) {
-                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
-                                }
-                                else {
-                                    predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
-                                }
+                            if (itemName.contains("*")) {
+                                predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
+                            }
+                            else {
+                                predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+                            }
                         }
 
                         if (Strings.isNotBlank(itemNames)) {
@@ -313,20 +332,42 @@ public class InventoryService {
                     }
                     else if (StringUtils.isNotBlank(locationName) &&
                             Objects.nonNull(warehouseId)) {
+
                         logger.debug("Will get inventory from location {} / {}",
                                 warehouseId, locationName);
-                        Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+                        if (locationName.contains("*")) {
 
-                        if (location != null) {
-                            logger.debug(">> location id: {}",
-                                    location.getId());
-                            predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationsByName(warehouseId, locationName);
+
+                            if (locations.isEmpty()) {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                            else {
+
+                                CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                                for(Long id : locations.stream().map(location -> location.getId()).collect(Collectors.toSet())) {
+                                    inLocationIds.value(id);
+                                }
+                                predicates.add(criteriaBuilder.and(inLocationIds));
+                            }
                         }
                         else {
-                            // since the user passed in a wrong location, we will add a
-                            // wrong id into the query so it won't return anything
-                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+
+                            if (location != null) {
+                                logger.debug(">> location id: {}",
+                                        location.getId());
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            }
+                            else {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
                         }
+
                     }
 
                     if (StringUtils.isNotBlank(locationIds)) {
@@ -347,6 +388,14 @@ public class InventoryService {
                         predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
 
                     }
+                    if (StringUtils.isNotBlank(receiptIds)) {
+                        CriteriaBuilder.In<Long> inReceiptIds = criteriaBuilder.in(root.get("receiptId"));
+                        for(String id : receiptIds.split(",")) {
+                            inReceiptIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptIds));
+                    }
+
                     if (Strings.isNotBlank(receiptNumber)) {
                         Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
                                 warehouseId,
@@ -434,6 +483,47 @@ public class InventoryService {
                         }
                     }
 
+                    if (StringUtils.isNotBlank(attribute1)) {
+                        if (attribute1.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute1"), attribute1.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute1"), attribute1));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute2)) {
+                        if (attribute2.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute2"), attribute2.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute2"), attribute2));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute3)) {
+                        if (attribute3.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute3"), attribute3.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute3"), attribute3));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute4)) {
+                        if (attribute4.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute4"), attribute4.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute4"), attribute4));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute5)) {
+                        if (attribute5.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute5"), attribute5.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute5"), attribute5));
+                        }
+                    }
+
                     if (StringUtils.isNotBlank(inventoryIds)) {
 
                         CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
@@ -458,11 +548,33 @@ public class InventoryService {
                     return Objects.isNull(clientRestriction) ?
                             predicate :
                             clientRestriction.addClientRestriction(predicate,
-                                root, criteriaBuilder);
+                                    root, criteriaBuilder);
 
 
                 }
         );
+
+        if (Objects.nonNull(maxLPNCount)) {
+            logger.debug("we will only return {} LPNs as restrict", maxLPNCount);
+            List<Inventory> lpnInventories = new ArrayList<>();
+            Set<String> processedLPN = new HashSet<>();
+            for(Inventory inventory : inventories) {
+                if (maxLPNCount <= 0) {
+                    break;
+                }
+                else if (processedLPN.contains(inventory.getLpn())) {
+                    lpnInventories.add(inventory);
+                }
+                else {
+                    lpnInventories.add(inventory);
+                    processedLPN.add(inventory.getLpn());
+                    maxLPNCount--;
+                }
+            }
+            inventories = lpnInventories;
+            logger.debug("after apply the LPN Count restriction, we only have {} inventory record left", inventories.size());
+        }
+
         inventories.sort((inventory1, inventory2) -> {
             if(inventory1.getLocationId().equals(inventory2.getLocationId())) {
                 return inventory1.getLpn().compareToIgnoreCase(inventory2.getLpn());
@@ -473,7 +585,7 @@ public class InventoryService {
         });
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we found {} record",
-                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
+                ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
                 LocalDateTime.now(),
                 inventories.size());
         currentLocalDateTime = LocalDateTime.now();
@@ -530,13 +642,429 @@ public class InventoryService {
             Map<Long, Long> locationMap = new HashMap<>();
             locations.stream().forEach(location -> locationMap.put(location.getId(), location.getId()));
 
-            return inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
+            inventories = inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
         }
+
+        if (pickZoneId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByPickZones(
+                            warehouseId, String.valueOf(pickZoneId));
+            // convert the list of locations to map of Long so as to speed up
+            // when compare the inventory's location id with the locations from the group
+            Map<Long, Long> locationMap = new HashMap<>();
+            locations.stream().forEach(location -> locationMap.put(location.getId(), location.getId()));
+
+            inventories =  inventories.stream().filter(inventory -> locationMap.containsKey(inventory.getLocationId())).collect(Collectors.toList());
+        }
+
         logger.debug("====> after : {} millisecond(1/1000 second) @ {}, we will return inventory for {} record",
                 ChronoUnit.MILLIS.between(currentLocalDateTime, LocalDateTime.now()),
                 LocalDateTime.now(),
                 inventories.size());
+
         return inventories;
+    }
+
+    public Page<Inventory> findAllByPagination(Long warehouseId,
+                                               Long itemId,
+                                               String itemName,
+                                               String itemNames,
+                                               String itemPackageTypeName,
+                                               Long clientId,
+                                               String clientIds,
+                                               String itemFamilyIds,
+                                               Long inventoryStatusId,
+                                               String locationName,
+                                               Long locationId,
+                                               String locationIds,
+                                               Long locationGroupId,
+                                               Long pickZoneId,
+                                               String receiptId,
+                                               String receiptIds,
+                                               String receiptNumber,
+                                               String customerReturnOrderId,
+                                               Long workOrderId,
+                                               String workOrderLineIds,
+                                               String workOrderByProductIds,
+                                               String pickIds,
+                                               String lpn,
+                                               String color,
+                                               String productSize,
+                                               String style,
+                                               String attribute1,
+                                               String attribute2,
+                                               String attribute3,
+                                               String attribute4,
+                                               String attribute5,
+                                               String inventoryIds,
+                                               Boolean includeVirturalInventory,
+                                               ClientRestriction clientRestriction,
+                                               Pageable pageable) {
+
+        List<String> locationIdsInGroup = null;
+        if (locationGroupId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByLocationGroups(
+                            warehouseId, String.valueOf(locationGroupId));
+            locationIdsInGroup = locations.stream().map(location -> location.getId().toString()).collect(Collectors.toList());
+        }
+
+        List<String> locationIdsInPickZone = null;
+        if (pickZoneId != null) {
+
+            List<Location> locations =
+                    warehouseLayoutServiceRestemplateClient.getLocationByPickZones(
+                            warehouseId, String.valueOf(pickZoneId));
+
+            locationIdsInPickZone = locations.stream().map(location -> location.getId().toString()).collect(Collectors.toList());
+        }
+
+        List<String> finalLocationIdsInGroup = locationIdsInGroup;
+        List<String> finalLocationIdsInPickZone = locationIdsInPickZone;
+        return inventoryRepository.findAll(
+                (Root<Inventory> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<Predicate>();
+                    criteriaQuery.distinct(true);
+
+                    predicates.add(criteriaBuilder.equal(root.get("warehouseId"), warehouseId));
+
+                    if (Objects.nonNull(clientId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("clientId"), clientId));
+                    }
+                    else if (Strings.isNotBlank(clientIds)) {
+
+                        CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(root.get("clientId"));
+                        for(String id : clientIds.split(",")) {
+                            inClientIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inClientIds));
+                    }
+
+                    if (Objects.nonNull(itemId)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItem.get("id"), itemId));
+
+                    }
+                    if (StringUtils.isNotBlank(itemName) || StringUtils.isNotBlank(clientIds) ||
+                       Strings.isNotBlank(itemNames)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        if (StringUtils.isNotBlank(itemName)) {
+
+                                if (itemName.contains("*")) {
+                                    predicates.add(criteriaBuilder.like(joinItem.get("name"), itemName.replaceAll("\\*", "%")));
+                                }
+                                else {
+                                    predicates.add(criteriaBuilder.equal(joinItem.get("name"), itemName));
+                                }
+                        }
+
+                        if (Strings.isNotBlank(itemNames)) {
+                            CriteriaBuilder.In<String> inItemNames = criteriaBuilder.in(joinItem.get("name"));
+                            for(String name : itemNames.split(",")) {
+                                inItemNames.value(name);
+                            }
+                            predicates.add(criteriaBuilder.and(inItemNames));
+
+                        }
+                        if (StringUtils.isNotBlank(clientIds)) {
+                            CriteriaBuilder.In<Long> inClientIds = criteriaBuilder.in(joinItem.get("clientId"));
+                            for(String id : clientIds.split(",")) {
+                                inClientIds.value(Long.parseLong(id));
+                            }
+                            predicates.add(criteriaBuilder.and(inClientIds));
+
+                        }
+                    }
+                    if (StringUtils.isNotBlank(itemPackageTypeName)) {
+
+                        Join<Inventory, ItemPackageType> joinItemPackageType = root.join("itemPackageType", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinItemPackageType.get("name"), itemPackageTypeName));
+
+                    }
+                    if (StringUtils.isNotBlank(itemFamilyIds)) {
+                        Join<Inventory, Item> joinItem = root.join("item", JoinType.INNER);
+                        Join<Item, ItemFamily> joinItemFamily = joinItem.join("itemFamily", JoinType.INNER);
+
+                        CriteriaBuilder.In<Long> inItemFamilyIds = criteriaBuilder.in(joinItemFamily.get("id"));
+                        for(String id : itemFamilyIds.split(",")) {
+                            inItemFamilyIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inItemFamilyIds));
+                    }
+                    if (Objects.nonNull(inventoryStatusId)) {
+                        Join<Inventory, InventoryStatus> joinInventoryStatus = root.join("inventoryStatus", JoinType.INNER);
+                        predicates.add(criteriaBuilder.equal(joinInventoryStatus.get("id"), inventoryStatusId));
+
+                    }
+
+                    // if location ID is passed in, we will only filter by location id, no matter whether
+                    // the location name is passed in or not
+                    // otherwise, we will try to filter by location name
+                    if (Objects.nonNull(locationId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("locationId"), locationId));
+                    }
+                    else if (StringUtils.isNotBlank(locationName) &&
+                            Objects.nonNull(warehouseId)) {
+
+                        logger.debug("Will get inventory from location {} / {}",
+                                warehouseId, locationName);
+                        if (locationName.contains("*")) {
+
+                            List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationsByName(warehouseId, locationName);
+
+                            if (locations.isEmpty()) {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                            else {
+
+                                CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                                for(Long id : locations.stream().map(location -> location.getId()).collect(Collectors.toSet())) {
+                                    inLocationIds.value(id);
+                                }
+                                predicates.add(criteriaBuilder.and(inLocationIds));
+                            }
+                        }
+                        else {
+                            Location location = warehouseLayoutServiceRestemplateClient.getLocationByName(warehouseId, locationName);
+
+                            if (location != null) {
+                                logger.debug(">> location id: {}",
+                                        location.getId());
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), location.getId()));
+                            }
+                            else {
+                                // since the user passed in a wrong location, we will add a
+                                // wrong id into the query so it won't return anything
+                                predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                            }
+                        }
+
+                    }
+
+                    if (StringUtils.isNotBlank(locationIds)) {
+
+                        CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                        for(String id : locationIds.split(",")) {
+                            inLocationIds.value(Long.parseLong(id));
+                        }
+
+                        predicates.add(criteriaBuilder.and(inLocationIds));
+                    }
+
+                    if (Objects.nonNull(finalLocationIdsInGroup)) {
+                        if (finalLocationIdsInGroup.isEmpty()) {
+
+                            // since the user passed in a location group without any location, we will add a
+                            // wrong id into the query so it won't return anything
+                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                        }
+                        else {
+                            CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                            for(String id : finalLocationIdsInGroup) {
+                                inLocationIds.value(Long.parseLong(id));
+                            }
+
+                            predicates.add(criteriaBuilder.and(inLocationIds));
+
+                        }
+                    }
+
+
+                    if (Objects.nonNull(finalLocationIdsInPickZone)) {
+                        if (finalLocationIdsInPickZone.isEmpty()) {
+
+                            // since the user passed in a location pick zone without any location, we will add a
+                            // wrong id into the query so it won't return anything
+                            predicates.add(criteriaBuilder.equal(root.get("locationId"), -9999));
+                        }
+                        else {
+                            CriteriaBuilder.In<Long> inLocationIds = criteriaBuilder.in(root.get("locationId"));
+                            for(String id : finalLocationIdsInPickZone) {
+                                inLocationIds.value(Long.parseLong(id));
+                            }
+
+                            predicates.add(criteriaBuilder.and(inLocationIds));
+
+                        }
+                    }
+
+
+                    if (StringUtils.isNotBlank(receiptId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("receiptId"), receiptId));
+
+                    }
+                    if (StringUtils.isNotBlank(receiptIds)) {
+                        CriteriaBuilder.In<Long> inReceiptIds = criteriaBuilder.in(root.get("receiptId"));
+                        for(String id : receiptIds.split(",")) {
+                            inReceiptIds.value(Long.parseLong(id));
+                        }
+                        predicates.add(criteriaBuilder.and(inReceiptIds));
+                    }
+
+                    if (Strings.isNotBlank(receiptNumber)) {
+                        Receipt receipt = inboundServiceRestemplateClient.getReceiptByNumber(
+                                warehouseId,
+                                receiptNumber
+                        );
+                        if (Objects.nonNull(receipt)) {
+
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), receipt.getId()));
+                        }
+                        else {
+
+                            // since there's no receipt match with the receipt, we will use -1 as the receipt id
+                            // to match with the inventory and we will assume there won't be anything return
+                            predicates.add(criteriaBuilder.equal(root.get("receiptId"), -1));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(customerReturnOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("customerReturnOrderId"), customerReturnOrderId));
+
+                    }
+
+                    if (Objects.nonNull(workOrderId)) {
+                        predicates.add(criteriaBuilder.equal(root.get("workOrderId"), workOrderId));
+
+                    }
+
+
+                    if (StringUtils.isNotBlank(workOrderLineIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderLineId"));
+                        Arrays.stream(workOrderLineIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderLineId -> inClause.value(workOrderLineId));
+                        predicates.add(inClause);
+
+                    }
+                    if (StringUtils.isNotBlank(workOrderByProductIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("workOrderByProductId"));
+                        Arrays.stream(workOrderByProductIds.split(","))
+                                .map(Long::parseLong).forEach(workOrderByProductId -> inClause.value(workOrderByProductId));
+                        predicates.add(inClause);
+
+                    }
+
+                    if (StringUtils.isNotBlank(pickIds)) {
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("pickId"));
+                        Arrays.stream(pickIds.split(",")).map(Long::parseLong).forEach(pickId -> inClause.value(pickId));
+                        predicates.add(inClause);
+
+                    }
+                    if (StringUtils.isNotBlank(lpn)) {
+
+                        logger.debug("lpn {} , lpn.contains(%) ? {}",
+                                lpn, lpn.contains("*"));
+                        if (lpn.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("lpn"), lpn.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
+                        }
+
+                    }
+
+                    if (StringUtils.isNotBlank(color)) {
+                        if (color.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("color"), color.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("color"), color));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(productSize)) {
+                        if (productSize.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("productSize"), productSize.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("productSize"), productSize));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(style)) {
+                        if (style.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("style"), style.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("style"), style));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(attribute1)) {
+                        if (attribute1.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute1"), attribute1.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute1"), attribute1));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute2)) {
+                        if (attribute2.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute2"), attribute2.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute2"), attribute2));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute3)) {
+                        if (attribute3.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute3"), attribute3.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute3"), attribute3));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute4)) {
+                        if (attribute4.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute4"), attribute4.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute4"), attribute4));
+                        }
+                    }
+                    if (StringUtils.isNotBlank(attribute5)) {
+                        if (attribute5.contains("*")) {
+                            predicates.add(criteriaBuilder.like(root.get("attribute5"), attribute5.replaceAll("\\*", "%")));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.equal(root.get("attribute5"), attribute5));
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(inventoryIds)) {
+
+                        CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(root.get("id"));
+                        Arrays.stream(inventoryIds.split(","))
+                                .map(Long::parseLong).forEach(inventoryId -> inClause.value(inventoryId));
+                        predicates.add(inClause);
+                    }
+
+                    // Only return actual inventory
+                    if(!Boolean.TRUE.equals(includeVirturalInventory)) {
+                        predicates.add(criteriaBuilder.equal(root.get("virtual"), false));
+                    }
+
+
+                    Predicate[] p = new Predicate[predicates.size()];
+
+                    // special handling for 3pl
+                    Predicate predicate = criteriaBuilder.and(predicates.toArray(p));
+
+                    // return addClientRestriction(predicate, clientRestriction,
+                    //        root, criteriaBuilder);
+                    return Objects.isNull(clientRestriction) ?
+                            predicate :
+                            clientRestriction.addClientRestriction(predicate,
+                                root, criteriaBuilder);
+
+
+                }
+                ,
+                pageable
+        );
+
     }
 
     private Predicate addClientRestriction(Predicate predicate,
@@ -618,17 +1146,26 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null);
     }
 
-    public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId) {
-        return findPickableInventories(itemId, inventoryStatusId, true);
+    public List<Inventory> findPickableInventories(Long itemId, Long inventoryStatusId, int lpnLimit) {
+        return findPickableInventories(itemId, inventoryStatusId, lpnLimit, true);
     }
     public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
+                                                   Long inventoryStatusId, int lpnLimit,
                                                    boolean includeDetails) {
         return findPickableInventories(itemId, inventoryStatusId, null, null,
-                null, null, null, null, includeDetails);
+                null, null, null, null,null,null,null,null,
+                null, null, lpnLimit, includeDetails);
     }
     public List<Inventory> findPickableInventories(Long itemId,
                                                    Long inventoryStatusId,
@@ -637,28 +1174,85 @@ public class InventoryService {
                                                    String color,
                                                    String productSize,
                                                    String style,
-                                                   String receiptNumber) {
-        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
-                color, productSize, style, receiptNumber, true);
-    }
-    public List<Inventory> findPickableInventories(Long itemId,
-                                                   Long inventoryStatusId,
-                                                   Long locationId,
-                                                   String lpn,
-                                                   String color,
-                                                   String productSize,
-                                                   String style,
+                                                   String attribute1,
+                                                   String attribute2,
+                                                   String attribute3,
+                                                   String attribute4,
+                                                   String attribute5,
                                                    String receiptNumber,
+                                                   String skipLocationIds,
+                                                   int lpnLimit) {
+        return findPickableInventories(itemId, inventoryStatusId, locationId, lpn,
+                color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
+                receiptNumber,  skipLocationIds, lpnLimit, true);
+    }
+    public List<Inventory> findPickableInventories(Long itemId,
+                                                   Long inventoryStatusId,
+                                                   Long locationId,
+                                                   String lpn,
+                                                   String color,
+                                                   String productSize,
+                                                   String style,
+                                                   String attribute1,
+                                                   String attribute2,
+                                                   String attribute3,
+                                                   String attribute4,
+                                                   String attribute5,
+                                                   String receiptNumber,
+                                                   String skipLocationIds,
+                                                   int lpnLimit,
                                                    boolean includeDetails) {
+        /**
         List<Inventory> availableInventories =
                 Objects.isNull(locationId) ?
-                        inventoryRepository.findByItemIdAndInventoryStatusId(itemId, inventoryStatusId)
+                        inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
+                                PageRequest.of(0, lpnLimit))
                         :
-                        inventoryRepository.findByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId);
+                        inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusIdAndLocationId(itemId, inventoryStatusId, locationId,
+                                PageRequest.of(0, lpnLimit));
+**/
+
+        List<Inventory> availableInventories =
+                inventoryRepository.findPickableInventoryByItemIdAndInventoryStatusId(itemId, inventoryStatusId,
+                                locationId, lpn,
+                                PageRequest.of(0, lpnLimit));
+
+        logger.debug("We have found {} available inventory, Let's get all the pickable inventory from it",
+                availableInventories.size());
+
+        Set<Long> skipLocationIdSet = new HashSet<>();
+        if (Strings.isNotBlank(skipLocationIds)) {
+            for (String skipLocationId : skipLocationIds.split(",")) {
+                skipLocationIdSet.add(Long.parseLong(skipLocationId));
+            }
+        }
+        logger.debug("We will skip the locations : {}", skipLocationIdSet);
+
+        Set<Long> finalSkipLocationIdSet = skipLocationIdSet;
 
         List<Inventory>  pickableInventories
                 =  availableInventories
                         .stream()
+                .filter(inventory -> {
+                    if (finalSkipLocationIdSet.isEmpty()) {
+                        logger.debug("No need to skip the inventory {} as there's no requirement on the skip location",
+                                inventory.getLpn());
+                        return true;
+                    }
+                    else if (finalSkipLocationIdSet.contains(inventory.getLocationId())) {
+                        logger.debug("we will need to skip inventory {} as its in a location {} that is marked as skip ({})",
+                                inventory.getLpn(),
+                                inventory.getLocationId(),
+                                finalSkipLocationIdSet);
+                        return false;
+                    }
+                    logger.debug("we don't need to skip inventory {} as its in a location {} that NOT is marked as skip ({})",
+                            inventory.getLpn(),
+                            inventory.getLocationId(),
+                            finalSkipLocationIdSet);
+                    return true;
+                })
                 .filter(this::isInventoryPickable)
                 .map(inventory -> {
                     // setup the location so we can filter the inventory by pickable location only
@@ -668,7 +1262,8 @@ public class InventoryService {
                     }
                     return inventory;
                 }).filter(this::isLocationPickable)
-                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style, receiptNumber))
+                .filter(inventory -> inventoryAttributeMatch(inventory, color, productSize, style,
+                        attribute1, attribute2, attribute3, attribute4, attribute5, receiptNumber))
                 .filter(inventory -> {
                     // if LPN is passed in, only return the inventory that match with the LPN
                     if(Strings.isNotBlank(lpn)) {
@@ -691,14 +1286,70 @@ public class InventoryService {
     }
 
     private boolean inventoryAttributeMatch(Inventory inventory, String color, String productSize,
-                                            String style, String receiptNumber) {
+                                            String style,
+                                            String attribute1, String attribute2, String attribute3,
+                                            String attribute4, String attribute5 , String receiptNumber) {
+        logger.debug("start to check if the inventory {} / {} matches with the criteria",
+                inventory.getId(), inventory.getLpn());
+        logger.debug("color: {}, productSize: {}, style: {}",
+                Strings.isBlank(color) ? "N/A" : color,
+                Strings.isBlank(productSize) ? "N/A" : productSize,
+                Strings.isBlank(style) ? "N/A" : style);
+        logger.debug("inventory attribute 1 ~ 5: {}, {}, {}, {}, {}",
+                Strings.isBlank(attribute1) ? "N/A" : attribute1,
+                Strings.isBlank(attribute2) ? "N/A" : attribute2,
+                Strings.isBlank(attribute3) ? "N/A" : attribute3,
+                Strings.isBlank(attribute4) ? "N/A" : attribute4,
+                Strings.isBlank(attribute5) ? "N/A" : attribute5);
+        logger.debug("receiptNumber: {}",
+                Strings.isBlank(receiptNumber) ? "N/A" : receiptNumber);
+
         if (Strings.isNotBlank(color) && !color.equalsIgnoreCase(inventory.getColor())) {
+            logger.debug("inventory's color {} doesn't match with the criteria color = {}",
+                    Strings.isBlank(inventory.getColor()) ? "N/A" : inventory.getColor(),
+                    color);
             return false;
         }
         if (Strings.isNotBlank(productSize) && !productSize.equalsIgnoreCase(inventory.getProductSize())) {
+            logger.debug("inventory's productSize {} doesn't match with the criteria productSize = {}",
+                    Strings.isBlank(inventory.getProductSize()) ? "N/A" : inventory.getProductSize(),
+                    productSize);
             return false;
         }
         if (Strings.isNotBlank(style) && !style.equalsIgnoreCase(inventory.getStyle())) {
+            logger.debug("inventory's style {} doesn't match with the criteria style = {}",
+                    Strings.isBlank(inventory.getStyle()) ? "N/A" : inventory.getStyle(),
+                    style);
+            return false;
+        }
+        if (Strings.isNotBlank(attribute1) && !attribute1.equalsIgnoreCase(inventory.getAttribute1())) {
+            logger.debug("inventory's attribute1 {} doesn't match with the criteria attribute1 = {}",
+                    Strings.isBlank(inventory.getAttribute1()) ? "N/A" : inventory.getAttribute1(),
+                    attribute1);
+            return false;
+        }
+        if (Strings.isNotBlank(attribute2) && !attribute2.equalsIgnoreCase(inventory.getAttribute2())) {
+            logger.debug("inventory's attribute2 {} doesn't match with the criteria attribute2 = {}",
+                    Strings.isBlank(inventory.getAttribute2()) ? "N/A" : inventory.getAttribute2(),
+                    attribute2);
+            return false;
+        }
+        if (Strings.isNotBlank(attribute3) && !attribute3.equalsIgnoreCase(inventory.getAttribute3())) {
+            logger.debug("inventory's attribute3 {} doesn't match with the criteria attribute3 = {}",
+                    Strings.isBlank(inventory.getAttribute3()) ? "N/A" : inventory.getAttribute3(),
+                    attribute3);
+            return false;
+        }
+        if (Strings.isNotBlank(attribute4) && !attribute4.equalsIgnoreCase(inventory.getAttribute4())) {
+            logger.debug("inventory's attribute4 {} doesn't match with the criteria attribute4 = {}",
+                    Strings.isBlank(inventory.getAttribute4()) ? "N/A" : inventory.getAttribute4(),
+                    attribute4);
+            return false;
+        }
+        if (Strings.isNotBlank(attribute5) && !attribute5.equalsIgnoreCase(inventory.getAttribute5())) {
+            logger.debug("inventory's attribute5 {} doesn't match with the criteria attribute5 = {}",
+                    Strings.isBlank(inventory.getAttribute5()) ? "N/A" : inventory.getAttribute5(),
+                    attribute5);
             return false;
         }
         if (Strings.isNotBlank(receiptNumber)) {
@@ -716,6 +1367,8 @@ public class InventoryService {
                 return false;
             }
         }
+        logger.debug("==== inventory {} / {} matches with the criteria  ====",
+                inventory.getId(), inventory.getLpn());
         return true;
     }
 
@@ -790,7 +1443,14 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null, includeDetails);
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, null, includeDetails,
+                null);
     }
 
     public List<Inventory> findByLocationId(Long locationId, boolean includeDetails) {
@@ -837,8 +1497,16 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null, null,
-                includeDetails
+                includeDetails, null
+
         );
     }
 
@@ -850,6 +1518,17 @@ public class InventoryService {
         LocalDateTime currentLocalDateTime = LocalDateTime.now();
         if (Objects.isNull(inventory.getInboundQCRequired())) {
             inventory.setInboundQCRequired(false);
+        }
+        if (Objects.isNull(inventory.getInWarehouseDatetime())) {
+            if (Objects.nonNull(inventory.getCreatedTime())) {
+                inventory.setInWarehouseDatetime(inventory.getCreatedTime());
+            }
+            else if (Objects.nonNull(inventory.getLastModifiedTime())) {
+                inventory.setInWarehouseDatetime(inventory.getLastModifiedTime());
+            }
+            else {
+                inventory.setInWarehouseDatetime(ZonedDateTime.now(ZoneId.of("UTC")));
+            }
         }
 
         Inventory savedInventory = inventoryRepository.save(inventory);
@@ -1016,7 +1695,14 @@ public class InventoryService {
                      inventory.getPickId(),
                      inventory.getId(),
                      inventory.getLpn());
-            inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+             try {
+
+                 inventory.setAllocatedByPick(outbuondServiceRestemplateClient.getPickById(inventory.getAllocatedByPickId()));
+             }
+             catch (Exception ex) {
+                 // ignore the error
+                 ex.printStackTrace();
+             }
          }
          logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the allocated by pick for LPN {}",
          ChronoUnit.MILLIS.between(
@@ -1027,7 +1713,15 @@ public class InventoryService {
 
          if (Objects.nonNull(inventory.getWorkOrderId()) &&
                 Objects.isNull(inventory.getWorkOrder())) {
-             inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(inventory.getWorkOrderId()));
+             try {
+
+                 inventory.setWorkOrder(workOrderServiceRestemplateClient.getWorkOrderById(
+                         inventory.getWorkOrderId(), false, false));
+             }
+             catch (Exception ex) {
+                 ex.printStackTrace();
+                 // ignore the error
+             }
 
          }
          logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",
@@ -1038,19 +1732,33 @@ public class InventoryService {
 
         if (Objects.nonNull(inventory.getReceiptId()) &&
                 Objects.isNull(inventory.getReceipt())) {
-            inventory.setReceipt(inboundServiceRestemplateClient.getReceiptById(inventory.getReceiptId()));
+            try {
+
+                inventory.setReceipt(inboundServiceRestemplateClient.getReceiptById(inventory.getReceiptId()));
+            }
+            catch (Exception ex) {
+                // ignore the error
+                ex.printStackTrace();
+            }
 
         }
         if (Objects.nonNull(inventory.getReceiptLineId()) &&
                 Objects.isNull(inventory.getReceiptLine()) &&
                 Objects.nonNull(inventory.getReceipt())) {
 
-            inventory.setReceiptLine(
-                    inventory.getReceipt().getReceiptLines().stream().filter(
-                            receiptLine -> inventory.getReceiptLineId().equals(receiptLine.getId())
-                    ).findFirst().orElse(null)
-            );
+            try {
 
+                inventory.setReceiptLine(
+                        inventory.getReceipt().getReceiptLines().stream().filter(
+                                receiptLine -> inventory.getReceiptLineId().equals(receiptLine.getId())
+                        ).findFirst().orElse(null)
+                );
+
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                // ignore the error
+            }
         }
 
         logger.debug("====> after : {} millisecond(1/1000 second) @ {},we loaded the work order for LPN {}",
@@ -1089,14 +1797,29 @@ public class InventoryService {
         inventory.setProductSize(inventoryCSVWrapper.getProductSize());
         inventory.setStyle(inventoryCSVWrapper.getStyle());
 
+        inventory.setAttribute1(inventoryCSVWrapper.getAttribute1());
+        inventory.setAttribute2(inventoryCSVWrapper.getAttribute2());
+        inventory.setAttribute3(inventoryCSVWrapper.getAttribute3());
+        inventory.setAttribute4(inventoryCSVWrapper.getAttribute4());
+        inventory.setAttribute5(inventoryCSVWrapper.getAttribute5());
+
         inventory.setWarehouseId(warehouseId);
 
         if(Strings.isNotBlank(inventoryCSVWrapper.getFifoDate())) {
-            LocalDate localDate = LocalDate.parse(inventoryCSVWrapper.getFifoDate());
-            if (Objects.nonNull(localDate)) {
-                inventory.setFifoDate(localDate.atStartOfDay().atZone(ZoneOffset.UTC));
+
+            inventory.setFifoDate(dateTimeService.getZonedDateTime(inventoryCSVWrapper.getFifoDate()));
+        }
+
+        if(Strings.isNotBlank(inventoryCSVWrapper.getInWarehouseDatetime())) {
+
+            inventory.setInWarehouseDatetime(dateTimeService.getZonedDateTime(inventoryCSVWrapper.getInWarehouseDatetime()));
+
+            // set the FIFO date as the in warehouse date, if the fifo date is not specified
+            if (Objects.isNull(inventory.getFifoDate())) {
+                inventory.setFifoDate(inventory.getInWarehouseDatetime());
             }
         }
+
 
         // client
         if (Strings.isNotBlank(inventoryCSVWrapper.getClient())) {
@@ -1143,11 +1866,36 @@ public class InventoryService {
 
         int unitOfMeasureQuantity = 1;
         if (Strings.isNotBlank(inventoryCSVWrapper.getUnitOfMeasure())) {
+            logger.debug("get unit of measure quantity from inventory, item = {}, package type = {}, " +
+                    "unit of measure = {}",
+                    inventory.getItem().getName(),
+                    inventory.getItemPackageType(),
+                    inventoryCSVWrapper.getUnitOfMeasure());
+            logger.debug("The item package has {} existing unit of measures: {}",
+                    inventory.getItemPackageType().getItemUnitOfMeasures().size(),
+                    inventory.getItemPackageType().getItemUnitOfMeasures().stream().map(
+                            itemUnitOfMeasure ->
+                                    Objects.nonNull(itemUnitOfMeasure.getUnitOfMeasure()) ?
+                                            itemUnitOfMeasure.getUnitOfMeasure().getName() :
+                                            itemUnitOfMeasure.getUnitOfMeasureId()
+                    ).collect(Collectors.toList()));
+
             unitOfMeasureQuantity = inventory.getItemPackageType().getItemUnitOfMeasures()
                     .stream().filter(itemUnitOfMeasure ->
-                            itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
-                                    inventoryCSVWrapper.getUnitOfMeasure()
-                            ))
+                            {
+                                if (Objects.nonNull(itemUnitOfMeasure.getUnitOfMeasure())) {
+                                    return itemUnitOfMeasure.getUnitOfMeasure().getName().equalsIgnoreCase(
+                                                    inventoryCSVWrapper.getUnitOfMeasure()
+                                            );
+                                }
+                                else {
+                                    return commonServiceRestemplateClient.getUnitOfMeasureById(
+                                            itemUnitOfMeasure.getUnitOfMeasureId()
+                                    ).getName().equalsIgnoreCase(
+                                            inventoryCSVWrapper.getUnitOfMeasure()
+                                    );
+                                }
+                            })
                     .map(itemUnitOfMeasure -> itemUnitOfMeasure.getQuantity())
                     .findFirst().orElse(1);
         }
@@ -1182,23 +1930,24 @@ public class InventoryService {
 
     }
 
+
     public Inventory reverseProduction(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         logger.debug("Start to reverse production of inventory with lpn {}",
                 inventory.getLpn());
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_PRODUCTION, documentNumber, comment, null);
     }
 
     public Inventory reverseByProduct(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
         logger.debug("Start to reverse by product of inventory with lpn {}",
                 inventory.getLpn());
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_BY_PRODUCT, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_BY_PRODUCT, documentNumber, comment, null);
     }
 
     public Inventory reverseReceiving(Long id, String documentNumber, String comment) {
         Inventory inventory = findById(id);
-        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.REVERSE_RECEIVING, documentNumber, comment, null);
     }
     public List<Inventory> removeInventoryByLocation(Long locationId) {
         return removeInventoryByLocation(locationId, true);
@@ -1218,30 +1967,32 @@ public class InventoryService {
         return removeInventory(inventory, documentNumber, comment);
     }
     public Inventory removeInventory(Inventory inventory, String documentNumber, String comment) {
-        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment);
+        return removeInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, documentNumber, comment, null);
     }
 
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
-        return removeInventory(inventory, inventoryQuantityChangeType, "", "");
+        return removeInventory(inventory, inventoryQuantityChangeType, "", "", null);
 
     }
     public Inventory removeInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                            String documentNumber, String comment) {
+                                            String documentNumber, String comment, Long reasonCodeId) {
 
-        logger.debug("Start to remove inventory");
+        logger.debug("start to remove inventory {} , lpn {}",
+                inventory.getId(),
+                inventory.getLpn());
         if (isApprovalNeededForInventoryAdjust(inventory, 0L, inventoryQuantityChangeType)) {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,
-                    inventoryQuantityChangeType, documentNumber, comment);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, false);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processRemoveInventory(inventory, inventoryQuantityChangeType, documentNumber, comment);
+            return processRemoveInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, reasonCodeId);
         }
     }
     public Inventory processRemoveInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                     String documentNumber, String comment) {
+                                     String documentNumber, String comment, Long reasonCodeId) {
 
         InventoryActivityType inventoryActivityType;
         switch (inventoryQuantityChangeType) {
@@ -1268,7 +2019,7 @@ public class InventoryService {
         }
         inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                 "quantity", String.valueOf(inventory.getQuantity()), "0",
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId);
 
         // ignore the integration when it is consumption of work order material
         // if (!inventoryQuantityChangeType.equals(InventoryQuantityChangeType.CONSUME_MATERIAL)) {
@@ -1331,7 +2082,7 @@ public class InventoryService {
 
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.RELABEL_LPN,
                 "LPN", String.valueOf(inventory.getLpn()), newLPN,
-                "", "");
+                "", "", null);
         inventory.setLpn(newLPN);
 
         return saveOrUpdate(inventory);
@@ -1558,23 +2309,28 @@ public class InventoryService {
         // so we can know whether the inventory become a virtual inventory
        if (destination.getLocationGroup() == null || destination.getLocationGroup().getLocationGroupType() == null) {
             // Refresh the location's information from layout service
-            destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
+           logger.debug("destination's group is not passed in, let's load the group and group type for it");
+           destination = warehouseLayoutServiceRestemplateClient.getLocationById(destination.getId());
 
 
-        }
-        if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
+       }
+
+       if (destination.getLocationGroup().getLocationGroupType().getVirtual()) {
             // The inventory is moved to the virtual location, let's mark the inventory
             // as virtual
             inventory.setVirtual(true);
-        }
-        else {
+            logger.debug("inventory is set to virtual as it is moved into a virtual location");
+       }
+       else {
 
             inventory.setVirtual(false);
-        }
+            logger.debug("inventory is set to NON virtual as it is moved into a NON virtual location");
+       }
         // Check if we have finished any movement
 
         if (Objects.isNull(pickId)) {
             recalculateMovementPathForInventoryMovement(inventory, destination);
+            logger.debug("recalculated the movement path for the inventory ");
         }
         else {
 
@@ -1590,6 +2346,7 @@ public class InventoryService {
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_MOVEMENT,
                 "location", sourceLocation.getName(), destination.getName());
 
+        logger.debug("inventory activity logged for the movement");
         // if we are moving inventory to a production line inbound area, let's update the delivery
         // quantity of the work order
 
@@ -1622,6 +2379,8 @@ public class InventoryService {
         }
 
         // Reset the destination location's size
+        logger.debug("start to recalculate the location's volume after we move new inventory into this destination location {}",
+                destination.getName());
         recalculateLocationSizeForInventoryMovement(sourceLocation, destination, inventory.getSize());
 
 
@@ -1935,24 +2694,24 @@ public class InventoryService {
     // Split the inventory based on the quantity, usually into 2 inventory.
     // the first one in the list is the original inventory with updated quantity
     // the second one in the list is the new inventory
-    public List<Inventory> splitInventory(long id, String newLpn, Long newQuantity) {
-        return splitInventory(findById(id), newLpn, newQuantity);
+    public List<Inventory> splitInventory(long id, String newLpn, Long newInventoryQuantity) {
+        return splitInventory(findById(id), newLpn, newInventoryQuantity);
     }
 
     // Split the inventory based on the quantity, usually into 2 inventory.
     // the first one in the list is the original inventory with updated quantity
     // the second one in the list is the new inventory
-    public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newQuantity) {
+    public List<Inventory> splitInventory(Inventory inventory, String newLpn, Long newInventoryQuantity) {
         if (StringUtils.isBlank(newLpn)) {
             newLpn = commonServiceRestemplateClient.getNextLpn(inventory.getWarehouseId());
         }
-        Inventory newInventory = inventory.split(newLpn, newQuantity);
+        Inventory newInventory = inventory.split(newLpn, newInventoryQuantity);
         List<Inventory> inventories = new ArrayList<>();
         inventories.add(saveOrUpdate(inventory));
         inventories.add(saveOrUpdate(newInventory));
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_SPLIT,
                 "Lpn,Quantity", inventory.getLpn() + "," + inventory.getQuantity(),
-                newLpn + "," + newQuantity);
+                newLpn + "," + newInventoryQuantity);
         return inventories;
     }
 
@@ -1998,7 +2757,7 @@ public class InventoryService {
         }
 
         // update the pick
-        Pick cancelledPick =
+        List<Pick> newPicks =
                 outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
 
         // disconnect the inventory from the pick and
@@ -2006,7 +2765,8 @@ public class InventoryService {
         inventory.setPickId(null);
         inventoryMovementService.clearInventoryMovement(inventory);
         inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.UNPICKING,
-                "quantity", String.valueOf(inventory.getQuantity()), "", cancelledPick.getNumber());
+                "quantity", String.valueOf(inventory.getQuantity()), "",
+                String.valueOf(inventory.getPickId()));
 
 
         // Move the inventory to the destination location
@@ -2057,8 +2817,8 @@ public class InventoryService {
         }
     }
 
-    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType) {
-        return addInventory(inventory, inventoryQuantityChangeType, "", "");
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType, Boolean kitInventoryUseDefaultAttribute) {
+        return addInventory(inventory, inventoryQuantityChangeType, "", "", kitInventoryUseDefaultAttribute);
 
     }
 
@@ -2072,13 +2832,18 @@ public class InventoryService {
      */
     @Transactional
     public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment) {
+                                  String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         return addInventory(userService.getCurrentUserName(), inventory, inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
+    }
+    @Transactional
+    public Inventory addInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
+                                  String documentNumber, String comment, Boolean kitInventoryUseDefaultAttribute) {
+        return addInventory(inventory, inventoryQuantityChangeType, documentNumber, comment, null, null);
     }
     @Transactional
     public Inventory addInventory(String username, Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                  String documentNumber, String comment) {
+                                  String documentNumber, String comment,  Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
 
         logger.debug("Start to add inventory with LPN {}",
                 Strings.isBlank(inventory.getLpn()) ? "N/A" : inventory.getLpn());
@@ -2098,12 +2863,13 @@ public class InventoryService {
 
             logger.debug("We will need to get approval, so here we just save the request");
             writeInventoryAdjustRequest(inventory, 0L,  inventory.getQuantity(),
-                    inventoryQuantityChangeType, documentNumber, comment);
+                    inventoryQuantityChangeType, documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
             inventory.setLockedForAdjust(true);
             return inventory;
         } else {
             logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber, comment);
+            return processAddInventory(username, inventory, inventoryQuantityChangeType, documentNumber,
+                    comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
     }
 
@@ -2118,19 +2884,28 @@ public class InventoryService {
         saveOrUpdate(inventory);
     }
 
+    private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
+                                             InventoryQuantityChangeType inventoryQuantityChangeType,
+                                             String documentNumber, String comment, Long reasonCodeId) {
+
+        writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
+                inventoryQuantityChangeType,
+                documentNumber, comment, reasonCodeId, true);
+    }
 
     private void writeInventoryAdjustRequest(Inventory inventory, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
-                                             String documentNumber, String comment) {
+                                             String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
 
 
         writeInventoryAdjustRequest(inventory, inventory.getQuantity(),  newQuantity,
                 inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
     }
     private void writeInventoryAdjustRequest(Inventory inventory, Long oldQuantity, Long newQuantity,
                                              InventoryQuantityChangeType inventoryQuantityChangeType,
-                                             String documentNumber, String comment) {
+                                             String documentNumber, String comment,
+                                             Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
 
         // if we are manupulating an existing inventory, let's lock teh inventory first
         if (Objects.nonNull(inventory.getId())) {
@@ -2141,7 +2916,8 @@ public class InventoryService {
             inventory.setLockedForAdjust(true);
         }
         inventoryAdjustmentRequestService.writeInventoryAdjustRequest(inventory, oldQuantity, newQuantity, inventoryQuantityChangeType,
-                  documentNumber,  comment);
+                  documentNumber,  comment, reasonCodeId,
+                kitInventoryUseDefaultAttribute);
 
     }
 
@@ -2174,15 +2950,15 @@ public class InventoryService {
     }
 
     public Inventory processAddInventory(Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment) {
+                                         String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         return processAddInventory(
                 userService.getCurrentUserName(),
                 inventory, inventoryQuantityChangeType,
-                documentNumber, comment);
+                documentNumber, comment, reasonCodeId,  kitInventoryUseDefaultAttribute);
     }
     public Inventory processAddInventory(String username,
                                          Inventory inventory, InventoryQuantityChangeType inventoryQuantityChangeType,
-                                         String documentNumber, String comment) {
+                                         String documentNumber, String comment, Long reasonCodeId, Boolean kitInventoryUseDefaultAttribute) {
         Location location =
                 warehouseLayoutServiceRestemplateClient.getLogicalLocationForAdjustInventory(
                         inventoryQuantityChangeType, inventory.getWarehouseId());
@@ -2212,7 +2988,18 @@ public class InventoryService {
         inventory.setVirtual(warehouseLayoutServiceRestemplateClient.isVirtualLocation(location));
         logger.debug("inventory {} needs QC? {}",
                 inventory.getLpn(), inventory.getInboundQCRequired());
-
+/**
+        if (Boolean.TRUE.equals(inventory.getKitInventory())) {
+            logger.debug("start to add kit inventory with {} inner inventory ",
+                    inventory.getKitInnerInventories().size());
+            for (Inventory kitInnerInventory : inventory.getKitInnerInventories()) {
+                kitInnerInventory.setKitInventory(inventory);
+            }
+        }
+ **/
+        if (Boolean.TRUE.equals(inventory.getItem().getKitItemFlag())) {
+            inventory.setKitInventoryFlag(true);
+        }
 
         inventory = saveOrUpdate(inventory);
 
@@ -2244,7 +3031,7 @@ public class InventoryService {
             inventoryActivityService.logInventoryActivitiy(inventory, inventoryActivityType,
                     username,
                     "quantity", "0", String.valueOf(inventory.getQuantity()),
-                    documentNumber, comment);
+                    documentNumber, comment, reasonCodeId);
 
         }
         catch (Exception ex) {
@@ -2263,7 +3050,20 @@ public class InventoryService {
             setupQCInspectionRequest(inventory);
         }
 
-        return moveInventory(inventory, destinationLocation);
+        inventory =  moveInventory(inventory, destinationLocation);
+
+        if (Boolean.TRUE.equals(inventory.getItem().getKitItemFlag())) {
+            logger.debug("We just received a kit inventory {}, let's also create the inner" +
+                    " inventory " , inventory.getLpn());
+            List<Inventory> innerInventories = createKitInnerInventory(inventory, kitInventoryUseDefaultAttribute);
+            for(Inventory innerInventory: innerInventories) {
+
+                processAddInventory(username,
+                        innerInventory, inventoryQuantityChangeType,
+                        documentNumber, comment, reasonCodeId, kitInventoryUseDefaultAttribute);
+            }
+        }
+        return inventory;
 
 
         /***********
@@ -2283,6 +3083,149 @@ public class InventoryService {
         }
         return save(consolidatedInventory);
         *********/
+    }
+
+    private List<Inventory> createKitInnerInventory(Inventory inventory, Boolean kitInventoryUseDefaultAttribute) {
+        List<Inventory> innerInventories = new ArrayList<>();
+
+        Item kitItem = inventory.getItem();
+
+        if (!Boolean.TRUE.equals(kitItem.getKitItemFlag()) ||
+            Objects.isNull(kitItem.getBillOfMaterialId())) {
+            logger.debug("The inventory {}'s item {} is not a proper kit item",
+                    inventory.getLpn(), kitItem.getName());
+            throw MissingInformationException.raiseException(
+                    "The inventory " + inventory.getLpn() + "'s item "
+                    + kitItem.getName() + " is not a proper kit item");
+        }
+        BillOfMaterial billOfMaterial = kitItem.getBillOfMaterial();
+        if (Objects.isNull(billOfMaterial)) {
+            // load the bill of material. We will get the inner inventory
+            // item and quantity from the BOM
+            billOfMaterial =
+                    workOrderServiceRestemplateClient.getBillOfMaterialById(
+                            kitItem.getBillOfMaterialId(),
+                            false
+                    );
+            if (Objects.isNull(billOfMaterial)) {
+                throw MissingInformationException.raiseException(
+                        "The inventory " + inventory.getLpn() + "'s item "
+                                + kitItem.getName() + " doesn't have a BOM setup, fail to " +
+                                "create kit inventory ");
+            }
+
+        }
+
+        // start to create inner items with the same inventory status
+        for(BillOfMaterialLine billOfMaterialLine : billOfMaterial.getBillOfMaterialLines()) {
+            Inventory innerInventory = createKitInnerInventory(
+                    inventory,billOfMaterial, billOfMaterialLine, kitInventoryUseDefaultAttribute);
+            innerInventory.setKitInventory(inventory);
+            innerInventory = saveOrUpdate(innerInventory);
+            innerInventories.add(innerInventory);
+        }
+
+        return innerInventories;
+
+    }
+    private Inventory createKitInnerInventory(Inventory inventory,
+                                              BillOfMaterial billOfMaterial, BillOfMaterialLine billOfMaterialLine,
+                                              Boolean kitInventoryUseDefaultAttribute) {
+        Item innerItem = billOfMaterialLine.getItem();
+        if (Objects.isNull(innerItem)) {
+            innerItem = itemService.findById(billOfMaterialLine.getItemId(), false);
+        }
+        Long innerInventoryQuantity =(long) (inventory.getQuantity() * billOfMaterialLine.getExpectedQuantity() / billOfMaterial.getExpectedQuantity());
+
+
+        Inventory innerInventory = inventory.copy(inventory.getLpn(), innerInventoryQuantity);
+        innerInventory.setItem(innerItem);
+
+        // setup the inventory attribute from the default attribute of the item
+        // or inherit from the parent
+        // inventory.copy will copy the inventory attribute from the parent as well
+        // so we will only need to change the attribute only if we will need to
+        // use the default inventory attribute that associated with the item
+        if (Boolean.TRUE.equals(kitInventoryUseDefaultAttribute)) {
+            setupDefaultInventoryAttribute(innerInventory);
+        }
+
+        innerInventory.setItemPackageType(innerItem.getDefaultItemPackageType());
+        innerInventory.setKitInventoryFlag(innerItem.getKitItemFlag());
+        innerInventory.setKitInnerInventoryFlag(true);
+
+        return innerInventory;
+
+
+    }
+
+    private void setupDefaultInventoryAttribute(Inventory inventory) {
+        Item item = inventory.getItem();
+        if (item.isTrackingColorFlag()) {
+
+            inventory.setColor(item.getDefaultColor());
+        }
+        else {
+            inventory.setColor(null);
+        }
+
+        if (item.isTrackingStyleFlag()) {
+
+            inventory.setStyle(item.getDefaultStyle());
+        }
+        else {
+            inventory.setStyle(null);
+        }
+
+        if (item.isTrackingProductSizeFlag()) {
+
+            inventory.setProductSize(item.getDefaultProductSize());
+        }
+        else {
+            inventory.setProductSize(null);
+        }
+
+        if (item.isTrackingInventoryAttribute1Flag()) {
+
+            inventory.setAttribute1(item.getDefaultInventoryAttribute1());
+        }
+        else {
+            inventory.setAttribute1(null);
+        }
+
+        if (item.isTrackingInventoryAttribute2Flag()) {
+
+            inventory.setAttribute2(item.getDefaultInventoryAttribute2());
+        }
+        else {
+            inventory.setAttribute2(null);
+        }
+        if (item.isTrackingInventoryAttribute3Flag()) {
+
+            inventory.setAttribute3(item.getDefaultInventoryAttribute3());
+        }
+        else {
+            inventory.setAttribute3(null);
+        }
+        if (item.isTrackingInventoryAttribute4Flag()) {
+
+            inventory.setAttribute4(item.getDefaultInventoryAttribute4());
+        }
+        else {
+            inventory.setAttribute4(null);
+        }
+        if (item.isTrackingInventoryAttribute5Flag()) {
+
+            inventory.setAttribute5(item.getDefaultInventoryAttribute5());
+        }
+        else {
+            inventory.setAttribute5(null);
+        }
+
+
+
+
+
     }
 
     private void setupQCInspectionRequest(Inventory inventory) {
@@ -2319,7 +3262,7 @@ public class InventoryService {
         }
 
         if (isApprovalNeededForInventoryAdjust(inventory, newQuantity, inventoryQuantityChangeType)) {
-            writeInventoryAdjustRequest(inventory, newQuantity, inventoryQuantityChangeType, documentNumber, comment);
+            writeInventoryAdjustRequest(inventory, newQuantity, inventoryQuantityChangeType, documentNumber, comment, null);
             return inventory;
         } else {
             return processAdjustInventoryQuantity(inventory, newQuantity, documentNumber, comment);
@@ -2334,7 +3277,7 @@ public class InventoryService {
                 inventory.getQuantity(), newQuantity);
         if (newQuantity == 0) {
             // a specific case where we are actually removing an inventory
-            resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment);
+            resultInventory = processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST,  documentNumber, comment, null);
         }
         else if (inventory.getQuantity() > newQuantity) {
             // OK we are adjust down, let's split the original inventory
@@ -2342,7 +3285,7 @@ public class InventoryService {
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
             logger.debug("Will reduce the quantity from {} to {}",
                     inventory.getQuantity(), newQuantity);
 
@@ -2356,7 +3299,7 @@ public class InventoryService {
                     "LPN-quantity",
                     inventory.getLpn() + "-" + inventory.getQuantity(),
                     newLpn + "-" + (inventory.getQuantity() - newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
 
             Inventory newInventory = inventory.split(newLpn, inventory.getQuantity() - newQuantity);
 
@@ -2366,7 +3309,7 @@ public class InventoryService {
             logger.debug("Inventory is split");
 
             // Remove the new inventory
-            processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "");
+            processRemoveInventory(newInventory, InventoryQuantityChangeType.INVENTORY_ADJUST,"", "", null);
             logger.debug("The inventory with reduced quantity has been removed");
             resultInventory =  inventory;
         }
@@ -2377,7 +3320,7 @@ public class InventoryService {
 
             inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.INVENTORY_ADJUSTMENT,
                     "quantity", String.valueOf(inventory.getQuantity()), String.valueOf(newQuantity),
-                    documentNumber, comment);
+                    documentNumber, comment, null);
             logger.debug("Will increase the quantity from {} to {}",
                     inventory.getQuantity(), newQuantity);
 
@@ -2435,7 +3378,8 @@ public class InventoryService {
 
             logger.debug("Will start to add inventory after the change is approved");
             processAddInventory(inventory, inventoryAdjustmentRequest.getInventoryQuantityChangeType(),
-                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment());
+                    inventoryAdjustmentRequest.getDocumentNumber(), inventoryAdjustmentRequest.getComment(),
+                    null, true);
         }
         else {
 
@@ -2502,7 +3446,7 @@ public class InventoryService {
     public Inventory changeQuantityByAuditCount(Inventory inventory, Long newQuantity) {
         if (Objects.isNull(inventory.getId())) {
             inventory.setQuantity(newQuantity);
-            return addInventory(inventory, InventoryQuantityChangeType.AUDIT_COUNT);
+            return addInventory(inventory, InventoryQuantityChangeType.AUDIT_COUNT, true);
         }
         else {
             // Adjust the quantity without any document and comment
@@ -2553,6 +3497,8 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
+                        null,
                         null, null,
                         pickIds,
                         null,
@@ -2560,7 +3506,13 @@ public class InventoryService {
                         null,
                         null,
                         null,
-                        null, null, null
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null, null, null,
+                        null
                 );
                 // Let's remove those inventories
                 pickedInventories.forEach(inventory -> removeInventory(inventory, InventoryQuantityChangeType.CONSUME_MATERIAL));
@@ -2607,12 +3559,20 @@ public class InventoryService {
                     null,
                     null,
                     null,
+                    null,
+                    null,
                     lpn,
                     null,
                     null,
                     null,
                     null,
-                    null, null, null
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null, null, null,
+                    null
             );
             // we will only return the inventory without any pick attached to it
             return inventories.stream().filter(inventory -> Objects.isNull(inventory.getPickId())).collect(Collectors.toList());
@@ -2642,6 +3602,8 @@ public class InventoryService {
                         null,
                         null,
                         null,
+                        null,
+                        null,
                         null, null,
                         null,
                         null,
@@ -2651,7 +3613,13 @@ public class InventoryService {
                         null,
                         null,
                         null,
-                        null, null, null
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null, null, null,
+                        null
                 );
             }
             return pickedInventories;
@@ -2840,7 +3808,8 @@ public class InventoryService {
      * @throws JsonProcessingException
      */
     public ReportHistory generateLPNLabel(Long warehouseId, String lpn, String locale,
-                                                 Long quantity, String printerName) throws JsonProcessingException {
+                                                 Long quantity, String printerName)   {
+
         // see if we can find work order or receipt form the LPN
         // if we can only find one work order, or receipt from it, then we will call
         // the correspodent service to print the LPN label.
@@ -2848,6 +3817,11 @@ public class InventoryService {
         // an plain LPN label
 
         List<Inventory> inventories = findByLpn(warehouseId, lpn);
+
+        return generateLPNLabel(warehouseId, lpn, inventories, locale);
+        // we will always print LPN label, not work order / receiving LPN Labels
+
+        /***
         if (Objects.isNull(quantity)) {
             quantity = inventories.stream().map(Inventory::getQuantity).mapToLong(Long::longValue).sum();
         }
@@ -2920,12 +3894,13 @@ public class InventoryService {
                     "We don't know whether the LPN comes from receiving or work order production," +
                     " or none of them");
         }
+         **/
 
 
 
     }
     public ReportHistory generateLPNLabel(Long warehouseId, String lpn,
-                                          List<Inventory> inventories, String locale) throws JsonProcessingException {
+                                          List<Inventory> inventories, String locale)   {
 
         /***
         // setup parameters
@@ -2978,24 +3953,13 @@ public class InventoryService {
         logger.debug("will find a printer by : \n{}, ",
                 reportData);
          **/
-        // we will print one label per Item with its current quantity in the LPN
-        // key: item id
-        // value: item
-        Map<Long, Item> itemMap = new HashMap<>();
-        // key: item id
-        // value: quantity
-        Map<Long, Long> itemQuantityMap = new HashMap<>();
 
-        for (Inventory inventory : inventories) {
-            Long itemId = inventory.getItem().getId();
-            itemMap.putIfAbsent(itemId, inventory.getItem());
-            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
-            itemQuantityMap.put(itemId, quantity + inventory.getQuantity());
-        }
+        Map<String, Inventory> inventoryMap = getInventoryMapForLPNLabel(inventories);
 
         Report reportData = new Report();
         setupPrePrintLPNLabelData(
-                reportData, lpn, itemMap, itemQuantityMap, 1
+                warehouseId,
+                reportData, lpn, inventoryMap, 1
         );
 
         ReportHistory reportHistory =
@@ -3008,20 +3972,64 @@ public class InventoryService {
         return reportHistory;
     }
 
-    private void setupPrePrintLPNLabelData(Report reportData,
+    private Map<String, Inventory> getInventoryMapForLPNLabel(List<Inventory> inventories) {
+        // key: inventory attributes which we can print on the LPN Label
+        // item_id - receipt_id - color - style - productSize - attribute1 ~ attribute5
+        // value: inventory with total quantity from inventory
+        Map<String, Inventory> inventoryMap = new HashMap<>();
+
+
+        for (Inventory inventory : inventories) {
+            String key = new StringBuilder()
+                    .append(inventory.getItem().getId()).append("-")
+                    .append(inventory.getItemPackageType().getId()).append("-")
+                    .append(Objects.nonNull(inventory.getReceiptId()) ? inventory.getReceiptId() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getColor()) ? inventory.getColor() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getStyle()) ? inventory.getStyle() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getProductSize()) ? inventory.getProductSize() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute1()) ? inventory.getAttribute1() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute2()) ? inventory.getAttribute2() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute3()) ? inventory.getAttribute3() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute4()) ? inventory.getAttribute4() : "NA").append("-")
+                    .append(Strings.isNotBlank(inventory.getAttribute5()) ? inventory.getAttribute5() : "NA").append("-")
+                    .toString();
+
+            if (inventoryMap.containsKey(key)) {
+                inventoryMap.get(key).setQuantity(
+                        inventoryMap.get(key).getQuantity() + inventory.getQuantity()
+                );
+            }
+            else {
+                inventoryMap.put(
+                        key,
+                        inventory.copy(inventory.getLpn(), inventory.getQuantity())
+                );
+            }
+        }
+        return inventoryMap;
+    }
+
+    private void setupPrePrintLPNLabelData(Long warehouseId,
+                                           Report reportData,
                                            String lpn,
-                                           Map<Long, Item> itemMap,
-                                           Map<Long, Long> itemQuantityMap,
+                                           Map<String, Inventory> inventoryMap,
                                            Integer copies) {
 
         List<Map<String, Object>> lpnLabelContents = new ArrayList<>();
-        for (Map.Entry<Long, Item> itemEntries : itemMap.entrySet()) {
-            Long itemId = itemEntries.getKey();
-            Item item = itemEntries.getValue();
-            Long quantity = itemQuantityMap.getOrDefault(itemId, 0L);
+
+
+        LPNLabelFontSize colorFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.COLOR);
+        LPNLabelFontSize styleFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.STYLE);
+        LPNLabelFontSize productSizeFontSize = lpnLabelFontSizeService.getReceivingLPNLabelFontSize(
+                warehouseId, LPNLabelFontType.PRODUCT_SIZE);
+
+        for (Map.Entry<String, Inventory> inventoryEntry : inventoryMap.entrySet()) {
 
             Map<String, Object> lpnLabelContent =   getLPNLabelContent(
-                    lpn, item, quantity
+                    lpn, inventoryEntry.getValue(),
+                    colorFontSize, styleFontSize, productSizeFontSize
             );
             for (int i = 0; i < copies; i++) {
                 lpnLabelContents.add(lpnLabelContent);
@@ -3032,17 +4040,194 @@ public class InventoryService {
 
     }
 
-    private Map<String, Object> getLPNLabelContent(String lpn, Item item, Long quantity) {
+    private Map<String, Object> getLPNLabelContent(String lpn, Inventory inventory,
+                                                   LPNLabelFontSize colorFontSize,
+                                                   LPNLabelFontSize styleFontSize,
+                                                   LPNLabelFontSize productSizeFontSize) {
 
         Map<String, Object> lpnLabelContent = new HashMap<>();
 
+        StringBuilder qrCode = new StringBuilder();
+        qrCode.append("qrcode:");
+
+        logger.debug("Inventory's client: {} / {}",
+                Objects.isNull(inventory.getClientId()) ? "N/A" : inventory.getClientId(),
+                Objects.isNull(inventory.getClient()) ? "N/A" : inventory.getClient().getName());
+
+
+        if (Objects.nonNull(inventory.getClientId()) &&
+                Objects.isNull(inventory.getClient())) {
+            inventory.setClient(
+                    commonServiceRestemplateClient.getClientById(
+                            inventory.getClientId()
+                    )
+            );
+        }
+        lpnLabelContent.put("client", Objects.nonNull(inventory.getClient()) ?
+                inventory.getClient().getName() : "");
+
+
+
         lpnLabelContent.put("lpn", lpn);
-        lpnLabelContent.put("item_family", Objects.nonNull(item.getItemFamily()) ?
-                item.getItemFamily().getDescription() : "");
-        lpnLabelContent.put("item_name", item.getName());
-        lpnLabelContent.put("quantity", quantity);
+        qrCode.append("lpn=").append(lpn).append(";");
+
+        lpnLabelContent.put("item_family", Objects.nonNull(inventory.getItem().getItemFamily()) ?
+                inventory.getItem().getItemFamily().getDescription() : "");
+        lpnLabelContent.put("item_name", inventory.getItem().getName());
+        qrCode.append("itemName=").append(inventory.getItem().getName()).append(";");
+        qrCode.append("itemId=").append(inventory.getItemId()).append(";");
+        lpnLabelContent.put("item_description", inventory.getItem().getDescription());
+
+        // if item description is too long, split into multiple lines
+        lpnLabelContent.put("item_description_1", inventory.getItem().getDescription());
+
+        if (Strings.isNotBlank(inventory.getItem().getDescription().trim()) &&
+                inventory.getItem().getDescription().trim().length() > 20) {
+
+            // split the description into lines,
+            String[] tokens = inventory.getItem().getDescription().split(" ");
+            String line = tokens[0];
+            int lineIndex = 1;
+
+            for(int i = 1; i < tokens.length; i++) {
+                if (Strings.isBlank(tokens[i].trim())) {
+                    continue;
+                }
+                if (line.length() + tokens[i].length() > 25) {
+
+                    lpnLabelContent.put("item_description_" + lineIndex, line);
+                    line = tokens[i];
+                    lineIndex++;
+                }
+                else {
+                    line += " " + tokens[i];
+                }
+            }
+            lpnLabelContent.put("item_description_" + lineIndex, line);
+        }
+
+
+        lpnLabelContent.put("quantity", inventory.getQuantity());
+
+        if (Objects.nonNull(inventory.getItemPackageType().getStockItemUnitOfMeasure())) {
+            if (Objects.isNull(inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure())) {
+                inventory.getItemPackageType().getStockItemUnitOfMeasure().setUnitOfMeasure(
+                        commonServiceRestemplateClient.getUnitOfMeasureById(
+                                inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasureId()
+                        )
+                );
+            }
+            lpnLabelContent.put("stockUOM", inventory.getItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+
+        }
+        else {
+
+            lpnLabelContent.put("stockUOM", "");
+        }
+
+        logger.debug("Inventory's receipt: {} / {}",
+                Objects.isNull(inventory.getReceiptId()) ? "N/A" : inventory.getReceiptId(),
+                Objects.isNull(inventory.getReceipt()) ? "N/A" : inventory.getReceipt().getNumber());
+        if (Objects.nonNull(inventory.getReceiptId()) &&
+            Objects.isNull(inventory.getReceipt())) {
+            inventory.setReceipt(
+                    inboundServiceRestemplateClient.getReceiptById(
+                            inventory.getReceiptId()
+                    )
+            );
+        }
+        lpnLabelContent.put("receipt_number", Objects.nonNull(inventory.getReceipt()) ?
+                inventory.getReceipt().getNumber() : "");
+
+
+        qrCode.append("itemPackageTypeId=").append(inventory.getItemPackageType().getId()).append(";");
+        qrCode.append("itemPackageTypeName=").append(inventory.getItemPackageType().getName()).append(";");
+
+        lpnLabelContent.put("caseQuantity", Objects.nonNull(inventory.getItemPackageType().getCaseItemUnitOfMeasure()) ?
+                inventory.getItemPackageType().getCaseItemUnitOfMeasure().getQuantity() : "0");
+
+
+
+        if (Strings.isNotBlank(inventory.getColor())) {
+            // we may need to automatically adjust the font size of the color
+            // so that the label can display all characters when it is too long
+
+            lpnLabelContent.put("color", inventory.getColor().trim().replace(" ", "\\\\&"));
+            lpnLabelContent.put("color_font_size", getLPNLabelFontSize(
+                    inventory.getColor().trim().replace(" ", "\\\\&"),
+                    colorFontSize.getCharactersPerLine(),
+                    colorFontSize.getBaseSize(),
+                    colorFontSize.getBaseSizeLineCount(),
+                    colorFontSize.getStep()));
+
+            qrCode.append("color=").append(inventory.getColor()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getProductSize())) {
+            lpnLabelContent.put("productSize", inventory.getProductSize());
+
+            lpnLabelContent.put("productSize_font_size", getLPNLabelFontSize(
+                    inventory.getProductSize().trim(),
+                    productSizeFontSize.getCharactersPerLine(),
+                    productSizeFontSize.getBaseSize(),
+                    productSizeFontSize.getBaseSizeLineCount(),
+                    productSizeFontSize.getStep()));
+
+            qrCode.append("productSize=").append(inventory.getProductSize()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getStyle())) {
+            lpnLabelContent.put("style", inventory.getStyle());
+            lpnLabelContent.put("style_font_size", getLPNLabelFontSize(
+                    inventory.getStyle().trim(),
+                    styleFontSize.getCharactersPerLine(),
+                    styleFontSize.getBaseSize(),
+                    styleFontSize.getBaseSizeLineCount(),
+                    styleFontSize.getStep()));
+            qrCode.append("style=").append(inventory.getStyle()).append(";");
+        }
+
+        if (Strings.isNotBlank(inventory.getAttribute1())) {
+            lpnLabelContent.put("inventoryAttribute1", inventory.getAttribute1());
+            qrCode.append("inventoryAttribute1=").append(inventory.getAttribute1()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute2())) {
+            lpnLabelContent.put("inventoryAttribute2", inventory.getAttribute2());
+            qrCode.append("inventoryAttribute2=").append(inventory.getAttribute2()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute3())) {
+            lpnLabelContent.put("inventoryAttribute3", inventory.getAttribute3());
+            qrCode.append("inventoryAttribute3=").append(inventory.getAttribute3()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute4())) {
+            lpnLabelContent.put("inventoryAttribute4", inventory.getAttribute4());
+            qrCode.append("inventoryAttribute4=").append(inventory.getAttribute4()).append(";");
+        }
+        if (Strings.isNotBlank(inventory.getAttribute5())) {
+            lpnLabelContent.put("inventoryAttribute5", inventory.getAttribute5());
+            qrCode.append("inventoryAttribute5=").append(inventory.getAttribute5()).append(";");
+        }
+
+
+        lpnLabelContent.put("barcode", qrCode.toString());
 
         return lpnLabelContent;
+
+    }
+
+    private int getLPNLabelFontSize(String value, int charactersPerLine, int baseSize, int baseSizeLineCount, int step) {
+        if (Strings.isBlank(value)) {
+            return baseSize;
+        }
+        int lineNeeded = (int)Math.ceil(value.length() * 1.0 / charactersPerLine);
+        logger.debug("value: {}, charactersPerLine: {}, lineNeeded: {}",
+                value, charactersPerLine, lineNeeded);
+
+        // if we don't need too many lines to display the value
+        if (lineNeeded <= baseSizeLineCount) {
+            return baseSize;
+        }
+        logger.debug("label font size {}", (baseSize - step * (lineNeeded - baseSizeLineCount)));
+        return baseSize - step * (lineNeeded - baseSizeLineCount);
+
 
     }
 
@@ -3153,6 +4338,13 @@ public class InventoryService {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 null, null,
                 null,
                 null,
@@ -3160,27 +4352,75 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null, null);
+                null, null,
+                null);
 
 
     }
 
-    public List<Inventory> removeInventores(String inventoryIds) {
+    public String removeInventores(Long companyId, String inventoryIds, Boolean asyncronized) {
 
-        return Arrays.stream(inventoryIds.split(",")).map(
-                id -> Long.parseLong(id)
-        ).map(id -> removeInventory(id, "", "")).collect(Collectors.toList());
+        if (Boolean.TRUE.equals(asyncronized)) {
+            User user = userService.getCurrentUser(companyId);
+
+            // we will need to run the removal asyncronized. let's make sure
+            // there's no approval needed for the current user
+            ExecutorService executor = Executors.newFixedThreadPool(10);
+
+            // for asyncroized we will mark the inventory as removed
+            // then actually remove the inventory
+            markAsRemoved(inventoryIds);
+
+
+
+            for(String id : inventoryIds.split(",")) {
+                executor.execute(() -> {
+
+                    Inventory inventory = findById(Long.parseLong(id));
+                    if (InventoryQuantityChangeType.INVENTORY_ADJUST.isNoApprovalNeeded()) {
+
+                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
+                    }
+                    else if (inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory,
+                            InventoryQuantityChangeType.INVENTORY_ADJUST, inventory.getQuantity(), 0l,
+                            user)) {
+
+                        writeInventoryAdjustRequest(inventory, 0L,
+                                InventoryQuantityChangeType.INVENTORY_ADJUST,
+                                "", "", null, false);
+                    }
+                    else {
+                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
+                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
+                    }
+                });
+            }
+
+            return "remove request has been sent";
+        }
+        else {
+
+            return "all inventory has been removed";
+        }
 
     }
 
-    public Long getAvailableQuantityForMPS(Long warehouseId, Long itemId, String itemName) {
+    private void markAsRemoved(String inventoryIds) {
+        List<Long> ids =  Arrays.stream(inventoryIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
 
-        return getAvailableInventoryForMPS(warehouseId, itemId, itemName).stream()
+        inventoryRepository.markAsRemoved(ids);
+
+    }
+
+    public Long getAvailableQuantityForMPS(Long warehouseId, Long itemId, String itemName, int lpnLimit) {
+
+        return getAvailableInventoryForMPS(warehouseId, itemId, itemName, lpnLimit).stream()
                 .mapToLong(Inventory::getQuantity).sum();
 
     }
 
-    public List<Inventory> getAvailableInventoryForMPS(Long warehouseId, Long itemId, String itemName) {
+    public List<Inventory> getAvailableInventoryForMPS(Long warehouseId, Long itemId, String itemName, int lpnLimit) {
 
         // we will only return available inventory status
         Optional<InventoryStatus> availableInventoryStatus =
@@ -3196,7 +4436,8 @@ public class InventoryService {
         Stream<Inventory> inventoryStream;
         if (Objects.nonNull(itemId)) {
             inventoryStream = inventoryRepository
-                    .findByItemIdAndInventoryStatusId(itemId, availableInventoryStatus.get().getId())
+                    .findByItemIdAndInventoryStatusId(itemId, availableInventoryStatus.get().getId(),
+                            PageRequest.of(0, lpnLimit))
                     .stream();
 
         }
@@ -3241,40 +4482,46 @@ public class InventoryService {
 
 
     public void removeAllInventories(Long warehouseId,
-                                                            Long itemId,
-                                                            String itemName,
+                                    Long itemId,
+                                    String itemName,
                                      String itemNames,
-                                                            String itemPackageTypeName,
-                                                            Long clientId,
-                                                            String clientIds,
-                                                            String itemFamilyIds,
-                                                            Long inventoryStatusId,
-                                                            String locationName,
-                                                            Long locationId,
-                                                            String locationIds,
-                                                            Long locationGroupId,
-                                                            String receiptId,
+                                    String itemPackageTypeName,
+                                    Long clientId,
+                                    String clientIds,
+                                    String itemFamilyIds,
+                                    Long inventoryStatusId,
+                                    String locationName,
+                                    Long locationId,
+                                    String locationIds,
+                                    Long locationGroupId,
+                                     Long pickZoneId,
+                                    String receiptId,
+                                     String receiptIds,
                                      String receiptNumber,
-                                                            String customerReturnOrderId,
-                                                            Long workOrderId,
-                                                            String workOrderLineIds,
-                                                            String workOrderByProductIds,
-                                                            String pickIds,
-                                                            String lpn,
-                                     String color, String productSize, String style,
-                                                            String inventoryIds,
-                                                            Boolean notPutawayInventoryOnly,
-                                                            Boolean includeVirturalInventory,
-                                                            ClientRestriction clientRestriction) {
+                                    String customerReturnOrderId,
+                                    Long workOrderId,
+                                    String workOrderLineIds,
+                                    String workOrderByProductIds,
+                                    String pickIds,
+                                    String lpn,
+                                    String color, String productSize, String style,
+                                     String attribute1, String attribute2, String attribute3,
+                                     String attribute4, String attribute5,
+                                    String inventoryIds,
+                                    Boolean notPutawayInventoryOnly,
+                                    Boolean includeVirturalInventory,
+                                    ClientRestriction clientRestriction) {
         List<Inventory> inventories = findAll(warehouseId, itemId,
                 itemName, itemNames, itemPackageTypeName, clientId, clientIds, itemFamilyIds, inventoryStatusId,
-                locationName, locationId, locationIds, locationGroupId,
-                receiptId, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
+                locationName, locationId, locationIds, locationGroupId, pickZoneId,
+                receiptId, receiptIds, receiptNumber, customerReturnOrderId,  workOrderId, workOrderLineIds,
                 workOrderByProductIds,
                 pickIds, lpn, color, productSize, style,
+                attribute1, attribute2, attribute3, attribute4, attribute5,
                 inventoryIds, notPutawayInventoryOnly, includeVirturalInventory,
                 clientRestriction,
-                false);
+                false,
+                null);
 
         logger.debug("find {} inventory to REMOVE by criteria {}",
                 inventories.size(),
@@ -3403,7 +4650,8 @@ public class InventoryService {
 
                     addInventory(username, inventory,
                             InventoryQuantityChangeType.INVENTORY_UPLOAD,
-                            "", "");
+                            "", "", null,
+                            true);
 
                     // we complete this inventory
                     inventoryFileUploadProgress.put(fileUploadProgressKey, 10.0 + (90.0 / totalInventoryCount) * (index + 1));
@@ -3883,7 +5131,15 @@ public class InventoryService {
                 null,
                 null,
                 null,
-                null, includeDetails);
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, includeDetails,
+                null);
     }
 
     /**
@@ -4201,4 +5457,462 @@ public class InventoryService {
                 id -> relabelLPN(Long.parseLong(id), newLPN, mergeWithExistingInventory)
         ).collect(Collectors.toList());
     }
+
+    /**
+     * Check if we can allocate the item from certain location and lpn(both are optional) for certain
+     * # order line
+     * # work order
+     * # work order line
+     * @param warehouseId
+     * @param itemId
+     * @param inventoryStatusId
+     * @param locationId
+     * @param lpn
+     * @return
+     */
+    public List<AllocationDryRunResult> getAllocationDryRunResult(Long warehouseId, Long clientId,
+                                                                  Long itemId, Long inventoryStatusId,
+                                                                  Long locationId, String lpn,
+                                                                  ClientRestriction clientRestriction) {
+
+        // let's get all the inventory based on the criteria
+        List<Inventory> availableInventories =
+                findAll(warehouseId, itemId,
+                        null, null, null,
+                        clientId, null, null,
+                        inventoryStatusId, null,
+                        locationId, null, null,
+                        null,
+                        null, null, null, null, null,
+                        null, null, null,
+                        lpn, null, null, null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null, null, false, clientRestriction,
+                         false, null);
+
+        if (availableInventories.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Map to save the quantity of the item in each location
+        // key: location id
+        // value: quantity of the inventory in the location
+        Map<Long, Long> locationInventoryQuantityMap = new HashMap<>();
+        // if location id or LPN is passed in , we will only verify the typical location
+        Long validationSpecificLocation = locationId;
+        if (Strings.isNotBlank(lpn)) {
+            validationSpecificLocation = availableInventories.get(0).getLocationId();
+        }
+
+        List<Inventory> availableInventoryForQuantityValidation =
+                findAll(warehouseId, itemId,
+                        null, null, null,
+                        clientId, null, null,
+                        inventoryStatusId, null,
+                        validationSpecificLocation, null, null,
+                        null, null, null, null,
+                        null, null, null,
+                        null, null, null, null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null, null, false, clientRestriction,
+                        false, null );
+
+        availableInventoryForQuantityValidation.forEach(
+                inventory -> {
+                    Long quantity = locationInventoryQuantityMap.getOrDefault(inventory.getLocationId(), 0l);
+                    locationInventoryQuantityMap.put(inventory.getLocationId(), quantity + inventory.getQuantity());
+                }
+        );
+        // let's get the outstanding picks as well so we know if we can allocate more from the location
+
+        // Map to save the quantity of the open pick in each location
+        // key: location id
+        // value: quantity of open pick for the specific item in the location
+        Map<Long, Long> openPickQuantityMap = new HashMap<>();
+        List<Pick> openPicks = outbuondServiceRestemplateClient.getOpenPicks(warehouseId, clientId,
+                 itemId, inventoryStatusId, validationSpecificLocation);
+        openPicks.forEach(
+                pick -> {
+                    Long quantity = openPickQuantityMap.getOrDefault(pick.getSourceLocationId(), 0l);
+                    openPickQuantityMap.put(pick.getSourceLocationId(),
+                            quantity + Math.max(pick.getQuantity() - pick.getPickedQuantity(), 0));
+                }
+        );
+
+
+        return availableInventories.stream().map(
+                inventory -> dryrunAllocation(inventory, locationInventoryQuantityMap, openPickQuantityMap)).collect(Collectors.toList());
+    }
+
+    /**
+     * see if we can allocate from the inventory only if
+     * # the inventory has no hold / lock / existing picks / etc that prevent the allocation
+     * # the location of the inventory allows allocation
+     * @param inventory
+     * @return
+     */
+    private AllocationDryRunResult dryrunAllocation(Inventory inventory,
+                                                    Map<Long, Long> locationInventoryQuantityMap,
+                                                    Map<Long, Long> openPickQuantityMap ) {
+
+        Long locationInventoryQuantity = locationInventoryQuantityMap.containsKey(inventory.getLocationId()) ?
+                locationInventoryQuantityMap.get(inventory.getLocationId()) : 0l;
+
+        Long locationOpenPickQuantity  = openPickQuantityMap.containsKey(inventory.getLocationId()) ?
+                openPickQuantityMap.get(inventory.getLocationId()) : 0l;
+
+        AllocationDryRunResult result = new AllocationDryRunResult(inventory,
+                locationInventoryQuantity, locationOpenPickQuantity);
+
+        // check if we can allocate from the inventory
+        if (Objects.nonNull(inventory.getPickId())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is picked by pick work with id " + inventory.getPickId());
+        }
+
+        if (Objects.nonNull(inventory.getAllocatedByPickId())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is allocated by pick work with id " + inventory.getAllocatedByPickId());
+        }
+        if (Boolean.TRUE.equals(inventory.getVirtual())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is a virtual inventory, can't allocate from it");
+        }
+        if (Boolean.TRUE.equals(inventory.getInboundQCRequired())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " requires inbound QC, please complete the QC first");
+        }
+        if (Boolean.TRUE.equals(inventory.getLockedForAdjust())) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is locked for inventory adjustment, please complete the inventory adjustment first");
+        }
+        if (inventory.getLocks().stream().anyMatch(
+                inventoryWithLock -> Boolean.TRUE.equals(inventoryWithLock.getLock().getAllowPick()))
+        ) {
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " has locks that prevent it from being allocated");
+        }
+
+        // check if the location allows allocation
+        if (Objects.nonNull(inventory.getLocationId()) &&
+                Objects.isNull(inventory.getLocation())) {
+            inventory.setLocation(warehouseLayoutServiceRestemplateClient.getLocationById(inventory.getLocationId()));
+        }
+        if (Objects.isNull(inventory.getLocation())) {
+            return result.fail("Fail to get location information of the inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() );
+        }
+        result.setLocationName(inventory.getLocation().getName());
+
+        if (!Boolean.TRUE.equals(inventory.getLocation().getEnabled())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a disabled location " + inventory.getLocation().getName());
+        }
+        if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getPickable())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a NON pickable location group " + inventory.getLocation().getLocationGroup().getName());
+        }
+        if (!Boolean.TRUE.equals(inventory.getLocation().getLocationGroup().getLocationGroupType().getFourWallInventory())) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a location group " +
+                    inventory.getLocation().getLocationGroup().getName() + " that is not inside warehouse");
+        }
+
+        // let's check if we have enough quantity for the item in the locations
+
+        if (result.getLocationInventoryQuantity() <= result.getLocationOpenPickQuantity()) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " is in a location " + inventory.getLocation().getName() +
+                    " that has more open pick quantity than inventory quantity.  Nothing left to be allocated");
+        }
+        else if (result.getLocationInventoryQuantity() - inventory.getQuantity() <= result.getLocationOpenPickQuantity()) {
+
+            return result.fail("The inventory with id " + inventory.getId() +
+                    " of LPN " + inventory.getLpn() + " may be partially allocatable from the location " + inventory.getLocation().getName());
+        }
+        return result.succeed();
+
+    }
+
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(Long warehouseId, Long clientId,
+                                                                      String billableCategory,
+                                                                      ZonedDateTime startTime,
+                                                                      ZonedDateTime endTime,
+                                                                      Boolean includeDaysSinceInWarehouseForStorageFee) {
+        logger.debug("start to get inventory aging for billing with ");
+        logger.debug("> warehouse id: {}", warehouseId);
+        logger.debug("> clientId: {}", clientId);
+        logger.debug("> billableCategory: {}", billableCategory);
+        logger.debug("> startTime: {}", startTime);
+        logger.debug("> endTime: {}", endTime);
+        logger.debug("> includeDaysSinceInWarehouseForStorageFee: {}", includeDaysSinceInWarehouseForStorageFee);
+        // get inventory that is in the warehouse or already shipped
+        List<Inventory> allInventory = findAll(warehouseId,
+                null,
+                null,
+                null,
+                null,
+                clientId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null, false,
+                null);
+
+        logger.debug("start to calculate the {} inventories for billing category {} ",
+                allInventory.size(), billableCategory);
+
+        if (Objects.isNull(startTime)) {
+            Instant minInstant = Instant.ofEpochMilli(Long.MIN_VALUE);
+            startTime  = minInstant.atZone(ZoneOffset.UTC);
+        }
+        if (Objects.isNull(endTime)) {
+
+            Instant maxInstant = Instant.ofEpochMilli(Long.MAX_VALUE);
+            endTime = maxInstant.atZone(ZoneOffset.UTC);
+        }
+        return getInventoryAgingForBilling(warehouseId, allInventory, billableCategory,
+                startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+    }
+    public List<InventoryAgingForBilling> getInventoryAgingForBilling(Long warehouseId,
+                                                                      List<Inventory> allInventory,
+                                                                      String billableCategory,
+                                                                      ZonedDateTime startTime,
+                                                                      ZonedDateTime endTime,
+                                                                      Boolean includeDaysSinceInWarehouseForStorageFee) {
+        switch (BillableCategory.valueOf(billableCategory)) {
+            case STORAGE_FEE_BY_CASE_COUNT:
+                return getInventoryAgingForBillingByCaseCount(warehouseId, allInventory,
+                        startTime, endTime, includeDaysSinceInWarehouseForStorageFee);
+            default:
+                throw InventoryException.raiseException("calculate billing for category " + billableCategory + " is not supported at this moment");
+        }
+    }
+
+    private List<InventoryAgingForBilling> getInventoryAgingForBillingByCaseCount(Long warehouseId,
+                                                                                  List<Inventory> allInventory,
+                                                                                  ZonedDateTime startTime,
+                                                                                  ZonedDateTime endTime,
+                                                                                  Boolean includeDaysSinceInWarehouseForStorageFee) {
+        logger.debug("start to get inventory aging for billing by case quantity");
+        List<InventoryAgingForBilling> inventoryAgingForBillings = new ArrayList<>();
+        // we will convert the time to warehouse local time zone first and calculate the days
+        // of the inventory in the warehouse
+        WarehouseConfiguration warehouseConfiguration =
+                warehouseLayoutServiceRestemplateClient.getWarehouseConfiguration(warehouseId);
+        ZoneId warehouseTimeZone = Strings.isBlank(warehouseConfiguration.getTimeZone()) ?
+                ZoneId.systemDefault() : ZoneId.of(warehouseConfiguration.getTimeZone());
+        LocalDate startDateAtWarehouseTimeZone = startTime.withZoneSameInstant(warehouseTimeZone).toLocalDate();
+        LocalDate endDateAtWarehouseTimeZone = endTime.withZoneSameInstant(warehouseTimeZone).toLocalDate();
+
+        logger.debug("local time windows {} - {}", startDateAtWarehouseTimeZone, endDateAtWarehouseTimeZone);
+
+        // let's filter out any inventory that is
+        // 1. in warehouse after the end time
+        // 2. shipped before the start time
+        allInventory = allInventory.stream().filter(
+                inventory -> Objects.nonNull(inventory.getInWarehouseDatetime())
+        ).filter(
+                inventory -> {
+                    LocalDate inventoryInWarehouseDate = inventory.getInWarehouseDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+                    if (inventoryInWarehouseDate.isAfter(endDateAtWarehouseTimeZone)) {
+                        // inventory is received after the time window
+                        return false;
+                    }
+                    if (Objects.nonNull(inventory.getShippedDatetime())) {
+                        // the inventory is already shipped, make sure it is not shipped before
+                        // the time windows
+                        LocalDate inventoryShippedDate = inventory.getShippedDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+                        if (inventoryShippedDate.isBefore(startDateAtWarehouseTimeZone)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+        ).collect(Collectors.toList());
+
+        // for those inventory
+        // write down the quantity and in warehouse days within the start time and end time
+
+
+        logger.debug("after filter inventory with the time window, we still have {} inventory left",
+                allInventory.size());
+        // key: days in the warehouse
+        // value: total quantity of case
+        Map<Long, Long> daysInWarehouseWithCaseQuantityMap = new HashMap<>();
+
+        allInventory.stream()
+        .forEach(
+                inventory -> {
+                    // first: days In Warehouse of the inventory
+                    // second: case quantity of the inventory
+                    Pair<Long, Long> daysInWarehouseWithCaseQuantity =
+                            getDaysInWarehouseWithCaseQuantity(inventory,
+                                    startDateAtWarehouseTimeZone,
+                                    endDateAtWarehouseTimeZone,
+                                    includeDaysSinceInWarehouseForStorageFee,
+                                    warehouseTimeZone);
+                    if (Objects.nonNull(daysInWarehouseWithCaseQuantity)) {
+                        Long caseQuantity = daysInWarehouseWithCaseQuantityMap.getOrDefault(daysInWarehouseWithCaseQuantity.getFirst(), 0l);
+                        daysInWarehouseWithCaseQuantityMap.put(daysInWarehouseWithCaseQuantity.getFirst(),
+                                caseQuantity + daysInWarehouseWithCaseQuantity.getSecond());
+                    }
+                }
+        );
+
+        logger.debug("after process, here's the result");
+
+        daysInWarehouseWithCaseQuantityMap.entrySet().forEach(
+                daysInWarehouseWithCaseQuantity -> {
+                    logger.debug("days: {}, case quantities: {}",
+                            daysInWarehouseWithCaseQuantity.getKey(),
+                            daysInWarehouseWithCaseQuantity.getValue());
+
+                    inventoryAgingForBillings.add(
+                            new InventoryAgingForBilling(
+                                    daysInWarehouseWithCaseQuantity.getKey(),
+                                    daysInWarehouseWithCaseQuantity.getValue()
+                            )
+                    );
+                }
+        );
+        return inventoryAgingForBillings;
+
+    }
+
+    /**
+     * Check the days of the inventory in the warehouse along with the case quantity
+     * @param inventory
+     * @param startDate
+     * @param endDate
+     * @param includeDaysSinceInWarehouseForStorageFee
+     * @param warehouseTimeZone
+     * @return
+     */
+    private Pair<Long, Long> getDaysInWarehouseWithCaseQuantity(Inventory inventory,
+                                                                   LocalDate startDate,
+                                                                   LocalDate endDate,
+                                                                   Boolean includeDaysSinceInWarehouseForStorageFee,
+                                                                   ZoneId warehouseTimeZone) {
+
+        ItemUnitOfMeasure caseItemUnitOfMeasure = inventory.getItemPackageType().getCaseItemUnitOfMeasure();
+        // do nothing if we can't get the case unit of measure
+        if (Objects.isNull(caseItemUnitOfMeasure)) {
+            return null;
+        }
+        LocalDate inventoryInWarehouseFirstDate = inventory.getInWarehouseDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+
+        // check the last day of the inventory in the warehouse
+        // only if the inventory is already shipped
+        LocalDate inventoryInWarehouseLastDate = endDate;
+        if (Objects.nonNull(inventory.getShippedDatetime())) {
+            inventoryInWarehouseLastDate = inventory.getShippedDatetime().withZoneSameInstant(warehouseTimeZone).toLocalDate();
+        }
+
+        long inWarehouseDays = 0;
+        if (Boolean.TRUE.equals(includeDaysSinceInWarehouseForStorageFee)) {
+            inWarehouseDays = ChronoUnit.DAYS.between(inventoryInWarehouseFirstDate, inventoryInWarehouseLastDate)  + 1;
+        }
+        else if (inventoryInWarehouseFirstDate.isBefore(startDate)){
+
+            // inventory in warehouse before the time window
+            inWarehouseDays = ChronoUnit.DAYS.between(startDate, inventoryInWarehouseLastDate) + 1;
+        }
+        else {
+
+            // inventory in warehouse after the time window
+            inWarehouseDays = ChronoUnit.DAYS.between(inventoryInWarehouseFirstDate, inventoryInWarehouseLastDate)  + 1;
+        }
+
+        // get the case quantity of the inventory
+        Long caseQuantity = (long)Math.ceil(inventory.getQuantity() * 1.0 / caseItemUnitOfMeasure.getQuantity());
+
+        return Pair.of(inWarehouseDays, caseQuantity);
+
+    }
+
+    /**
+     * Mark the inventory as shipped(usually for outbound orders) and move it to the
+     * designate location
+     * @param id
+     * @param location
+     * @return
+     */
+    public Inventory shipInventory(long id, Location location) {
+        // move the inventory to the designate location
+
+        Inventory inventory = moveInventory(id, location , null, true, null);
+        // update the inventory's shipped date
+        inventory.setShippedDatetime(ZonedDateTime.now());
+
+        return saveOrUpdate(inventory);
+    }
+
+    public void compress(List<Inventory> inventories) {
+        for (Inventory inventory : inventories) {
+            inventory.setItemId(inventory.getItem().getId());
+            inventory.setItemName(inventory.getItem().getName());
+
+            inventory.setItemtemPackageTypeId(inventory.getItemPackageType().getId());
+            inventory.setItemPackageTypeName(inventory.getItemPackageType().getName());
+
+            // set the item and item package type to null to reduce the network traffic
+            // in case the enduser need those information , they will need to make another
+            // request
+            inventory.setItem(null);
+            inventory.setItemPackageType(null);
+        }
+    }
+
+
+    public List<QCInspectionRequest> generateManualQCInspectionRequests(Long warehouseId, Long inventoryId) {
+        Inventory inventory = findById(inventoryId);
+
+        logger.debug("Start to generate manual QC inspection request for inventory {} / {}",
+                inventory.getId(), inventory.getLpn());
+
+        // let's setup the item family and inventory status first, just in case
+        // we may need to compare
+
+        return qcInspectionRequestService.generateManualQCInspectionRequests(inventory);
+    }
+
 }

@@ -28,14 +28,14 @@ public class DataController {
 
 
     @RequestMapping(value="/data/company/initiate", method = RequestMethod.PUT)
-    public Boolean initiateProductionData(@RequestParam String companyName,
-                                          @RequestParam String warehouseName,
+    public Boolean initiateProductionData(@RequestParam String newCompanyName,
+                                          @RequestParam String newWarehouseName,
                                           @RequestParam String adminUsername,
                                           @RequestParam(name = "production", required = false, defaultValue = "") Boolean production) throws JsonProcessingException {
 
 
         String requestUsername = userService.getCurrentUserName();
-        dataService.initiateProductionData(companyName, warehouseName, adminUsername, requestUsername, production);
+        dataService.initiateProductionData(newCompanyName, newWarehouseName, adminUsername, requestUsername, production);
         return true;
     }
 

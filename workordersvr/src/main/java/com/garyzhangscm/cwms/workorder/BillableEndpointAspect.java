@@ -3,6 +3,7 @@ package com.garyzhangscm.cwms.workorder;
 import com.garyzhangscm.cwms.workorder.clients.KafkaSender;
 import com.garyzhangscm.cwms.workorder.model.BillableRequest;
 import com.garyzhangscm.cwms.workorder.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,13 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
 
 @Aspect // indicate the component is used for aspect
 @Component
@@ -38,7 +39,9 @@ public class BillableEndpointAspect {
     @Before(value = "@annotation(com.garyzhangscm.cwms.workorder.model.BillableEndpoint)")
     public void handle(JoinPoint joinPoint) throws Exception {
 
-        createBillableRequest(httpServletRequest);
+        // Disable the billable request for now. We will do nothing
+        // createBillableRequest(httpServletRequest);
+        logger.debug("We will disable the billable request handler at this moment");
 
     }
 

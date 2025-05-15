@@ -19,22 +19,35 @@
 package com.garyzhangscm.cwms.outbound.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.garyzhangscm.cwms.outbound.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.outbound.model.*;
+import com.garyzhangscm.cwms.outbound.service.PickConfirmTransactionService;
 import com.garyzhangscm.cwms.outbound.service.PickService;
+import com.garyzhangscm.cwms.outbound.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 
 @RestController
 public class PickController {
     private static final Logger logger = LoggerFactory.getLogger(PickController.class);
     @Autowired
     PickService pickService;
+
+    @Autowired
+    private PickConfirmTransactionService pickConfirmTransactionService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private HttpSession httpSession;
 
     @RequestMapping(value="/picks", method = RequestMethod.GET)
     @ClientValidationEndpoint
@@ -43,6 +56,7 @@ public class PickController {
                                    @RequestParam(name="number", required = false, defaultValue = "") String number,
                                    @RequestParam(name="orderNumber", required = false, defaultValue = "") String orderNumber,
                                    @RequestParam(name="orderId", required = false, defaultValue = "") Long orderId,
+                                   @RequestParam(name="orderIds", required = false, defaultValue = "") String orderIds,
                                    @RequestParam(name="shipmentId", required = false, defaultValue = "") Long shipmentId,
                                    @RequestParam(name="trailerAppointmentId", required = false, defaultValue = "") Long trailerAppointmentId,
                                    @RequestParam(name="waveId", required = false, defaultValue = "") Long waveId,
@@ -70,11 +84,11 @@ public class PickController {
             @RequestParam(name="loadDetails", required = false, defaultValue = "true") Boolean loadDetails,
                                    ClientRestriction clientRestriction) {
 
-        logger.debug("Start to find pick by: {}", listId);
+        logger.debug("Start to find pick by  listId: {}", listId);
         if (StringUtils.isNotBlank(containerId)) {
             return pickService.getPicksByContainer(warehouseId, clientId, containerId);
         }
-        return pickService.findAll(warehouseId, clientId, number, orderId, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
+        return pickService.findAll(warehouseId, clientId, number, orderId, orderIds, orderNumber, shipmentId, waveId, listId,cartonizationId,  ids,
                 itemId, sourceLocationId, destinationLocationId, workOrderLineId, workOrderLineIds,
                 shortAllocationId, openPickOnly, inventoryStatusId,
                 shipmentNumber, workOrderNumber, waveNumber, cartonizationNumber, itemNumber,
@@ -103,15 +117,17 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}", method = RequestMethod.DELETE)
-    public Pick cancelPick(@PathVariable Long id,
+    public List<Pick> cancelPick(@PathVariable Long id,
                            @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                           @RequestParam(name = "reallocate", required = false, defaultValue = "false") Boolean reallocate,
+                           @RequestParam(name = "skipOriginalLocation", required = false, defaultValue = "true") Boolean skipOriginalLocation,
                            @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount){
-        return pickService.cancelPick(id, errorLocation, generateCycleCount);
+        return pickService.cancelPick(id, errorLocation, generateCycleCount, reallocate, skipOriginalLocation);
     }
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}/unpick", method = RequestMethod.POST)
-    public Pick unpick(@PathVariable Long id,
+    public List<Pick> unpick(@PathVariable Long id,
                        @RequestParam Long unpickQuantity){
         return pickService.unpick(id, unpickQuantity);
     }
@@ -119,16 +135,21 @@ public class PickController {
 
     @BillableEndpoint
     @RequestMapping(value="/picks", method = RequestMethod.DELETE)
-    public List<Pick> cancelPicks(@RequestParam(name = "pick_ids") String pickIds,
+    public List<Pick> cancelPicks(@RequestParam Long warehouseId,
+                                  @RequestParam(name = "pickIds") String pickIds,
                                   @RequestParam(name = "errorLocation", required = false, defaultValue = "false") Boolean errorLocation,
+                                  @RequestParam(name = "reallocate", required = false, defaultValue = "false") Boolean reallocate,
+                                  @RequestParam(name = "skipOriginalLocation", required = false, defaultValue = "true") Boolean skipOriginalLocation,
                                   @RequestParam(name = "generateCycleCount", required = false, defaultValue = "false") Boolean generateCycleCount) {
-        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount);
+        return pickService.cancelPicks(pickIds, errorLocation, generateCycleCount, reallocate,skipOriginalLocation);
     }
 
 
     @BillableEndpoint
     @RequestMapping(value="/picks/{id}/confirm", method = RequestMethod.POST)
     public Pick confirmPick(@PathVariable Long id,
+                            @RequestParam(name="warehouseId", required = false, defaultValue = "") Long warehouseId,
+                            @RequestParam(name="companyId", required = false, defaultValue = "") Long companyId,
                             @RequestParam(name="quantity", required = false, defaultValue = "") Long quantity,
                             @RequestParam(name="nextLocationId", required = false, defaultValue = "") Long nextLocationId,
                             @RequestParam(name="nextLocationName", required = false, defaultValue = "") String nextLocationName,
@@ -144,18 +165,28 @@ public class PickController {
         logger.debug("=> containerId: {}", containerId);
         logger.debug("=> pick from LPN: {}", lpn);
         logger.debug("=> pick to LPN: {}", destinationLpn);
-            return pickService.confirmPick(id, quantity, nextLocationId, nextLocationName,
-                    pickToContainer, containerId, lpn, destinationLpn);
+
+        Pick pick = pickService.findById(id);
+
+        // http session is shared by multiple request
+        // httpSession.setAttribute("PICK-CONFIRM-SESSION-ID", UUID.randomUUID());
+        String sessionId = UUID.randomUUID().toString();
+
+        pickConfirmTransactionService.addRequest(companyId, warehouseId, pick,
+                userService.getCurrentUserName(), quantity, sessionId);
+
+            return pickService.confirmPick(pick, quantity, nextLocationId, nextLocationName,
+                    pickToContainer, containerId, lpn, destinationLpn, sessionId);
     }
 
 
     @BillableEndpoint
     @RequestMapping(value="/picks/generate-manual-pick-for-work-order", method = RequestMethod.POST)
     public List<Pick> generateManualPick(@RequestParam Long warehouseId,
-                                        @RequestParam Long workOrderId,
-                                        @RequestParam Long productionLineId,
-                                        @RequestParam Long pickableQuantity,
-                                        @RequestParam String lpn) {
+                                         @RequestParam Long workOrderId,
+                                         @RequestParam Long productionLineId,
+                                         @RequestParam Long pickableQuantity,
+                                         @RequestParam String lpn) {
         logger.debug("======        Start to processManualPick pick   ========");
         logger.debug("=> warehouseId: {}", warehouseId);
         logger.debug("=> workOrderId: {}", workOrderId);
@@ -206,12 +237,19 @@ public class PickController {
                                    @RequestParam(name = "color", required = false, defaultValue = "") String color,
                                    @RequestParam(name = "productSize", required = false, defaultValue = "") String productSize,
                                    @RequestParam(name = "style", required = false, defaultValue = "") String style,
+                                       @RequestParam(name = "inventoryAttribute1", required = false, defaultValue = "") String inventoryAttribute1,
+                                       @RequestParam(name = "inventoryAttribute2", required = false, defaultValue = "") String inventoryAttribute2,
+                                       @RequestParam(name = "inventoryAttribute3", required = false, defaultValue = "") String inventoryAttribute3,
+                                       @RequestParam(name = "inventoryAttribute4", required = false, defaultValue = "") String inventoryAttribute4,
+                                       @RequestParam(name = "inventoryAttribute5", required = false, defaultValue = "") String inventoryAttribute5,
                                    boolean exactMatch, ClientRestriction clientRestriction) {
 
 
         return pickService.getQuantityInOrderPick(
                 warehouseId, clientId, itemId,
-                inventoryStatusId, color, productSize, style, exactMatch,
+                inventoryStatusId, color, productSize, style,
+                inventoryAttribute1, inventoryAttribute2, inventoryAttribute3,
+                inventoryAttribute4,inventoryAttribute5,exactMatch,
                 clientRestriction);
 
     }
@@ -232,9 +270,10 @@ public class PickController {
     @RequestMapping(value="/pick/{id}/acknowledge", method = RequestMethod.POST)
     public Pick acknowledgePick(
             @PathVariable Long id,
-            @RequestParam Long warehouseId) {
+            @RequestParam Long warehouseId,
+            @RequestParam String rfCode) {
 
-        return pickService.acknowledgePick(warehouseId, id);
+        return pickService.acknowledgePick(warehouseId, id, rfCode);
     }
     @BillableEndpoint
     @RequestMapping(value="/pick/{id}/unacknowledge", method = RequestMethod.POST)
@@ -263,4 +302,52 @@ public class PickController {
         return pickService.getPickCountByLocationGroup(warehouseId, clientRestriction);
     }
 
+    @BillableEndpoint
+    @ClientValidationEndpoint
+    @RequestMapping(value="/picks/orders/confirm-manual-pick", method = RequestMethod.POST)
+    public ResponseBodyWrapper<String> confirmManualPickForOrder(
+            @RequestParam Long warehouseId,
+            @RequestParam String orderNumber,
+            @RequestParam(name = "clientId", defaultValue = "", required = false) Long clientId,
+            @RequestParam String lpn,
+            @RequestParam(name = "completeOrderAfterFullyPicked", defaultValue = "false", required = false) Boolean completeOrderAfterFullyPicked,
+            ClientRestriction clientRestriction) {
+
+        pickService.confirmManualPickForOrder(warehouseId, clientId, orderNumber, lpn, completeOrderAfterFullyPicked, clientRestriction);
+
+        return ResponseBodyWrapper.success("pick confirmed");
+    }
+
+
+    @BillableEndpoint
+    @RequestMapping(value="/pick/{id}/acknowledgeable-by-current-user", method = RequestMethod.POST)
+    public Boolean isPickAcknowledgeableByCurrentUser(
+            @PathVariable Long id,
+            @RequestParam Long warehouseId,
+            @RequestParam String rfCode) {
+
+        return pickService.isPickAcknowledgeableByCurrentUser(warehouseId, id, rfCode);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/picks/open-pick/count")
+    @ClientValidationEndpoint
+    public Long getOpenPickCount(Long warehouseId,
+                                    ClientRestriction clientRestriction) {
+
+
+        return pickService.getOpenPickCount(
+                warehouseId, clientRestriction);
+
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value="/picks/completed-pick/count")
+    @ClientValidationEndpoint
+    public Long getCompletedPickCount(Long warehouseId,
+                                    ClientRestriction clientRestriction) {
+
+
+        return pickService.getCompletedPickCount(
+                warehouseId, clientRestriction);
+
+    }
 }

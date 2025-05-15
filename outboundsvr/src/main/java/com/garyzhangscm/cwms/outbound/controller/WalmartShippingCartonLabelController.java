@@ -46,21 +46,27 @@ public class WalmartShippingCartonLabelController {
     WalmartShippingCartonLabelService walmartShippingCartonLabelService;
     @Autowired
     FileService fileService;
+    @Autowired
+    private UploadFileService uploadFileService;
 
 
     @ClientValidationEndpoint
     @RequestMapping(value="/walmart-shipping-carton-labels", method = RequestMethod.GET)
     public List<WalmartShippingCartonLabel> findAllWalmartShippingCartonLabel(
             @RequestParam Long warehouseId,
-                                     @RequestParam(name="SSCC18", required = false, defaultValue = "") String SSCC18,
+            @RequestParam(name="SSCC18", required = false, defaultValue = "") String SSCC18,
             @RequestParam(name="SSCC18s", required = false, defaultValue = "") String SSCC18s,
-                                     @RequestParam(name="poNumber", required = false, defaultValue = "") String poNumber,
-                                     @RequestParam(name="type", required = false, defaultValue = "") String type,
-                                     @RequestParam(name="dept", required = false, defaultValue = "") String dept,
-                                     @RequestParam(name="itemNumber", required = false, defaultValue = "") String itemNumber
-                                     ) {
+            @RequestParam(name="poNumber", required = false, defaultValue = "") String poNumber,
+            @RequestParam(name="type", required = false, defaultValue = "") String type,
+            @RequestParam(name="dept", required = false, defaultValue = "") String dept,
+            @RequestParam(name="itemNumber", required = false, defaultValue = "") String itemNumber,
+            @RequestParam(name="palletPickLabelContentId", required = false, defaultValue = "") Long palletPickLabelContentId,
+            @RequestParam(name="notPrinted", required = false, defaultValue = "") Boolean notPrinted,
+            @RequestParam(name="notAssignedToPalletPickLabel", required = false, defaultValue = "") Boolean notAssignedToPalletPickLabel,
+            @RequestParam(name="count", required = false, defaultValue = "") Integer count) {
         return walmartShippingCartonLabelService.findAll(warehouseId,
-                SSCC18,SSCC18s, poNumber, type, dept, itemNumber);
+                SSCC18,SSCC18s, poNumber, type, dept, itemNumber,
+                palletPickLabelContentId, notPrinted, notAssignedToPalletPickLabel, count);
     }
 
 
@@ -72,19 +78,21 @@ public class WalmartShippingCartonLabelController {
 
     @BillableEndpoint
     @RequestMapping(method=RequestMethod.POST, value="/walmart-shipping-carton-labels/upload")
-    public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long warehouseId,
+    public ResponseBodyWrapper updateWalmartShippingCartonLabels(Long companyId, Long warehouseId,
+                                                                 @RequestParam(name = "ignoreUnknownFields", defaultValue = "false", required = false) Boolean ignoreUnknownFields,
                                             @RequestParam("file") MultipartFile file) throws IOException {
 
-
-        File localFile = fileService.saveFile(file);
         try {
-            fileService.validateCSVFile(warehouseId, "walmart-shipping-carton-labels", localFile);
+
+            File localFile = uploadFileService.convertToCSVFile(
+                    companyId, warehouseId, "walmart-shipping-carton-labels", fileService.saveFile(file), ignoreUnknownFields);
+
+            String fileUploadProgressKey = walmartShippingCartonLabelService.updateWalmartShippingCartonLabels(warehouseId, localFile);
+            return  ResponseBodyWrapper.success(fileUploadProgressKey);
         }
         catch (Exception ex) {
             return new ResponseBodyWrapper(-1, ex.getMessage(), "");
         }
-        String fileUploadProgressKey = walmartShippingCartonLabelService.updateWalmartShippingCartonLabels(warehouseId, localFile);
-        return  ResponseBodyWrapper.success(fileUploadProgressKey);
     }
     @RequestMapping(method=RequestMethod.GET, value="/walmart-shipping-carton-labels/upload/progress")
     public ResponseBodyWrapper getWalmartShippingCartonLabelsFileUploadProgress(Long warehouseId,

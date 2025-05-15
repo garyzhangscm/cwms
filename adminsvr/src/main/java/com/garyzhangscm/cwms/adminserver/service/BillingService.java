@@ -11,7 +11,8 @@ import java.time.ZonedDateTime;
 public interface BillingService {
     public BillingRequest generateBillingRequest(ZonedDateTime startTime, ZonedDateTime endTime,
                                                  Long companyId, Long warehouseId, Long clientId,
-                                                 String number, Boolean serialize);
+                                                 String number, Boolean serialize,
+                                                 Boolean includeDaysSinceInWarehouseForStorageFee);
 
     public BillableCategory getBillableCategory();
 

@@ -38,9 +38,8 @@ public class WorkOrderKPIController {
     public List<WorkOrderKPI> findAllWorkOrderKPIs(@RequestParam Long warehouseId,
                                                    @RequestParam(name="workOrderNumber", required = false, defaultValue = "") String workOrderNumber,
                                                    @RequestParam(name="username", required = false, defaultValue = "") String username,
-                                                   @RequestParam(name="workingTeamName", required = false, defaultValue = "") String workingTeamName,
-                                                   @RequestParam(name="genericMatch", required = false, defaultValue = "false") boolean genericQuery) {
-        return workOrderKPIService.findAll(warehouseId, workOrderNumber, username, workingTeamName, genericQuery);
+                                                   @RequestParam(name="workingTeamName", required = false, defaultValue = "") String workingTeamName) {
+        return workOrderKPIService.findAll(warehouseId, null, username, workingTeamName,  workOrderNumber);
     }
 
     @BillableEndpoint

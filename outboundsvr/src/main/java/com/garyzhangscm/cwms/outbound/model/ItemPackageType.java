@@ -42,10 +42,11 @@ public class ItemPackageType implements Serializable {
 
     private List<ItemUnitOfMeasure> itemUnitOfMeasures= new ArrayList<>();
 
-    private ItemUnitOfMeasure stockItemUnitOfMeasures;
+    private ItemUnitOfMeasure stockItemUnitOfMeasure;
 
 
     private Boolean defaultFlag;
+    private Integer casePerTier;
 
     @Transient
     private ItemUnitOfMeasure trackingLpnUOM;
@@ -68,6 +69,12 @@ public class ItemPackageType implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, item);
+    }
+
+    public ItemUnitOfMeasure getCaseUnitOfMeasure() {
+        return getItemUnitOfMeasures().stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
+        ).findFirst().orElse(null);
     }
 
     public Long getId() {
@@ -142,13 +149,21 @@ public class ItemPackageType implements Serializable {
         this.itemUnitOfMeasures = itemUnitOfMeasures;
     }
 
-    public ItemUnitOfMeasure getStockItemUnitOfMeasures() {
+    public Integer getCasePerTier() {
+        return casePerTier;
+    }
+
+    public void setCasePerTier(Integer casePerTier) {
+        this.casePerTier = casePerTier;
+    }
+
+    public ItemUnitOfMeasure getStockItemUnitOfMeasure() {
         if (itemUnitOfMeasures.size() == 0) {
             return null;
         }
 
-        if (Objects.nonNull(stockItemUnitOfMeasures)) {
-            return stockItemUnitOfMeasures;
+        if (Objects.nonNull(stockItemUnitOfMeasure)) {
+            return stockItemUnitOfMeasure;
         }
 
         ItemUnitOfMeasure stockItemUnitOfMeasure = itemUnitOfMeasures.get(0);
@@ -169,8 +184,19 @@ public class ItemPackageType implements Serializable {
         ).findFirst().orElse(null);
     }
 
-    public void setStockItemUnitOfMeasures(ItemUnitOfMeasure stockItemUnitOfMeasures) {
-        this.stockItemUnitOfMeasures = stockItemUnitOfMeasures;
+    public ItemUnitOfMeasure getPackItemUnitOfMeasure() {
+        if (itemUnitOfMeasures.size() == 0) {
+            return null;
+        }
+
+        return itemUnitOfMeasures.stream().filter(
+                itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getPackFlag())
+        ).findFirst().orElse(null);
+    }
+
+
+    public void setStockItemUnitOfMeasure(ItemUnitOfMeasure stockItemUnitOfMeasure) {
+        this.stockItemUnitOfMeasure = stockItemUnitOfMeasure;
     }
 
     public Boolean getDefaultFlag() {

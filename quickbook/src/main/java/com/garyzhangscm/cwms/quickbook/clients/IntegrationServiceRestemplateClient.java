@@ -46,8 +46,6 @@ public class IntegrationServiceRestemplateClient {
     private ObjectMapper objectMapper;
     // private ObjectMapper mapper = new ObjectMapper();
 
-    @Autowired
-    RestTemplate restTemplate;
     /***
     @Value("${integration.host.ip}")
     private String hostIP;
@@ -59,10 +57,12 @@ public class IntegrationServiceRestemplateClient {
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("zuulserver").port(5555)
+                        .scheme("http").host("apigateway").port(5555)
                         // .scheme("http").host("10.0.10.37").port(32262)
                         .path("/api/integration/integration-data/dblink/" + subUrl);
 
+
+        RestTemplate restTemplate = new RestTemplate();
 
         ResponseBodyWrapper<String> responseBodyWrapper
                 = restTemplate.exchange(

@@ -90,10 +90,6 @@ public class WalmartShippingCartonLabelFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "GTIN14", "GTIN14",
-                String.class, 100, true
-        ));
-        addColumn(new FileUploadTemplateColumn(
                 "weight", "Weight",
                 Double.class, 100, true
         ));
@@ -153,7 +149,7 @@ public class WalmartShippingCartonLabelFileUpload extends FileUploadType {
         ));
         addColumn(new FileUploadTemplateColumn(
                 "loadId", "LoadID",
-                String.class, 100, false
+                String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
                 "appointmentNumber", "Appointment Number - Not required currently",
@@ -180,11 +176,7 @@ public class WalmartShippingCartonLabelFileUpload extends FileUploadType {
                 String.class, 100, true
         ));
         addColumn(new FileUploadTemplateColumn(
-                "fobMira", "FOB-MIRA",
-                String.class, 100, true
-        ));
-        addColumn(new FileUploadTemplateColumn(
-                "lomaColtonFayeteville", "LOMA-COLTON-FAYETEVILLE",
+                "fobMiraLomaColtonFayeteville", "FOB-MIRA LOMA-COLTON-FAYETEVILLE",
                 String.class, 100, true
         ));
     }

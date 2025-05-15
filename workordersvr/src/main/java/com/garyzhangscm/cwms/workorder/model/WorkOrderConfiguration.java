@@ -1,10 +1,9 @@
 package com.garyzhangscm.cwms.workorder.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +34,10 @@ public class WorkOrderConfiguration extends AuditibleEntity<String>{
     private Boolean overConsumeIsAllowed;
     @Column(name = "over_produce_is_allowed")
     private Boolean overProduceIsAllowed;
+
+    @Column(name = "auto_record_item_productivity")
+    private Boolean autoRecordItemProductivity;
+
 
     @Transient
     private List<ProductionShiftSchedule> productionShiftSchedules = new ArrayList<>();
@@ -96,5 +99,13 @@ public class WorkOrderConfiguration extends AuditibleEntity<String>{
 
     public void setProductionShiftSchedules(List<ProductionShiftSchedule> productionShiftSchedules) {
         this.productionShiftSchedules = productionShiftSchedules;
+    }
+
+    public Boolean getAutoRecordItemProductivity() {
+        return autoRecordItemProductivity;
+    }
+
+    public void setAutoRecordItemProductivity(Boolean autoRecordItemProductivity) {
+        this.autoRecordItemProductivity = autoRecordItemProductivity;
     }
 }

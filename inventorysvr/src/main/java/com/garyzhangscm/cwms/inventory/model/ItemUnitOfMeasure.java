@@ -23,7 +23,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
@@ -88,6 +89,9 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     @Column(name = "case_flag")
     private Boolean caseFlag = false;
 
+    @Column(name = "pack_flag")
+    private Boolean packFlag = false;
+
 
 
     @Column(name = "warehouse_id")
@@ -97,6 +101,7 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
     private Long companyId;
 
     @Transient
+    @JsonIgnore
     private Warehouse warehouse;
 
     public ItemUnitOfMeasure(){}
@@ -300,5 +305,13 @@ public class ItemUnitOfMeasure extends AuditibleEntity<String> implements Serial
 
     public void setDefaultForDisplay(Boolean defaultForDisplay) {
         this.defaultForDisplay = defaultForDisplay;
+    }
+
+    public Boolean getPackFlag() {
+        return packFlag;
+    }
+
+    public void setPackFlag(Boolean packFlag) {
+        this.packFlag = packFlag;
     }
 }
