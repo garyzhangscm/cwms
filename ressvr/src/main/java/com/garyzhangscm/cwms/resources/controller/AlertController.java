@@ -37,12 +37,12 @@ public class AlertController {
 
     @RequestMapping(value="/alerts", method = RequestMethod.GET)
     public List<Alert> findAllAlerts(@RequestParam Long companyId,
-                                     @RequestParam(value = "type", defaultValue = "", required = false) String type,
-                                     @RequestParam(value = "status", defaultValue = "", required = false) String status,
-                                     @RequestParam(value = "keyWords", defaultValue = "", required = false) String keyWords,
-                                     @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
-                                     @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
-                                     @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                                      @RequestParam(value = "type", defaultValue = "", required = false) String type,
+                                      @RequestParam(value = "status", defaultValue = "", required = false) String status,
+                                      @RequestParam(value = "keyWords", defaultValue = "", required = false) String keyWords,
+                                      @RequestParam(name = "startTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime startTime,
+                                      @RequestParam(name = "endTime", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime endTime,
+                                      @RequestParam(name = "date", required = false, defaultValue = "") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return alertService.findAll(companyId, type, status, keyWords, startTime, endTime, date);
     }
 

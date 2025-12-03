@@ -14,7 +14,6 @@
         <module name="adminserver" />
         <module name="layoutserver" />
         <module name="outboundsvr" />
-        <module name="quickbook" />
         <module name="outboundserver" />
         <module name="workorderserver" />
         <module name="APIGateway" />

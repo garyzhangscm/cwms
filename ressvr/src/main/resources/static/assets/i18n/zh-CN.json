@@ -2395,5 +2395,6 @@
   "ALLOCATION-STRATEGY-TYPE-BY_PICK_SEQUENCE":"按拣选顺序",
   "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"按分配顺序",
   "ALLOCATION-STRATEGY-TYPE-DEFAULT":"默认",
-  "steps.item.attribute-tracking": "跟踪库存属性"
+  "steps.item.attribute-tracking": "跟踪库存属性",
+  "production-line-dashboard": "产线仪表盘"
 }
