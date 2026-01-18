@@ -452,6 +452,13 @@ public class InventoryService {
                         if (lpn.contains("*")) {
                             predicates.add(criteriaBuilder.like(root.get("lpn"), lpn.replaceAll("\\*", "%")));
                         }
+                        else if (lpn.contains(",")) {
+
+                            CriteriaBuilder.In<String> inClause = criteriaBuilder.in(root.get("lpn"));
+                            Arrays.stream(lpn.split(","))
+                                    .forEach(inClause::value);
+                            predicates.add(inClause);
+                        }
                         else {
                             predicates.add(criteriaBuilder.equal(root.get("lpn"), lpn));
                         }

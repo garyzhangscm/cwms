@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -128,6 +129,7 @@ public class ItemService {
     private Map<String, Double> fileUploadProgressMap = new ConcurrentHashMap<>();
     private Map<String, List<FileUploadResult>> fileUploadResultsMap = new ConcurrentHashMap<>();
 
+    @Transactional(readOnly = true)
     public Item findById(Long id, boolean includeDetails) {
          Item item = itemRepository.findById(id)
                  .orElseThrow(() -> ResourceNotFoundException.raiseException("item not found by id: " + id));

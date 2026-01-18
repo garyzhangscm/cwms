@@ -51,6 +51,7 @@ public class AccessControlFilter implements GatewayFilter {
             "/api/layout/warehouses",
             "/api/layout/warehouse-configuration/by-warehouse",
             "/api/resource/assets/i18n",
+            "/api/resource/assets/file-templates",
             "/api/resource/site-information/default",
             "/api/auth/login",
             "/api/auth/users/username-by-token",
