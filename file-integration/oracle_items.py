@@ -101,7 +101,8 @@ def convert(content, config, batch_id):
                          ('carton', carton_unit.strip(), carton), ('pallet', 'PL', pallet)]]
             payload = {
                 **scope, 'name': number, 'description': row['item_description'],
-                'itemFamily': {**context, 'name': families[row['item_type']]},
+                'itemFamily': {**context, 'name': families[row['item_type']],
+                               'description': families[row['item_type']]},
                 'itemPackageTypes': [{**scope, 'itemName': number, 'name': 'Main',
                                       'description': 'Main', 'itemUnitOfMeasures': units}],
             }
