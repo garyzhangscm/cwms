@@ -31,6 +31,29 @@ def unit_options(config):
     return options
 
 
+def unit_measurements(config):
+    values = config.get('unitMeasurements')
+    if values is None:
+        return {}
+    roles = {'piece', 'carton', 'pallet'}
+    fields = {'length', 'width', 'height', 'weight'}
+    if not isinstance(values, dict) or set(values) != roles:
+        raise InvalidFile('unitMeasurements requires piece, carton and pallet')
+    result = {}
+    for role, dimensions in values.items():
+        if not isinstance(dimensions, dict) or set(dimensions) != fields:
+            raise InvalidFile('each measurement entry requires length, width, height and weight')
+        result[role] = {}
+        for field, value in dimensions.items():
+            if type(value) not in (int, float):
+                raise InvalidFile('measurements must be JSON numbers')
+            number = typed(field, str(value))
+            if number <= 0:
+                raise InvalidFile('measurements must be positive')
+            result[role][field] = number
+    return result
+
+
 def quantity(value, field, defaults):
     value = value.strip()
     if not value:
@@ -45,6 +68,7 @@ def quantity(value, field, defaults):
 
 def convert(content, config, batch_id):
     options = unit_options(config)
+    measurements = unit_measurements(config)
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,100}', batch_id):
         raise InvalidFile('invalid batch ID')
     if len(content) > MAX_BYTES:
@@ -96,7 +120,7 @@ def convert(content, config, batch_id):
             pallet = quantity(row['pieces_per_pallet'], 'pieces_per_pallet', defaults)
             context = {k: scope[k] for k in ('companyCode', 'warehouseName')}
             units = [{'unitOfMeasureName': unit, 'quantity': count, **context,
-                      **options.get(role, {})}
+                      **options.get(role, {}), **measurements.get(role, {})}
                      for role, unit, count in [('piece', 'PCS', 1),
                          ('carton', carton_unit.strip(), carton), ('pallet', 'PL', pallet)]]
             payload = {

@@ -44,6 +44,14 @@ recordId 由批次号、公司/仓库/货主及料号稳定生成，不受行顺
 
 ### 提交前发现的 v1.62 兼容问题
 
+后续进展：公司字段复制已修复，按原 v1.62 镜像做单类热修复并部署。
+修复前回归测试复现字段丢失，修复后验证通过。部署后试导入已通过分类转换，
+但库存服务拒绝空的包装 height，说明还需要长、宽、高、重量默认值配置。
+`unitMeasurements` 可为 piece/carton/pallet 分别配置这四个正数，未配置时不自动猜值。
+该接口的 v1.62 DTO 不包含尺寸/重量单位字符串，不能承诺仅添加数值就能保存 inch/lb 标签，
+还需在成功试导入后核对实际单位字段。测试占位值须得到用户确认，不能套用到全部正式物料。
+下面保留问题定位过程；不再代表公司字段热修复尚未部署。
+
 对照生产 integration.jar 的 DBBasedItemFamily(ItemFamily) 字节码，构造器只复制
 name、description、warehouseId、warehouseName，不复制 companyId/companyCode。
 后续 convertToItemFamily 则要求公司字段存在。普通 Item 接口通过该构造器转换嵌套分类，
