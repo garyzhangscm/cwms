@@ -53,6 +53,7 @@ class SettingsTests(unittest.TestCase):
                 self.assertEqual(store.authorize('alice', self.jwt(), '1'), 'alice')
                 self.assertIn('/users/username-by-token?', call.call_args_list[0].args[0])
                 self.assertIn('/users?', call.call_args_list[1].args[0])
+                self.assertEqual(len(call.call_args_list[1].args), 1)
                 with self.assertRaises(settings.SettingsError):
                     store.authorize('bob', self.jwt(), '1')
                 with self.assertRaises(settings.SettingsError):
