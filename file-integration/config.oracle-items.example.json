@@ -56,7 +56,8 @@
     }
   },
   "settingsApi": {
-    "authBaseUrl": "http://MES_TEST_RESOURCE_REPLACE_ME",
+    "authBaseUrl": "http://MES_TEST_AUTH_REPLACE_ME",
+    "userBaseUrl": "http://MES_TEST_RESOURCE_REPLACE_ME",
     "bind": "127.0.0.1",
     "port": 18790
   },

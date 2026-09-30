@@ -1,11 +1,14 @@
 """Admin-only API for the Item Type mapping used by the FTP importer."""
 import argparse
+import base64
+import binascii
 import fcntl
 import hashlib
 import json
 import os
 import re
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from contextlib import contextmanager
@@ -52,6 +55,7 @@ class SettingsStore:
         self.config = config
         self.path = Path(config['oracleItems']['itemTypeMappingFile'])
         self.auth_url = config['settingsApi']['authBaseUrl'].rstrip('/')
+        self.user_url = config['settingsApi']['userBaseUrl'].rstrip('/')
         self.inventory_url = config['oracleItems']['inventoryBaseUrl'].rstrip('/')
         self.company_id = config['oracleItems']['companyId']
         self.warehouse_id = config['oracleItems']['warehouseId']
@@ -60,13 +64,33 @@ class SettingsStore:
         if (not username or not token or len(token) > 4096 or
                 str(self.company_id) != company_id):
             raise SettingsError(401, 'MES login required')
-        query = urllib.parse.urlencode({'username': username, 'token': token})
         try:
-            response = read_json_response(self.auth_url + '/users-by-token?' + query, token)
+            payload = json.loads(base64.urlsafe_b64decode(
+                token.split('.')[1] + '==='))
+            if (payload.get('sub') != username or
+                    payload.get('companyId') not in (self.company_id, -1) or
+                    int(payload.get('exp', 0)) <= time.time()):
+                raise ValueError('Invalid JWT claims')
+        except (IndexError, ValueError, TypeError, binascii.Error):
+            raise SettingsError(401, 'MES login required') from None
+        query = urllib.parse.urlencode({'companyId': self.company_id, 'token': token})
+        try:
+            response = read_json_response(self.auth_url + '/users/username-by-token?' + query)
         except Exception:
             raise SettingsError(502, 'Could not verify MES login') from None
-        user = response.get('data') if isinstance(response, dict) and response.get('result') == 0 else None
-        if not isinstance(user, dict) or user.get('username') != username:
+        verified_name = response.get('data') if isinstance(response, dict) and response.get('result') == 0 else None
+        if verified_name != username:
+            raise SettingsError(401, 'MES login required')
+        query = urllib.parse.urlencode({'companyId': self.company_id, 'username': username})
+        try:
+            response = read_json_response(self.user_url + '/users?' + query, token)
+        except Exception:
+            raise SettingsError(502, 'Could not verify MES admin permission') from None
+        users = response.get('data') if isinstance(response, dict) and response.get('result') == 0 else None
+        user = next((item for item in users if isinstance(item, dict) and
+                     item.get('username') == username and
+                     item.get('companyId') in (self.company_id, -1)), None) if isinstance(users, list) else None
+        if user is None:
             raise SettingsError(401, 'MES login required')
         if user.get('admin') is not True and user.get('systemAdmin') is not True:
             raise SettingsError(403, 'MES admin permission required')
