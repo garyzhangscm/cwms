@@ -30,6 +30,9 @@ class FTP:
     def retrbinary(self, command, callback):
         callback(self.files[command[5:]])
 
+    def delete(self, name):
+        del self.files[name]
+
     def close(self):
         pass
 
@@ -74,11 +77,17 @@ class OracleFtpTests(unittest.TestCase):
             self.assertEqual(len(api.calls), 3)
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual([r['state'] for r in report['records']], ['ACCEPTED'] * 3)
+            self.assertEqual(report['sourceCleanup'], 'PENDING')
+            self.assertIn(NAME, ftp.files)
             self.assertEqual([len(r['defaultsApplied']) for r in report['records']], [0, 2, 2])
             api.business_status = 'COMPLETED'
             a.poll_once(CONFIG, state, api, guard)
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual([r['state'] for r in report['records']], ['COMPLETED'] * 3)
+            self.assertEqual(report['sourceCleanup'], 'DELETED')
+            self.assertNotIn(NAME, ftp.files)
+            self.assertNotIn(NAME + '.ready', ftp.files)
+            self.assertIn('UNSHIP_INV_20260930.csv', ftp.files)
             alternate = 'int_item__demo002.csv'
             ftp.files[alternate] = CONTENT
             ftp.files[alternate + '.ready'] = b''
@@ -124,6 +133,57 @@ class OracleFtpTests(unittest.TestCase):
                 a.poll_once(CONFIG, state, api, guard)
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual([r['state'] for r in report['records']], ['COMPLETED'] * 3)
+            self.assertEqual(report['sourceCleanup'], 'PENDING')
+
+    def test_business_error_keeps_source_and_ready(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        ftp.files[NAME + '.ready'] = b''
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            a.poll_once(CONFIG, state, api, guard)
+            api.business_status = 'ERROR'
+            a.poll_once(CONFIG, state, api, guard)
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual([r['state'] for r in report['records']], ['BUSINESS_ERROR'] * 3)
+            self.assertEqual(report['sourceCleanup'], 'PENDING')
+            self.assertIn(NAME, ftp.files)
+            self.assertIn(NAME + '.ready', ftp.files)
+
+    def test_marker_only_cleanup_retry_after_partial_delete(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        ftp.files[NAME + '.ready'] = b''
+        original_delete = ftp.delete
+        failed = False
+        def delete(name):
+            nonlocal failed
+            if name.endswith('.ready') and not failed:
+                failed = True
+                raise ConnectionError()
+            original_delete(name)
+        ftp.delete = delete
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            a.poll_once(CONFIG, state, api, guard)
+            api.business_status = 'COMPLETED'
+            a.poll_once(CONFIG, state, api, guard)
+            self.assertNotIn(NAME, ftp.files)
+            self.assertIn(NAME + '.ready', ftp.files)
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual(report['sourceCleanup'], 'DELETE_FAILED')
+            a.poll_once(CONFIG, state, api, guard)
+            self.assertNotIn(NAME + '.ready', ftp.files)
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual(report['sourceCleanup'], 'DELETED')
+
+    def test_batch_filename_variants(self):
+        for name in ('int_item20260930.csv', 'int_item_20260930.csv',
+                     'int_item__20260930.csv', 'int_item-20260930.csv'):
+            with self.subTest(name=name):
+                self.assertTrue(a.published_file(name, CONFIG))
+        for name in ('int_item.csv', 'int_order_20260930.csv',
+                     'UNSHIP_INV_20260930.csv', 'int_item_20260930.xml'):
+            with self.subTest(name=name):
+                self.assertFalse(a.published_file(name, CONFIG))
 
     def test_inventory_guard_checks_server_response_and_exact_name(self):
         guard = a.ExistingItemGuard({'inventoryBaseUrl': 'http://example.invalid',

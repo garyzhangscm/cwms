@@ -47,7 +47,7 @@ BOOL_FIELDS = {'allowUnexpectedItem', 'nonInventoryItem'}
 MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 10000
 FILE_RE = re.compile(r'^(suppliers|items|item-package-types|receipts|orders|work-orders)__(\w[\w.-]{0,100})\.(csv|xml)$', re.ASCII)
-ORACLE_ITEMS_RE = re.compile(r'^int_item__([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
+ORACLE_ITEMS_RE = re.compile(r'^int_item(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
 
 
 class InvalidFile(ValueError):
@@ -367,7 +367,7 @@ def parse_published_file(name, content, config):
     if config.get('sourceFormat') == 'oracle-items-v1':
         match = ORACLE_ITEMS_RE.fullmatch(name)
         if not match:
-            raise InvalidFile('expected int_item__<batch>.csv')
+            raise InvalidFile('expected int_item followed by a unique batch number and .csv')
         # Import here to keep the generic adapter useful without Oracle mapping.
         from oracle_items import convert
         result = convert(content, config['oracleItems']['mapping'], match.group(1))
@@ -412,7 +412,7 @@ class ExistingItemGuard:
 
 
 def poll_once(config, directory, api, existing_guard=None):
-    """One bounded scan. Source files are left intact; .ready publishes completion."""
+    """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
     ftp_error = None
@@ -460,7 +460,28 @@ def poll_once(config, directory, api, existing_guard=None):
                  **({'itemName': r['payload']['name'], 'sourceRow': r['sourceRow'],
                      'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
                  **ledger.get(r['kind'], r['recordId'])} for r in records]}
+            if config.get('sourceFormat') == 'oracle-items-v1':
+                deleted_marker = directory / (snapshot.name + '.source-deleted')
+                report['sourceCleanup'] = 'DELETED' if deleted_marker.exists() else 'PENDING'
             atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
+            if (config.get('sourceFormat') == 'oracle-items-v1' and ftp and
+                    snapshot.name + '.ready' in names and
+                    all(r['state'] == 'COMPLETED' for r in report['records'])):
+                try:
+                    if snapshot.name in names:
+                        # Recheck the published bytes immediately before remote deletion.
+                        if download(ftp, snapshot.name) != snapshot.read_bytes():
+                            raise InvalidFile('published filename changed; source was not deleted')
+                        ftp.delete(snapshot.name)
+                    ftp.delete(snapshot.name + '.ready')
+                    atomic_write(deleted_marker, b'')
+                    report['sourceCleanup'] = 'DELETED'
+                    print(json.dumps({'file': snapshot.name, 'state': 'SOURCE_DELETED'}), flush=True)
+                except Exception as error:
+                    report['sourceCleanup'] = 'DELETE_FAILED'
+                    print(json.dumps({'file': snapshot.name, 'state': 'DELETE_FAILED',
+                                      'errorType': type(error).__name__}), flush=True)
+                atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
         if ftp_error:
             raise ftp_error
     finally:

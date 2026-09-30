@@ -17,7 +17,9 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 
 ## Oracle Item FTP 自动导入
 
-文件名使用专属前缀 `int_item__<批次号>.csv`，例如 `int_item__20260930-001.csv`。
+文件名使用专属前缀 `int_item` 加唯一批次号，例如 `int_item20260930_001.csv`；
+也接受 `int_item_20260930_001.csv` 和 `int_item__20260930_001.csv`。
+固定的 `int_item.csv` 不含批次号，会被忽略。
 同目录中的其他前缀文件一律忽略。
 CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`
 （也接受对应的小写别名）。上传时先用 `.part` 临时名，完成后改为最终文件名，最后创建同名 `.ready` 空文件。
@@ -33,12 +35,12 @@ FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读
 
 ```sh
 # 离线验证文件内容和映射；不会连接 FTP 或 MES
-python3 adapter.py validate int_item__20260930-001.csv --config config.oracle-items.json
+python3 adapter.py validate int_item20260930_001.csv --config config.oracle-items.json
 # 配置和规则确认、测试联调后才运行；此命令会写入 MES
 python3 adapter.py run --config config.oracle-items.json --send --once
 # 查看本地处理报告，不连接 FTP 或 MES
 python3 adapter.py status --config config.oracle-items.json
-python3 adapter.py status --config config.oracle-items.json --file int_item__20260930-001.csv
+python3 adapter.py status --config config.oracle-items.json --file int_item20260930_001.csv
 ```
 
 每轮先查询已接收记录的 MES 状态，再读取 FTP。每条 Item 的处理报告记录料号、原始行号、
@@ -47,6 +49,9 @@ python3 adapter.py status --config config.oracle-items.json --file int_item__202
 同一文件重复轮询不会重复提交；同一公司/仓库/料号即使更换批次名也会被拒绝。
 此外，在发送新料号之前查询 MES 库存接口；如果已存在，该文件全部拒绝，不做更新。
 这意味着正式 1,105 条中只要包含已有料号，就需要先制定新建/更新的拆分规则。
+只有文件内所有记录都被 MES 确认为 `COMPLETED`，程序才删除 FTP 上的原 CSV 和同名 `.ready`；
+本地原始快照及报告保留。报告的 `sourceCleanup` 显示 `PENDING`、`DELETED` 或 `DELETE_FAILED`。
+删除中断会在下轮重试；业务失败或状态不确定时不会删源文件。
 状态库和报告须持久化；删除状态库或换另一个空状态目录会破坏去重依据。
 
 ## 已实现范围
@@ -114,8 +119,9 @@ poNumber、inventoryStatusName（明细）、客户名称、地址等。不得�
 3. 最后创建同名加 `.ready` 的空文件，例如 `receipts__20260930-001.csv.ready`。
 
 只处理最终文件和 ready 都存在的文件。发布后的数据必须保持不变；ready 不是处理完成回执。
-FTP 用户应限制在交换目录。当前不删除/移动远端文件，也不上传回执，处理报告仅写入本地 state 目录。
-生产者需有保留和归档策略；当前每轮会重新下载已发布文件再去重，不适合无限积累文件。
+FTP 用户应限制在交换目录。Oracle Item 模式仅在业务完成后删除其自身 CSV 和 `.ready`；
+其他通用文件模式仍不删除/移动远端文件。处理报告仅写入本地 state 目录，不上传回执。
+生产者需有保留和归档策略；未完成文件每轮重新下载并去重，不适合无限积累文件。
 
 ### 依赖关系
 
