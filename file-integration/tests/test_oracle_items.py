@@ -19,6 +19,20 @@ def data(rows, header=COLUMNS):
 
 
 class OracleItemsTests(unittest.TestCase):
+    def test_measurements_are_explicit_and_role_specific(self):
+        measures = {role: dict(length=i, width=i, height=i, weight=i)
+                    for i, role in enumerate(('piece', 'carton', 'pallet'), 1)}
+        r = convert(data([['A', 'D', '01', '6', '450']]),
+                    {**CONFIG, 'unitMeasurements': measures}, 'b')['records'][0]
+        units = r['payload']['itemPackageTypes'][0]['itemUnitOfMeasures']
+        self.assertEqual([u['height'] for u in units], [1.0, 2.0, 3.0])
+        self.assertEqual([u['quantity'] for u in units], [1, 6, 450])
+        for value in (0, -1, float('nan'), True, '1'):
+            bad = {**measures, 'pallet': {**measures['pallet'], 'height': value}}
+            with self.assertRaises(InvalidFile):
+                convert(data([['A', 'D', '01', '6', '450']]),
+                        {**CONFIG, 'unitMeasurements': bad}, 'b')
+
     def test_approved_unit_options(self):
         config = json.loads((Path(__file__).resolve().parents[1] / 'item-mapping.example.json').read_text())
         r = convert(data([['TEST-A', 'D', '01', '', '0']]), config, 'b')['records'][0]
