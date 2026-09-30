@@ -63,6 +63,45 @@ class Guard:
 
 
 class OracleFtpTests(unittest.TestCase):
+    def test_ftp_credential_files_are_read_without_environment_variables(self):
+        class LoginFTP:
+            def connect(self, host, port, timeout):
+                pass
+            def login(self, username, password):
+                self.credentials = (username, password)
+            def cwd(self, inbox):
+                pass
+        with tempfile.TemporaryDirectory() as temp:
+            user, password = Path(temp) / 'user', Path(temp) / 'password'
+            user.write_text('operator\n')
+            password.write_text('secret with spaces\n')
+            instance = LoginFTP()
+            with patch.object(a.ftplib, 'FTP', return_value=instance):
+                result = a.ftp_connect({'host': 'ftp.example', 'inbox': '/WIS',
+                                        'usernameFile': str(user), 'passwordFile': str(password)})
+            self.assertIs(result, instance)
+            self.assertEqual(instance.credentials, ('operator', 'secret with spaces'))
+
+    def test_csv_only_scan_all_handles_multiple_batches_without_ready_files(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        other = 'int_item__demo002.csv'
+        ftp.files[other] = CONTENT.replace(b'TEST-ITEM', b'OTHER-ITEM')
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            with patch.object(a.time, 'time', return_value=100):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
+            self.assertEqual(api.calls, [])
+            with patch.object(a.time, 'time', return_value=160):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
+            self.assertEqual(len(api.calls), 6)
+            self.assertFalse((state / 'int_order__demo001.csv').exists())
+            api.business_status = 'COMPLETED'
+            with patch.object(a.time, 'time', return_value=161):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
+            self.assertNotIn(NAME, ftp.files)
+            self.assertNotIn(other, ftp.files)
+            self.assertIn('UNSHIP_INV_20260930.csv', ftp.files)
+
     def test_csv_only_mode_requires_target_and_stable_content(self):
         ftp, api, guard = FTP(), API(), Guard()
         other = 'int_item__other.csv'

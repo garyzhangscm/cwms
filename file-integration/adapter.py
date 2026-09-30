@@ -1,4 +1,4 @@
-"""File-to-CWMS adapter. Python 3.10+, standard library only; no Oracle driver."""
+"""File-to-CWMS adapter. Python standard library only; no Oracle driver."""
 import argparse
 import csv
 import ftplib
@@ -193,7 +193,7 @@ def parse_file(name, content):
 
 class Ledger:
     def __init__(self, path):
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(str(path))
         self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('''CREATE TABLE IF NOT EXISTS records (
             kind TEXT, record_id TEXT, digest TEXT NOT NULL, state TEXT NOT NULL,
@@ -351,7 +351,15 @@ def ftp_connect(config):
     ftp = cls(context=ssl.create_default_context()) if cls is ftplib.FTP_TLS else cls()
     try:
         ftp.connect(config['host'], config.get('port', 21), timeout=30)
-        ftp.login(os.environ[config['usernameEnv']], os.environ[config['passwordEnv']])
+        if 'usernameFile' in config or 'passwordFile' in config:
+            username = Path(config['usernameFile']).read_text().rstrip('\r\n')
+            password = Path(config['passwordFile']).read_text().rstrip('\r\n')
+        else:
+            username = os.environ[config['usernameEnv']]
+            password = os.environ[config['passwordEnv']]
+        if not username or not password:
+            raise ValueError('FTP credentials are empty')
+        ftp.login(username, password)
         if cls is ftplib.FTP_TLS:
             ftp.prot_p()
         ftp.cwd(config['inbox'])
@@ -427,7 +435,7 @@ class ExistingItemGuard:
         return existing
 
 
-def poll_once(config, directory, api, existing_guard=None, target_file=None):
+def poll_once(config, directory, api, existing_guard=None, target_file=None, scan_all=False):
     """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
@@ -437,8 +445,9 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None):
         require_ready = config.get('requireReady', True)
         if config.get('sourceFormat') == 'oracle-items-v1' and existing_guard is None:
             raise ValueError('Oracle Item import requires an existing-item check')
-        if not require_ready and (config.get('sourceFormat') != 'oracle-items-v1' or not target_file):
-            raise ValueError('CSV-only mode requires a targeted Oracle Item file')
+        if not require_ready and (config.get('sourceFormat') != 'oracle-items-v1' or
+                                  not (target_file or scan_all)):
+            raise ValueError('CSV-only mode requires --file or --scan-all')
         refresh_status(ledger, api)
         try:
             ftp = ftp_connect(config['ftp'])
@@ -526,7 +535,7 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None):
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    sub = parser.add_subparsers(dest='command', required=True)
+    sub = parser.add_subparsers(dest='command')
     check = sub.add_parser('validate', help='offline; no FTP or MES calls')
     check.add_argument('file', type=Path)
     check.add_argument('--config', type=Path, help='required for five-column Oracle files')
@@ -538,7 +547,13 @@ def main():
     run.add_argument('--send', action='store_true', help='explicitly enable MES writes')
     run.add_argument('--once', action='store_true')
     run.add_argument('--file', help='process only this published filename')
+    run.add_argument('--scan-all', action='store_true',
+                     help='scan every published int_item batch (Oracle CSV-only mode)')
+    run.add_argument('--run-seconds', type=int,
+                     help='stop a scheduled worker after this many seconds')
     args = parser.parse_args()
+    if args.command is None:
+        parser.error('a command is required')
     if args.command == 'validate':
         with args.file.open('rb') as f:
             content = f.read(MAX_BYTES + 1)
@@ -570,12 +585,17 @@ def main():
         raise ValueError('unsupported sourceFormat')
     if type(config.get('requireReady', True)) is not bool:
         raise ValueError('requireReady must be true or false')
+    if args.scan_all and (args.file or config.get('sourceFormat') != 'oracle-items-v1' or
+                          config.get('requireReady', True)):
+        raise ValueError('--scan-all requires Oracle CSV-only mode and no --file')
+    if args.run_seconds is not None and (args.once or args.run_seconds < 10):
+        raise ValueError('--run-seconds requires continuous mode and at least 10 seconds')
     if not config.get('requireReady', True):
         stable_seconds = config.get('stableSeconds', 60)
         if type(stable_seconds) is not int or stable_seconds < 10:
             raise ValueError('stableSeconds must be an integer of at least 10')
-        if not args.file or not published_file(args.file, config):
-            raise ValueError('CSV-only mode requires --file with a valid published filename')
+        if not args.scan_all and (not args.file or not published_file(args.file, config)):
+            raise ValueError('CSV-only mode requires --file or --scan-all')
     elif args.file and not published_file(args.file, config):
         raise ValueError('invalid published filename')
     if not config['ftp'].get('tls') and not config['ftp'].get('allowPlainFtp'):
@@ -592,18 +612,24 @@ def main():
     interval = config.get('pollSeconds', 60)
     if not isinstance(interval, int) or interval < 10:
         raise ValueError('pollSeconds must be at least 10')
+    deadline = time.monotonic() + args.run_seconds if args.run_seconds else None
     with state_lock(directory):
+        last_scan_failed = False
         while True:
             try:
-                poll_once(config, directory, api, existing_guard, args.file)
+                poll_once(config, directory, api, existing_guard, args.file, args.scan_all)
+                last_scan_failed = False
             except Exception as error:
+                last_scan_failed = True
                 # Never emit remote response bodies, credentials, or business payloads.
                 print(json.dumps({'state': 'SCAN_FAILED', 'errorType': type(error).__name__}), flush=True)
                 if args.once:
                     return 1
             if args.once:
                 return 0
-            time.sleep(interval)
+            if deadline is not None and time.monotonic() >= deadline:
+                return 1 if last_scan_failed else 0
+            time.sleep(min(interval, max(0, deadline - time.monotonic())) if deadline else interval)
 
 
 if __name__ == '__main__':
