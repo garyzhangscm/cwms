@@ -1,0 +1,6 @@
+{
+  "companyCode": "TEST_ONLY",
+  "warehouseName": "TEST_WAREHOUSE",
+  "itemTypeMapping": {"01": "Finish Good"},
+  "cartonUnit": "CTN"
+}

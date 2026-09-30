@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<batch>
+  <record>
+    <recordId>suppliers-event-001</recordId>
+    <companyCode>TEST_ONLY</companyCode>
+    <warehouseName>TEST_WAREHOUSE</warehouseName>
+    <name>SUP-001</name>
+    <description>Test supplier</description>
+  </record>
+</batch>
