@@ -65,6 +65,8 @@ python3 adapter.py run --config config.oracle-items.json --send --scan-all --run
 在终端输入 WIS FTP 和 UniFi VPN 的用户名、密码；程序不会回显密码，
 分别保存到服务器本地受限文件，仓库和日志里没有凭据。
 如需单独更换 VPN 或 FTP 凭据，分别加 `--vpn-only` 或 `--ftp-only`。
+UniFi OpenVPN 配置使用 `user openvpn`、`group openvpn`，凭据文件权限为
+`root:openvpn 0640`，以便重认证时仍可读取凭据；不要改回 `nobody` 和 `0600`。
 随后启动 `openvpn-client@unifi-oracle.service`，确认 WIS FTP 可达，
 再启用 `cwms-oracle-items.timer`。可用 `systemctl list-timers cwms-oracle-items.timer`
 查看下次执行时间，用 `journalctl -u cwms-oracle-items.service` 查看执行状态，
