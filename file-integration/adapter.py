@@ -201,6 +201,8 @@ class Ledger:
         self.db.execute('''CREATE TABLE IF NOT EXISTS item_claims (
             company_code TEXT NOT NULL, warehouse_name TEXT NOT NULL, item_name TEXT NOT NULL,
             record_id TEXT NOT NULL, PRIMARY KEY(company_code,warehouse_name,item_name))''')
+        self.db.execute('''CREATE TABLE IF NOT EXISTS file_observations (
+            name TEXT PRIMARY KEY, digest TEXT NOT NULL, first_seen_at REAL NOT NULL)''')
         self.db.execute("UPDATE records SET state='UNCERTAIN' WHERE state='SENDING'")
         self.db.commit()
 
@@ -231,6 +233,18 @@ class Ledger:
                 self.db.execute('''INSERT OR IGNORE INTO item_claims
                     (company_code,warehouse_name,item_name,record_id) VALUES (?,?,?,?)''',
                     (*key, record['recordId']))
+
+    def file_is_stable(self, name, content, seconds, now=None):
+        now = time.time() if now is None else now
+        digest = hashlib.sha256(content).hexdigest()
+        old = self.db.execute('SELECT digest,first_seen_at FROM file_observations WHERE name=?', (name,)).fetchone()
+        if not old or old[0] != digest:
+            with self.db:
+                self.db.execute('''INSERT INTO file_observations(name,digest,first_seen_at) VALUES (?,?,?)
+                    ON CONFLICT(name) DO UPDATE SET digest=excluded.digest,first_seen_at=excluded.first_seen_at''',
+                    (name, digest, now))
+            return False
+        return now - old[1] >= seconds
 
     def set(self, kind, rid, state, integration_id=None, business_status=None):
         with self.db:
@@ -413,15 +427,18 @@ class ExistingItemGuard:
         return existing
 
 
-def poll_once(config, directory, api, existing_guard=None):
+def poll_once(config, directory, api, existing_guard=None, target_file=None):
     """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
     ftp_error = None
     rejected = set()
     try:
+        require_ready = config.get('requireReady', True)
         if config.get('sourceFormat') == 'oracle-items-v1' and existing_guard is None:
             raise ValueError('Oracle Item import requires an existing-item check')
+        if not require_ready and (config.get('sourceFormat') != 'oracle-items-v1' or not target_file):
+            raise ValueError('CSV-only mode requires a targeted Oracle Item file')
         refresh_status(ledger, api)
         try:
             ftp = ftp_connect(config['ftp'])
@@ -430,13 +447,20 @@ def poll_once(config, directory, api, existing_guard=None):
             ftp_error = error
         names = set(ftp.nlst()) if ftp else set()
         for name in sorted(names):
-            if not published_file(name, config) or name + '.ready' not in names:
+            if (not published_file(name, config) or
+                    (target_file and name != target_file) or
+                    (require_ready and name + '.ready' not in names)):
                 continue
             snapshot = directory / name
             try:
                 content = download(ftp, name)
                 if snapshot.exists() and snapshot.read_bytes() != content:
                     raise InvalidFile('published filename changed; use a new batch filename')
+                if not require_ready and not ledger.file_is_stable(name, content, config.get('stableSeconds', 60)):
+                    print(json.dumps({'file': name, 'state': 'WAITING_STABLE'}), flush=True)
+                    atomic_write(directory / (name + '.report.json'),
+                                 canonical({'file': name, 'state': 'WAITING_STABLE'}).encode())
+                    continue
                 _, records = parse_published_file(name, content, config)
                 # Preflight before accepting immutable local snapshot.
                 ledger.prepare(records)
@@ -458,7 +482,8 @@ def poll_once(config, directory, api, existing_guard=None):
         refresh_status(ledger, api)
         # Rebuild reports even when the producer has removed previously fetched files.
         for snapshot in directory.iterdir():
-            if not published_file(snapshot.name, config) or snapshot.name in rejected:
+            if (not published_file(snapshot.name, config) or snapshot.name in rejected or
+                    (target_file and snapshot.name != target_file)):
                 continue
             _, records = parse_published_file(snapshot.name, snapshot.read_bytes(), config)
             report = {'file': snapshot.name, 'records': [
@@ -471,7 +496,8 @@ def poll_once(config, directory, api, existing_guard=None):
                 report['sourceCleanup'] = 'DELETED' if deleted_marker.exists() else 'PENDING'
             atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
             if (config.get('sourceFormat') == 'oracle-items-v1' and ftp and
-                    snapshot.name + '.ready' in names and
+                    (not require_ready and snapshot.name in names or
+                     require_ready and snapshot.name + '.ready' in names) and
                     all(r['state'] in ('COMPLETED', 'SKIPPED_EXISTING') for r in report['records'])):
                 try:
                     if snapshot.name in names:
@@ -479,7 +505,8 @@ def poll_once(config, directory, api, existing_guard=None):
                         if download(ftp, snapshot.name) != snapshot.read_bytes():
                             raise InvalidFile('published filename changed; source was not deleted')
                         ftp.delete(snapshot.name)
-                    ftp.delete(snapshot.name + '.ready')
+                    if require_ready:
+                        ftp.delete(snapshot.name + '.ready')
                     atomic_write(deleted_marker, b'')
                     report['sourceCleanup'] = 'DELETED'
                     print(json.dumps({'file': snapshot.name, 'state': 'SOURCE_DELETED'}), flush=True)
@@ -510,6 +537,7 @@ def main():
     run.add_argument('--config', type=Path, required=True)
     run.add_argument('--send', action='store_true', help='explicitly enable MES writes')
     run.add_argument('--once', action='store_true')
+    run.add_argument('--file', help='process only this published filename')
     args = parser.parse_args()
     if args.command == 'validate':
         with args.file.open('rb') as f:
@@ -540,6 +568,16 @@ def main():
         raise ValueError('protocolVersion must be 1')
     if config.get('sourceFormat', 'generic-v1') not in ('generic-v1', 'oracle-items-v1'):
         raise ValueError('unsupported sourceFormat')
+    if type(config.get('requireReady', True)) is not bool:
+        raise ValueError('requireReady must be true or false')
+    if not config.get('requireReady', True):
+        stable_seconds = config.get('stableSeconds', 60)
+        if type(stable_seconds) is not int or stable_seconds < 10:
+            raise ValueError('stableSeconds must be an integer of at least 10')
+        if not args.file or not published_file(args.file, config):
+            raise ValueError('CSV-only mode requires --file with a valid published filename')
+    elif args.file and not published_file(args.file, config):
+        raise ValueError('invalid published filename')
     if not config['ftp'].get('tls') and not config['ftp'].get('allowPlainFtp'):
         raise ValueError('plain FTP requires allowPlainFtp=true')
     token_env = config['mes'].get('bearerTokenEnv')
@@ -557,7 +595,7 @@ def main():
     with state_lock(directory):
         while True:
             try:
-                poll_once(config, directory, api, existing_guard)
+                poll_once(config, directory, api, existing_guard, args.file)
             except Exception as error:
                 # Never emit remote response bodies, credentials, or business payloads.
                 print(json.dumps({'state': 'SCAN_FAILED', 'errorType': type(error).__name__}), flush=True)
