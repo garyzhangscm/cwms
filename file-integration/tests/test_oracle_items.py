@@ -1,9 +1,11 @@
 import csv
 import io
 import unittest
+import json
+from pathlib import Path
 
 from adapter import InvalidFile
-from oracle_items import COLUMNS, convert
+from oracle_items import COLUMNS, UNIT_FLAGS, convert
 
 CONFIG = {'companyCode': 'C', 'warehouseName': 'W', 'itemTypeMapping': {'01': 'Finish Good'}}
 
@@ -17,6 +19,22 @@ def data(rows, header=COLUMNS):
 
 
 class OracleItemsTests(unittest.TestCase):
+    def test_approved_unit_options(self):
+        config = json.loads((Path(__file__).resolve().parents[1] / 'item-mapping.example.json').read_text())
+        r = convert(data([['TEST-A', 'D', '01', '', '0']]), config, 'b')['records'][0]
+        units = r['payload']['itemPackageTypes'][0]['itemUnitOfMeasures']
+        self.assertEqual([u['unitOfMeasureName'] for u in units], ['PCS', 'CS', 'PL'])
+        for index, unit in enumerate(units):
+            for key in UNIT_FLAGS:
+                self.assertIs(unit[key], index == 2)
+            self.assertEqual(unit['quantity'], 1)
+
+    def test_invalid_or_partial_unit_options_rejected(self):
+        valid = {role: {flag: False for flag in UNIT_FLAGS} for role in ('piece', 'carton', 'pallet')}
+        for bad in ({}, {'piece': {}}, {**valid, 'pallet': {**valid['pallet'], 'caseFlag': 'false'}}):
+            with self.assertRaises(InvalidFile):
+                convert(data([['A', 'D', '01', '1', '1']]), {**CONFIG, 'unitOptions': bad}, 'b')
+
     def test_oracle_native_headers(self):
         rows = [['TEST-ITEM-ALIAS', 'Test description', '01', '', '0']]
         native = ['SEGMENT1', 'DESCRIPTION', 'ITEM_TYPE', 'PIECES_PER_CARTON', 'PIECES_PER_PALLET']
