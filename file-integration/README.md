@@ -17,6 +17,24 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 
 ## Oracle Item FTP 自动导入
 
+### 现有 integrationservice 的出站配置
+
+`IntegrationProcessingJob` 在同一个定时任务中先处理入站，再执行自动出站发送。
+若已停用的 `dblinkserver` 仍被出站确认记录调用，连续失败会拖慢下一轮 Item 入站处理。
+2026-09-30 已在 staging 的现有 app1 部署设置 `HOST_API_ENABLED=false`。
+该开关跳过整个定时任务的自动出站发送（包括其他确认数据），保留入站处理；
+不清除待发送确认记录，也不迁移服务。未来需要恢复其他出站业务时，应先配置可用的目标。
+
+下面的部署补丁保存此配置。应用前确认容器名称为 `integrationservice`；
+应用会触发 Pod 滚动重启，保留已有镜像及节点选择配置。
+
+```sh
+kubectl -n staging get deployment integrationservice -o jsonpath='{.spec.template.spec.containers[*].name}'
+kubectl -n staging patch deployment integrationservice --type=strategic \
+  --patch-file=file-integration/deploy/integrationservice-disable-host-api.patch.yaml
+kubectl -n staging rollout status deployment/integrationservice
+```
+
 文件名使用专属前缀 `int_item` 加唯一批次号，例如 `int_item20260930_001.csv`；
 也接受 `int_item_20260930_001.csv` 和 `int_item__20260930_001.csv`。
 固定的 `int_item.csv` 不含批次号，会被忽略。

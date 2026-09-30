@@ -1,0 +1,9 @@
+# Apply to the existing deployment; preserves its image and node placement.
+spec:
+  template:
+    spec:
+      containers:
+        - name: integrationservice
+          env:
+            - name: HOST_API_ENABLED
+              value: "false"
