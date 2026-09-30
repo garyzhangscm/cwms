@@ -14,12 +14,15 @@ MEASUREMENTS = {role: {'length': 1, 'width': 1, 'height': 1, 'weight': 1}
                 for role in ('piece', 'carton', 'pallet')}
 CONFIG = {'sourceFormat': 'oracle-items-v1', 'ftp': {},
           'oracleItems': {'mapping': {**OPTIONS, 'unitMeasurements': MEASUREMENTS}}}
-NAME = 'oracle-items__demo001.csv'
+NAME = 'int_item__demo001.csv'
 
 
 class FTP:
     def __init__(self):
-        self.files = {NAME: CONTENT}
+        self.files = {NAME: CONTENT,
+                      'UNSHIP_INV_20260930.csv': b'not an item',
+                      'int_order__demo001.csv': b'not an item',
+                      'int_order__demo001.csv.ready': b''}
 
     def nlst(self):
         return list(self.files)
@@ -76,7 +79,7 @@ class OracleFtpTests(unittest.TestCase):
             a.poll_once(CONFIG, state, api, guard)
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual([r['state'] for r in report['records']], ['COMPLETED'] * 3)
-            alternate = 'oracle-items__demo002.csv'
+            alternate = 'int_item__demo002.csv'
             ftp.files[alternate] = CONTENT
             ftp.files[alternate + '.ready'] = b''
             a.poll_once(CONFIG, state, api, guard)
