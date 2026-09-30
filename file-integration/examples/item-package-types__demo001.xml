@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<batch>
+  <record>
+    <recordId>item-package-types-event-001</recordId>
+    <companyCode>TEST_ONLY</companyCode>
+    <warehouseName>TEST_WAREHOUSE</warehouseName>
+    <name>EACH</name>
+    <itemName>ITEM-001</itemName>
+    <line>
+      <unitOfMeasureName>EA</unitOfMeasureName>
+      <quantity>1</quantity>
+    </line>
+  </record>
+</batch>

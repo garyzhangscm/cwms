@@ -1,0 +1,2 @@
+recordId,companyCode,warehouseName,name,itemName,line.unitOfMeasureName,line.quantity
+item-package-types-event-001,TEST_ONLY,TEST_WAREHOUSE,EACH,ITEM-001,EA,1
