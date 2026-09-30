@@ -63,6 +63,21 @@ class Guard:
 
 
 class OracleFtpTests(unittest.TestCase):
+    def test_live_item_type_mapping_is_reloaded_for_each_scan(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'mapping.json'
+            path.write_text('{"01":"Finish Good"}')
+            config = {**NO_READY_CONFIG,
+                      'oracleItems': {**NO_READY_CONFIG['oracleItems'],
+                                      'itemTypeMappingFile': str(path)}}
+            self.assertEqual(a.effective_config(config)['oracleItems']['mapping']['itemTypeMapping'],
+                             {'01': 'Finish Good'})
+            path.write_text('{"01":"Finish Good","02":"Raw Material"}')
+            self.assertEqual(a.effective_config(config)['oracleItems']['mapping']['itemTypeMapping'],
+                             {'01': 'Finish Good', '02': 'Raw Material'})
+            self.assertEqual(config['oracleItems']['mapping']['itemTypeMapping'],
+                             {'01': 'Finish Good'})
+
     def test_ftp_credential_files_are_read_without_environment_variables(self):
         class LoginFTP:
             def connect(self, host, port, timeout):

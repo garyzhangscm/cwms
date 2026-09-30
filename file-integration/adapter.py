@@ -397,6 +397,24 @@ def parse_published_file(name, content, config):
     return parse_file(name, content)
 
 
+def effective_config(config):
+    """Read the operator-maintained Item Type mapping for each scan."""
+    path = config.get('oracleItems', {}).get('itemTypeMappingFile')
+    if not path:
+        return config
+    mapping = json.loads(Path(path).read_text())
+    if (not isinstance(mapping, dict) or not mapping or
+            any(not isinstance(key, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,20}', key) or
+                not isinstance(value, str) or not value.strip()
+                for key, value in mapping.items())):
+        raise InvalidFile('Item Type mapping file is invalid')
+    result = dict(config)
+    result['oracleItems'] = dict(config['oracleItems'])
+    result['oracleItems']['mapping'] = dict(config['oracleItems']['mapping'])
+    result['oracleItems']['mapping']['itemTypeMapping'] = mapping
+    return result
+
+
 class ExistingItemGuard:
     """Classify existing MES item names before submitting new Oracle rows."""
     def __init__(self, config, token=None):
@@ -437,6 +455,7 @@ class ExistingItemGuard:
 
 def poll_once(config, directory, api, existing_guard=None, target_file=None, scan_all=False):
     """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
+    config = effective_config(config)
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
     ftp_error = None

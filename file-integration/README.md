@@ -31,6 +31,12 @@ CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_P
 公司代码与 MES 数据库内部 ID 不同，不能把 Oracle 的公司代码直接填入 `companyId`。
 用户已确认正式物料的 PCS/CS/PL 三层长宽高及重量均填写 `1`；
 `ITEM_TYPE=01` 映射到目前 WMEC 使用的 `Finish Good` 分类。
+在 `k8s-app2` 部署时，`itemTypeMappingFile` 指向由 Integration Setting 页面维护的
+映射文件；每轮 FTP 扫描都会重新读取它。页面只允许 MES 管理员保存，且目标分类必须
+已存在于当前公司/仓库。已有物料仍按既定规则跳过，不会因修改映射而更新。
+对应的管理服务模板为 `deploy/cwms-oracle-item-settings.service`；
+前端通过同源 `/api/integration-settings/item-types` 代理访问，
+服务端再次用 MES token 核实管理员身份，而不依赖前端菜单权限。
 这些值为用户指定的导入值，不代表实测尺寸重量。
 FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读取，不写入仓库。
 如需 MES Bearer token，给 `mes` 配置 `bearerTokenEnv` 并由服务器环境变量提供。
