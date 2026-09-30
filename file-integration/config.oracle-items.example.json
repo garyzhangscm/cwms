@@ -15,7 +15,7 @@
   },
   "oracleItems": {
     "inventoryBaseUrl": "http://MES_TEST_INVENTORY_REPLACE_ME",
-    "companyId": 20901,
+    "companyId": 0,
     "warehouseId": 0,
     "mapping": {
       "companyCode": "COMPANY_CODE_REPLACE_ME",
