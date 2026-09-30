@@ -47,7 +47,7 @@ BOOL_FIELDS = {'allowUnexpectedItem', 'nonInventoryItem'}
 MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 10000
 FILE_RE = re.compile(r'^(suppliers|items|item-package-types|receipts|orders|work-orders)__(\w[\w.-]{0,100})\.(csv|xml)$', re.ASCII)
-ORACLE_ITEMS_RE = re.compile(r'^oracle-items__([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
+ORACLE_ITEMS_RE = re.compile(r'^int_item__([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
 
 
 class InvalidFile(ValueError):
@@ -367,7 +367,7 @@ def parse_published_file(name, content, config):
     if config.get('sourceFormat') == 'oracle-items-v1':
         match = ORACLE_ITEMS_RE.fullmatch(name)
         if not match:
-            raise InvalidFile('expected oracle-items__<batch>.csv')
+            raise InvalidFile('expected int_item__<batch>.csv')
         # Import here to keep the generic adapter useful without Oracle mapping.
         from oracle_items import convert
         result = convert(content, config['oracleItems']['mapping'], match.group(1))

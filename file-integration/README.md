@@ -17,7 +17,8 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 
 ## Oracle Item FTP 自动导入
 
-文件名使用 `oracle-items__<批次号>.csv`，例如 `oracle-items__20260930-001.csv`。
+文件名使用专属前缀 `int_item__<批次号>.csv`，例如 `int_item__20260930-001.csv`。
+同目录中的其他前缀文件一律忽略。
 CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`
 （也接受对应的小写别名）。上传时先用 `.part` 临时名，完成后改为最终文件名，最后创建同名 `.ready` 空文件。
 只有二者都出现才处理。文件一经发布不得修改，批次名不得复用。
@@ -32,12 +33,12 @@ FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读
 
 ```sh
 # 离线验证文件内容和映射；不会连接 FTP 或 MES
-python3 adapter.py validate oracle-items__20260930-001.csv --config config.oracle-items.json
+python3 adapter.py validate int_item__20260930-001.csv --config config.oracle-items.json
 # 配置和规则确认、测试联调后才运行；此命令会写入 MES
 python3 adapter.py run --config config.oracle-items.json --send --once
 # 查看本地处理报告，不连接 FTP 或 MES
 python3 adapter.py status --config config.oracle-items.json
-python3 adapter.py status --config config.oracle-items.json --file oracle-items__20260930-001.csv
+python3 adapter.py status --config config.oracle-items.json --file int_item__20260930-001.csv
 ```
 
 每轮先查询已接收记录的 MES 状态，再读取 FTP。每条 Item 的处理报告记录料号、原始行号、
