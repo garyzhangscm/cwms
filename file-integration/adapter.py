@@ -47,6 +47,7 @@ BOOL_FIELDS = {'allowUnexpectedItem', 'nonInventoryItem'}
 MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 10000
 FILE_RE = re.compile(r'^(suppliers|items|item-package-types|receipts|orders|work-orders)__(\w[\w.-]{0,100})\.(csv|xml)$', re.ASCII)
+ORACLE_ITEMS_RE = re.compile(r'^oracle-items__([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
 
 
 class InvalidFile(ValueError):
@@ -197,6 +198,9 @@ class Ledger:
         self.db.execute('''CREATE TABLE IF NOT EXISTS records (
             kind TEXT, record_id TEXT, digest TEXT NOT NULL, state TEXT NOT NULL,
             integration_id TEXT, business_status TEXT, PRIMARY KEY(kind,record_id))''')
+        self.db.execute('''CREATE TABLE IF NOT EXISTS item_claims (
+            company_code TEXT NOT NULL, warehouse_name TEXT NOT NULL, item_name TEXT NOT NULL,
+            record_id TEXT NOT NULL, PRIMARY KEY(company_code,warehouse_name,item_name))''')
         self.db.execute("UPDATE records SET state='UNCERTAIN' WHERE state='SENDING'")
         self.db.commit()
 
@@ -213,6 +217,20 @@ class Ledger:
     def get(self, kind, rid):
         row = self.db.execute('SELECT state,integration_id,business_status FROM records WHERE kind=? AND record_id=?', (kind, rid)).fetchone()
         return dict(zip(('state', 'integrationId', 'businessStatus'), row)) if row else None
+
+    def claim_oracle_items(self, records):
+        """Keep a new batch ID from silently resubmitting a previously claimed item."""
+        with self.db:
+            for record in records:
+                payload = record['payload']
+                key = (payload['companyCode'], payload['warehouseName'], payload['name'])
+                old = self.db.execute('''SELECT record_id FROM item_claims
+                    WHERE company_code=? AND warehouse_name=? AND item_name=?''', key).fetchone()
+                if old and old[0] != record['recordId']:
+                    raise InvalidFile('item appears in another processed batch: ' + payload['name'])
+                self.db.execute('''INSERT OR IGNORE INTO item_claims
+                    (company_code,warehouse_name,item_name,record_id) VALUES (?,?,?,?)''',
+                    (*key, record['recordId']))
 
     def set(self, kind, rid, state, integration_id=None, business_status=None):
         with self.db:
@@ -339,25 +357,90 @@ def download(ftp, name):
     return buffer.getvalue()
 
 
-def poll_once(config, directory, api):
+def published_file(name, config):
+    if config.get('sourceFormat') == 'oracle-items-v1':
+        return ORACLE_ITEMS_RE.fullmatch(name) is not None
+    return FILE_RE.fullmatch(name) is not None
+
+
+def parse_published_file(name, content, config):
+    if config.get('sourceFormat') == 'oracle-items-v1':
+        match = ORACLE_ITEMS_RE.fullmatch(name)
+        if not match:
+            raise InvalidFile('expected oracle-items__<batch>.csv')
+        # Import here to keep the generic adapter useful without Oracle mapping.
+        from oracle_items import convert
+        result = convert(content, config['oracleItems']['mapping'], match.group(1))
+        return result['batchId'], result['records']
+    return parse_file(name, content)
+
+
+class ExistingItemGuard:
+    """Fail closed before any Oracle batch writes if MES already has a named item."""
+    def __init__(self, config, token=None):
+        parsed = urllib.parse.urlsplit(config['inventoryBaseUrl'])
+        if parsed.scheme not in ('http', 'https') or not parsed.netloc or parsed.username or parsed.query or parsed.fragment:
+            raise ValueError('invalid inventory base URL')
+        self.url = config['inventoryBaseUrl'].rstrip('/')
+        self.company_id = config['companyId']
+        self.warehouse_id = config['warehouseId']
+        if type(self.company_id) is not int or self.company_id <= 0 or type(self.warehouse_id) is not int or self.warehouse_id <= 0:
+            raise ValueError('positive companyId and warehouseId required')
+        self.token = token
+        self.opener = urllib.request.build_opener(NoRedirect())
+
+    def check(self, records):
+        for record in records:
+            name = record['payload']['name']
+            query = urllib.parse.urlencode({'companyId': self.company_id,
+                                            'warehouseId': self.warehouse_id, 'name': name})
+            request = urllib.request.Request(self.url + '/items?' + query,
+                                             headers={'Accept': 'application/json'})
+            if self.token:
+                request.add_header('Authorization', 'Bearer ' + self.token)
+            with self.opener.open(request, timeout=30) as response:
+                raw = response.read(MAX_BYTES + 1)
+            if len(raw) > MAX_BYTES:
+                raise InvalidFile('inventory precheck response too large')
+            obj = json.loads(raw)
+            if (not isinstance(obj, dict) or type(obj.get('result')) is not int or
+                    obj['result'] != 0 or not isinstance(obj.get('data'), list) or
+                    not all(isinstance(item, dict) for item in obj['data'])):
+                raise InvalidFile('inventory precheck failed')
+            if any(item.get('name') == name for item in obj['data']):
+                raise InvalidFile('existing MES item: ' + name)
+
+
+def poll_once(config, directory, api, existing_guard=None):
     """One bounded scan. Source files are left intact; .ready publishes completion."""
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
+    ftp_error = None
     rejected = set()
     try:
-        ftp = ftp_connect(config['ftp'])
-        names = set(ftp.nlst())
+        refresh_status(ledger, api)
+        try:
+            ftp = ftp_connect(config['ftp'])
+        except Exception as error:
+            # Existing accepted work can still be checked if FTP is unavailable.
+            ftp_error = error
+        names = set(ftp.nlst()) if ftp else set()
         for name in sorted(names):
-            if not FILE_RE.fullmatch(name) or name + '.ready' not in names:
+            if not published_file(name, config) or name + '.ready' not in names:
                 continue
             snapshot = directory / name
             try:
                 content = download(ftp, name)
                 if snapshot.exists() and snapshot.read_bytes() != content:
                     raise InvalidFile('published filename changed; use a new batch filename')
-                _, records = parse_file(name, content)
+                _, records = parse_published_file(name, content, config)
                 # Preflight before accepting immutable local snapshot.
                 ledger.prepare(records)
+                new_records = [r for r in records if ledger.get(r['kind'], r['recordId'])['state'] == 'PREPARED']
+                if existing_guard and new_records:
+                    existing_guard.check(new_records)
+                if config.get('sourceFormat') == 'oracle-items-v1':
+                    ledger.claim_oracle_items(records)
                 if not snapshot.exists():
                     atomic_write(snapshot, content)
                 submit_records(records, ledger, api)
@@ -369,12 +452,17 @@ def poll_once(config, directory, api):
         refresh_status(ledger, api)
         # Rebuild reports even when the producer has removed previously fetched files.
         for snapshot in directory.iterdir():
-            if not FILE_RE.fullmatch(snapshot.name) or snapshot.name in rejected:
+            if not published_file(snapshot.name, config) or snapshot.name in rejected:
                 continue
-            _, records = parse_file(snapshot.name, snapshot.read_bytes())
+            _, records = parse_published_file(snapshot.name, snapshot.read_bytes(), config)
             report = {'file': snapshot.name, 'records': [
-                {'recordId': r['recordId'], **ledger.get(r['kind'], r['recordId'])} for r in records]}
+                {'recordId': r['recordId'],
+                 **({'itemName': r['payload']['name'], 'sourceRow': r['sourceRow'],
+                     'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
+                 **ledger.get(r['kind'], r['recordId'])} for r in records]}
             atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
+        if ftp_error:
+            raise ftp_error
     finally:
         if ftp:
             ftp.close()
@@ -387,6 +475,10 @@ def main():
     sub = parser.add_subparsers(dest='command', required=True)
     check = sub.add_parser('validate', help='offline; no FTP or MES calls')
     check.add_argument('file', type=Path)
+    check.add_argument('--config', type=Path, help='required for five-column Oracle files')
+    status = sub.add_parser('status', help='read local processing reports; no FTP or MES calls')
+    status.add_argument('--config', type=Path, required=True)
+    status.add_argument('--file', help='one published filename; otherwise list all reports')
     run = sub.add_parser('run', help='download and submit using configured MES API')
     run.add_argument('--config', type=Path, required=True)
     run.add_argument('--send', action='store_true', help='explicitly enable MES writes')
@@ -394,18 +486,43 @@ def main():
     args = parser.parse_args()
     if args.command == 'validate':
         with args.file.open('rb') as f:
-            batch, records = parse_file(args.file.name, f.read(MAX_BYTES + 1))
+            content = f.read(MAX_BYTES + 1)
+        if ORACLE_ITEMS_RE.fullmatch(args.file.name) and args.config is None:
+            parser.error('Oracle item validation requires --config')
+        config = json.loads(args.config.read_text()) if args.config else {}
+        batch, records = parse_published_file(args.file.name, content, config)
         print(json.dumps({'batch': batch, 'kind': records[0]['kind'], 'records': len(records), 'valid': True}))
+        return
+    if args.command == 'status':
+        config = json.loads(args.config.read_text())
+        directory = Path(config['stateDirectory']).resolve()
+        if args.file:
+            if not published_file(args.file, config):
+                parser.error('invalid published filename')
+            paths = [directory / (args.file + '.report.json')]
+        else:
+            paths = sorted(p for p in directory.glob('*.report.json')
+                           if published_file(p.name[:-len('.report.json')], config))
+        for path in paths:
+            print(path.read_text())
         return
     if not args.send:
         parser.error('run requires --send; use validate for offline checks')
     config = json.loads(args.config.read_text())
     if config.get('protocolVersion') != 1:
         raise ValueError('protocolVersion must be 1')
+    if config.get('sourceFormat', 'generic-v1') not in ('generic-v1', 'oracle-items-v1'):
+        raise ValueError('unsupported sourceFormat')
     if not config['ftp'].get('tls') and not config['ftp'].get('allowPlainFtp'):
         raise ValueError('plain FTP requires allowPlainFtp=true')
     token_env = config['mes'].get('bearerTokenEnv')
     api = MesAPI(config['mes']['baseUrl'], os.environ[token_env] if token_env else None)
+    existing_guard = None
+    if config.get('sourceFormat') == 'oracle-items-v1':
+        mapping = config['oracleItems']['mapping']
+        if not mapping.get('unitOptions') or not mapping.get('unitMeasurements'):
+            raise ValueError('Oracle item sending requires explicit packaging options and measurements')
+        existing_guard = ExistingItemGuard(config['oracleItems'], api.token)
     directory = Path(config['stateDirectory']).resolve()
     interval = config.get('pollSeconds', 60)
     if not isinstance(interval, int) or interval < 10:
@@ -413,7 +530,7 @@ def main():
     with state_lock(directory):
         while True:
             try:
-                poll_once(config, directory, api)
+                poll_once(config, directory, api, existing_guard)
             except Exception as error:
                 # Never emit remote response bodies, credentials, or business payloads.
                 print(json.dumps({'state': 'SCAN_FAILED', 'errorType': type(error).__name__}), flush=True)

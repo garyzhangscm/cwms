@@ -12,6 +12,7 @@ item-mapping.json
 !examples/*.csv
 !examples/*.xml
 !config.example.json
+!config.oracle-items.example.json
 !item-mapping.example.json
 *.sqlite3
 *.sqlite3-*

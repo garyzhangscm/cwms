@@ -1,4 +1,4 @@
-# MES 文件接入适配器（本地原型，协议 v1）
+# MES 文件接入适配器（协议 v1）
 
 通过现有 HTTP 接口提交集成记录；Item 联调中发现的旧接口字段丢失问题已做最小后端修复。
 
@@ -8,12 +8,45 @@
 ```
 
 本程序不连接 Oracle、不使用数据库账号、不直接写 MES 数据库。Oracle 导出程序由总部运行。
-当前为入站原型，已授权创建三条测试物料并由用户确认，尚未批量导入正式物料或上线 FTP 自动导入。
+已授权创建三条测试物料并由用户确认。Item 五列转换已接入 FTP 轮询代码，但尚未连接真实 FTP、部署自动运行或批量导入正式物料。
 Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 
-用户确认的 Oracle **五列 Item 协议**现由 `oracle_items.py` 离线转换预览，详见
-[Item 联调说明](ITEM-PILOT.md)。包含分类映射及 PCS/CS/PL，箱数/托数空或 0 默认 1。
-此预览尚未接入 FTP 轮询；下文仍描述早期通用文件模板，不要混用两种格式。
+用户确认的 Oracle **五列 Item 协议**由 `oracle_items.py` 转换，并通过 `adapter.py`
+的 `oracle-items-v1` 模式接入 FTP 轮询，详见 [Item 联调说明](ITEM-PILOT.md)。
+包含分类映射及 PCS/CS/PL，箱数/托数空或 0 默认 1。此模式与下文早期通用文件模板是两套独立的 inbox 协议，不要混用。
+
+## Oracle Item FTP 自动导入
+
+文件名使用 `oracle-items__<批次号>.csv`，例如 `oracle-items__20260930-001.csv`。
+CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`
+（也接受对应的小写别名）。上传时先用 `.part` 临时名，完成后改为最终文件名，最后创建同名 `.ready` 空文件。
+只有二者都出现才处理。文件一经发布不得修改，批次名不得复用。
+
+复制 `config.oracle-items.example.json` 配置 FTP 主机、目录、测试服务地址、实际公司代码和仓库。
+其中 companyId=20901 是已知公司内部 ID；warehouseId=0 是必须替换的占位值。
+示例故意没有 `unitMeasurements`：正式物料的长宽高和重量规则未定，运行时会拒绝发送。
+确认后必须为 piece/carton/pallet 各填写四个正数，并决定是否沿用目前的 WMEC 仓库级
+`Finish Good` 分类；不要把三条测试料的占位尺寸当成正式值。
+FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读取，不写入仓库。
+如需 MES Bearer token，给 `mes` 配置 `bearerTokenEnv` 并由服务器环境变量提供。
+
+```sh
+# 离线验证文件内容和映射；不会连接 FTP 或 MES
+python3 adapter.py validate oracle-items__20260930-001.csv --config config.oracle-items.json
+# 配置和规则确认、测试联调后才运行；此命令会写入 MES
+python3 adapter.py run --config config.oracle-items.json --send --once
+# 查看本地处理报告，不连接 FTP 或 MES
+python3 adapter.py status --config config.oracle-items.json
+python3 adapter.py status --config config.oracle-items.json --file oracle-items__20260930-001.csv
+```
+
+每轮先查询已接收记录的 MES 状态，再读取 FTP。每条 Item 的处理报告记录料号、原始行号、
+补值原因、MES integrationId 和状态；`ACCEPTED` 仅表示接口接收，只有 `COMPLETED`
+表示业务完成。FTP 暂时不可用时仍更新已接收记录的本地状态报告，同时扫描返回失败。
+同一文件重复轮询不会重复提交；同一公司/仓库/料号即使更换批次名也会被拒绝。
+此外，在发送新料号之前查询 MES 库存接口；如果已存在，该文件全部拒绝，不做更新。
+这意味着正式 1,105 条中只要包含已有料号，就需要先制定新建/更新的拆分规则。
+状态库和报告须持久化；删除状态库或换另一个空状态目录会破坏去重依据。
 
 ## 已实现范围
 
