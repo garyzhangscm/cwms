@@ -243,3 +243,23 @@ HTTP 200 仍须检查 result=0。供应商/工单返回 id 字符串，其余通
 - 实现收货确认、出库确认、生产完工三个反向文件流程；总部负责消费回传文件并更新 Oracle。
 - 联调原有 host 回调/定时任务的切换，确保 MES 不再调用 dblink；本程序未改变它们。
 - 约定回退步骤后再上线。本版不含 Oracle 导出 SQL，也不启动或恢复 dblinkserver。
+
+## Item 完成状态覆盖修复（2026-09-30）
+
+`DBBasedItemIntegration.process` 旧顺序是先发布 Kafka Item，再保存 `SENT`。
+库存服务的完成回执可能在最后一次保存之前到达，导致 `COMPLETED` 被覆盖成 `SENT`。
+现改为先保存 Item 和包装层的发送状态，再发布消息；若调用处有事务，则在提交后发布。
+发布之后不再保存旧 Item 实体，避免覆盖结果消费者写入的完成状态。
+
+`integrationsvr/src/test/java/com/garyzhangscm/cwms/integration/service/ItemResultOrderingRegression.java`
+覆盖快速完成回执以及外层事务提交后发送两种路径；旧版本失败，补丁通过。
+`integrationsvr/tools/build-item-result-hotfix.sh` 可在现有 v1.62 镜像中隔离编译、执行回归，
+检查公共 API 兼容性，并仅替换修复的类及其内部类，保留之前的公司字段补丁。
+在 app1 使用本地镜像 `cwms-integrationserver:v1.62-item-result-ordering-20260930` 部署，
+`HOST_API_ENABLED=false` 保留。此镜像尚未上传镜像仓库。
+
+历史 `SENT` 不能只凭物料存在就强制标为完成，也不应盲目重发 Item。
+本次对批次 `int_item_202609301-dedup.csv` 的 637 条记录逐条匹配历史
+`INTEGRATION_RESULT` 回执，确认公司/仓库、类型、integrationId 一致，
+回执全部为成功且没有冲突后，仅重放原始结果消息。
+恢复不发送 `INTEGRATION_ITEM`，不重复创建或覆盖物料。
