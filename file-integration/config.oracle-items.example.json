@@ -19,6 +19,7 @@
     "inventoryBaseUrl": "http://MES_TEST_INVENTORY_REPLACE_ME",
     "companyId": 0,
     "warehouseId": 0,
+    "itemTypeMappingFile": "/var/lib/cwms-oracle-items/item-type-mapping.json",
     "mapping": {
       "companyCode": "COMPANY_CODE_REPLACE_ME",
       "warehouseName": "WAREHOUSE_NAME_REPLACE_ME",
@@ -53,6 +54,11 @@
         }
       }
     }
+  },
+  "settingsApi": {
+    "authBaseUrl": "http://MES_TEST_RESOURCE_REPLACE_ME",
+    "bind": "127.0.0.1",
+    "port": 18790
   },
   "stateDirectory": "/var/lib/cwms-oracle-items/state",
   "pollSeconds": 60
