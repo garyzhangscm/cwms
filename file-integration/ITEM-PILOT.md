@@ -18,6 +18,11 @@
 | pieces_per_pallet | 空或 0 默认 1，其他值必须为正整数 |
 
 使用 Main 包装，PCS=1、CTN=每箱件数、PL=每托件数；三者数量均以 PCS 为基准。
+实际部署的箱单位已只读核对为 `CS`，示例配置现使用 CS，不能直接创建额外 CTN 单位。
+用户已确认 PCS 和箱单位的五个选项全部 false，PL 全部 true：
+defaultForInboundReceiving、defaultForWorkOrderReceiving、trackingLpn、defaultForDisplay、caseFlag。
+配置 unitOptions 使用 piece/carton/pallet 三个角色，避免箱单位名称变化影响选项。
+一旦提供 unitOptions，必须完整提供三个角色和各自五个布尔值，禁止将字符串 "false" 当布尔值。
 补值在预览的 defaultsApplied 中记录字段及 empty/zero 原因。
 `01` 必须保留前导零，不能通过电子表格另存成数字 1。
 真实单位名称仍需核对，CTN 可在配置中修改；公司/仓库/货主由部署配置提供，不额外增加 Oracle 列。
@@ -36,6 +41,15 @@ python3 oracle_items.py examples/oracle-items-demo.csv \
 样例全部使用虚构测试料号；item-mapping.example.json 中公司和仓库也是占位符。
 recordId 由批次号、公司/仓库/货主及料号稳定生成，不受行顺序影响；重试必须保持同一批次号。
 分类嵌套接口是否创建分类、包装单位是否存在，需要联调确认，预览不会自动创建任何 MES 配置。
+
+### 提交前发现的 v1.62 兼容问题
+
+对照生产 integration.jar 的 DBBasedItemFamily(ItemFamily) 字节码，构造器只复制
+name、description、warehouseId、warehouseName，不复制 companyId/companyCode。
+后续 convertToItemFamily 则要求公司字段存在。普通 Item 接口通过该构造器转换嵌套分类，
+因此当前分类嵌套请求不能视为已验证可提交。不能通过删除分类来绕过需求，也不能声称导入已完成。
+这与辅助公开源码行为一致；需确定修复接口转换或其他兼容接入路径，并在测试环境验证。
+当前仅允许离线预览，未修改线上服务。新增预览选项不解决这个后端问题。
 
 ## 1. 确认字段
 

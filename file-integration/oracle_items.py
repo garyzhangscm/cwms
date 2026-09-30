@@ -14,6 +14,21 @@ from adapter import InvalidFile, MAX_BYTES, MAX_ROWS, canonical, typed
 COLUMNS = ('item_number', 'item_description', 'item_type',
            'pieces_per_carton', 'pieces_per_pallet')
 HEADER_ALIASES = {'segment1': 'item_number', 'description': 'item_description'}
+UNIT_FLAGS = {'defaultForInboundReceiving', 'defaultForWorkOrderReceiving',
+              'trackingLpn', 'defaultForDisplay', 'caseFlag'}
+
+
+def unit_options(config):
+    options = config.get('unitOptions')
+    if options is None:
+        return {}
+    if not isinstance(options, dict) or set(options) != {'piece', 'carton', 'pallet'}:
+        raise InvalidFile('unitOptions requires piece, carton and pallet')
+    for values in options.values():
+        if (not isinstance(values, dict) or set(values) != UNIT_FLAGS or
+                any(type(value) is not bool for value in values.values())):
+            raise InvalidFile('each unitOptions entry requires all five boolean flags')
+    return options
 
 
 def quantity(value, field, defaults):
@@ -29,6 +44,7 @@ def quantity(value, field, defaults):
 
 
 def convert(content, config, batch_id):
+    options = unit_options(config)
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,100}', batch_id):
         raise InvalidFile('invalid batch ID')
     if len(content) > MAX_BYTES:
@@ -79,8 +95,10 @@ def convert(content, config, batch_id):
             carton = quantity(row['pieces_per_carton'], 'pieces_per_carton', defaults)
             pallet = quantity(row['pieces_per_pallet'], 'pieces_per_pallet', defaults)
             context = {k: scope[k] for k in ('companyCode', 'warehouseName')}
-            units = [{'unitOfMeasureName': unit, 'quantity': count, **context}
-                     for unit, count in [('PCS', 1), (carton_unit.strip(), carton), ('PL', pallet)]]
+            units = [{'unitOfMeasureName': unit, 'quantity': count, **context,
+                      **options.get(role, {})}
+                     for role, unit, count in [('piece', 'PCS', 1),
+                         ('carton', carton_unit.strip(), carton), ('pallet', 'PL', pallet)]]
             payload = {
                 **scope, 'name': number, 'description': row['item_description'],
                 'itemFamily': {**context, 'name': families[row['item_type']]},
