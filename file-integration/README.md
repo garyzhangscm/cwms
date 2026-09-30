@@ -23,8 +23,8 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 同目录中的其他前缀文件一律忽略。
 CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`
 （也接受对应的小写别名）。Oracle Item 只上传 CSV，不需要 `.ready`。
-操作员确认上传完成后，使用 `--file` 指定这一批；程序先观察文件内容至少 60 秒不变，再读取和提交。
-文件名不可复用，发布后内容不可修改；其他前缀或批次不会因这次操作被处理。
+手动处理一批时用 `--file` 指定；每天自动处理时用 `--scan-all` 扫描所有符合命名规则的批次。
+程序先观察文件内容至少 60 秒不变，再读取和提交。文件名不可复用，发布后内容不可修改。
 
 复制 `config.oracle-items.example.json` 配置 FTP 主机、目录、测试服务地址、实际公司代码和仓库。
 其中 `companyId` 和 `warehouseId` 的 `0` 都是必须替换的占位值。
@@ -45,7 +45,21 @@ python3 adapter.py run --config config.oracle-items.json --send --once --file in
 # 查看本地处理报告，不连接 FTP 或 MES
 python3 adapter.py status --config config.oracle-items.json
 python3 adapter.py status --config config.oracle-items.json --file int_item20260930_001.csv
+# 每天 09:00 启动的自动模式：扫描所有 int_item 批次，运行一小时后退出
+python3 adapter.py run --config config.oracle-items.json --send --scan-all --run-seconds 3600
 ```
+
+`deploy/cwms-oracle-items.timer` 在服务器本地时区每天 09:00 启动上述自动模式。
+部署时必须确认服务器时区为 `America/Los_Angeles`，FTP/VPN 凭据另存于服务器，
+并保持同一个持久化 `stateDirectory`；服务和定时器模板在 `deploy/`。
+当前 `k8s-app2` 使用 Python 3.6，自动模式及完整测试套件已在该主机验证。
+在 `k8s-app2` 上运行 `python3 /opt/cwms-oracle-items/set-credentials.py`，
+在终端输入 WIS FTP 和 UniFi VPN 的用户名、密码；程序不会回显密码，
+分别保存到服务器本地受限文件，仓库和日志里没有凭据。
+随后启动 `openvpn-client@unifi-oracle.service`，确认 WIS FTP 可达，
+再启用 `cwms-oracle-items.timer`。可用 `systemctl list-timers cwms-oracle-items.timer`
+查看下次执行时间，用 `journalctl -u cwms-oracle-items.service` 查看执行状态，
+用 `adapter.py status` 查看每个批次的记录结果。
 
 每轮先查询已接收记录的 MES 状态，再读取 FTP。每条 Item 的处理报告记录料号、原始行号、
 补值原因、MES integrationId 和状态；`ACCEPTED` 仅表示接口接收，只有 `COMPLETED`
