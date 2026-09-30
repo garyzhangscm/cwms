@@ -333,6 +333,9 @@ class OracleFtpTests(unittest.TestCase):
         guard.opener = opener = Opener(b'{"result":0,"data":[{"name":"OTHER"}]}')
         self.assertEqual(guard.check(records[:1]), set())
         self.assertIn('companyId=20901', opener.request.full_url)
+        special = [dict(records[0], payload=dict(records[0]['payload'], name='ITEM%+ 1'))]
+        guard.check(special)
+        self.assertIn('name=ITEM%2525%252B%25201', opener.request.full_url)
         guard.opener = Opener(b'{"result":0,"data":[{"name":"TEST-ITEM-001"}]}')
         self.assertEqual(guard.check(records[:1]), {'TEST-ITEM-001'})
         guard.opener = Opener(b'{"result":1,"data":[]}')

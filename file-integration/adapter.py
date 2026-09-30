@@ -433,8 +433,11 @@ class ExistingItemGuard:
         existing = set()
         for record in records:
             name = record['payload']['name']
+            # ItemController applies URLDecoder to an already decoded query
+            # parameter. Encode once here before urlencode adds the HTTP layer.
             query = urllib.parse.urlencode({'companyId': self.company_id,
-                                            'warehouseId': self.warehouse_id, 'name': name})
+                                            'warehouseId': self.warehouse_id,
+                                            'name': urllib.parse.quote(name, safe='')})
             request = urllib.request.Request(self.url + '/items?' + query,
                                              headers={'Accept': 'application/json'})
             if self.token:

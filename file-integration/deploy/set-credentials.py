@@ -50,8 +50,11 @@ def main():
         write_secret(directory / 'ftp-user', ftp_user, 0o640, group)
         write_secret(directory / 'ftp-password', ftp_password, 0o640, group)
     if vpn_user is not None:
+        # OpenVPN drops to its dedicated user after connecting and must read
+        # this file again when the server requests re-authentication.
+        vpn_group = grp.getgrnam('openvpn').gr_gid
         write_secret('/etc/openvpn/client/unifi-oracle.auth',
-                     vpn_user + '\n' + vpn_password, 0o600, 0)
+                     vpn_user + '\n' + vpn_password, 0o640, vpn_group)
     print('Credentials saved locally on k8s-app2; no passwords printed')
 
 
