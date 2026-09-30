@@ -46,10 +46,11 @@ python3 adapter.py status --config config.oracle-items.json --file int_item20260
 每轮先查询已接收记录的 MES 状态，再读取 FTP。每条 Item 的处理报告记录料号、原始行号、
 补值原因、MES integrationId 和状态；`ACCEPTED` 仅表示接口接收，只有 `COMPLETED`
 表示业务完成。FTP 暂时不可用时仍更新已接收记录的本地状态报告，同时扫描返回失败。
-同一文件重复轮询不会重复提交；同一公司/仓库/料号即使更换批次名也会被拒绝。
-此外，在发送新料号之前查询 MES 库存接口；如果已存在，该文件全部拒绝，不做更新。
-这意味着正式 1,105 条中只要包含已有料号，就需要先制定新建/更新的拆分规则。
-只有文件内所有记录都被 MES 确认为 `COMPLETED`，程序才删除 FTP 上的原 CSV 和同名 `.ready`；
+同一文件重复轮询不会重复提交；此前由本程序提交的新料号即使更换批次名也不会重复提交。
+在发送前逐条查询 MES：已有料号标记为 `SKIPPED_EXISTING`，同文件里的新料号照常提交；
+不会更新已有物料。查询接口失败时本轮停止发送，不把“查不到”误当成“还没有”。
+只有文件内所有新建记录都被 MES 确认为 `COMPLETED`，其余记录均为 `SKIPPED_EXISTING`，
+程序才删除 FTP 上的原 CSV 和同名 `.ready`；
 本地原始快照及报告保留。报告的 `sourceCleanup` 显示 `PENDING`、`DELETED` 或 `DELETE_FAILED`。
 删除中断会在下轮重试；业务失败或状态不确定时不会删源文件。
 状态库和报告须持久化；删除状态库或换另一个空状态目录会破坏去重依据。
@@ -164,6 +165,7 @@ stateDirectory 必须放持久磁盘并使用绝对路径。单实例运行，�
 | UNCERTAIN | 提交结果未知，需要人工核对；不自动重发 |
 | ACCEPTED | MES 已返回集成记录 ID，业务仍可能排队/处理/等待回调 |
 | COMPLETED | 状态查询确认业务 COMPLETED |
+| SKIPPED_EXISTING | 按公司、仓库和料号查询到 MES 已有物料，跳过且不修改 |
 | BUSINESS_ERROR | MES 返回 ERROR，需核对该集成记录错误原因 |
 | REJECTED（文件级） | 格式、重复 ID 内容冲突或已发布文件被修改 |
 

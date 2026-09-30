@@ -55,7 +55,8 @@ oracle_items.py 仅生成离线预览，不会联网提交。输出不可覆盖�
 
 五列解析已连接 adapter.py 的独立 `oracle-items-v1` FTP 轮询模式；文件名为
 `int_item<批次号>.csv`（可在批次号前加下划线），须配合同名 `.ready` 文件。
-所有物料达到 `COMPLETED` 后才删除 FTP 源文件和标记；本地快照及报告保留。
+新物料达到 `COMPLETED`，已有物料标记为 `SKIPPED_EXISTING` 后，才删除 FTP 源文件和标记；
+本地快照及报告保留。已有料号不更新，只导入新料号。
 配置及报告命令见 [README](README.md)。
 其映射和文件名与早期通用模板模式不同，不能将五列 CSV 放入通用模板 inbox。
 examples/items__demo001.csv 是早期通用基础物料格式，与五列格式不同；

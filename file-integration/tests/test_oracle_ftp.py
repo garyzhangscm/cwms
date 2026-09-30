@@ -57,12 +57,27 @@ class Guard:
 
     def check(self, records):
         self.checked.extend(r['payload']['name'] for r in records)
-        for record in records:
-            if record['payload']['name'] in self.existing:
-                raise a.InvalidFile('existing MES item: ' + record['payload']['name'])
+        return {record['payload']['name'] for record in records
+                if record['payload']['name'] in self.existing}
 
 
 class OracleFtpTests(unittest.TestCase):
+    def test_oracle_mode_requires_existing_item_guard(self):
+        with tempfile.TemporaryDirectory() as temp, self.assertRaises(ValueError):
+            a.poll_once(CONFIG, Path(temp), API())
+
+    def test_failed_existing_item_lookup_blocks_submission(self):
+        ftp, api = FTP(), API()
+        ftp.files[NAME + '.ready'] = b''
+        class FailedGuard:
+            def check(self, records):
+                raise ConnectionError()
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            with self.assertRaises(ConnectionError):
+                a.poll_once(CONFIG, Path(temp), api, FailedGuard())
+            self.assertEqual(api.calls, [])
+            self.assertIn(NAME, ftp.files)
+
     def test_ready_poll_dedup_status_and_cross_batch_guard(self):
         ftp, api, guard = FTP(), API(), Guard()
         with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
@@ -97,18 +112,42 @@ class OracleFtpTests(unittest.TestCase):
             self.assertEqual(rejected['state'], 'REJECTED')
             self.assertIn('another processed batch', rejected['reason'])
 
-    def test_existing_item_rejects_entire_file_before_submit(self):
+    def test_existing_item_is_skipped_and_new_items_complete(self):
         ftp, api, guard = FTP(), API(), Guard()
         guard.existing.add('TEST-ITEM-002')
         ftp.files[NAME + '.ready'] = b''
         with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
             state = Path(temp)
             a.poll_once(CONFIG, state, api, guard)
-            self.assertEqual(api.calls, [])
-            self.assertFalse((state / NAME).exists())
+            self.assertEqual(len(api.calls), 2)
+            self.assertEqual([payload['name'] for _, payload in api.calls],
+                             ['TEST-ITEM-001', 'TEST-ITEM-003'])
+            self.assertTrue((state / NAME).exists())
             report = json.loads((state / (NAME + '.report.json')).read_text())
-            self.assertEqual(report['state'], 'REJECTED')
-            self.assertIn('TEST-ITEM-002', report['reason'])
+            self.assertEqual([r['state'] for r in report['records']],
+                             ['ACCEPTED', 'SKIPPED_EXISTING', 'ACCEPTED'])
+            self.assertEqual(report['sourceCleanup'], 'PENDING')
+            api.business_status = 'COMPLETED'
+            a.poll_once(CONFIG, state, api, guard)
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual([r['state'] for r in report['records']],
+                             ['COMPLETED', 'SKIPPED_EXISTING', 'COMPLETED'])
+            self.assertEqual(report['sourceCleanup'], 'DELETED')
+            self.assertNotIn(NAME, ftp.files)
+
+    def test_all_existing_items_are_skipped_and_source_deleted(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        guard.existing = {'TEST-ITEM-001', 'TEST-ITEM-002', 'TEST-ITEM-003'}
+        ftp.files[NAME + '.ready'] = b''
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            a.poll_once(CONFIG, state, api, guard)
+            self.assertEqual(api.calls, [])
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual([r['state'] for r in report['records']], ['SKIPPED_EXISTING'] * 3)
+            self.assertEqual(report['sourceCleanup'], 'DELETED')
+            self.assertNotIn(NAME, ftp.files)
+            self.assertNotIn(NAME + '.ready', ftp.files)
 
     def test_changed_published_file_rejected(self):
         ftp, api, guard = FTP(), API(), Guard()
@@ -196,11 +235,10 @@ class OracleFtpTests(unittest.TestCase):
                 self.request = request
                 return io.BytesIO(self.body)
         guard.opener = opener = Opener(b'{"result":0,"data":[{"name":"OTHER"}]}')
-        guard.check(records[:1])
+        self.assertEqual(guard.check(records[:1]), set())
         self.assertIn('companyId=20901', opener.request.full_url)
         guard.opener = Opener(b'{"result":0,"data":[{"name":"TEST-ITEM-001"}]}')
-        with self.assertRaises(a.InvalidFile):
-            guard.check(records[:1])
+        self.assertEqual(guard.check(records[:1]), {'TEST-ITEM-001'})
         guard.opener = Opener(b'{"result":1,"data":[]}')
         with self.assertRaises(a.InvalidFile):
             guard.check(records[:1])

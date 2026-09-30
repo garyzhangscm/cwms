@@ -376,7 +376,7 @@ def parse_published_file(name, content, config):
 
 
 class ExistingItemGuard:
-    """Fail closed before any Oracle batch writes if MES already has a named item."""
+    """Classify existing MES item names before submitting new Oracle rows."""
     def __init__(self, config, token=None):
         parsed = urllib.parse.urlsplit(config['inventoryBaseUrl'])
         if parsed.scheme not in ('http', 'https') or not parsed.netloc or parsed.username or parsed.query or parsed.fragment:
@@ -390,6 +390,7 @@ class ExistingItemGuard:
         self.opener = urllib.request.build_opener(NoRedirect())
 
     def check(self, records):
+        existing = set()
         for record in records:
             name = record['payload']['name']
             query = urllib.parse.urlencode({'companyId': self.company_id,
@@ -408,7 +409,8 @@ class ExistingItemGuard:
                     not all(isinstance(item, dict) for item in obj['data'])):
                 raise InvalidFile('inventory precheck failed')
             if any(item.get('name') == name for item in obj['data']):
-                raise InvalidFile('existing MES item: ' + name)
+                existing.add(name)
+        return existing
 
 
 def poll_once(config, directory, api, existing_guard=None):
@@ -418,6 +420,8 @@ def poll_once(config, directory, api, existing_guard=None):
     ftp_error = None
     rejected = set()
     try:
+        if config.get('sourceFormat') == 'oracle-items-v1' and existing_guard is None:
+            raise ValueError('Oracle Item import requires an existing-item check')
         refresh_status(ledger, api)
         try:
             ftp = ftp_connect(config['ftp'])
@@ -437,10 +441,12 @@ def poll_once(config, directory, api, existing_guard=None):
                 # Preflight before accepting immutable local snapshot.
                 ledger.prepare(records)
                 new_records = [r for r in records if ledger.get(r['kind'], r['recordId'])['state'] == 'PREPARED']
-                if existing_guard and new_records:
-                    existing_guard.check(new_records)
+                existing = existing_guard.check(new_records) if existing_guard and new_records else set()
                 if config.get('sourceFormat') == 'oracle-items-v1':
-                    ledger.claim_oracle_items(records)
+                    ledger.claim_oracle_items([r for r in new_records if r['payload']['name'] not in existing])
+                    for record in new_records:
+                        if record['payload']['name'] in existing:
+                            ledger.set(record['kind'], record['recordId'], 'SKIPPED_EXISTING')
                 if not snapshot.exists():
                     atomic_write(snapshot, content)
                 submit_records(records, ledger, api)
@@ -466,7 +472,7 @@ def poll_once(config, directory, api, existing_guard=None):
             atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
             if (config.get('sourceFormat') == 'oracle-items-v1' and ftp and
                     snapshot.name + '.ready' in names and
-                    all(r['state'] == 'COMPLETED' for r in report['records'])):
+                    all(r['state'] in ('COMPLETED', 'SKIPPED_EXISTING') for r in report['records'])):
                 try:
                     if snapshot.name in names:
                         # Recheck the published bytes immediately before remote deletion.
