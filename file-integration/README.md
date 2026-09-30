@@ -49,7 +49,9 @@ python3 adapter.py status --config config.oracle-items.json --file int_item20260
 python3 adapter.py run --config config.oracle-items.json --send --scan-all --run-seconds 3600
 ```
 
-`deploy/cwms-oracle-items.timer` 在服务器本地时区每天 09:00 启动上述自动模式。
+`deploy/cwms-oracle-items.timer` 在 `k8s-app2` 每次开机约两分钟后、
+以及服务器本地时区每天 09:00 启动上述自动模式。VPN 服务也随开机自动启动；
+导入服务会等 VPN 连接就绪后运行。
 部署时必须确认服务器时区为 `America/Los_Angeles`，FTP/VPN 凭据另存于服务器，
 并保持同一个持久化 `stateDirectory`；服务和定时器模板在 `deploy/`。
 当前 `k8s-app2` 使用 Python 3.6，自动模式及完整测试套件已在该主机验证。
