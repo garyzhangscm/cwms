@@ -50,6 +50,7 @@ class OracleItemsTests(unittest.TestCase):
         record = convert(data([['A', 'Item A', '01', '12', '360']]), CONFIG, 'b1')['records'][0]
         payload = record['payload']
         self.assertEqual(payload['itemFamily']['name'], 'Finish Good')
+        self.assertEqual(payload['itemFamily']['description'], 'Finish Good')
         package = payload['itemPackageTypes'][0]
         self.assertEqual(package['name'], 'Main')
         self.assertEqual([(u['unitOfMeasureName'], u['quantity']) for u in package['itemUnitOfMeasures']],

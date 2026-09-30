@@ -51,6 +51,12 @@ name、description、warehouseId、warehouseName，不复制 companyId/companyCo
 这与辅助公开源码行为一致；需确定修复接口转换或其他兼容接入路径，并在测试环境验证。
 当前仅允许离线预览，未修改线上服务。新增预览选项不解决这个后端问题。
 
+用户授权的一条新测试物料试提交在持久化阶段被拒绝：`Column 'description' cannot be null`。
+分类对象原先仅有 name，没有 description；现已在转换器中用映射后的分类名称补充 description，
+这与已核对的成品分类描述一致。物料本身的 description 仍使用 Oracle 原始描述。
+查询未发现本次测试的物料或集成记录，未发送其余测试物料。
+该本地修复尚未重新提交验证，且不解决上述公司信息被旧接口丢失的问题。
+
 ## 1. 确认字段
 
 现成样例为 examples/items__demo001.csv，列的含义如下：
