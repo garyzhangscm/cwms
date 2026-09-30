@@ -14,6 +14,7 @@ MEASUREMENTS = {role: {'length': 1, 'width': 1, 'height': 1, 'weight': 1}
                 for role in ('piece', 'carton', 'pallet')}
 CONFIG = {'sourceFormat': 'oracle-items-v1', 'ftp': {},
           'oracleItems': {'mapping': {**OPTIONS, 'unitMeasurements': MEASUREMENTS}}}
+NO_READY_CONFIG = {**CONFIG, 'requireReady': False, 'stableSeconds': 60}
 NAME = 'int_item__demo001.csv'
 
 
@@ -62,6 +63,47 @@ class Guard:
 
 
 class OracleFtpTests(unittest.TestCase):
+    def test_csv_only_mode_requires_target_and_stable_content(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        other = 'int_item__other.csv'
+        ftp.files[other] = CONTENT.replace(b'TEST-ITEM', b'OTHER-ITEM')
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            with self.assertRaises(ValueError):
+                a.poll_once(NO_READY_CONFIG, state, api, guard)
+            with patch.object(a.time, 'time', return_value=100):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertEqual(api.calls, [])
+            self.assertEqual(json.loads((state / (NAME + '.report.json')).read_text())['state'], 'WAITING_STABLE')
+            with patch.object(a.time, 'time', return_value=159):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertEqual(api.calls, [])
+            with patch.object(a.time, 'time', return_value=160):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertEqual(len(api.calls), 3)
+            self.assertFalse((state / other).exists())
+            self.assertIn(NAME, ftp.files)
+            api.business_status = 'COMPLETED'
+            with patch.object(a.time, 'time', return_value=161):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertNotIn(NAME, ftp.files)
+            self.assertIn(other, ftp.files)
+            self.assertEqual(json.loads((state / (NAME + '.report.json')).read_text())['sourceCleanup'], 'DELETED')
+
+    def test_csv_only_mode_resets_stability_after_content_change(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            with patch.object(a.time, 'time', return_value=100):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            ftp.files[NAME] = CONTENT.replace(b'Test item normal', b'Test item changed')
+            with patch.object(a.time, 'time', return_value=160):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertEqual(api.calls, [])
+            with patch.object(a.time, 'time', return_value=220):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, NAME)
+            self.assertEqual(len(api.calls), 3)
+
     def test_oracle_mode_requires_existing_item_guard(self):
         with tempfile.TemporaryDirectory() as temp, self.assertRaises(ValueError):
             a.poll_once(CONFIG, Path(temp), API())

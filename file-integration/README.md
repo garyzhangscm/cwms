@@ -3,7 +3,7 @@
 通过现有 HTTP 接口提交集成记录；Item 联调中发现的旧接口字段丢失问题已做最小后端修复。
 
 ```text
-总部 Oracle 导出程序 → FTP 文件及 ready 标记 → 本适配器
+总部 Oracle 导出程序 → FTP 批次 CSV → 本适配器
     → integrationservice 集成接口 → 原 MES 业务处理 → 查询处理状态
 ```
 
@@ -22,15 +22,16 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 固定的 `int_item.csv` 不含批次号，会被忽略。
 同目录中的其他前缀文件一律忽略。
 CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`
-（也接受对应的小写别名）。上传时先用 `.part` 临时名，完成后改为最终文件名，最后创建同名 `.ready` 空文件。
-只有二者都出现才处理。文件一经发布不得修改，批次名不得复用。
+（也接受对应的小写别名）。Oracle Item 只上传 CSV，不需要 `.ready`。
+操作员确认上传完成后，使用 `--file` 指定这一批；程序先观察文件内容至少 60 秒不变，再读取和提交。
+文件名不可复用，发布后内容不可修改；其他前缀或批次不会因这次操作被处理。
 
 复制 `config.oracle-items.example.json` 配置 FTP 主机、目录、测试服务地址、实际公司代码和仓库。
 其中 `companyId` 和 `warehouseId` 的 `0` 都是必须替换的占位值。
 公司代码与 MES 数据库内部 ID 不同，不能把 Oracle 的公司代码直接填入 `companyId`。
-示例故意没有 `unitMeasurements`：正式物料的长宽高和重量规则未定，运行时会拒绝发送。
-确认后必须为 piece/carton/pallet 各填写四个正数，并决定是否沿用目前的 WMEC 仓库级
-`Finish Good` 分类；不要把三条测试料的占位尺寸当成正式值。
+用户已确认正式物料的 PCS/CS/PL 三层长宽高及重量均填写 `1`；
+`ITEM_TYPE=01` 映射到目前 WMEC 使用的 `Finish Good` 分类。
+这些值为用户指定的导入值，不代表实测尺寸重量。
 FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读取，不写入仓库。
 如需 MES Bearer token，给 `mes` 配置 `bearerTokenEnv` 并由服务器环境变量提供。
 
@@ -38,7 +39,9 @@ FTP 用户名和密码只从 `MES_FTP_USER`、`MES_FTP_PASSWORD` 环境变量读
 # 离线验证文件内容和映射；不会连接 FTP 或 MES
 python3 adapter.py validate int_item20260930_001.csv --config config.oracle-items.json
 # 配置和规则确认、测试联调后才运行；此命令会写入 MES
-python3 adapter.py run --config config.oracle-items.json --send --once
+python3 adapter.py run --config config.oracle-items.json --send --once --file int_item20260930_001.csv
+# 至少 60 秒后再运行一次；第一次只记录文件指纹，不发送。
+# 后续可重复运行同一命令刷新 MES 状态并在全部完成后清理 FTP 源文件。
 # 查看本地处理报告，不连接 FTP 或 MES
 python3 adapter.py status --config config.oracle-items.json
 python3 adapter.py status --config config.oracle-items.json --file int_item20260930_001.csv
@@ -51,7 +54,7 @@ python3 adapter.py status --config config.oracle-items.json --file int_item20260
 在发送前逐条查询 MES：已有料号标记为 `SKIPPED_EXISTING`，同文件里的新料号照常提交；
 不会更新已有物料。查询接口失败时本轮停止发送，不把“查不到”误当成“还没有”。
 只有文件内所有新建记录都被 MES 确认为 `COMPLETED`，其余记录均为 `SKIPPED_EXISTING`，
-程序才删除 FTP 上的原 CSV 和同名 `.ready`；
+程序才删除 FTP 上的原 CSV；
 本地原始快照及报告保留。报告的 `sourceCleanup` 显示 `PENDING`、`DELETED` 或 `DELETE_FAILED`。
 删除中断会在下轮重试；业务失败或状态不确定时不会删源文件。
 状态库和报告须持久化；删除状态库或换另一个空状态目录会破坏去重依据。
@@ -121,7 +124,7 @@ poNumber、inventoryStatusName（明细）、客户名称、地址等。不得�
 3. 最后创建同名加 `.ready` 的空文件，例如 `receipts__20260930-001.csv.ready`。
 
 只处理最终文件和 ready 都存在的文件。发布后的数据必须保持不变；ready 不是处理完成回执。
-FTP 用户应限制在交换目录。Oracle Item 模式仅在业务完成后删除其自身 CSV 和 `.ready`；
+FTP 用户应限制在交换目录。Oracle Item 模式仅在业务完成后删除指定批次的 CSV；
 其他通用文件模式仍不删除/移动远端文件。处理报告仅写入本地 state 目录，不上传回执。
 生产者需有保留和归档策略；未完成文件每轮重新下载并去重，不适合无限积累文件。
 

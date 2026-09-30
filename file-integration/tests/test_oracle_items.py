@@ -43,6 +43,19 @@ class OracleItemsTests(unittest.TestCase):
                 self.assertIs(unit[key], index == 2)
             self.assertEqual(unit['quantity'], 1)
 
+    def test_formal_item_example_maps_type_and_measurements(self):
+        config = json.loads((Path(__file__).resolve().parents[1] /
+                             'config.oracle-items.example.json').read_text())
+        mapping = config['oracleItems']['mapping']
+        mapping.update(companyCode='C', warehouseName='W')
+        payload = convert(data([['TEST-A', 'D', '01', '6', '450']]), mapping, 'b')['records'][0]['payload']
+        self.assertEqual(payload['itemFamily']['name'], 'Finish Good')
+        units = payload['itemPackageTypes'][0]['itemUnitOfMeasures']
+        self.assertEqual([unit['quantity'] for unit in units], [1, 6, 450])
+        for unit in units:
+            self.assertEqual([unit[field] for field in ('length', 'width', 'height', 'weight')],
+                             [1.0, 1.0, 1.0, 1.0])
+
     def test_invalid_or_partial_unit_options_rejected(self):
         valid = {role: {flag: False for flag in UNIT_FLAGS} for role in ('piece', 'carton', 'pallet')}
         for bad in ({}, {'piece': {}}, {**valid, 'pallet': {**valid['pallet'], 'caseFlag': 'false'}}):

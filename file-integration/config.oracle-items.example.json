@@ -1,6 +1,8 @@
 {
   "protocolVersion": 1,
   "sourceFormat": "oracle-items-v1",
+  "requireReady": false,
+  "stableSeconds": 60,
   "ftp": {
     "host": "FTP_HOST_REPLACE_ME",
     "port": 21,
@@ -22,6 +24,11 @@
       "warehouseName": "WAREHOUSE_NAME_REPLACE_ME",
       "itemTypeMapping": {"01": "Finish Good"},
       "cartonUnit": "CS",
+      "unitMeasurements": {
+        "piece": {"length": 1, "width": 1, "height": 1, "weight": 1},
+        "carton": {"length": 1, "width": 1, "height": 1, "weight": 1},
+        "pallet": {"length": 1, "width": 1, "height": 1, "weight": 1}
+      },
       "unitOptions": {
         "piece": {
           "defaultForInboundReceiving": false,
