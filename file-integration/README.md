@@ -26,7 +26,8 @@ CSV 只能有五列：`SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_P
 只有二者都出现才处理。文件一经发布不得修改，批次名不得复用。
 
 复制 `config.oracle-items.example.json` 配置 FTP 主机、目录、测试服务地址、实际公司代码和仓库。
-其中 companyId=20901 是已知公司内部 ID；warehouseId=0 是必须替换的占位值。
+其中 `companyId` 和 `warehouseId` 的 `0` 都是必须替换的占位值。
+公司代码与 MES 数据库内部 ID 不同，不能把 Oracle 的公司代码直接填入 `companyId`。
 示例故意没有 `unitMeasurements`：正式物料的长宽高和重量规则未定，运行时会拒绝发送。
 确认后必须为 piece/carton/pallet 各填写四个正数，并决定是否沿用目前的 WMEC 仓库级
 `Finish Good` 分类；不要把三条测试料的占位尺寸当成正式值。
