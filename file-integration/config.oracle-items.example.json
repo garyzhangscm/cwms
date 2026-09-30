@@ -1,0 +1,52 @@
+{
+  "protocolVersion": 1,
+  "sourceFormat": "oracle-items-v1",
+  "ftp": {
+    "host": "FTP_HOST_REPLACE_ME",
+    "port": 21,
+    "inbox": "/ITEM_INBOX_REPLACE_ME",
+    "tls": false,
+    "allowPlainFtp": true,
+    "usernameEnv": "MES_FTP_USER",
+    "passwordEnv": "MES_FTP_PASSWORD"
+  },
+  "mes": {
+    "baseUrl": "http://MES_TEST_GATEWAY_REPLACE_ME/api/integration"
+  },
+  "oracleItems": {
+    "inventoryBaseUrl": "http://MES_TEST_INVENTORY_REPLACE_ME",
+    "companyId": 20901,
+    "warehouseId": 0,
+    "mapping": {
+      "companyCode": "COMPANY_CODE_REPLACE_ME",
+      "warehouseName": "WAREHOUSE_NAME_REPLACE_ME",
+      "itemTypeMapping": {"01": "Finish Good"},
+      "cartonUnit": "CS",
+      "unitOptions": {
+        "piece": {
+          "defaultForInboundReceiving": false,
+          "defaultForWorkOrderReceiving": false,
+          "trackingLpn": false,
+          "defaultForDisplay": false,
+          "caseFlag": false
+        },
+        "carton": {
+          "defaultForInboundReceiving": false,
+          "defaultForWorkOrderReceiving": false,
+          "trackingLpn": false,
+          "defaultForDisplay": false,
+          "caseFlag": false
+        },
+        "pallet": {
+          "defaultForInboundReceiving": true,
+          "defaultForWorkOrderReceiving": true,
+          "trackingLpn": true,
+          "defaultForDisplay": true,
+          "caseFlag": true
+        }
+      }
+    }
+  },
+  "stateDirectory": "/var/lib/cwms-oracle-items/state",
+  "pollSeconds": 60
+}
