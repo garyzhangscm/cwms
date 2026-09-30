@@ -63,6 +63,9 @@ class SettingsStore:
     def authorize(self, username, token, company_id):
         if (not username or not token or len(token) > 4096 or
                 str(self.company_id) != company_id):
+            print('Settings login rejected: missing headers or company mismatch; '
+                  'username_present={}; token_present={}; company_id={}'.format(
+                      bool(username), bool(token), company_id), flush=True)
             raise SettingsError(401, 'MES login required')
         try:
             payload = json.loads(base64.urlsafe_b64decode(
@@ -72,6 +75,7 @@ class SettingsStore:
                     int(payload.get('exp', 0)) <= time.time()):
                 raise ValueError('Invalid JWT claims')
         except (IndexError, ValueError, TypeError, binascii.Error):
+            print('Settings login rejected: JWT claims invalid', flush=True)
             raise SettingsError(401, 'MES login required') from None
         query = urllib.parse.urlencode({'companyId': self.company_id, 'token': token})
         try:
@@ -80,10 +84,11 @@ class SettingsStore:
             raise SettingsError(502, 'Could not verify MES login') from None
         verified_name = response.get('data') if isinstance(response, dict) and response.get('result') == 0 else None
         if verified_name != username:
+            print('Settings login rejected: auth service did not match username', flush=True)
             raise SettingsError(401, 'MES login required')
         query = urllib.parse.urlencode({'companyId': self.company_id, 'username': username})
         try:
-            response = read_json_response(self.user_url + '/users?' + query, token)
+            response = read_json_response(self.user_url + '/users?' + query)
         except Exception:
             raise SettingsError(502, 'Could not verify MES admin permission') from None
         users = response.get('data') if isinstance(response, dict) and response.get('result') == 0 else None
@@ -91,6 +96,13 @@ class SettingsStore:
                      item.get('username') == username and
                      item.get('companyId') in (self.company_id, -1)), None) if isinstance(users, list) else None
         if user is None:
+            print('Settings login rejected: resource user mismatch; '
+                  'response_type={}; count={}; exact_name={}; company_ids={}'.format(
+                      type(users).__name__, len(users) if isinstance(users, list) else -1,
+                      any(isinstance(item, dict) and item.get('username') == username
+                          for item in users) if isinstance(users, list) else False,
+                      [item.get('companyId') for item in users[:3] if isinstance(item, dict)]
+                      if isinstance(users, list) else []), flush=True)
             raise SettingsError(401, 'MES login required')
         if user.get('admin') is not True and user.get('systemAdmin') is not True:
             raise SettingsError(403, 'MES admin permission required')
