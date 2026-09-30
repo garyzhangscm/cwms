@@ -1,114 +1,77 @@
 # Item 第一轮联调
 
-目标：先验证一个新测试物料从 CSV 进入 MES 的基础资料，再验证单位和包装。未进行生产写入。
+## 当前结果
 
-## 已确认：Oracle 五列协议（优先于下方早期通用模板）
+三条新测试物料已通过现有 MES integration 接口创建，集成记录全部为 COMPLETED。
+已核对实际物料、分类、Main 包装、三层数量和默认选项；用户已在 MES 界面检查并确认无问题。
+真实业务文件、测试记录明细、环境配置和提交脚本只保留在本地，不提交到仓库。
 
-用户已确认只从 Oracle 提供以下五列：
+这是小批量 HTTP 接口验证，不代表 FTP 自动导入已经上线；未批量导入正式物料。
 
-也支持 Oracle 原生表头 `SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET`，
-其中 SEGMENT1 对应 item_number，DESCRIPTION 对应 item_description。无需修改源文件。
+## Oracle 五列协议
 
-| CSV 列 | 规则 |
-|---|---|
-| item_number | MES 料号，必填，同文件不能重复 |
-| item_description | MES 描述，必填 |
-| item_type | 文本编码，`01` 映射到 `Finish Good`；未知编码拒绝 |
-| pieces_per_carton | 空或 0 默认 1，其他值必须为正整数 |
-| pieces_per_pallet | 空或 0 默认 1，其他值必须为正整数 |
+| CSV 列 | Oracle 原生表头 | 规则 |
+|---|---|---|
+| item_number | SEGMENT1 | 必填，同文件不能重复 |
+| item_description | DESCRIPTION | 必填，保留原始业务描述 |
+| item_type | ITEM_TYPE | 文本编码，01 映射到 Finish Good；未知编码拒绝 |
+| pieces_per_carton | PIECES_PER_CARTON | 空或 0 默认 1，其他值必须为正整数 |
+| pieces_per_pallet | PIECES_PER_PALLET | 空或 0 默认 1，其他值必须为正整数 |
 
-使用 Main 包装，PCS=1、CTN=每箱件数、PL=每托件数；三者数量均以 PCS 为基准。
-实际部署的箱单位已只读核对为 `CS`，示例配置现使用 CS，不能直接创建额外 CTN 单位。
-用户已确认 PCS 和箱单位的五个选项全部 false，PL 全部 true：
-defaultForInboundReceiving、defaultForWorkOrderReceiving、trackingLpn、defaultForDisplay、caseFlag。
-配置 unitOptions 使用 piece/carton/pallet 三个角色，避免箱单位名称变化影响选项。
-一旦提供 unitOptions，必须完整提供三个角色和各自五个布尔值，禁止将字符串 "false" 当布尔值。
-补值在预览的 defaultsApplied 中记录字段及 empty/zero 原因。
-`01` 必须保留前导零，不能通过电子表格另存成数字 1。
-真实单位名称仍需核对，CTN 可在配置中修改；公司/仓库/货主由部署配置提供，不额外增加 Oracle 列。
+保持 UTF-8 和编码前导零。补值在 defaultsApplied 中记录字段和 empty/zero 原因。
+公司代码、仓库名称、货主及分类对应表来自部署配置，不增加 Oracle 文件列。
+公司代码不等于数据库内部 companyId，不能互换。
 
-本地预览命令（不联网、不提交）：
+## 包装配置
+
+Main 包装使用 PCS=1、CS=每箱件数、PL=每托件数，数量均以 PCS 为基准。
+实际箱单位已核对为 CS，不能另建 CTN 代替。cartonUnit 仍可按不同环境配置。
+
+unitOptions 使用 piece/carton/pallet 三个角色。用户已确认 PCS、CS 的以下五项全部 false，PL 全部 true：
+
+- defaultForInboundReceiving
+- defaultForWorkOrderReceiving
+- trackingLpn
+- defaultForDisplay
+- caseFlag
+
+提供 unitOptions 时，三个角色及各自五个布尔字段必须完整。
+unitMeasurements 可为每个角色配置 length、width、height、weight 四个正数。
+用户授权本次三条测试的这四个值全部使用 1；这是测试占位值，不是正式物料实测值。
+示例配置不默认启用测试尺寸，避免将占位值自动应用到整个业务文件。
+
+## 本地检查
 
 ```sh
+python3 -m unittest discover -s tests -v
 python3 oracle_items.py examples/oracle-items-demo.csv \
   --config item-mapping.example.json --batch-id demo001 \
   --output item-preview.json
 ```
 
-输出不可覆盖已有文件。预览包含分类和三层包装的嵌套请求草案，不含成本、尺寸、重量或默认选项。
-这些字段如何在新增时赋值、更新时保留，仍需核对 MES 实际行为后才能提交。
-五列解析尚未连接 adapter.py 的 FTP 轮询，不能直接把这个 CSV 放入旧通用模板的 inbox。
-样例全部使用虚构测试料号；item-mapping.example.json 中公司和仓库也是占位符。
-recordId 由批次号、公司/仓库/货主及料号稳定生成，不受行顺序影响；重试必须保持同一批次号。
-分类嵌套接口是否创建分类、包装单位是否存在，需要联调确认，预览不会自动创建任何 MES 配置。
+oracle_items.py 仅生成离线预览，不会联网提交。输出不可覆盖已有文件。
+示例使用虚构数据及公司/仓库占位符。生成的 recordId 取决于批次号、公司/仓库/货主和料号，
+不受行顺序影响；同一事件重试应保持批次号，不能借更换 ID 绕过去重。
 
-### 提交前发现的 v1.62 兼容问题
+五列解析尚未连接 adapter.py 的 FTP 轮询，不能直接将五列 CSV 放入通用模板 inbox。
+examples/items__demo001.csv 是早期通用基础物料格式，与五列格式不同；
+五列预览包含嵌套分类和包装，不需要为同一测试另外重复发送包装文件。
 
-后续进展：公司字段复制已修复，按原 v1.62 镜像做单类热修复并部署。
-修复前回归测试复现字段丢失，修复后验证通过。部署后试导入已通过分类转换，
-但库存服务拒绝空的包装 height，说明还需要长、宽、高、重量默认值配置。
-`unitMeasurements` 可为 piece/carton/pallet 分别配置这四个正数，未配置时不自动猜值。
-该接口的 v1.62 DTO 不包含尺寸/重量单位字符串，不能承诺仅添加数值就能保存 inch/lb 标签，
-还需在成功试导入后核对实际单位字段。测试占位值须得到用户确认，不能套用到全部正式物料。
-下面保留问题定位过程；不再代表公司字段热修复尚未部署。
+## 已修复的接口问题
 
-对照生产 integration.jar 的 DBBasedItemFamily(ItemFamily) 字节码，构造器只复制
-name、description、warehouseId、warehouseName，不复制 companyId/companyCode。
-后续 convertToItemFamily 则要求公司字段存在。普通 Item 接口通过该构造器转换嵌套分类，
-因此当前分类嵌套请求不能视为已验证可提交。不能通过删除分类来绕过需求，也不能声称导入已完成。
-这与辅助公开源码行为一致；需确定修复接口转换或其他兼容接入路径，并在测试环境验证。
-当前仅允许离线预览，未修改线上服务。新增预览选项不解决这个后端问题。
+旧版 DBBasedItemFamily(ItemFamily) 丢弃 companyId/companyCode，造成分类转换失败。
+已补齐字段复制，通过原 JAR 失败、新类通过的回归测试；使用原 v1.62 镜像，仅替换目标类后部署。
+构建及回退方法见 [热修复说明](../integrationsvr/tools/ITEM-FAMILY-HOTFIX.md)。
 
-用户授权的一条新测试物料试提交在持久化阶段被拒绝：`Column 'description' cannot be null`。
-分类对象原先仅有 name，没有 description；现已在转换器中用映射后的分类名称补充 description，
-这与已核对的成品分类描述一致。物料本身的 description 仍使用 Oracle 原始描述。
-查询未发现本次测试的物料或集成记录，未发送其余测试物料。
-该本地修复尚未重新提交验证，且不解决上述公司信息被旧接口丢失的问题。
+分类描述也必须提供，转换器使用映射后的分类名称作为分类描述；物料描述仍来自 Oracle。
+库存数据库要求包装高度等数值非空，测试补齐用户确认的尺寸重量后完成创建。
+旧失败记录保留，没有直接编辑数据库或盲目重送不完整记录。
 
-## 1. 确认字段
+## 正式批量导入前仍需处理
 
-现成样例为 examples/items__demo001.csv，列的含义如下：
-
-| 列 | 含义 | 第一轮要求 |
-|---|---|---|
-| recordId | 本次导出事件号，不是料号 | 固定且唯一，重传不能更换 |
-| companyCode | MES 公司代码 | 从 MES 现有配置核对，不猜测 |
-| warehouseName | MES 仓库名称 | 从 MES 现有配置核对，不使用服务器名 |
-| name | 物料编码/料号 | 选一个未使用的新测试料号 |
-| description | 物料名称/描述 | 按 Oracle 的业务含义映射 |
-| unitCost | 单位成本 | 是否同步成本需要业务确认，不用 0 代替未知成本 |
-| nonInventoryItem | 是否为非库存物料 | 普通库存物料为 false，不能根据名称猜测 |
-| clientName（可选） | MES 货主名称 | 仓库有货主隔离时核对后填写 |
-
-companyCode、warehouseName、name、recordId 是本适配器要求的基础定位字段。
-示例中的 TEST_ONLY/TEST_WAREHOUSE 仅为占位符，不代表现有系统配置。
-
-需要用户提供一条脱敏的 Oracle 物料样例，或 MES 物料详情截图，确认料号、描述、单位、分类、
-货主和成本的实际使用方式。截图不需包含密码、连接串或凭据。
-
-## 2. 文件检查
-
-填写并另存为新的 items__<批次号>.csv，保持 UTF-8：
-
-```sh
-python3 adapter.py validate examples/items__demo001.csv
-```
-
-这一步只读本地文件。格式正确后，比较生成字段与预期物料信息，再配置测试 FTP/MES。
-
-## 3. 测试环境验收
-
-按 README 的最终文件 + ready 标记方式发布；等集成记录 COMPLETED 后，在 MES 界面核对
-新物料的仓库、货主、料号、描述和成本；再次投递相同事件，确认没有重复创建集成记录。
-保存 integrationId 作为核对依据。不能把 HTTP 成功或 ACCEPTED 当成最终验收。
-
-单位和包装通过 item-package-types 文件单独接入，必须等物料成功后发布。
-单位/包装尚未验收的物料不能视为已完成收发货使用配置。
-物料分类尚未映射，若业务必需，应先补充实现再开始端到端联调。
-
-## 4. 更新行为单独验证
-
-辅助源码 inventorysvr ItemService.processIntegration 按仓库、货主和料号查找已有记录，
-找到后进入更新流程。这是公开 v1.63 源码结论，尚未核对生产 inventorysvr 的实际实现。
-不能假定省略的描述、成本、分类等字段会自动保留。第一轮禁止用现有正式料号试写；
-新增验收完成后，用专门测试料号验证更新、缺省字段和重复事件，再确定正式增量规则。
+- 当前接口未保存长宽高及重量的单位标签；实际数值已保存，单位字段仍为空。
+- 嵌套分类被保存为仓库级同名 Finish Good，尚未复用原公司级分类。
+- 本次只验证新测试物料。已有物料更新时，不能假设省略字段会保留；需要验证成本、分类、
+  包装及其他 MES 设置的保留行为。
+- FTP 文件接入、持续运行、服务身份、失败重试与人工核对流程仍需完成联调。
+- 完整源码版本与部署版本不同，不能把整个新源码镜像当作本次单类修复直接替换。
