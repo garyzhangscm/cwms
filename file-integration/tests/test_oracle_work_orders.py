@@ -41,10 +41,20 @@ class WorkOrderConversionTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaises(InvalidWorkOrderFile):
                 convert(SAMPLE.replace(source, replacement, 1), CONFIG, 'demo001')
 
+    def test_zero_quantity_component_is_skipped_and_recorded(self):
+        source = SAMPLE.replace(b',RM-001,20', b',RM-001,0')
+        record = convert(source, CONFIG, 'demo001')['records'][0]
+        self.assertEqual(record['sourceRows'], [2, 3])
+        self.assertEqual(record['skippedZeroComponentRows'], [2])
+        self.assertEqual([line['itemName'] for line in record['payload']['workOrderLines']],
+                         ['RM-002'])
+        with self.assertRaisesRegex(InvalidWorkOrderFile, 'no positive component lines'):
+            convert(source.replace(b',RM-002,3', b',RM-002,0'), CONFIG, 'demo001')
+
     def test_conflict_duplicate_and_invalid_line_rejected_before_submission(self):
         for data in (SAMPLE.replace(b'FG-001,10,PO-001,2', b'FG-002,10,PO-001,2'),
                      SAMPLE.replace(b',2,RM-002,3', b',1,RM-002,3'),
-                     SAMPLE.replace(b',RM-001,20', b',RM-001,0'),
+                     SAMPLE.replace(b',RM-001,20', b',RM-001,-1'),
                      SAMPLE + b'WO-TEST-002,FG-001,1,,1,RM-001\n'):
             with self.subTest(data=data[-50:]), self.assertRaises(InvalidWorkOrderFile):
                 convert(data, CONFIG, 'demo001')

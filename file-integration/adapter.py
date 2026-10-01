@@ -48,7 +48,7 @@ MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 10000
 FILE_RE = re.compile(r'^(suppliers|items|item-package-types|receipts|orders|work-orders)__(\w[\w.-]{0,100})\.(csv|xml)$', re.ASCII)
 ORACLE_ITEMS_RE = re.compile(r'^int_item(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
-ORACLE_WORK_ORDERS_RE = re.compile(r'^int_workorder(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
+ORACLE_WORK_ORDERS_RE = re.compile(r'^int_work_?order(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
 ORACLE_FORMATS = ('oracle-items-v1', 'oracle-work-orders-v1')
 
 
@@ -434,7 +434,7 @@ def parse_published_file(name, content, config):
     if config.get('sourceFormat') == 'oracle-work-orders-v1':
         match = ORACLE_WORK_ORDERS_RE.fullmatch(name)
         if not match:
-            raise InvalidFile('expected int_workorder followed by a unique batch number and .csv')
+            raise InvalidFile('expected int_workorder or int_work_order followed by a unique batch number and .csv')
         from oracle_work_orders import convert, InvalidWorkOrderFile
         try:
             result = convert(content, config['oracleWorkOrders']['mapping'], match.group(1))
@@ -649,7 +649,8 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                 {'recordId': r['recordId'],
                  **({'itemName': r['payload']['name'], 'sourceRow': r['sourceRow'],
                      'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
-                 **({'workOrderNumber': r['workOrderNumber'], 'sourceRows': r['sourceRows']}
+                 **({'workOrderNumber': r['workOrderNumber'], 'sourceRows': r['sourceRows'],
+                     'skippedZeroComponentRows': r.get('skippedZeroComponentRows', [])}
                     if config.get('sourceFormat') == 'oracle-work-orders-v1' else {}),
                  **({'skipReason': 'Work Order number already exists in MES'}
                     if config.get('sourceFormat') == 'oracle-work-orders-v1' and

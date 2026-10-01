@@ -4,7 +4,8 @@
 
 本文件是已确定的第一版文件协议；`k8s-app2` 的 Item 定时服务只扫描 `int_item`。
 Work Order 转换与轮询代码已安装到 app2，但工单定时器仍关闭，尚待测试文件联调。
-第一版沿用 WIS FTP `/WIS`，只接受唯一批次名 `int_workorder_批次号.csv`，
+第一版沿用 WIS FTP `/WIS`，接受唯一批次名 `int_workorder_批次号.csv`
+或 `int_work_order_批次号.csv`，
 不要求 `.ready`。Oracle 完成上传后应使用最终文件名，批次名不得复用。
 
 MES 现有集成接口是 `PUT /integration-data/work-orders`，返回集成记录 ID；
@@ -28,7 +29,7 @@ WO-TEST-001,FG-001,10,PO-001,2,RM-002,3
 | `PO_NUMBER` | Oracle 关联单号 | 可空；同一工单各行必须一致 |
 | `COMPONENT_LINE_NUMBER` | 投料行号 | 必填；同一工单内唯一 |
 | `COMPONENT_ITEM_NUMBER` | 投料料号 | 必填；必须已存在于 WMEC |
-| `COMPONENT_QUANTITY` | 投料需求数量 | 必填；正整数 |
+| `COMPONENT_QUANTITY` | 投料需求数量 | 必填；正整数；恰好为 `0` 的行不导入投料，并记录跳过的 CSV 行号 |
 
 公司固定为代码 `20901`，仓库固定为 `WMEC`；不要求 Oracle 在每行重复提供。
 投料库存状态由 MES 导入配置统一指定，不要求 Oracle 提供此列。
