@@ -699,7 +699,8 @@ def main():
             parser.error('Oracle file validation requires --config')
         config = json.loads(args.config.read_text()) if args.config else {}
         batch, records = parse_published_file(args.file.name, content, config)
-        print(json.dumps({'batch': batch, 'kind': records[0]['kind'], 'records': len(records), 'valid': True}))
+        kind = records[0]['kind'] if records else 'items'
+        print(json.dumps({'batch': batch, 'kind': kind, 'records': len(records), 'valid': True}))
         return
     if args.command == 'status':
         config = json.loads(args.config.read_text())
