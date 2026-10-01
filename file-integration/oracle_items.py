@@ -138,8 +138,6 @@ def convert(content, config, batch_id):
                             'payload': payload})
     except csv.Error:
         raise InvalidFile('invalid CSV') from None
-    if not records:
-        raise InvalidFile('empty item file')
     return {'mode': 'OFFLINE_PREVIEW_ONLY', 'batchId': batch_id, 'records': records}
 
 
