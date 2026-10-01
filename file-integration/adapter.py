@@ -413,8 +413,13 @@ def parse_published_file(name, content, config):
         if not match:
             raise InvalidFile('expected int_item followed by a unique batch number and .csv')
         # Import here to keep the generic adapter useful without Oracle mapping.
-        from oracle_items import convert
-        result = convert(content, config['oracleItems']['mapping'], match.group(1))
+        from oracle_items import convert, InvalidFile as OracleItemInvalidFile
+        try:
+            result = convert(content, config['oracleItems']['mapping'], match.group(1))
+        except OracleItemInvalidFile as error:
+            # When launched as adapter.py, oracle_items imports adapter under a
+            # second module name. Normalize its exception for file-level reject.
+            raise InvalidFile(str(error)) from None
         return result['batchId'], result['records']
     if config.get('sourceFormat') == 'oracle-work-orders-v1':
         match = ORACLE_WORK_ORDERS_RE.fullmatch(name)
