@@ -13,7 +13,7 @@ CONFIG = {'sourceFormat': 'oracle-work-orders-v1', 'requireReady': False,
           'stableSeconds': 60, 'ftp': {},
           'oracleWorkOrders': {'mapping': {'companyCode': '20901',
                                            'warehouseName': 'WMEC',
-                                           'inventoryStatusName': 'Available'}}}
+                                           'inventoryStatusName': 'AVAL'}}}
 
 
 class FTP:
@@ -57,7 +57,7 @@ class WorkOrderFTPTests(unittest.TestCase):
         with patch.object(guard, '_list', return_value=[{'number': 'WO-TEST-001'}]):
             self.assertEqual(guard.check([record]), {'WO-TEST-001'})
         def status_and_order(url, query):
-            return [] if url.endswith('/work-orders') else [{'name': 'Available'}]
+            return [] if url.endswith('/work-orders') else [{'name': 'AVAL'}]
         with patch.object(guard, '_list', side_effect=status_and_order), \
              patch.object(guard.inventory, 'check', return_value={'FG-001', 'RM-001'}), \
              self.assertRaisesRegex(a.InvalidFile, 'item missing'):
