@@ -51,12 +51,13 @@ def convert(content, config, batch_id):
     grouped = {}
     try:
         header = next(reader, [])
-        if [column.strip().upper() for column in header] != list(COLUMNS):
-            raise InvalidWorkOrderFile('expected exactly seven Work Order columns in order')
+        header = [column.strip().upper() for column in header]
+        if len(header) != len(COLUMNS) or set(header) != set(COLUMNS):
+            raise InvalidWorkOrderFile('expected exactly seven Work Order columns')
         for row_number, values in enumerate(reader, 2):
             if row_number > MAX_ROWS + 1 or len(values) != len(COLUMNS):
                 raise InvalidWorkOrderFile('row limit exceeded or incorrect column count')
-            row = dict(zip(COLUMNS, (value.strip() for value in values)))
+            row = dict(zip(header, (value.strip() for value in values)))
             for field in ('WORK_ORDER_NUMBER', 'FINISHED_ITEM_NUMBER',
                           'COMPONENT_LINE_NUMBER', 'COMPONENT_ITEM_NUMBER'):
                 if not row[field]:
