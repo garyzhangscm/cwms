@@ -115,9 +115,12 @@ class OracleItemsTests(unittest.TestCase):
 
     def test_duplicate_item_and_bad_shape_fail(self):
         row = ['A', 'D', '01', '1', '1']
-        for rows in ([row, row], [row[:-1]], []):
+        for rows in ([row, row], [row[:-1]]):
             with self.assertRaises(InvalidFile):
                 convert(data(rows), CONFIG, 'b')
+
+    def test_header_only_file_is_valid_empty_batch(self):
+        self.assertEqual(convert(data([]), CONFIG, 'b')['records'], [])
 
     def test_identity_stable_on_reorder_and_changed_payload(self):
         rows = [['A', 'D', '01', '1', '1'], ['B', 'D', '01', '2', '2']]

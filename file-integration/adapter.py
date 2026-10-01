@@ -462,7 +462,7 @@ class ExistingItemGuard:
 
 
 def poll_once(config, directory, api, existing_guard=None, target_file=None, scan_all=False):
-    """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
+    """One bounded scan. Oracle Item sources are deleted after terminal processing."""
     config = effective_config(config)
     ledger = Ledger(directory / 'ledger.sqlite3')
     ftp = None
@@ -527,6 +527,9 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                  **({'itemName': r['payload']['name'], 'sourceRow': r['sourceRow'],
                      'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
                  **ledger.get(r['kind'], r['recordId'])} for r in records]}
+            if config.get('sourceFormat') == 'oracle-items-v1' and not records:
+                report['state'] = 'NO_NEW_ITEMS'
+                report['reason'] = 'valid Item CSV header with no data rows'
             if config.get('sourceFormat') == 'oracle-items-v1':
                 deleted_marker = directory / (snapshot.name + '.source-deleted')
                 report['sourceCleanup'] = 'DELETED' if deleted_marker.exists() else 'PENDING'
@@ -534,7 +537,9 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
             if (config.get('sourceFormat') == 'oracle-items-v1' and ftp and
                     (not require_ready and snapshot.name in names or
                      require_ready and snapshot.name + '.ready' in names) and
-                    all(r['state'] in ('COMPLETED', 'SKIPPED_EXISTING') for r in report['records'])):
+                    (report.get('state') == 'NO_NEW_ITEMS' or
+                     report['records'] and all(r['state'] in ('COMPLETED', 'SKIPPED_EXISTING')
+                                               for r in report['records']))):
                 try:
                     if snapshot.name in names:
                         # Recheck the published bytes immediately before remote deletion.
@@ -588,7 +593,8 @@ def main():
             parser.error('Oracle item validation requires --config')
         config = json.loads(args.config.read_text()) if args.config else {}
         batch, records = parse_published_file(args.file.name, content, config)
-        print(json.dumps({'batch': batch, 'kind': records[0]['kind'], 'records': len(records), 'valid': True}))
+        kind = records[0]['kind'] if records else 'items'
+        print(json.dumps({'batch': batch, 'kind': kind, 'records': len(records), 'valid': True}))
         return
     if args.command == 'status':
         config = json.loads(args.config.read_text())
