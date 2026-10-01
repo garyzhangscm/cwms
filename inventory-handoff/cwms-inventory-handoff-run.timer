@@ -1,0 +1,10 @@
+[Unit]
+Description=Run CWMS external-system inventory handoff daily at 23:00 Los Angeles time
+
+[Timer]
+OnCalendar=*-*-* 23:00:00 America/Los_Angeles
+Persistent=false
+Unit=cwms-inventory-handoff-run.service
+
+[Install]
+WantedBy=timers.target
