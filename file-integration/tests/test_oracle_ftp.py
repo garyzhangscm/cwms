@@ -383,6 +383,26 @@ class OracleFtpTests(unittest.TestCase):
         with self.assertRaises(a.InvalidFile):
             guard.check(records[:1])
 
+    def test_work_order_item_precheck_allows_only_unambiguous_case_variant(self):
+        guard = a.ExistingItemGuard({'inventoryBaseUrl': 'http://example.invalid',
+                                     'companyId': 20901, 'warehouseId': 1})
+        record = {'payload': {'name': 'WelcomeCard-HT-BLK-4SH30'}}
+        class Opener:
+            def __init__(self, items):
+                self.items = items
+            def open(self, request, timeout):
+                return io.BytesIO(json.dumps({'result': 0, 'data': self.items}).encode())
+        guard.opener = Opener([{'id': 6373, 'name': 'Welcomecard-HT-BLK-4SH30'}])
+        self.assertEqual(guard.check([record]), set())
+        self.assertEqual(guard.check([record], allow_casefold=True),
+                         {'WelcomeCard-HT-BLK-4SH30'})
+        guard.opener = Opener([{'id': 1, 'name': 'OTHER'},
+                               {'id': 6373, 'name': 'Welcomecard-HT-BLK-4SH30'}])
+        self.assertEqual(guard.check([record], allow_casefold=True), set())
+        guard.opener = Opener([{'id': 6373, 'name': 'Welcomecard-HT-BLK-4SH30'},
+                               {'id': 9999, 'name': 'WELCOMECARD-HT-BLK-4SH30'}])
+        self.assertEqual(guard.check([record], allow_casefold=True), set())
+
 
 if __name__ == '__main__':
     unittest.main()
