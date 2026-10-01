@@ -32,6 +32,8 @@ public class UserService {
 
 
     public String getCurrentUserName() {
+        String queueActor = InventoryRemovalQueue.currentActor();
+        if (queueActor != null) return queueActor;
         try {
 
             if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {

@@ -1,0 +1,2 @@
+FROM garyzhangscm/cwms-inventoryserver:v1.62
+COPY inventoryserver-v1.62.jar /usr/local/service/inventoryserver-v1.62.jar

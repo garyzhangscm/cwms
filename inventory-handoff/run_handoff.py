@@ -22,11 +22,14 @@ class HandoffError(Exception):
     pass
 
 
-def request_json(url, method='GET', username=None, timeout=60):
+def request_json(url, method='GET', username=None, timeout=60, data=None):
     headers = {'Accept': 'application/json'}
     if username:
         headers['username'] = username
-    request = urllib.request.Request(url, headers=headers, method=method)
+    if data is not None:
+        headers['Content-Type'] = 'text/plain; charset=utf-8'
+        data = data.encode('utf-8')
+    request = urllib.request.Request(url, headers=headers, method=method, data=data)
     with urllib.request.urlopen(request, timeout=timeout) as response:
         body = response.read(MAX_RESPONSE_BYTES + 1)
     if len(body) > MAX_RESPONSE_BYTES:
@@ -118,6 +121,53 @@ def adjustment_confirmed(base, warehouse_id, inventory_id, lpn, adjustment_locat
     return False
 
 
+def submit_batch(config, candidates, report, report_path, execute):
+    # Never resubmit a previous mutation, including an interrupted HTTP request.
+    attempted = set()
+    for path in Path(config['reportDirectory']).glob('*-execute.json'):
+        if path == report_path:
+            continue
+        previous = json.loads(path.read_text())
+        for row in previous.get('records', []):
+            if row.get('status') in ('SUBMITTED', 'COMPLETED', 'UNCERTAIN',
+                                      'SENT_UNVERIFIED', 'MOVED_UNVERIFIED', 'BATCH_ACCEPTED'):
+                attempted.add(row['id'])
+    eligible = []
+    for location, row in candidates:
+        record = {'id': row['id'], 'lpn': row.get('lpn'), 'locationId': location['id']}
+        report['records'].append(record)
+        problem = row_problem(row, location['id'], config['warehouseId'])
+        if row['id'] in attempted:
+            problem = 'previously submitted; not resubmitted'
+        if problem:
+            record.update(status='SKIPPED', reason=problem)
+        else:
+            record['status'] = 'READY'
+            eligible.append(record)
+    if not execute or not eligible:
+        report['status'] = 'COMPLETED'
+        return report_path, report
+    for record in eligible:
+        record['status'] = 'SENT_UNVERIFIED'
+    write_report(report_path, report)
+    query = urllib.parse.urlencode({'companyId': config['companyId'], 'asyncronized': 'true'})
+    try:
+        response = request_json(config['inventoryBaseUrl'].rstrip('/') + '/inventory/batch-remove?' + query,
+                                method='DELETE', username=ACTOR, timeout=120,
+                                data=','.join(str(record['id']) for record in eligible))
+        if not isinstance(response, dict) or response.get('result') != 0 or response.get('data') != 'remove request has been sent':
+            raise HandoffError('Unexpected batch response: {}'.format(str(response)[:200]))
+    except Exception as error:
+        for record in eligible:
+            record.update(status='UNCERTAIN', reason=str(error)[:200])
+        raise
+    for record in eligible:
+        record['status'] = 'BATCH_ACCEPTED'
+    report['status'] = 'SUBMITTED'
+    report['message'] = 'MES accepted the batch; background completion is not verified.'
+    return report_path, report
+
+
 def process(config, execute, limit=None, verify_after=False):
     if limit is not None and (type(limit) is not int or limit < 1 or limit > MAX_INVENTORIES_PER_RUN):
         raise ValueError('Limit must be between 1 and {}'.format(MAX_INVENTORIES_PER_RUN))
@@ -165,6 +215,8 @@ def process(config, execute, limit=None, verify_after=False):
                 candidates = candidates[:limit]
             report['selectedCount'] = len(candidates)
             write_report(report_path, report)
+            if config.get('submissionMode') == 'batch':
+                return submit_batch(config, candidates, report, report_path, execute)
             consecutive_failures = 0
             for location, scanned in candidates:
                 record = {'id': scanned['id'], 'lpn': scanned.get('lpn'),
