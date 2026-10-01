@@ -23,7 +23,7 @@
     "mapping": {
       "companyCode": "20901",
       "warehouseName": "WMEC",
-      "inventoryStatusName": "Available"
+      "inventoryStatusName": "AVAL"
     }
   },
   "stateDirectory": "/var/lib/cwms-oracle-work-orders/state",

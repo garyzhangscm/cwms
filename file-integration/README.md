@@ -18,8 +18,9 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 Oracle Work Order 使用独立的 `oracle-work-orders-v1` 模式和 `int_workorder_批次号.csv`，
 文件格式与查重规则见 [Work Order 设计](WORK-ORDER-DESIGN.md)。
 工单与 Item 使用同一个 WIS 目录、不同文件前缀及不同状态目录；
-计划每天 10:30 运行。Work Order 目前只在本地完成转换、轮询与测试，
-尚未部署到 app2，尚未发送实际工单。
+计划每天 10:30 运行。Work Order 代码和配置已安装到 app2，
+但 `cwms-oracle-work-orders.timer` 尚未启用，尚未发送实际工单；
+等待一张 Oracle 测试文件通过联调后再启用。
 
 ## Oracle Item FTP 自动导入
 
