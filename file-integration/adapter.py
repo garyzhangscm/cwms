@@ -488,6 +488,13 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                     (require_ready and name + '.ready' not in names)):
                 continue
             snapshot = directory / name
+            if config.get('sourceFormat') == 'oracle-items-v1' and snapshot.exists():
+                # A failed batch keeps its source for review, but must not stop
+                # later batches from being processed.
+                _, prior_records = parse_published_file(name, snapshot.read_bytes(), config)
+                if any(ledger.get(r['kind'], r['recordId'])['state'] in
+                       ('BUSINESS_ERROR', 'UNCERTAIN') for r in prior_records):
+                    continue
             try:
                 content = download(ftp, name)
                 if snapshot.exists() and snapshot.read_bytes() != content:
@@ -496,6 +503,8 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                     print(json.dumps({'file': name, 'state': 'WAITING_STABLE'}), flush=True)
                     atomic_write(directory / (name + '.report.json'),
                                  canonical({'file': name, 'state': 'WAITING_STABLE'}).encode())
+                    if config.get('sourceFormat') == 'oracle-items-v1':
+                        break
                     continue
                 _, records = parse_published_file(name, content, config)
                 # Preflight before accepting immutable local snapshot.
@@ -511,6 +520,10 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                     atomic_write(snapshot, content)
                 submit_records(records, ledger, api)
                 print(json.dumps({'file': name, 'state': 'INSPECTED'}), flush=True)
+                if config.get('sourceFormat') == 'oracle-items-v1':
+                    # Wait for this batch to finish and be cleaned up before
+                    # submitting another Item batch on a later scan.
+                    break
             except InvalidFile as error:
                 rejected.add(name)
                 print(json.dumps({'file': name, 'state': 'REJECTED', 'reason': str(error)}), flush=True)
