@@ -5,6 +5,7 @@ import fcntl
 import json
 import os
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -21,12 +22,12 @@ class HandoffError(Exception):
     pass
 
 
-def request_json(url, method='GET', username=None):
+def request_json(url, method='GET', username=None, timeout=60):
     headers = {'Accept': 'application/json'}
     if username:
         headers['username'] = username
     request = urllib.request.Request(url, headers=headers, method=method)
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         body = response.read(MAX_RESPONSE_BYTES + 1)
     if len(body) > MAX_RESPONSE_BYTES:
         raise HandoffError('MES response exceeded size limit')
@@ -96,9 +97,33 @@ def activity_confirmed(base, warehouse_id, lpn, document_number):
                row.get('username') == ACTOR for row in rows if isinstance(row, dict))
 
 
-def process(config, execute):
+def adjustment_confirmed(base, warehouse_id, inventory_id, lpn, adjustment_location_id,
+                         document_number):
+    # The DELETE can finish on MES after its HTTP client has timed out. Never
+    # send it again; retry only these read-only confirmation requests.
+    for attempt in range(3):
+        try:
+            rows = inventory_rows(base, warehouse_id,
+                                  {'inventoryIds': inventory_id, 'includeVirturalInventory': 'true'})
+            if (len(rows) == 1 and rows[0].get('id') == inventory_id and
+                    rows[0].get('lpn') == lpn and
+                    rows[0].get('locationId') == adjustment_location_id and
+                    rows[0].get('virtual') is True and
+                    activity_confirmed(base, warehouse_id, lpn, document_number)):
+                return True
+        except Exception:
+            pass
+        if attempt < 2:
+            time.sleep(5)
+    return False
+
+
+def process(config, execute, limit=None, verify_after=False):
+    if limit is not None and (type(limit) is not int or limit < 1 or limit > MAX_INVENTORIES_PER_RUN):
+        raise ValueError('Limit must be between 1 and {}'.format(MAX_INVENTORIES_PER_RUN))
     store = Store(config)
     base = config['inventoryBaseUrl'].rstrip('/')
+    adjustment_location_id = config['adjustmentLocationId']
     report_dir = Path(config['reportDirectory'])
     report_dir.mkdir(mode=0o750, parents=True, exist_ok=True)
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -127,13 +152,18 @@ def process(config, execute):
                 if len(rows) != count:
                     raise HandoffError('Inventory count changed during location {} scan'.format(location['id']))
                 for row in rows:
-                    if not isinstance(row, dict) or row.get('id') in seen:
+                    if (not isinstance(row, dict) or type(row.get('id')) is not int or
+                            row['id'] <= 0 or row['id'] in seen):
                         raise HandoffError('Duplicate or invalid inventory in scan')
                     seen.add(row['id'])
                     candidates.append((location, row))
             if len(candidates) > MAX_INVENTORIES_PER_RUN:
                 raise HandoffError('Inventory count exceeds per-run safety limit')
             report['candidateCount'] = len(candidates)
+            candidates.sort(key=lambda entry: entry[1]['id'])
+            if limit is not None:
+                candidates = candidates[:limit]
+            report['selectedCount'] = len(candidates)
             write_report(report_path, report)
             consecutive_failures = 0
             for location, scanned in candidates:
@@ -166,15 +196,26 @@ def process(config, execute):
                     # Mark the attempt before the mutation so an interrupted call is visible.
                     record.update(status='SENT_UNVERIFIED', documentNumber=document)
                     write_report(report_path, report)
-                    result = request_json(base + '/inventory-adj/{}?{}'.format(scanned['id'], query),
-                                          method='DELETE', username=ACTOR)
-                    if not isinstance(result, dict) or result.get('id') != scanned['id'] or result.get('locationId') == location['id']:
-                        raise HandoffError('MES did not confirm removal from source location')
-                    record['status'] = 'MOVED_UNVERIFIED'
-                    write_report(report_path, report)
-                    if not activity_confirmed(base, store.warehouse_id, scanned['lpn'], document):
-                        raise HandoffError('Inventory activity entry was not found')
-                    record['status'] = 'COMPLETED'
+                    mutation_error = None
+                    try:
+                        response = request_json(base + '/inventory-adj/{}?{}'.format(scanned['id'], query),
+                                                method='DELETE', username=ACTOR, timeout=120)
+                        if isinstance(response, dict) and response.get('result') not in (None, 0):
+                            raise HandoffError('MES rejected inventory adjustment')
+                    except Exception as error:
+                        mutation_error = error
+                    if verify_after:
+                        record['status'] = 'MOVED_UNVERIFIED'
+                        write_report(report_path, report)
+                        if not adjustment_confirmed(base, store.warehouse_id, scanned['id'],
+                                                    scanned['lpn'], adjustment_location_id, document):
+                            raise HandoffError('MES adjustment was not confirmed: {}'.format(
+                                mutation_error if mutation_error else 'inventory or activity mismatch'))
+                        record['status'] = 'COMPLETED'
+                    else:
+                        if mutation_error:
+                            raise mutation_error
+                        record['status'] = 'SUBMITTED'
                     consecutive_failures = 0
                 except Exception as error:
                     record.update(status='UNCERTAIN', reason=str(error)[:200])
@@ -199,13 +240,17 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--dry-run', action='store_true')
     mode.add_argument('--execute', action='store_true')
+    parser.add_argument('--limit', type=int, help='Process at most this many scanned inventories')
+    parser.add_argument('--verify-after', action='store_true',
+                        help='Recheck the virtual location and activity after every adjustment')
     args = parser.parse_args()
     config = json.loads(args.config.read_text())
-    path, report = process(config, args.execute)
+    path, report = process(config, args.execute, args.limit, args.verify_after)
     counts = {}
     for record in report['records']:
         counts[record['status']] = counts.get(record['status'], 0) + 1
     print(canonical({'status': report['status'], 'candidateCount': report.get('candidateCount', 0),
+                     'selectedCount': report.get('selectedCount', 0),
                      'counts': counts, 'report': str(path), 'error': report.get('error')}), flush=True)
     if report['status'] == 'FAILED':
         raise SystemExit(1)

@@ -13,7 +13,7 @@ class HandoffRunTests(unittest.TestCase):
         return {'stateFile': str(path), 'reportDirectory': str(Path(temp) / 'reports'),
                 'authBaseUrl': 'http://auth.test', 'userBaseUrl': 'http://user.test',
                 'layoutBaseUrl': 'http://layout.test', 'inventoryBaseUrl': 'http://inventory.test',
-                'companyId': 1, 'warehouseId': 1}
+                'companyId': 1, 'warehouseId': 1, 'adjustmentLocationId': 268}
 
     def row(self):
         return {'id': 434964, 'lpn': 'L0000083989', 'locationId': 13098,
@@ -42,8 +42,23 @@ class HandoffRunTests(unittest.TestCase):
                     patch.object(job, 'inventory_rows', return_value=[row]), \
                     patch.object(job, 'inventory_count', return_value=1), \
                     patch.object(job, 'request_json') as request:
-                _, report = job.process(config, execute=True)
+                _, report = job.process(config, execute=True, verify_after=True)
             self.assertEqual(report['records'][0]['status'], 'SKIPPED')
+            request.assert_not_called()
+
+    def test_limit_selects_only_lowest_inventory_id(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = self.config(temp)
+            first = self.row()
+            second = dict(first, id=434965, lpn='L0000083990')
+            with patch.object(job.Store, 'resolve', return_value=[{'id': 13098, 'name': 'out'}]), \
+                    patch.object(job, 'inventory_rows', return_value=[second, first]), \
+                    patch.object(job, 'inventory_count', return_value=2), \
+                    patch.object(job, 'request_json') as request:
+                _, report = job.process(config, execute=False, limit=1)
+            self.assertEqual(report['candidateCount'], 2)
+            self.assertEqual(report['selectedCount'], 1)
+            self.assertEqual([row['id'] for row in report['records']], [434964])
             request.assert_not_called()
 
     def test_execute_checks_activity_after_adjustment(self):
@@ -53,13 +68,55 @@ class HandoffRunTests(unittest.TestCase):
             with patch.object(job.Store, 'resolve', return_value=[{'id': 13098, 'name': 'out'}]), \
                     patch.object(job, 'inventory_rows', side_effect=[[row], [row]]), \
                     patch.object(job, 'inventory_count', return_value=1), \
-                    patch.object(job, 'request_json', return_value={'id': 434964, 'locationId': 268}) as request, \
-                    patch.object(job, 'activity_confirmed', return_value=True) as activity:
-                _, report = job.process(config, execute=True)
+                    patch.object(job, 'request_json', return_value={'unexpected': 'response'}) as request, \
+                    patch.object(job, 'adjustment_confirmed', return_value=True) as verified:
+                _, report = job.process(config, execute=True, verify_after=True)
             self.assertEqual(report['records'][0]['status'], 'COMPLETED')
             self.assertEqual(request.call_args.kwargs['username'], job.ACTOR)
+            self.assertEqual(request.call_args.kwargs['timeout'], 120)
             self.assertIn('documentNumber=EXT-HANDOFF-434964', request.call_args.args[0])
-            activity.assert_called_once()
+            verified.assert_called_once()
+
+    def test_adjustment_confirmation_requires_virtual_location_and_activity(self):
+        moved = dict(self.row(), locationId=268, virtual=True)
+        with patch.object(job, 'inventory_rows', return_value=[moved]), \
+                patch.object(job, 'activity_confirmed', return_value=True):
+            self.assertTrue(job.adjustment_confirmed('http://inventory.test', 1, 434964,
+                                                     'L0000083989', 268, 'EXT-HANDOFF-434964'))
+        with patch.object(job, 'inventory_rows', return_value=[dict(moved, locationId=13098)]), \
+                patch.object(job, 'activity_confirmed') as activity, \
+                patch.object(job.time, 'sleep'):
+            self.assertFalse(job.adjustment_confirmed('http://inventory.test', 1, 434964,
+                                                      'L0000083989', 268, 'EXT-HANDOFF-434964'))
+            activity.assert_not_called()
+
+    def test_delete_timeout_is_not_retried_when_state_and_activity_confirm(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = self.config(temp)
+            row = self.row()
+            with patch.object(job.Store, 'resolve', return_value=[{'id': 13098, 'name': 'out'}]), \
+                    patch.object(job, 'inventory_rows', side_effect=[[row], [row]]), \
+                    patch.object(job, 'inventory_count', return_value=1), \
+                    patch.object(job, 'request_json', side_effect=TimeoutError('timed out')) as delete, \
+                    patch.object(job, 'adjustment_confirmed', return_value=True):
+                _, report = job.process(config, execute=True, verify_after=True)
+            self.assertEqual(report['records'][0]['status'], 'COMPLETED')
+            delete.assert_called_once()
+
+    def test_direct_mode_skips_post_adjustment_queries(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = self.config(temp)
+            row = self.row()
+            with patch.object(job.Store, 'resolve', return_value=[{'id': 13098, 'name': 'out'}]), \
+                    patch.object(job, 'inventory_rows', side_effect=[[row], [row]]) as inventory, \
+                    patch.object(job, 'inventory_count', return_value=1), \
+                    patch.object(job, 'request_json', return_value={'id': 434964}) as delete, \
+                    patch.object(job, 'adjustment_confirmed') as verified:
+                _, report = job.process(config, execute=True)
+            self.assertEqual(report['records'][0]['status'], 'SUBMITTED')
+            self.assertEqual(inventory.call_count, 2)
+            delete.assert_called_once()
+            verified.assert_not_called()
 
 
 if __name__ == '__main__':
