@@ -48,6 +48,12 @@ class Guard:
 
 
 class WorkOrderFTPTests(unittest.TestCase):
+    def test_oracle_work_order_filename_alias(self):
+        alias = 'int_work_order_demo001.csv'
+        self.assertTrue(a.published_file(alias, CONFIG))
+        self.assertEqual(a.parse_published_file(alias, CONTENT, CONFIG)[1][0]['workOrderNumber'],
+                         'WO-TEST-001')
+
     def test_mes_precheck_blocks_missing_master_data_and_detects_existing_order(self):
         config = {'companyId': 1, 'warehouseId': 1,
                   'inventoryBaseUrl': 'http://inventory.test',

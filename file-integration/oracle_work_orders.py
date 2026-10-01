@@ -58,8 +58,7 @@ def convert(content, config, batch_id):
             if row_number > MAX_ROWS + 1 or len(values) != len(COLUMNS):
                 raise InvalidWorkOrderFile('row limit exceeded or incorrect column count')
             row = dict(zip(header, (value.strip() for value in values)))
-            for field in ('WORK_ORDER_NUMBER', 'FINISHED_ITEM_NUMBER',
-                          'COMPONENT_LINE_NUMBER', 'COMPONENT_ITEM_NUMBER'):
+            for field in ('WORK_ORDER_NUMBER', 'FINISHED_ITEM_NUMBER'):
                 if not row[field]:
                     raise InvalidWorkOrderFile('row %d: required field %s' % (row_number, field))
             work_order = row['WORK_ORDER_NUMBER']
@@ -67,9 +66,17 @@ def convert(content, config, batch_id):
                             positive_integer(row['PLANNED_QUANTITY'],
                                              'PLANNED_QUANTITY', row_number), row['PO_NUMBER'])
             group = grouped.setdefault(work_order, {'header': header_value,
-                                                    'lines': {}, 'sourceRows': []})
+                                                    'lines': {}, 'sourceRows': [],
+                                                    'skippedZeroComponentRows': []})
             if group['header'] != header_value:
                 raise InvalidWorkOrderFile('row %d: inconsistent Work Order header' % row_number)
+            group['sourceRows'].append(row_number)
+            if row['COMPONENT_QUANTITY'] == '0':
+                group['skippedZeroComponentRows'].append(row_number)
+                continue
+            for field in ('COMPONENT_LINE_NUMBER', 'COMPONENT_ITEM_NUMBER'):
+                if not row[field]:
+                    raise InvalidWorkOrderFile('row %d: required field %s' % (row_number, field))
             line_number = row['COMPONENT_LINE_NUMBER']
             if line_number in group['lines']:
                 raise InvalidWorkOrderFile('row %d: duplicate component line number' % row_number)
@@ -81,13 +88,14 @@ def convert(content, config, batch_id):
                 'companyCode': scope['companyCode'], 'warehouseName': scope['warehouseName'],
                 'status': 'ATTACHED',
             }
-            group['sourceRows'].append(row_number)
     except csv.Error:
         raise InvalidWorkOrderFile('invalid CSV') from None
     if not grouped:
         raise InvalidWorkOrderFile('empty Work Order file')
     records = []
     for number, group in grouped.items():
+        if not group['lines']:
+            raise InvalidWorkOrderFile('Work Order %s has no positive component lines' % number)
         item, quantity, po = group['header']
         payload = {
             'companyCode': scope['companyCode'], 'warehouseName': scope['warehouseName'],
@@ -102,5 +110,6 @@ def convert(content, config, batch_id):
             ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
         records.append({'kind': 'work-orders', 'recordId': 'oracle-work-order-' + identity,
                         'workOrderNumber': number, 'sourceRows': group['sourceRows'],
+                        'skippedZeroComponentRows': group['skippedZeroComponentRows'],
                         'payload': payload})
     return {'batchId': batch_id, 'records': records}
