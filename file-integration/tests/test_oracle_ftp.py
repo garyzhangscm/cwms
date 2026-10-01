@@ -134,12 +134,22 @@ class OracleFtpTests(unittest.TestCase):
             self.assertEqual(api.calls, [])
             with patch.object(a.time, 'time', return_value=160):
                 a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
-            self.assertEqual(len(api.calls), 6)
+            self.assertEqual(len(api.calls), 3)
+            self.assertFalse((state / other).exists())
             self.assertFalse((state / 'int_order__demo001.csv').exists())
             api.business_status = 'COMPLETED'
             with patch.object(a.time, 'time', return_value=161):
                 a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
             self.assertNotIn(NAME, ftp.files)
+            self.assertIn(other, ftp.files)
+            with patch.object(a.time, 'time', return_value=221):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
+            self.assertEqual(len(api.calls), 3)
+            with patch.object(a.time, 'time', return_value=281):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
+            self.assertEqual(len(api.calls), 6)
+            with patch.object(a.time, 'time', return_value=282):
+                a.poll_once(NO_READY_CONFIG, state, api, guard, scan_all=True)
             self.assertNotIn(other, ftp.files)
             self.assertIn('UNSHIP_INV_20260930.csv', ftp.files)
 
@@ -299,11 +309,16 @@ class OracleFtpTests(unittest.TestCase):
     def test_business_error_keeps_source_and_ready(self):
         ftp, api, guard = FTP(), API(), Guard()
         ftp.files[NAME + '.ready'] = b''
+        other = 'int_item__demo002.csv'
+        ftp.files[other] = CONTENT.replace(b'TEST-ITEM', b'OTHER-ITEM')
+        ftp.files[other + '.ready'] = b''
         with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
             state = Path(temp)
             a.poll_once(CONFIG, state, api, guard)
+            self.assertEqual(len(api.calls), 3)
             api.business_status = 'ERROR'
             a.poll_once(CONFIG, state, api, guard)
+            self.assertEqual(len(api.calls), 6)
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual([r['state'] for r in report['records']], ['BUSINESS_ERROR'] * 3)
             self.assertEqual(report['sourceCleanup'], 'PENDING')
