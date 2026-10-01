@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -185,9 +187,6 @@ public class DBBasedWorkOrderIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Work Order:\n{}", workOrder);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER,
-                    workOrder.getWarehouseId() + "-" + dbBasedWorkOrder.getId(),  workOrder);
-
             dbBasedWorkOrder.setStatus(IntegrationStatus.SENT);
             dbBasedWorkOrder.setErrorMessage("");
 
@@ -214,6 +213,22 @@ public class DBBasedWorkOrderIntegration {
 
                 dbBasedWorkOrderByProductRepository.save(dbBasedWorkOrderByProduct);
             });
+
+            // Persist all SENT states before publication. A fast completion reply
+            // must never be overwritten by the producer's later save.
+            String key = workOrder.getWarehouseId() + "-" + dbBasedWorkOrder.getId();
+            Runnable publish = () -> kafkaSender.send(IntegrationType.INTEGRATION_WORK_ORDER,
+                    key, workOrder);
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publish.run();
+                    }
+                });
+            } else {
+                publish.run();
+            }
 
             logger.debug(">> Work Order data process, {}", dbBasedWorkOrder.getStatus());
         }

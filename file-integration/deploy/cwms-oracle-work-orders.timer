@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Oracle Work Order FTP import daily at 10:30 Los Angeles time
+
+[Timer]
+OnCalendar=*-*-* 10:30:00
+AccuracySec=1min
+Persistent=false
+Unit=cwms-oracle-work-orders.service
+
+[Install]
+WantedBy=timers.target

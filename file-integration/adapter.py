@@ -48,6 +48,8 @@ MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 10000
 FILE_RE = re.compile(r'^(suppliers|items|item-package-types|receipts|orders|work-orders)__(\w[\w.-]{0,100})\.(csv|xml)$', re.ASCII)
 ORACLE_ITEMS_RE = re.compile(r'^int_item(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
+ORACLE_WORK_ORDERS_RE = re.compile(r'^int_workorder(?:__|_|-)?([A-Za-z0-9][A-Za-z0-9_.-]{0,100})\.csv$')
+ORACLE_FORMATS = ('oracle-items-v1', 'oracle-work-orders-v1')
 
 
 class InvalidFile(ValueError):
@@ -201,6 +203,10 @@ class Ledger:
         self.db.execute('''CREATE TABLE IF NOT EXISTS item_claims (
             company_code TEXT NOT NULL, warehouse_name TEXT NOT NULL, item_name TEXT NOT NULL,
             record_id TEXT NOT NULL, PRIMARY KEY(company_code,warehouse_name,item_name))''')
+        self.db.execute('''CREATE TABLE IF NOT EXISTS work_order_claims (
+            company_code TEXT NOT NULL, warehouse_name TEXT NOT NULL, work_order_number TEXT NOT NULL,
+            record_id TEXT NOT NULL,
+            PRIMARY KEY(company_code,warehouse_name,work_order_number))''')
         self.db.execute('''CREATE TABLE IF NOT EXISTS file_observations (
             name TEXT PRIMARY KEY, digest TEXT NOT NULL, first_seen_at REAL NOT NULL)''')
         self.db.execute("UPDATE records SET state='UNCERTAIN' WHERE state='SENDING'")
@@ -233,6 +239,20 @@ class Ledger:
                 self.db.execute('''INSERT OR IGNORE INTO item_claims
                     (company_code,warehouse_name,item_name,record_id) VALUES (?,?,?,?)''',
                     (*key, record['recordId']))
+
+    def claim_oracle_work_orders(self, records):
+        """Prevent a second batch from racing the first before the MES order exists."""
+        with self.db:
+            for record in records:
+                payload = record['payload']
+                key = (payload['companyCode'], payload['warehouseName'], payload['number'])
+                old = self.db.execute('''SELECT record_id FROM work_order_claims
+                    WHERE company_code=? AND warehouse_name=? AND work_order_number=?''', key).fetchone()
+                if old and old[0] != record['recordId']:
+                    raise InvalidFile('Work Order appears in another processed batch: ' + payload['number'])
+                self.db.execute('''INSERT OR IGNORE INTO work_order_claims
+                    (company_code,warehouse_name,work_order_number,record_id)
+                    VALUES (?,?,?,?)''', (*key, record['recordId']))
 
     def file_is_stable(self, name, content, seconds, now=None):
         now = time.time() if now is None else now
@@ -382,6 +402,8 @@ def download(ftp, name):
 def published_file(name, config):
     if config.get('sourceFormat') == 'oracle-items-v1':
         return ORACLE_ITEMS_RE.fullmatch(name) is not None
+    if config.get('sourceFormat') == 'oracle-work-orders-v1':
+        return ORACLE_WORK_ORDERS_RE.fullmatch(name) is not None
     return FILE_RE.fullmatch(name) is not None
 
 
@@ -393,6 +415,16 @@ def parse_published_file(name, content, config):
         # Import here to keep the generic adapter useful without Oracle mapping.
         from oracle_items import convert
         result = convert(content, config['oracleItems']['mapping'], match.group(1))
+        return result['batchId'], result['records']
+    if config.get('sourceFormat') == 'oracle-work-orders-v1':
+        match = ORACLE_WORK_ORDERS_RE.fullmatch(name)
+        if not match:
+            raise InvalidFile('expected int_workorder followed by a unique batch number and .csv')
+        from oracle_work_orders import convert, InvalidWorkOrderFile
+        try:
+            result = convert(content, config['oracleWorkOrders']['mapping'], match.group(1))
+        except InvalidWorkOrderFile as error:
+            raise InvalidFile(str(error)) from None
         return result['batchId'], result['records']
     return parse_file(name, content)
 
@@ -456,6 +488,68 @@ class ExistingItemGuard:
         return existing
 
 
+class ExistingWorkOrderGuard:
+    """Preflight Work Orders against MES; never submit over an existing number."""
+    def __init__(self, config, token=None):
+        self.company_id = config['companyId']
+        self.warehouse_id = config['warehouseId']
+        if (type(self.company_id) is not int or self.company_id <= 0 or
+                type(self.warehouse_id) is not int or self.warehouse_id <= 0):
+            raise ValueError('positive companyId and warehouseId required')
+        self.inventory = ExistingItemGuard(config, token)
+        self.work_order_url = config['workOrderBaseUrl'].rstrip('/')
+        for url in (self.work_order_url,):
+            parsed = urllib.parse.urlsplit(url)
+            if parsed.scheme not in ('http', 'https') or not parsed.netloc or parsed.username or parsed.query or parsed.fragment:
+                raise ValueError('invalid Work Order base URL')
+        self.token = token
+        self.opener = urllib.request.build_opener(NoRedirect())
+
+    def _list(self, url, query):
+        request = urllib.request.Request(url + '?' + urllib.parse.urlencode(query),
+                                         headers={'Accept': 'application/json'})
+        if self.token:
+            request.add_header('Authorization', 'Bearer ' + self.token)
+        with self.opener.open(request, timeout=30) as response:
+            raw = response.read(MAX_BYTES + 1)
+        if len(raw) > MAX_BYTES:
+            raise InvalidFile('MES precheck response too large')
+        obj = json.loads(raw)
+        if (not isinstance(obj, dict) or type(obj.get('result')) is not int or
+                obj['result'] != 0 or not isinstance(obj.get('data'), list) or
+                not all(isinstance(row, dict) for row in obj['data'])):
+            raise InvalidFile('MES precheck failed')
+        return obj['data']
+
+    def check(self, records):
+        existing = set()
+        for record in records:
+            number = record['payload']['number']
+            rows = self._list(self.work_order_url + '/work-orders',
+                              {'warehouseId': self.warehouse_id, 'number': number})
+            if any(row.get('number') == number for row in rows):
+                existing.add(number)
+        pending = [r for r in records if r['payload']['number'] not in existing]
+        if not pending:
+            return existing
+        status_name = pending[0]['payload']['workOrderLines'][0]['inventoryStatusName']
+        statuses = self._list(self.inventory.url + '/inventory-statuses',
+                              {'warehouseId': self.warehouse_id, 'name': status_name})
+        if not any(row.get('name') == status_name for row in statuses):
+            raise InvalidFile('configured inventory status does not exist in MES')
+        item_names = set()
+        for record in pending:
+            payload = record['payload']
+            item_names.add(payload['itemName'])
+            item_names.update(line['itemName'] for line in payload['workOrderLines'])
+        existing_items = self.inventory.check([{'payload': {'name': name}}
+                                               for name in sorted(item_names)])
+        missing = item_names - existing_items
+        if missing:
+            raise InvalidFile('Work Order item missing in MES: ' + ', '.join(sorted(missing)[:5]))
+        return existing
+
+
 def poll_once(config, directory, api, existing_guard=None, target_file=None, scan_all=False):
     """One bounded scan. Oracle Item sources are deleted only after COMPLETED."""
     config = effective_config(config)
@@ -465,9 +559,9 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
     rejected = set()
     try:
         require_ready = config.get('requireReady', True)
-        if config.get('sourceFormat') == 'oracle-items-v1' and existing_guard is None:
-            raise ValueError('Oracle Item import requires an existing-item check')
-        if not require_ready and (config.get('sourceFormat') != 'oracle-items-v1' or
+        if config.get('sourceFormat') in ORACLE_FORMATS and existing_guard is None:
+            raise ValueError('Oracle import requires an existing-record check')
+        if not require_ready and (config.get('sourceFormat') not in ORACLE_FORMATS or
                                   not (target_file or scan_all)):
             raise ValueError('CSV-only mode requires --file or --scan-all')
         refresh_status(ledger, api)
@@ -502,6 +596,12 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                     for record in new_records:
                         if record['payload']['name'] in existing:
                             ledger.set(record['kind'], record['recordId'], 'SKIPPED_EXISTING')
+                elif config.get('sourceFormat') == 'oracle-work-orders-v1':
+                    ledger.claim_oracle_work_orders([r for r in new_records
+                                                     if r['payload']['number'] not in existing])
+                    for record in new_records:
+                        if record['payload']['number'] in existing:
+                            ledger.set(record['kind'], record['recordId'], 'SKIPPED_EXISTING')
                 if not snapshot.exists():
                     atomic_write(snapshot, content)
                 submit_records(records, ledger, api)
@@ -521,12 +621,14 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                 {'recordId': r['recordId'],
                  **({'itemName': r['payload']['name'], 'sourceRow': r['sourceRow'],
                      'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
+                 **({'workOrderNumber': r['workOrderNumber'], 'sourceRows': r['sourceRows']}
+                    if config.get('sourceFormat') == 'oracle-work-orders-v1' else {}),
                  **ledger.get(r['kind'], r['recordId'])} for r in records]}
-            if config.get('sourceFormat') == 'oracle-items-v1':
+            if config.get('sourceFormat') in ORACLE_FORMATS:
                 deleted_marker = directory / (snapshot.name + '.source-deleted')
                 report['sourceCleanup'] = 'DELETED' if deleted_marker.exists() else 'PENDING'
             atomic_write(directory / (snapshot.name + '.report.json'), canonical(report).encode())
-            if (config.get('sourceFormat') == 'oracle-items-v1' and ftp and
+            if (config.get('sourceFormat') in ORACLE_FORMATS and ftp and
                     (not require_ready and snapshot.name in names or
                      require_ready and snapshot.name + '.ready' in names) and
                     all(r['state'] in ('COMPLETED', 'SKIPPED_EXISTING') for r in report['records'])):
@@ -579,8 +681,9 @@ def main():
     if args.command == 'validate':
         with args.file.open('rb') as f:
             content = f.read(MAX_BYTES + 1)
-        if ORACLE_ITEMS_RE.fullmatch(args.file.name) and args.config is None:
-            parser.error('Oracle item validation requires --config')
+        if ((ORACLE_ITEMS_RE.fullmatch(args.file.name) or
+             ORACLE_WORK_ORDERS_RE.fullmatch(args.file.name)) and args.config is None):
+            parser.error('Oracle file validation requires --config')
         config = json.loads(args.config.read_text()) if args.config else {}
         batch, records = parse_published_file(args.file.name, content, config)
         print(json.dumps({'batch': batch, 'kind': records[0]['kind'], 'records': len(records), 'valid': True}))
@@ -603,11 +706,11 @@ def main():
     config = json.loads(args.config.read_text())
     if config.get('protocolVersion') != 1:
         raise ValueError('protocolVersion must be 1')
-    if config.get('sourceFormat', 'generic-v1') not in ('generic-v1', 'oracle-items-v1'):
+    if config.get('sourceFormat', 'generic-v1') not in ('generic-v1',) + ORACLE_FORMATS:
         raise ValueError('unsupported sourceFormat')
     if type(config.get('requireReady', True)) is not bool:
         raise ValueError('requireReady must be true or false')
-    if args.scan_all and (args.file or config.get('sourceFormat') != 'oracle-items-v1' or
+    if args.scan_all and (args.file or config.get('sourceFormat') not in ORACLE_FORMATS or
                           config.get('requireReady', True)):
         raise ValueError('--scan-all requires Oracle CSV-only mode and no --file')
     if args.run_seconds is not None and (args.once or args.run_seconds < 10):
@@ -630,6 +733,8 @@ def main():
         if not mapping.get('unitOptions') or not mapping.get('unitMeasurements'):
             raise ValueError('Oracle item sending requires explicit packaging options and measurements')
         existing_guard = ExistingItemGuard(config['oracleItems'], api.token)
+    elif config.get('sourceFormat') == 'oracle-work-orders-v1':
+        existing_guard = ExistingWorkOrderGuard(config['oracleWorkOrders'], api.token)
     directory = Path(config['stateDirectory']).resolve()
     interval = config.get('pollSeconds', 60)
     if not isinstance(interval, int) or interval < 10:
