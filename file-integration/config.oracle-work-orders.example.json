@@ -1,0 +1,31 @@
+{
+  "protocolVersion": 1,
+  "sourceFormat": "oracle-work-orders-v1",
+  "requireReady": false,
+  "stableSeconds": 60,
+  "ftp": {
+    "host": "FTP_HOST_REPLACE_ME",
+    "port": 21,
+    "inbox": "/WIS",
+    "tls": false,
+    "allowPlainFtp": true,
+    "usernameEnv": "MES_FTP_USER",
+    "passwordEnv": "MES_FTP_PASSWORD"
+  },
+  "mes": {
+    "baseUrl": "http://MES_TEST_INTEGRATION_REPLACE_ME"
+  },
+  "oracleWorkOrders": {
+    "companyId": 1,
+    "warehouseId": 1,
+    "inventoryBaseUrl": "http://MES_TEST_INVENTORY_REPLACE_ME",
+    "workOrderBaseUrl": "http://MES_TEST_WORK_ORDER_REPLACE_ME",
+    "mapping": {
+      "companyCode": "20901",
+      "warehouseName": "WMEC",
+      "inventoryStatusName": "Available"
+    }
+  },
+  "stateDirectory": "/var/lib/cwms-oracle-work-orders/state",
+  "pollSeconds": 60
+}

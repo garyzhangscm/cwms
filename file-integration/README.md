@@ -15,6 +15,12 @@ Python 3.10+，Linux/macOS，标准库，无 pip 依赖。
 的 `oracle-items-v1` 模式接入 FTP 轮询，详见 [Item 联调说明](ITEM-PILOT.md)。
 包含分类映射及 PCS/CS/PL，箱数/托数空或 0 默认 1。此模式与下文早期通用文件模板是两套独立的 inbox 协议，不要混用。
 
+Oracle Work Order 使用独立的 `oracle-work-orders-v1` 模式和 `int_workorder_批次号.csv`，
+文件格式与查重规则见 [Work Order 设计](WORK-ORDER-DESIGN.md)。
+工单与 Item 使用同一个 WIS 目录、不同文件前缀及不同状态目录；
+计划每天 10:30 运行。Work Order 目前只在本地完成转换、轮询与测试，
+尚未部署到 app2，尚未发送实际工单。
+
 ## Oracle Item FTP 自动导入
 
 ### 现有 integrationservice 的出站配置
