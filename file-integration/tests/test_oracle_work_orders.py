@@ -26,6 +26,16 @@ class WorkOrderConversionTests(unittest.TestCase):
         self.assertEqual(record['payload']['workOrderLines'][0]['inventoryStatusName'],
                          'TEST_ONLY_STATUS')
 
+    def test_accepts_same_columns_in_oracle_export_order(self):
+        lines = SAMPLE.decode().splitlines()
+        columns = lines[0].split(',')
+        reordered = [columns[i] for i in (0, 1, 2, 4, 5, 6, 3)]
+        source = '\n'.join([','.join(reordered)] +
+                           [','.join([values.split(',')[i] for i in (0, 1, 2, 4, 5, 6, 3)])
+                            for values in lines[1:]]) + '\n'
+        self.assertEqual(convert(source.encode(), CONFIG, 'demo001')['records'],
+                         convert(SAMPLE, CONFIG, 'demo001')['records'])
+
     def test_reject_decimal_without_rounding(self):
         for source, replacement in ((b',10,', b',10.5,'), (b',20\n', b',20.5\n')):
             with self.subTest(source=source), self.assertRaises(InvalidWorkOrderFile):

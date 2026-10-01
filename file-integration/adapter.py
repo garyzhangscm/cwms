@@ -278,12 +278,13 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 class MesAPI:
-    def __init__(self, url, token=None):
+    def __init__(self, url, token=None, company_code=None):
         parsed = urllib.parse.urlsplit(url)
         if parsed.scheme not in ('http', 'https') or not parsed.netloc or parsed.username or parsed.query or parsed.fragment:
             raise ValueError('invalid MES base URL')
         self.url = url.rstrip('/')
         self.token = token
+        self.company_code = company_code
         self.opener = urllib.request.build_opener(NoRedirect())
 
     def request(self, method, path, payload=None):
@@ -311,7 +312,16 @@ class MesAPI:
         return str(identity), status
 
     def status(self, kind, identity):
-        data = self.request('GET', '/integration-data/' + kind + '/' + identity)
+        if kind == 'work-orders':
+            if not self.company_code:
+                raise ValueError('company code required for Work Order status')
+            query = urllib.parse.urlencode({'companyCode': self.company_code, 'id': identity})
+            rows = self.request('GET', '/integration-data/work-orders?' + query)
+            data = next((row for row in rows if isinstance(row, dict) and
+                         str(row.get('id')) == identity), None) \
+                if isinstance(rows, list) else None
+        else:
+            data = self.request('GET', '/integration-data/' + kind + '/' + identity)
         if not isinstance(data, dict) or str(data.get('id')) != identity or not isinstance(data.get('status'), str):
             raise ValueError('unexpected status response')
         return data['status']
@@ -753,7 +763,9 @@ def main():
     if not config['ftp'].get('tls') and not config['ftp'].get('allowPlainFtp'):
         raise ValueError('plain FTP requires allowPlainFtp=true')
     token_env = config['mes'].get('bearerTokenEnv')
-    api = MesAPI(config['mes']['baseUrl'], os.environ[token_env] if token_env else None)
+    company_code = config.get('oracleWorkOrders', {}).get('mapping', {}).get('companyCode')
+    api = MesAPI(config['mes']['baseUrl'], os.environ[token_env] if token_env else None,
+                 company_code)
     existing_guard = None
     if config.get('sourceFormat') == 'oracle-items-v1':
         mapping = config['oracleItems']['mapping']

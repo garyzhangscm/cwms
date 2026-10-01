@@ -153,6 +153,13 @@ class LedgerTests(unittest.TestCase):
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_work_order_status_uses_list_endpoint_with_company_code(self):
+        api = a.MesAPI('https://example.invalid/api/integration', company_code='20901')
+        with patch.object(api, 'request', return_value=[{'id': 43345, 'status': 'COMPLETED'}]) as request:
+            self.assertEqual(api.status('work-orders', '43345'), 'COMPLETED')
+        request.assert_called_once_with('GET',
+                                        '/integration-data/work-orders?companyCode=20901&id=43345')
+
     def test_api_unwrap_and_method(self):
         api = a.MesAPI('https://example.invalid/api/integration', 'TEST_TOKEN')
         class Opener:

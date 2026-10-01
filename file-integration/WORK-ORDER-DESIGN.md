@@ -8,7 +8,7 @@ Work Order 转换与轮询代码已安装到 app2，但工单定时器仍关闭�
 不要求 `.ready`。Oracle 完成上传后应使用最终文件名，批次名不得复用。
 
 MES 现有集成接口是 `PUT /integration-data/work-orders`，返回集成记录 ID；
-随后通过 `GET /integration-data/work-orders/{id}` 读取 `PENDING`、`SENT`、
+随后通过 `GET /integration-data/work-orders?companyCode=20901&id=...` 读取 `PENDING`、`SENT`、
 `COMPLETED` 或 `ERROR`。`COMPLETED` 才表示 MES 已处理工单。
 工单业务接口可按仓库和工单号查询实际工单，用于发送前查重。
 
@@ -35,7 +35,8 @@ WO-TEST-001,FG-001,10,PO-001,2,RM-002,3
 运行中的 WMEC 库存状态查询返回名称代码 `AVAL`（ID 1），
 仓库 CSV 中的 `Available` 是说明。导入配置使用 `AVAL`。
 MES 的 `workOrderLines` 对应投料明细；每张工单第一版只处理主产品和投料，
-暂不处理副产品及作业指令。源文件使用 UTF-8 CSV，可包含引号和逗号。
+暂不处理副产品及作业指令。源文件使用 UTF-8 CSV，可包含引号和逗号；
+七个列名必须齐全且不重复，列的排列顺序可以不同。
 
 ## 处理规则
 
