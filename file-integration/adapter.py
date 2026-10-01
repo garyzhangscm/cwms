@@ -476,7 +476,7 @@ class ExistingItemGuard:
         self.token = token
         self.opener = urllib.request.build_opener(NoRedirect())
 
-    def check(self, records):
+    def check(self, records, allow_casefold=False):
         existing = set()
         for record in records:
             name = record['payload']['name']
@@ -498,7 +498,16 @@ class ExistingItemGuard:
                     obj['result'] != 0 or not isinstance(obj.get('data'), list) or
                     not all(isinstance(item, dict) for item in obj['data'])):
                 raise InvalidFile('inventory precheck failed')
-            if any(item.get('name') == name for item in obj['data']):
+            if allow_casefold:
+                # Work Order's MES resolver takes the first returned Item. Only
+                # accept a case-only spelling difference when that choice is
+                # unambiguous; Item imports retain their exact-name behavior.
+                matches = [item for item in obj['data'] if isinstance(item.get('name'), str)
+                           and item['name'].casefold() == name.casefold()]
+                if (len(matches) == 1 and obj['data'] and
+                        obj['data'][0].get('id') == matches[0].get('id')):
+                    existing.add(name)
+            elif any(item.get('name') == name for item in obj['data']):
                 existing.add(name)
         return existing
 
@@ -558,7 +567,7 @@ class ExistingWorkOrderGuard:
             item_names.add(payload['itemName'])
             item_names.update(line['itemName'] for line in payload['workOrderLines'])
         existing_items = self.inventory.check([{'payload': {'name': name}}
-                                               for name in sorted(item_names)])
+                                               for name in sorted(item_names)], allow_casefold=True)
         missing = item_names - existing_items
         if missing:
             raise InvalidFile('Work Order item missing in MES: ' + ', '.join(sorted(missing)[:5]))
