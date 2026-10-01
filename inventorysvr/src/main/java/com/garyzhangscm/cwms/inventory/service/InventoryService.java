@@ -4359,51 +4359,7 @@ public class InventoryService {
     }
 
     public String removeInventores(Long companyId, String inventoryIds, Boolean asyncronized) {
-
-        if (Boolean.TRUE.equals(asyncronized)) {
-            User user = userService.getCurrentUser(companyId);
-
-            // we will need to run the removal asyncronized. let's make sure
-            // there's no approval needed for the current user
-            ExecutorService executor = Executors.newFixedThreadPool(10);
-
-            // for asyncroized we will mark the inventory as removed
-            // then actually remove the inventory
-            markAsRemoved(inventoryIds);
-
-
-
-            for(String id : inventoryIds.split(",")) {
-                executor.execute(() -> {
-
-                    Inventory inventory = findById(Long.parseLong(id));
-                    if (InventoryQuantityChangeType.INVENTORY_ADJUST.isNoApprovalNeeded()) {
-
-                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
-                    }
-                    else if (inventoryAdjustmentThresholdService.isInventoryAdjustExceedThreshold(inventory,
-                            InventoryQuantityChangeType.INVENTORY_ADJUST, inventory.getQuantity(), 0l,
-                            user)) {
-
-                        writeInventoryAdjustRequest(inventory, 0L,
-                                InventoryQuantityChangeType.INVENTORY_ADJUST,
-                                "", "", null, false);
-                    }
-                    else {
-                        logger.debug("No approval needed, let's just go ahread with the adding inventory!");
-                        processRemoveInventory(inventory, InventoryQuantityChangeType.INVENTORY_ADJUST, "", "", null);
-                    }
-                });
-            }
-
-            return "remove request has been sent";
-        }
-        else {
-
-            return "all inventory has been removed";
-        }
-
+        return InventoryRemovalQueue.getInstance().submit(companyId, inventoryIds, asyncronized);
     }
 
     private void markAsRemoved(String inventoryIds) {

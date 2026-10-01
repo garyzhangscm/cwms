@@ -118,6 +118,41 @@ class HandoffRunTests(unittest.TestCase):
             delete.assert_called_once()
             verified.assert_not_called()
 
+    def test_batch_submits_ids_once_without_post_checks(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = self.config(temp)
+            config['submissionMode'] = 'batch'
+            rows = [self.row(), dict(self.row(), id=434965)]
+            with patch.object(job.Store, 'resolve', return_value=[{'id': 13098, 'name': 'out'}]), \
+                    patch.object(job, 'inventory_rows', return_value=rows) as scan, \
+                    patch.object(job, 'inventory_count', return_value=2), \
+                    patch.object(job, 'request_json', return_value={'result': 0, 'data': 'remove request has been sent'}) as request:
+                _, report = job.process(config, execute=True)
+            self.assertEqual(report['status'], 'SUBMITTED')
+            self.assertEqual([r['status'] for r in report['records']], ['BATCH_ACCEPTED'] * 2)
+            request.assert_called_once()
+            self.assertEqual(request.call_args.kwargs['data'], '434964,434965')
+            self.assertIn('asyncronized=true', request.call_args.args[0])
+            scan.assert_called_once()
+
+    def test_batch_timeout_is_not_retried_on_next_run(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = self.config(temp)
+            config['submissionMode'] = 'batch'
+            report_dir = Path(config['reportDirectory'])
+            report_dir.mkdir()
+            with patch.object(job, 'request_json', side_effect=TimeoutError('timeout')) as request:
+                report = {'records': []}
+                with self.assertRaises(TimeoutError):
+                    job.submit_batch(config, [({'id': 13098}, self.row())], report,
+                                     report_dir / 'first-execute.json', True)
+                job.write_report(report_dir / 'first-execute.json', report)
+                second = {'records': []}
+                job.submit_batch(config, [({'id': 13098}, self.row())], second,
+                                 report_dir / 'second-execute.json', True)
+            request.assert_called_once()
+            self.assertEqual(second['records'][0]['status'], 'SKIPPED')
+
 
 if __name__ == '__main__':
     unittest.main()
