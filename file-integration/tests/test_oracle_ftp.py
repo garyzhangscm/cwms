@@ -63,15 +63,31 @@ class Guard:
 
 
 class OracleFtpTests(unittest.TestCase):
-    def test_script_entrypoint_normalizes_empty_file_exception(self):
+    def test_script_entrypoint_accepts_header_only_item_file(self):
         # adapter.py executed as __main__ and oracle_items imported as adapter
         # used to produce distinct InvalidFile classes and abort the scan.
         source = Path(a.__file__).read_text().split("if __name__ == '__main__':")[0]
         script = {'__name__': '__main__', '__file__': a.__file__}
         exec(compile(source, a.__file__, 'exec'), script)
         empty = b'segment1,description,item_type,pieces_per_carton,pieces_per_pallet\n'
-        with self.assertRaisesRegex(script['InvalidFile'], 'empty item file'):
-            script['parse_published_file'](NAME, empty, CONFIG)
+        self.assertEqual(script['parse_published_file'](NAME, empty, CONFIG)[1], [])
+
+    def test_header_only_item_file_is_recorded_and_deleted(self):
+        ftp, api, guard = FTP(), API(), Guard()
+        ftp.files[NAME] = b'segment1,description,item_type,pieces_per_carton,pieces_per_pallet\n'
+        with tempfile.TemporaryDirectory() as temp, patch.object(a, 'ftp_connect', return_value=ftp):
+            state = Path(temp)
+            config = {**NO_READY_CONFIG, 'stableSeconds': 0}
+            a.poll_once(config, state, api, guard, scan_all=True)
+            a.poll_once(config, state, api, guard, scan_all=True)
+            report = json.loads((state / (NAME + '.report.json')).read_text())
+            self.assertEqual(report['state'], 'NO_NEW_ITEMS')
+            self.assertEqual(report['records'], [])
+            self.assertEqual(report['sourceCleanup'], 'DELETED')
+            self.assertEqual(api.calls, [])
+            self.assertNotIn(NAME, ftp.files)
+            self.assertEqual((state / NAME).read_bytes(),
+                             b'segment1,description,item_type,pieces_per_carton,pieces_per_pallet\n')
 
     def test_live_item_type_mapping_is_reloaded_for_each_scan(self):
         with tempfile.TemporaryDirectory() as temp:
