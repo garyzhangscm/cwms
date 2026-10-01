@@ -6,5 +6,7 @@
   "authBaseUrl": "http://MES_AUTH_REPLACE_ME",
   "userBaseUrl": "http://MES_RESOURCE_REPLACE_ME",
   "layoutBaseUrl": "http://MES_LAYOUT_REPLACE_ME",
-  "stateFile": "/var/lib/cwms-inventory-handoff/locations.json"
+  "inventoryBaseUrl": "http://MES_INVENTORY_REPLACE_ME",
+  "stateFile": "/var/lib/cwms-inventory-handoff/locations.json",
+  "reportDirectory": "/var/lib/cwms-inventory-handoff/reports"
 }

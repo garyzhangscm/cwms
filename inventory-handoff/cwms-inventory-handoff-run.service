@@ -1,0 +1,16 @@
+[Unit]
+Description=CWMS external-system inventory handoff adjustment
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=cwmshandoff
+Group=cwmshandoff
+ExecStart=/usr/bin/python3 /opt/cwms-inventory-handoff/run_handoff.py --config /etc/cwms-inventory-handoff/config.json --execute
+TimeoutStartSec=6h
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/cwms-inventory-handoff
