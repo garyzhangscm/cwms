@@ -1,0 +1,20 @@
+[Unit]
+Description=CWMS inventory handoff location settings
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cwmshandoff
+Group=cwmshandoff
+ExecStart=/usr/bin/python3 /opt/cwms-inventory-handoff/settings_api.py --config /etc/cwms-inventory-handoff/config.json
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/cwms-inventory-handoff
+
+[Install]
+WantedBy=multi-user.target
