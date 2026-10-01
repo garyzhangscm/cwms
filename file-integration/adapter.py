@@ -623,6 +623,9 @@ def poll_once(config, directory, api, existing_guard=None, target_file=None, sca
                      'defaultsApplied': r['defaultsApplied']} if config.get('sourceFormat') == 'oracle-items-v1' else {}),
                  **({'workOrderNumber': r['workOrderNumber'], 'sourceRows': r['sourceRows']}
                     if config.get('sourceFormat') == 'oracle-work-orders-v1' else {}),
+                 **({'skipReason': 'Work Order number already exists in MES'}
+                    if config.get('sourceFormat') == 'oracle-work-orders-v1' and
+                    ledger.get(r['kind'], r['recordId'])['state'] == 'SKIPPED_EXISTING' else {}),
                  **ledger.get(r['kind'], r['recordId'])} for r in records]}
             if config.get('sourceFormat') in ORACLE_FORMATS:
                 deleted_marker = directory / (snapshot.name + '.source-deleted')

@@ -98,6 +98,8 @@ class WorkOrderFTPTests(unittest.TestCase):
             report = json.loads((state / (NAME + '.report.json')).read_text())
             self.assertEqual(report['records'][0]['state'], 'SKIPPED_EXISTING')
             self.assertEqual(report['records'][0]['workOrderNumber'], 'WO-TEST-001')
+            self.assertEqual(report['records'][0]['skipReason'],
+                             'Work Order number already exists in MES')
             self.assertEqual(api.calls, [])
             self.assertEqual(report['sourceCleanup'], 'DELETED')
 
