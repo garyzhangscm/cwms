@@ -32,7 +32,7 @@ public final class DurableRemovalQueue implements AutoCloseable {
     private IOException storageFailure;
 
     public DurableRemovalQueue(Path directory, int concurrency, int capacity, Handler handler) throws IOException {
-        if (concurrency < 1 || concurrency > 4 || capacity < 1 || capacity > 10000)
+        if (concurrency < 1 || concurrency > 10 || capacity < 1 || capacity > 10000)
             throw new IllegalArgumentException("Invalid removal queue limits");
         this.directory = directory;
         this.capacity = capacity;

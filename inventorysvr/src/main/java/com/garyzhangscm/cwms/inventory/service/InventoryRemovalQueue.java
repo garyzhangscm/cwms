@@ -21,7 +21,7 @@ public class InventoryRemovalQueue implements SmartLifecycle {
     @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
     @Autowired private WarehouseLayoutServiceRestemplateClient layout;
     @Value("${inventory.removal.queue.directory:/var/lib/cwms-inventory-removal}") private String directory;
-    @Value("${inventory.removal.queue.workers:2}") private int concurrency;
+    @Value("${inventory.removal.queue.workers:10}") private int concurrency;
     @Value("${inventory.removal.queue.capacity:2000}") private int capacity;
     private volatile DurableRemovalQueue queue;
     public static String currentActor() { return ACTOR.get(); }
