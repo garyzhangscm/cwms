@@ -1,0 +1,24 @@
+[Unit]
+Description=Import Oracle Item CSV batches from WIS FTP into CWMS
+Wants=network-online.target
+Requires=openvpn-client@unifi-oracle.service
+After=network-online.target openvpn-client@unifi-oracle.service
+
+[Service]
+Type=simple
+User=cwmsitem
+Group=cwmsitem
+WorkingDirectory=/opt/cwms-oracle-items
+ExecStartPre=/usr/bin/test -s /etc/cwms-oracle-items/ftp-user
+ExecStartPre=/usr/bin/test -s /etc/cwms-oracle-items/ftp-password
+ExecStart=/usr/bin/python3 /opt/cwms-oracle-items/adapter.py run --config /etc/cwms-oracle-items/config.json --send --scan-all --run-seconds 3600
+RuntimeMaxSec=3700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cwms-oracle-items
+
+[Install]
+WantedBy=multi-user.target

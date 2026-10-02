@@ -1,0 +1,2 @@
+recordId,companyCode,warehouseName,name,description,unitCost,nonInventoryItem
+items-event-001,TEST_ONLY,TEST_WAREHOUSE,ITEM-001,Test item,2.50,false

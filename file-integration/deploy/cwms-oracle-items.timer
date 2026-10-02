@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Oracle Item FTP import after boot and daily at 09:00 Los Angeles time
+
+[Timer]
+OnBootSec=2min
+OnCalendar=*-*-* 09:00:00
+AccuracySec=1min
+Persistent=false
+Unit=cwms-oracle-items.service
+
+[Install]
+WantedBy=timers.target

@@ -112,7 +112,8 @@ public class DBBasedItemFamily extends AuditibleEntity<String> implements Serial
     public DBBasedItemFamily(ItemFamily itemFamily) {
 
         String[] fieldNames = {
-                "name","description", "warehouseId","warehouseName"
+                "name","description", "warehouseId","warehouseName",
+                "companyId", "companyCode"
         };
 
         ObjectCopyUtil.copyValue(itemFamily,this,  fieldNames);
