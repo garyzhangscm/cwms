@@ -18,7 +18,7 @@
 
 - Fay master：`10.0.11.188`；业务 app1：`10.0.11.174`；导入候选主机 app2：`10.0.11.195`。
 - app2 的 VPN 服务为 `openvpn-client@fay-oracle-auto.service`，已验证 FTP 控制端口可达。
-- Oracle FTP：`192.168.20.118:21`。尚未验证 FTP 登录、目录列表和被动数据连接。
+- Oracle FTP：`192.168.20.118:21`。FTP 登录、进入 `/WIS` 和被动数据连接已验证；当前账号的目录列表为空。
 - 2026-10-02 现场检查确认 integrationservice 仅有 Service，端口 `8880`、NodePort `30681`，无 Deployment/Pod/Endpoint。
 - app2 kubelet 仍有独立故障；文件适配器可以用 systemd 运行，不依赖该节点加入 Kubernetes。本次不修改 kubelet。
 
@@ -26,7 +26,7 @@
 
 - 所有业务服务镜像标签为 v1.60；数据库配置指向 `10.0.11.34:3306/cwms`，`ddl-auto: none`。schema 和 integration 表仍需只读核验。
 - 已通过 Fay layout API 确认：公司代码 `20901`、公司 ID `1`、仓库 ID `1`、名称 `WMEC`。用户确认 `01 → Finish Good`、`RM → Raw materials`，沿用源包装规则；已核对分类存在。
-- 用户确认 FTP 目录 `/WIS`、前缀 `fayint_item`。FTP 账号权限和实际 Item CSV 待核对。
+- 用户确认 FTP 目录 `/WIS`、前缀 `fayint_item`。FTP 登录和列表读取已确认；账号看到的 `/WIS` 当前为空，实际 CSV 仍待提供。
 - integration 数据库是否已存在、版本和建表/迁移方式；不自动启用生产 DDL 更新。
 - Fay integration 镜像构建、Kafka/服务连接、HTTP 鉴权及完成回执。
 - 首次单批验证通过后再确认执行时间、启用定时器和决定是否允许删除远端 CSV。
@@ -40,6 +40,8 @@
 ## 当前准备状态
 
 - app2 已创建专用系统用户/组 `cwmsfayitem` 和独立配置/状态目录。
-- FTP 凭据工具已安装到 `/usr/local/sbin/fay-item-save-ftp`，等待用户本机输入。
+- FTP 凭据工具已安装到 `/usr/local/sbin/fay-item-save-ftp`，用户已本机输入，密码不进入源码或记录。
 - 未启用导入服务或定时器；本轮测试未提交生产 Item，也未删除 FTP 文件。
 - app2 的测试副本保存在 `/tmp/fay-item-validation.7FpOtl`。
+
+- 本地提交 `4d07356e` 已完成初版；GitHub HTTPS 推送因本机缺少登录凭据失败，远端分支尚未创建。
