@@ -1,0 +1,18 @@
+{
+  "protocolVersion": 1,
+  "ftp": {
+    "host": "FTP_HOST_REPLACE_ME",
+    "port": 21,
+    "inbox": "/mes/inbox",
+    "tls": false,
+    "allowPlainFtp": true,
+    "usernameEnv": "MES_FTP_USER",
+    "passwordEnv": "MES_FTP_PASSWORD"
+  },
+  "mes": {
+    "baseUrl": "http://MES_TEST_GATEWAY_REPLACE_ME/api/integration",
+    "bearerTokenEnv": "MES_API_TOKEN"
+  },
+  "stateDirectory": "./state",
+  "pollSeconds": 60
+}

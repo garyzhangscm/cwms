@@ -1,0 +1,21 @@
+[Unit]
+Description=Import one explicitly selected Fay Oracle Item batch
+Wants=network-online.target
+Requires=openvpn-client@fay-oracle-auto.service
+After=network-online.target openvpn-client@fay-oracle-auto.service
+
+[Service]
+Type=oneshot
+User=cwmsfayitem
+Group=cwmsfayitem
+WorkingDirectory=/opt/cwms-fay-oracle-items
+ExecStartPre=/usr/bin/test -s /etc/cwms-fay-oracle-items/ftp-user
+ExecStartPre=/usr/bin/test -s /etc/cwms-fay-oracle-items/ftp-password
+ExecStartPre=/usr/bin/test -s /etc/cwms-fay-oracle-items/batch-file
+ExecStart=/usr/bin/python3 /opt/cwms-fay-oracle-items/run_fay_batch.py
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cwms-fay-oracle-items

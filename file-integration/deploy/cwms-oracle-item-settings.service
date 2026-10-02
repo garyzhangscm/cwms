@@ -1,0 +1,22 @@
+[Unit]
+Description=Admin API for Oracle Item Type mappings
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cwmsitem
+Group=cwmsitem
+WorkingDirectory=/opt/cwms-oracle-items
+ExecStart=/usr/bin/python3 /opt/cwms-oracle-items/settings_api.py --config /etc/cwms-oracle-items/config.json
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/cwms-oracle-items
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+state/
+config.json
+.env
+item-preview*.json
+item-mapping.json
+# Business exports and local credentials must stay out of source control.
+*.csv
+*.xml
+*.json
+!examples/*.csv
+!examples/*.xml
+!config.example.json
+!config.oracle-items.example.json
+!config.fay-oracle-items.example.json
+!deploy/fay/item-type-mapping.example.json
+!item-mapping.example.json
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+*.pem
+*.key
+*.ovpn
+.env.*

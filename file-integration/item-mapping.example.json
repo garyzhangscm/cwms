@@ -1,0 +1,29 @@
+{
+  "companyCode": "TEST_ONLY",
+  "warehouseName": "TEST_WAREHOUSE",
+  "itemTypeMapping": {"01": "Finish Good"},
+  "cartonUnit": "CS",
+  "unitOptions": {
+    "piece": {
+      "defaultForInboundReceiving": false,
+      "defaultForWorkOrderReceiving": false,
+      "trackingLpn": false,
+      "defaultForDisplay": false,
+      "caseFlag": false
+    },
+    "carton": {
+      "defaultForInboundReceiving": false,
+      "defaultForWorkOrderReceiving": false,
+      "trackingLpn": false,
+      "defaultForDisplay": false,
+      "caseFlag": false
+    },
+    "pallet": {
+      "defaultForInboundReceiving": true,
+      "defaultForWorkOrderReceiving": true,
+      "trackingLpn": true,
+      "defaultForDisplay": true,
+      "caseFlag": true
+    }
+  }
+}

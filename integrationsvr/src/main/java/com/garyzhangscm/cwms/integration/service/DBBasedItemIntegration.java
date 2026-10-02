@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -196,12 +198,6 @@ public class DBBasedItemIntegration {
             // Item item = getItemFromDatabase(dbBasedItem);
             logger.debug(">> will process Item:\n{}", item);
 
-            kafkaSender.send(IntegrationType.INTEGRATION_ITEM,
-                    item.getCompanyId() + "-" +
-                            (Objects.isNull(item.getWarehouseId()) ? "" : item.getWarehouseId())
-                            + "-" + dbBasedItem.getId(), item);
-
-
             dbBasedItem.setErrorMessage("");
             dbBasedItem.completeIntegration(IntegrationStatus.SENT);
             if (Objects.nonNull(dbBasedItem.getItemFamily())) {
@@ -225,6 +221,24 @@ public class DBBasedItemIntegration {
                         );
                     }
             );
+
+            // Commit SENT before publishing: a fast result must never be overwritten by SENT.
+            save(dbBasedItem);
+            String key = item.getCompanyId() + "-" +
+                    (Objects.isNull(item.getWarehouseId()) ? "" : item.getWarehouseId())
+                    + "-" + dbBasedItem.getId();
+            Runnable publish = () -> kafkaSender.send(IntegrationType.INTEGRATION_ITEM, key, item);
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publish.run();
+                    }
+                });
+            } else {
+                publish.run();
+            }
+
 
 
         }
@@ -255,11 +269,8 @@ public class DBBasedItemIntegration {
                     }
             );
 
-
+            save(dbBasedItem);
         }
-
-
-        dbBasedItem = save(dbBasedItem);
 
         logger.debug(">> Item data process, {}", dbBasedItem);
     }

@@ -1,0 +1,12 @@
+**/target/
+**/__pycache__/
+*.pyc
+.DS_Store
+.local/
+file-integration/config.json
+file-integration/config.oracle-items.json
+file-integration/config.fay-oracle-items.json
+file-integration/state/
+*.ovpn
+*.p12
+*.auth

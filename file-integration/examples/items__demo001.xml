@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<batch>
+  <record>
+    <recordId>items-event-001</recordId>
+    <companyCode>TEST_ONLY</companyCode>
+    <warehouseName>TEST_WAREHOUSE</warehouseName>
+    <name>ITEM-001</name>
+    <description>Test item</description>
+    <unitCost>2.50</unitCost>
+    <nonInventoryItem>false</nonInventoryItem>
+  </record>
+</batch>

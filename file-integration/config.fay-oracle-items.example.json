@@ -1,0 +1,80 @@
+{
+  "protocolVersion": 1,
+  "sourceFormat": "oracle-items-v1",
+  "requireReady": false,
+  "stableSeconds": 60,
+  "ftp": {
+    "host": "192.168.20.118",
+    "port": 21,
+    "inbox": "/WIS",
+    "tls": false,
+    "allowPlainFtp": true,
+    "usernameFile": "/etc/cwms-fay-oracle-items/ftp-user",
+    "passwordFile": "/etc/cwms-fay-oracle-items/ftp-password"
+  },
+  "mes": {
+    "baseUrl": "http://10.0.11.174:30681"
+  },
+  "oracleItems": {
+    "inventoryBaseUrl": "http://10.0.11.174:30330",
+    "companyId": 1,
+    "warehouseId": 1,
+    "itemTypeMappingFile": "/var/lib/cwms-fay-oracle-items/item-type-mapping.json",
+    "mapping": {
+      "companyCode": "20901",
+      "warehouseName": "WMEC",
+      "itemTypeMapping": {
+        "01": "Finish Good",
+        "RM": "Raw materials"
+      },
+      "cartonUnit": "CS",
+      "unitMeasurements": {
+        "piece": {
+          "length": 1,
+          "width": 1,
+          "height": 1,
+          "weight": 1
+        },
+        "carton": {
+          "length": 1,
+          "width": 1,
+          "height": 1,
+          "weight": 1
+        },
+        "pallet": {
+          "length": 1,
+          "width": 1,
+          "height": 1,
+          "weight": 1
+        }
+      },
+      "unitOptions": {
+        "piece": {
+          "defaultForInboundReceiving": false,
+          "defaultForWorkOrderReceiving": false,
+          "trackingLpn": false,
+          "defaultForDisplay": false,
+          "caseFlag": false
+        },
+        "carton": {
+          "defaultForInboundReceiving": false,
+          "defaultForWorkOrderReceiving": false,
+          "trackingLpn": false,
+          "defaultForDisplay": false,
+          "caseFlag": false
+        },
+        "pallet": {
+          "defaultForInboundReceiving": true,
+          "defaultForWorkOrderReceiving": true,
+          "trackingLpn": true,
+          "defaultForDisplay": true,
+          "caseFlag": true
+        }
+      }
+    },
+    "filenamePrefix": "fayint_item"
+  },
+  "stateDirectory": "/var/lib/cwms-fay-oracle-items/state",
+  "pollSeconds": 60,
+  "deleteSourceFiles": false
+}
