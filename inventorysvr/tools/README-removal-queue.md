@@ -1,7 +1,7 @@
 # Durable inventory batch removal
 
 The existing `/inventory/batch-remove` entry point now uses one process-wide queue,
-with two workers by default, 2,000 pending/running records maximum, and 1,000 IDs
+with ten workers by default, 2,000 pending/running records maximum, and 1,000 IDs
 per request. Both values of the legacy `asyncronized` parameter now submit actual
 background work; the old false branch previously returned success without doing work.
 The legacy `remove request has been sent` response is preserved for the UI.

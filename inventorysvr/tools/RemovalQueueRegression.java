@@ -51,6 +51,22 @@ public class RemovalQueueRegression {
         try(DurableRemovalQueue q=new DurableRemovalQueue(recovery,1,4,t->{throw new AssertionError("failed work replayed");})) {
             check(q.submit(Arrays.asList(task(10),task(11)))==0,"uncertain task resubmitted");
         }
-        System.out.println("PASS: bounded workers/capacity, atomic rejection, dedup, restart recovery, uncertainty persistence and bytecode verification");
+        Path tenDir=Files.createTempDirectory("removal-ten-");
+        AtomicInteger tenCurrent=new AtomicInteger(), tenMax=new AtomicInteger();
+        CountDownLatch tenStarted=new CountDownLatch(10), tenRelease=new CountDownLatch(1);
+        try(DurableRemovalQueue q=new DurableRemovalQueue(tenDir,10,12,t->{
+            int n=tenCurrent.incrementAndGet(); tenMax.accumulateAndGet(n,Math::max);
+            tenStarted.countDown(); tenRelease.await(); tenCurrent.decrementAndGet(); return "COMPLETED";
+        })) {
+            List<DurableRemovalQueue.Task> dozen=new ArrayList<>();
+            for(long id=100;id<112;id++) dozen.add(task(id));
+            check(q.submit(dozen)==12,"ten-worker batch admission");
+            check(tenStarted.await(5,TimeUnit.SECONDS),"ten workers did not start");
+            check(tenMax.get()==10,"expected exactly ten concurrent workers");
+            try { q.submit(Arrays.asList(task(112))); throw new AssertionError("ten-worker overflow accepted"); }
+            catch(IllegalStateException expected) { }
+            tenRelease.countDown(); awaitDone(q);
+        }
+        System.out.println("PASS: ten workers and bounded capacity; bounded workers/capacity, atomic rejection, dedup, restart recovery, uncertainty persistence and bytecode verification");
     }
 }
