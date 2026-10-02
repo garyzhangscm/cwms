@@ -82,7 +82,8 @@ public class DBBasedItemUnitOfMeasure extends AuditibleEntity<String> implements
     private String clientName;
 
 
-    @Column(name = "quantity")
+    // Fay stores this column as BIGINT; retain the existing integer API contract.
+    @Column(name = "quantity", columnDefinition = "bigint")
     private Integer quantity;
 
     @Column(name = "weight")

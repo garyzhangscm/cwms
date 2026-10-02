@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: integrationservice
+  namespace: staging
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: integrationservice
+  template:
+    metadata:
+      labels:
+        app: integrationservice
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-app1-ar
+      containers:
+        - name: integrationservice
+          image: cwms-fay-integrationserver:v1.60-item-d5e3fd34bba7
+          imagePullPolicy: Never
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: integrationservice
+            - name: SERVER_PORT
+              value: "8880"
+            - name: SPRING_PROFILES_ACTIVE
+              value: DBBasedIntegration
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: file:/usr/local/service/application.yml
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: validate
+            - name: HOST_API_ENABLED
+              value: "false"
+            # Enable after startup/schema checks and approval of the pilot.
+            - name: SPRING_KAFKA_LISTENER_AUTO_STARTUP
+              value: "false"
+            - name: JAVA_TOOL_OPTIONS
+              value: -Xms128m -Xmx768m
+            - name: TZ
+              value: America/Los_Angeles
+          ports:
+            - containerPort: 8880
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          readinessProbe:
+            tcpSocket:
+              port: 8880
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8880
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          volumeMounts:
+            - name: application-properties
+              mountPath: /usr/local/service/application.yml
+              subPath: application.yml
+              readOnly: true
+      volumes:
+        - name: application-properties
+          configMap:
+            name: app-properties
+            items:
+              - key: application.yml
+                path: application.yml

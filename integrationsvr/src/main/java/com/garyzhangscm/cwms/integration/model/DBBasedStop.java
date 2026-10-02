@@ -46,7 +46,8 @@ public class DBBasedStop extends AuditibleEntity<String> implements Serializable
     private String number;
 
 
-    @Column(name = "sequence")
+    // Preserve Fay's existing INT column without changing its sequence API.
+    @Column(name = "sequence", columnDefinition = "int")
     private Long sequence;
 
 
