@@ -71,7 +71,7 @@ public class AuthServiceRestemplateClient {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         String requestBody = objectMapper.writeValueAsString(loginCredential);
-        logger.debug("LOGIN WITH: {}", requestBody);
+        logger.debug("Requesting integration authentication");
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
         headers.setContentType(type);
@@ -86,7 +86,7 @@ public class AuthServiceRestemplateClient {
                 new ParameterizedTypeReference<LoginResponseBodyWrapper>() {}).getBody();
 
 
-        logger.debug("Get user from auth server: {}", loginResponseBodyWrapper.getUser());
+        logger.debug("Integration authentication response received");
         currentLoginUser = loginResponseBodyWrapper.getUser();
         return loginResponseBodyWrapper.getUser();
     }

@@ -1,0 +1,6 @@
+# Fay app1 already has this v1.60 runtime. Reuse its Java installation locally.
+# This image runs only the integration JAR; it does not start inventoryservice.
+FROM garyzhangscm/cwms-inventoryserver:v1.60
+WORKDIR /usr/local/service
+COPY integrationserver-v1.60.jar /usr/local/service/integrationserver-v1.60.jar
+ENTRYPOINT ["java","-jar","/usr/local/service/integrationserver-v1.60.jar"]

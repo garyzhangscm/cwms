@@ -18,17 +18,17 @@
 
 - Fay master：`10.0.11.188`；业务 app1：`10.0.11.174`；导入候选主机 app2：`10.0.11.195`。
 - app2 的 VPN 服务为 `openvpn-client@fay-oracle-auto.service`，已验证 FTP 控制端口可达。
-- Oracle FTP：`192.168.20.118:21`。FTP 登录、进入 `/WIS` 和被动数据连接已验证；当前账号的目录列表为空。
-- 2026-10-02 现场检查确认 integrationservice 仅有 Service，端口 `8880`、NodePort `30681`，无 Deployment/Pod/Endpoint。
+- Oracle FTP：`192.168.20.118:21`。FTP 登录、进入 `/WIS` 和被动数据连接已验证；已读取 `fayint_item_20260930.csv`；格式与参考分支相同。
+- 2026-10-02 现场检查确认 最初 integrationservice 仅有 Service；现已在 app1 部署独立镜像，端口 `8880`、NodePort `30681`，Pod Ready、健康检查 UP。
 - app2 kubelet 仍有独立故障；文件适配器可以用 systemd 运行，不依赖该节点加入 Kubernetes。本次不修改 kubelet。
 
 ## 上线前待核对
 
-- 所有业务服务镜像标签为 v1.60；数据库配置指向 `10.0.11.34:3306/cwms`，`ddl-auto: none`。schema 和 integration 表仍需只读核验。
+- 所有业务服务镜像标签为 v1.60；数据库配置指向 `10.0.11.34:3306/cwms`，`ddl-auto: none`。已只读核验 37 张 integration 表和 560 个显式标注的简单字段，并通过 Hibernate 全量启动校验。
 - 已通过 Fay layout API 确认：公司代码 `20901`、公司 ID `1`、仓库 ID `1`、名称 `WMEC`。用户确认 `01 → Finish Good`、`RM → Raw materials`，沿用源包装规则；已核对分类存在。
-- 用户确认 FTP 目录 `/WIS`、前缀 `fayint_item`。FTP 登录和列表读取已确认；账号看到的 `/WIS` 当前为空，实际 CSV 仍待提供。
-- integration 数据库是否已存在、版本和建表/迁移方式；不自动启用生产 DDL 更新。
-- Fay integration 镜像构建、Kafka/服务连接、HTTP 鉴权及完成回执。
+- 用户确认 FTP 目录 `/WIS`、前缀 `fayint_item`。FTP 登录和列表读取已确认；实际 CSV `fayint_item_20260930.csv` 已提供：Oracle 大写五列头，1,105 条成品；407 条已存在，698 条新增候选，155 条触发源包装默认值。
+- 复用现有数据库及表，不启用自动 DDL 更新。Item 数量和 Stop 序号映射适配既有列类型；收货确认兼容字段按显式迁移补齐，详见下文。
+- Fay 镜像构建、DB/Redis 健康、Kafka TCP 连接和 Item GET API 已通过；首次 PUT、Kafka 完成回执和新增物料仍待小批验证。
 - 首次单批验证通过后再确认执行时间、启用定时器和决定是否允许删除远端 CSV。
 
 ## 测试边界
@@ -41,7 +41,23 @@
 
 - app2 已创建专用系统用户/组 `cwmsfayitem` 和独立配置/状态目录。
 - FTP 凭据工具已安装到 `/usr/local/sbin/fay-item-save-ftp`，用户已本机输入，密码不进入源码或记录。
-- 未启用导入服务或定时器；本轮测试未提交生产 Item，也未删除 FTP 文件。
+- 文件适配器及手动单批服务已安装，但处于 inactive；未设置 batch-file、未安装定时器。本轮未提交生产 Item，也未删除 FTP 文件。后端 Kafka 监听暂时暂停，Host API 外发关闭。
 - app2 的测试副本保存在 `/tmp/fay-item-validation.7FpOtl`。
 
 - 本地提交 `4d07356e` 已完成初版；GitHub HTTPS 推送因本机缺少登录凭据失败，远端分支尚未创建。
+
+## Fay 兼容适配及备份
+
+- `integration_item_unit_of_measure.quantity` 是 BIGINT：保留 Integer API，加显式数据库列定义。
+- `integration_stop.sequence` 是 INT：保留 Long API，加显式数据库列定义。
+- 补齐 `integration_receipt_line_confirmation.quickbook_item_listid VARCHAR(255) NULL`。该字段属于启动扫描的既有实体；不启用 QuickBooks。
+- 执行前备份该表的 CREATE TABLE 和全部 1,880 条记录（每个值 base64 编码，gzip 保存）。备份位于主节点 `/root/fay-integration-backups/receipt-line-confirmation-before-20261002T220611Z.json.gz`，SHA256 `e600450ec431557573491298e3e5c181706efd452b46c5e763941ce1d1101af6`。
+- 执行后逐值比较原列，确认全部 1,880 条原记录未变。新增列允许 NULL；未删除任何列或记录。
+- integration 认证日志移除账号密码请求和用户 token 内容，不修改认证行为。
+
+## 当前运行产物
+
+- app1 镜像：`cwms-fay-integrationserver:v1.60-item-d5e3fd34bba7`，使用 app1 已存在的 v1.60 Java 运行环境，未启动第二个库存服务。
+- 部署配置：`deploy/fay/integrationservice.yaml`，固定 app1、`ddl-auto=validate`、`HOST_API_ENABLED=false`、`SPRING_KAFKA_LISTENER_AUTO_STARTUP=false`。
+- app2 程序：`/opt/cwms-fay-oracle-items`；配置：`/etc/cwms-fay-oracle-items/config.json`；状态：`/var/lib/cwms-fay-oracle-items/state`。
+- 已准备 3 条无默认补值的新料作为小批预览，存放 app2 `/tmp/fay-item-validation.7FpOtl/fayint_item_pilot20261002.csv`，未写入 MES，未上传或修改 FTP。

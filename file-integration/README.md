@@ -14,7 +14,7 @@ Oracle FTP CSV → Fay app2 文件适配器 → Fay integrationservice → Kafka
 这是待补齐的模板，不是可立即上线的配置：
 
 - FTP：`192.168.20.118:21`，目录 `/WIS`；只读取 `fayint_item` 开头且带批次号的 CSV。账号待配置。
-- integration：暂定使用现有 NodePort `30681`；目前还需部署对应程序并验证接口。
+- integration：暂定使用现有 NodePort `30681`；后端已部署并通过启动和只读接口验证；首次写入/完成回执待小批验证。
 - inventory：`http://10.0.11.174:30330`；已通过 Fay 接口确认公司 ID `1`、仓库 ID `1`。
 - 公司代码 `20901`、仓库名称 `WMEC` 已确认；`01` 映射 `Finish Good`，`RM` 映射 `Raw materials`（均已核对 Fay 分类名称）。
 - 用户确认沿用 PCS/CS/PL 包装规则。尺寸重量沿用源模板值 1，不代表实测值。
@@ -51,3 +51,5 @@ python3 adapter.py run --config /etc/cwms-fay-oracle-items/config.json --send --
 `deploy/fay/cwms-fay-oracle-items.service` 为手动单批联调用的服务模板，默认读取 `batch-file` 中指定的文件名。定时批量导入在首次验证完成且执行时间确认后再配置。
 
 上游实现细节和历史测试说明保存在 `REFERENCE-IMPLEMENTATION.md`、`REFERENCE-ITEM-PILOT.md`，不作为 Fay 已验证的证据。
+
+Fay 现场进度、部署镜像和数据库兼容适配记录见 `FAY-MIGRATION.md`。Oracle 大写列头 `SEGMENT1,DESCRIPTION,ITEM_TYPE,PIECES_PER_CARTON,PIECES_PER_PALLET` 与参考实现一致，已通过实际文件的离线校验。
