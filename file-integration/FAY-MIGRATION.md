@@ -44,7 +44,7 @@
 - 文件适配器及手动单批服务已安装，但处于 inactive；未设置 batch-file、未安装定时器。本轮未提交生产 Item，也未删除 FTP 文件。后端 Kafka 监听暂时暂停，Host API 外发关闭。
 - app2 的测试副本保存在 `/tmp/fay-item-validation.7FpOtl`。
 
-- 本地提交 `4d07356e` 已完成初版；GitHub HTTPS 推送因本机缺少登录凭据失败，远端分支尚未创建。
+- 初版及现场适配代码已提交；HTTPS 推送缺少凭据后改用本机已授权的 GitHub SSH 认证，成功创建远端分支 `codex/fay-oracle-item-file-import`。
 
 ## Fay 兼容适配及备份
 
@@ -61,3 +61,5 @@
 - 部署配置：`deploy/fay/integrationservice.yaml`，固定 app1、`ddl-auto=validate`、`HOST_API_ENABLED=false`、`SPRING_KAFKA_LISTENER_AUTO_STARTUP=false`。
 - app2 程序：`/opt/cwms-fay-oracle-items`；配置：`/etc/cwms-fay-oracle-items/config.json`；状态：`/var/lib/cwms-fay-oracle-items/state`。
 - 已准备 3 条无默认补值的新料作为小批预览，存放 app2 `/tmp/fay-item-validation.7FpOtl/fayint_item_pilot20261002.csv`，未写入 MES，未上传或修改 FTP。
+
+- 当前停在首批写入确认：3 条测试物料为 `028-3146-2`（CS 6 / PL 450）、`12 CAN-1`（CS 400 / PL 400）、`12562058`（CS 1 / PL 1），均为 Finish Good、PCS 1，未启用自动导入。
