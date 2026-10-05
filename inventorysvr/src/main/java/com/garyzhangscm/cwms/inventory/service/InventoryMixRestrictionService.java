@@ -232,22 +232,21 @@ public class InventoryMixRestrictionService {
      * @return
      */
     public boolean checkMovementAllowed(Inventory inventory, Location destinationLocation) {
-        // get the inventory in the destination location
         logger.debug("start to check if we can move inventory {} into location {} via mixing restriction",
-                inventory.getLpn(),
-                destinationLocation.getName());
+                inventory.getLpn(), destinationLocation.getName());
+        // Load destination inventory only when a matching rule requires validation.
+        List<InventoryMixRestriction> inventoryMixRestrictions =
+                getMatchedInventoryMixRestriction(inventory, destinationLocation);
+        if (inventoryMixRestrictions.isEmpty()) {
+            return true;
+        }
         List<Inventory> destinationInventory = inventoryService.findByLocationId(
-                destinationLocation.getId(), false
-        );
+                destinationLocation.getId(), false);
         if (destinationInventory.isEmpty()) {
             logger.debug("There's no inventory in the destination location {}, " +
                     "we will always allow the movement for inventory {}",
-                    inventory.getLpn());
+                    destinationLocation.getName(), inventory.getLpn());
         }
-        // get all the movement restriction that matches with the inventory
-        List<InventoryMixRestriction> inventoryMixRestrictions =
-                getMatchedInventoryMixRestriction(inventory, destinationLocation);
-
 
         // return false if any one of the movement restriction fail
         return inventoryMixRestrictions.stream().noneMatch(
