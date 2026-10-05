@@ -2413,8 +2413,6 @@ public class InventoryService {
 
         logger.debug("After consolidation, we still have {} movement path on the inventory {}",
                 consolidatedInventory.getInventoryMovements().size(), consolidatedInventory.getLpn());
-        logger.debug("6. destination {} has {} inventory",
-                destination.getName(), findByLocationId(destination.getId(), false).size());
         // check if we will need to remove the original inventory
 
         // logger.debug(">> after consolidation, the original inventory is \n>> {}", inventory);
@@ -2429,8 +2427,6 @@ public class InventoryService {
             logger.debug(">> after consolidation, we will remove the original inventory");
             delete(inventory);
         }
-        logger.debug("7. destination {} has {} inventory",
-                destination.getName(), findByLocationId(destination.getId(), false).size());
         /***
         logger.debug("Location {}'s  consolidate LPN policy: ",
                 destination.getName(), destination.getLocationGroup().getConsolidateLpn());
