@@ -29,7 +29,7 @@ import java.util.*;
 @EnableAutoConfiguration
 @ComponentScan(basePackages="com.garyzhangscm.cwms.workorder", excludeFilters={
     @ComponentScan.Filter(type=FilterType.ANNOTATION,classes={RestController.class,RestControllerAdvice.class}),
-    @ComponentScan.Filter(type=FilterType.REGEX,pattern={"com\\.garyzhangscm\\.cwms\\.workorder\\.WorkOrderServerApplication", "com\\.garyzhangscm\\.cwms\\.workorder\\.service\\.WorkOrderDeletionService"}),
+    @ComponentScan.Filter(type=FilterType.REGEX,pattern={"com\\.garyzhangscm\\.cwms\\.workorder\\.WorkOrderServerApplication"}),
     @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE,classes=KafkaReceiver.class)
 })
 @EntityScan("com.garyzhangscm.cwms.workorder.model")
