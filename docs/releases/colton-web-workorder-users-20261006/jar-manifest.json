@@ -1,0 +1,29 @@
+{
+  "workorder": {
+    "baseline_sha256": "d76245f68c7a4c73e14fa505154cf8a58bb639d8ae1ac2695ab45c55fb829b9e",
+    "output_sha256": "e93e15b175119a82d2cec1b6c59ed5ebd23c8b9925ba4d338993c31a801308c7",
+    "classes": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/completionpreview/CompletionPreviewApplication$Endpoint.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/completionpreview/CompletionPreviewApplication.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/deletionpreview/DeletionPreviewApplication$Endpoint.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/deletionpreview/DeletionPreviewApplication.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/controller/WorkOrderController.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/deletion/WorkOrderDeletionRepository.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderCompleteTransactionService.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderDeletionService.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderLineService.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderService.class"
+    ]
+  },
+  "resource": {
+    "baseline_sha256": "fd959fde01d232043355d2c13970430c374e4999456fd9c27b9e57ca844b0899",
+    "output_sha256": "0c52e459554c8bd849d7906bbcd2ab3157babc9e2e86ce77c0ddb6cf51559364",
+    "classes": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resourcereleasepreview/ResourceReleasePreviewApplication$Health.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resourcereleasepreview/ResourceReleasePreviewApplication.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resources/controller/UserPasswordResetController.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resources/model/PasswordResetRequest.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resources/service/UserPasswordResetService.class"
+    ]
+  }
+}

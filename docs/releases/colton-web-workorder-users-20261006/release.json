@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-06",
+  "environment": "Colton formal",
+  "url": "http://10.0.10.159:31252/",
+  "frontend_source_commit": "d50a8c2a409e2a0c85531213c6c0140196a047cb",
+  "backend_source_commit": "f88dfaaf0217f8d221f7c601160af837cdf08bbc",
+  "images": {
+    "workorderservice": {
+      "before_image": "garyzhangscm/cwms-workorderserver:v1.62",
+      "image": "brianwang1912/cwms-workorderserver@sha256:75f209032e8cff85fd0572a5c95fa001de59eb9a98c4c96f28958712927f82cc"
+    },
+    "resourceservice": {
+      "before_image": "garyzhangscm/cwms-ressvr:v1.62",
+      "image": "brianwang1912/cwms-ressvr@sha256:0181e5863128b153d470a303d0ce869d1ab763bbb662a988012131fde5c39446"
+    },
+    "webclient": {
+      "before_image": "brianwang1912/mes-web@sha256:151f4dd6984342f2109fbada83a0896266c46d00a151edd8469d1cecd4f0a348",
+      "image": "brianwang1912/mes-web@sha256:8f31c697478d75951514e4485376baadbf30e9828f40d55823f93d618bc6e14b"
+    }
+  },
+  "tests": {
+    "workorder": 34,
+    "resource": 5,
+    "frontend_mock_checks": 3,
+    "production_build": "passed"
+  },
+  "live_jars_match_release": true,
+  "fay_changed": false,
+  "business_deletion_or_completion_by_agent": false,
+  "real_passwords_reset_by_agent": false,
+  "persistent_yaml": [
+    "/root/k8s/4-frontend-app.yaml",
+    "/root/k8s/5-backend-app.yaml"
+  ],
+  "server_backup": "/root/k8s/backups/colton-release-20261006/",
+  "status": "deployed and healthy",
+  "persistent_yaml_verified": true,
+  "read_only_api_checks": "passed"
+}
