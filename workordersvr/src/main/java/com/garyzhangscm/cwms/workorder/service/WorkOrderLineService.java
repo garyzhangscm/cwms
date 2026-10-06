@@ -683,7 +683,8 @@ public class WorkOrderLineService implements TestDataInitiableService {
         workOrderLine.setInprocessQuantity(0L);
         workOrderLine.setScrappedQuantity(scrappedQuantity);
         workOrderLine.setReturnedQuantity(returnedMaterialsQuantity);
-        return saveOrUpdate(workOrderLine);
+        // Completion only needs persisted quantities; picks and allocation details are display data.
+        return saveOrUpdate(workOrderLine, false);
 
     }
 

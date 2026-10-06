@@ -175,30 +175,43 @@ public class WorkOrderCompleteTransactionService {
      */
 
     public WorkOrderCompleteTransaction startNewTransaction(Long warehouseId, WorkOrderCompleteTransaction workOrderCompleteTransaction, Long locationId) {
-        if (Objects.isNull(locationId)) {
-            // the user didn't specify any location, choose any production
-            List<ProductionLineAssignment> productionLineAssignments =
-                    productionLineAssignmentService.findAll(warehouseId,
-                            null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null,
-                            false);
-            logger.debug("We get {} production line assignment for work order {} when closing this work order",
-                    productionLineAssignments.size(), workOrderCompleteTransaction.getWorkOrder().getNumber());
-            logger.debug("We will choose the first production line to complete the work order and receive returned material");
-            if (productionLineAssignments.size() > 0) {
-                locationId = productionLineAssignments.get(0).getProductionLine().getOutboundStageLocationId();
-            }
-            else {
-                throw WorkOrderException.raiseException("Can't close work order. We are not able to find a good location to return material");
+        // Individual inventory requests may already specify their own destination.
+        // A default location is only needed for inventory operations without one.
+        boolean needsDefaultLocation = workOrderCompleteTransaction.getWorkOrderLineCompleteTransactions().stream()
+                .flatMap(line -> line.getReturnMaterialRequests().stream())
+                .anyMatch(request -> Objects.isNull(request.getLocationId()))
+                || workOrderCompleteTransaction.getWorkOrderByProductProduceTransactions().stream()
+                .anyMatch(request -> StringUtils.isNotBlank(request.getLpn())
+                        && Objects.nonNull(request.getInventoryStatus())
+                        && Objects.nonNull(request.getItemPackageType())
+                        && Objects.nonNull(request.getQuantity())
+                        && Objects.isNull(request.getLocationId()));
+
+        if (needsDefaultLocation && Objects.isNull(locationId)) {
+            List<ProductionLineAssignment> assignments = productionLineAssignmentService.findAll(
+                    warehouseId, null, null, workOrderCompleteTransaction.getWorkOrder().getId(), null, false);
+            locationId = assignments.stream()
+                    .map(ProductionLineAssignment::getProductionLine)
+                    .filter(Objects::nonNull)
+                    .map(ProductionLine::getOutboundStageLocationId)
+                    .filter(Objects::nonNull)
+                    .findFirst().orElse(null);
+            if (Objects.isNull(locationId)) {
+                throw WorkOrderException.raiseException(
+                        "Can't close work order. Returned material or by-product inventory requires a destination location. "
+                                + "Specify its location or assign a production line with an outbound staging location.");
             }
         }
 
-        logger.debug("Will close the work order from location {}",
-                warehouseLayoutServiceRestemplateClient.getLocationById(locationId).getName());
-        return startNewTransaction(
-                workOrderCompleteTransaction,
-                warehouseLayoutServiceRestemplateClient.getLocationById(locationId)
-
-        );
+        Location location = null;
+        if (needsDefaultLocation) {
+            location = warehouseLayoutServiceRestemplateClient.getLocationById(locationId);
+            if (Objects.isNull(location)) {
+                throw WorkOrderException.raiseException("Can't close work order. The destination location was not found.");
+            }
+            logger.debug("Will close the work order from location {}", location.getName());
+        }
+        return startNewTransaction(workOrderCompleteTransaction, location);
     }
     public WorkOrderCompleteTransaction startNewTransaction(WorkOrderCompleteTransaction workOrderCompleteTransaction, Location location) {
 

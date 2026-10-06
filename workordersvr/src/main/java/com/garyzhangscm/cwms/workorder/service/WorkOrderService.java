@@ -454,21 +454,11 @@ public class WorkOrderService implements TestDataInitiableService {
     }
 
 
-    public void delete(WorkOrder workOrder) {
-        workOrderRepository.delete(workOrder);
-    }
+    @Autowired
+    private WorkOrderDeletionService workOrderDeletionService;
 
-    public void delete(Long id) {
-        workOrderRepository.deleteById(id);
-    }
-
-    public void delete(String workOrderIds) {
-        if (!workOrderIds.isEmpty()) {
-            long[] workOrderIdArray = Arrays.asList(workOrderIds.split(",")).stream().mapToLong(Long::parseLong).toArray();
-            for (long id : workOrderIdArray) {
-                delete(id);
-            }
-        }
+    public void delete(Long warehouseId, String workOrderIds) {
+        workOrderDeletionService.delete(warehouseId, workOrderIds);
     }
 
     public List<WorkOrderCSVWrapper> loadData(InputStream inputStream) throws IOException {

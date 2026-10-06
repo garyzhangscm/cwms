@@ -122,8 +122,9 @@ public class WorkOrderController {
                     @CacheEvict(cacheNames = "OutboundService_WorkOrderLine", allEntries = true),
             }
     )
-    public void removeWorkOrders(@RequestParam(name = "workOrderIds", required = false, defaultValue = "") String workOrderIds) {
-        workOrderService.delete(workOrderIds);
+    public void removeWorkOrders(@RequestParam Long warehouseId,
+                                @RequestParam String workOrderIds) {
+        workOrderService.delete(warehouseId, workOrderIds);
     }
 
     @BillableEndpoint
