@@ -13,6 +13,13 @@ public class UserPasswordResetService {
     private final UserService users;
     private final HttpServletRequest httpRequest;
     public UserPasswordResetService(UserService users,HttpServletRequest httpRequest){this.users=users;this.httpRequest=httpRequest;}
+    static boolean hasPasswordResetAccess(User actor) {
+        if (Boolean.TRUE.equals(actor.getAdmin())) return true;
+        return actor.getRoles() != null && actor.getRoles().stream().anyMatch(role ->
+                role != null && Boolean.TRUE.equals(role.getEnabled())
+                && role.getName() != null && "Admin".equalsIgnoreCase(role.getName().trim())
+                && Objects.equals(role.getCompanyId(), actor.getCompanyId()));
+    }
     public void reset(Long companyId,Long userId,PasswordResetRequest request){
         // The gateway verifies JWT signatures. Never authorize with a client-supplied username header.
         String username;
@@ -26,7 +33,7 @@ public class UserPasswordResetService {
                     || claims.path("exp").asLong(0)<=System.currentTimeMillis()/1000) throw new IllegalArgumentException();
         } catch(Exception error){throw UserOperationException.raiseException("Please sign in with a valid account.");}
         User actor=users.findByUsername(companyId,username);
-        if(actor==null || !Boolean.TRUE.equals(actor.getAdmin())
+        if(actor==null || !hasPasswordResetAccess(actor)
                 || (!Objects.equals(actor.getCompanyId(),companyId) && !Boolean.TRUE.equals(actor.getSystemAdmin())))
             throw UserOperationException.raiseException("Only an administrator can reset user passwords.");
         User target=users.findById(userId);

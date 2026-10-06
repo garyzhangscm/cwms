@@ -35,6 +35,24 @@ class UserPasswordResetServiceTest {
         service.reset(1L,10L,request);verify(users).changeUser(target);
         assertEquals("test-only-password",target.getPassword());assertEquals(true,target.getChangePasswordAtNextLogon());
     }
+    @Test void enabledCompanyAdminRoleCanResetWithoutAccountAdminFlag(){
+        actor.setAdmin(false);Role role=new Role();role.setName("Admin");role.setEnabled(true);role.setCompanyId(1L);
+        actor.setRoles(java.util.List.of(role));service.reset(1L,10L,request);verify(users).changeUser(target);
+    }
+    @Test void disabledForeignAndOrdinaryRolesCannotReset(){
+        actor.setAdmin(false);Role role=new Role();role.setName("Admin");role.setEnabled(false);role.setCompanyId(1L);
+        actor.setRoles(java.util.List.of(role));assertThrows(UserOperationException.class,()->service.reset(1L,10L,request));
+        role.setEnabled(true);role.setCompanyId(2L);assertThrows(UserOperationException.class,()->service.reset(1L,10L,request));
+        role.setCompanyId(1L);role.setName("WarehouseManager");assertThrows(UserOperationException.class,()->service.reset(1L,10L,request));
+        verify(users,never()).changeUser(any());
+    }
+    @Test void roleAdminStillCannotResetCrossCompanyOrProtectedTargets(){
+        actor.setAdmin(false);Role role=new Role();role.setName("ADMIN");role.setEnabled(true);role.setCompanyId(1L);
+        actor.setRoles(java.util.List.of(role));target.setCompanyId(2L);
+        assertThrows(UserOperationException.class,()->service.reset(1L,10L,request));
+        target.setCompanyId(1L);target.setSystemAdmin(true);assertThrows(UserOperationException.class,()->service.reset(1L,10L,request));
+        verify(users,never()).changeUser(any());
+    }
     @Test void optionalForceFlagCanBeDisabled(){
         request.setChangePasswordAtNextLogon(false);service.reset(1L,10L,request);
         assertEquals(false,target.getChangePasswordAtNextLogon());
