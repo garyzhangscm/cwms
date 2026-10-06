@@ -24,7 +24,7 @@ import java.util.Map;
 @EnableAutoConfiguration
 @ComponentScan(basePackages="com.garyzhangscm.cwms.resources",excludeFilters={
  @ComponentScan.Filter(type=FilterType.ANNOTATION,classes=RestController.class),
- @ComponentScan.Filter(type=FilterType.REGEX,pattern="com\\.garyzhangscm\\.cwms\\.resources\\.ResourceServerApplication"),
+ @ComponentScan.Filter(type=FilterType.REGEX,pattern={"com\\.garyzhangscm\\.cwms\\.resources\\.ResourceServerApplication", "com\\.garyzhangscm\\.cwms\\.resources\\.MyApplicationRunner"}),
  @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE,classes=KafkaReceiver.class)
 })
 @EntityScan("com.garyzhangscm.cwms.resources.model")
