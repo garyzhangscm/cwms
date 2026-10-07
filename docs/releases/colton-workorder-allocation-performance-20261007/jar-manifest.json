@@ -1,0 +1,7 @@
+{
+  "changed": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderService.class"
+  ],
+  "baseline_sha256": "5b68a21f3bd12d685ad99d48fc10128d6d9d3b03deb7821bebd158b1a994c6a3",
+  "output_sha256": "f3a65d810301785b662acddf13f3743a30274954cef885089dd8630ec9fb9589"
+}
