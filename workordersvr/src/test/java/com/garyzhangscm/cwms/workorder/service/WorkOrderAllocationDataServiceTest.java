@@ -31,8 +31,8 @@ class WorkOrderAllocationDataServiceTest {
         line.setOpenQuantity(50000L);line.setExpectedQuantity(50000L);line.setInventoryStatusId(1L);
         order.setWorkOrderLines(List.of(line));
         Warehouse warehouse=new Warehouse();warehouse.setId(1L);when(layout.getWarehouseById(1L)).thenReturn(warehouse);
-        when(inventory.getItemById(8392L)).thenReturn(item(8392L,"finished"));
-        when(inventory.getItemById(6402L)).thenReturn(item(6402L,"material"));
+        when(inventory.getItemForAllocation(8392L)).thenReturn(item(8392L,"finished"));
+        when(inventory.getItemForAllocation(6402L)).thenReturn(item(6402L,"material"));
         InventoryStatus status=new InventoryStatus();status.setId(1L);when(inventory.getInventoryStatusById(1L)).thenReturn(status);
         when(outbound.exchange(eq(AllocationResult.class),anyString(),eq(HttpMethod.POST),any(Map.class))).thenAnswer(call->{
             assertNotNull(order.getItem());assertNotNull(order.getWarehouse());
@@ -62,11 +62,11 @@ class WorkOrderAllocationDataServiceTest {
     @Test void duplicateMaterialAndStatusAreLoadedOnce(){
         WorkOrderLine duplicate=new WorkOrderLine();duplicate.setItemId(6402L);duplicate.setOpenQuantity(10L);duplicate.setInventoryStatusId(1L);
         order.setWorkOrderLines(List.of(line,duplicate));client.allocateWorkOrder(order,null,null);
-        verify(inventory,times(1)).getItemById(6402L);verify(inventory,times(1)).getInventoryStatusById(1L);
+        verify(inventory,times(1)).getItemForAllocation(6402L);verify(inventory,times(1)).getInventoryStatusById(1L);
     }
     @Test void exhaustedLineDoesNotRequireOrFetchMaterial(){
         line.setOpenQuantity(0L);line.setItemId(null);client.allocateWorkOrder(order,null,null);
-        verify(inventory,never()).getItemById(6402L);verify(inventory,never()).getInventoryStatusById(anyLong());
+        verify(inventory,never()).getItemForAllocation(6402L);verify(inventory,never()).getInventoryStatusById(anyLong());
     }
     @Test void missingLaterMaterialPreventsAnyAllocationPost(){
         WorkOrderLine bad=new WorkOrderLine();bad.setId(11902L);bad.setNumber("2");bad.setOpenQuantity(10L);bad.setItemId(999L);
@@ -77,16 +77,16 @@ class WorkOrderAllocationDataServiceTest {
     @Test void missingWarehouseAndFinishedItemPreventPost(){
         when(layout.getWarehouseById(1L)).thenReturn(null);assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));
         Warehouse warehouse=new Warehouse();warehouse.setId(1L);when(layout.getWarehouseById(1L)).thenReturn(warehouse);
-        when(inventory.getItemById(8392L)).thenReturn(null);assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));
+        when(inventory.getItemForAllocation(8392L)).thenReturn(null);assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));
         verifyNoInteractions(outbound);
     }
     @Test void wrongItemIdAndMissingStatusPreventPost(){
-        when(inventory.getItemById(6402L)).thenReturn(item(999L,"wrong"));assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));
-        when(inventory.getItemById(6402L)).thenReturn(item(6402L,"material"));when(inventory.getInventoryStatusById(1L)).thenReturn(null);
+        when(inventory.getItemForAllocation(6402L)).thenReturn(item(999L,"wrong"));assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));
+        when(inventory.getItemForAllocation(6402L)).thenReturn(item(6402L,"material"));when(inventory.getInventoryStatusById(1L)).thenReturn(null);
         assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));verifyNoInteractions(outbound);
     }
     @Test void foreignWarehouseItemPreventsPost(){
-        Item foreign=item(6402L,"foreign");foreign.setWarehouseId(2L);when(inventory.getItemById(6402L)).thenReturn(foreign);
+        Item foreign=item(6402L,"foreign");foreign.setWarehouseId(2L);when(inventory.getItemForAllocation(6402L)).thenReturn(foreign);
         assertThrows(WorkOrderException.class,()->client.allocateWorkOrder(order,null,null));verifyNoInteractions(outbound);
     }
     @Test void normalOrderSerializationStillHidesWarehouseButAllocationIncludesIt() throws Exception {
@@ -95,8 +95,12 @@ class WorkOrderAllocationDataServiceTest {
         var wire=mapper.readTree(mapper.writeValueAsBytes(loader.requestBody(order)));
         assertEquals(1L,wire.path("warehouse").path("id").asLong());assertEquals(1L,wire.path("workOrderLines").get(0).path("warehouseId").asLong());
     }
+    @Test void legacyCachedItemWithoutWarehouseIsNotUsed(){
+        Item stale=new Item();stale.setId(6402L);stale.setName("legacy");when(inventory.getItemById(6402L)).thenReturn(stale);
+        client.allocateWorkOrder(order,null,null);verify(inventory,never()).getItemById(anyLong());assertEquals(1L,line.getItem().getWarehouseId());
+    }
     @Test void lookupFailureDoesNotSendPost(){
-        when(inventory.getItemById(6402L)).thenThrow(new IllegalStateException("inventory unavailable"));
+        when(inventory.getItemForAllocation(6402L)).thenThrow(new IllegalStateException("inventory unavailable"));
         assertThrows(IllegalStateException.class,()->client.allocateWorkOrder(order,null,null));verifyNoInteractions(outbound);
     }
 }

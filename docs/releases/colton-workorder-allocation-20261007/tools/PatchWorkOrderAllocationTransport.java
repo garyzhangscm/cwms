@@ -25,6 +25,12 @@ public class PatchWorkOrderAllocationTransport {
    original.fields.add(source.fields.stream().filter(f->f.name.equals("warehouseId")).findFirst().orElseThrow());
    source.methods.stream().filter(m->m.name.equals("getWarehouseId")||m.name.equals("setWarehouseId")).forEach(original.methods::add);
    write(original,Path.of(args[2],"Item.class"));
+   String inventory=p+"clients/InventoryServiceRestemplateClient";
+   ClassNode oldInventory=read(jar.getInputStream(jar.getJarEntry("BOOT-INF/classes/"+inventory+".class")).readAllBytes());
+   ClassNode newInventory=read(Files.readAllBytes(Path.of(args[1],inventory+".class")));
+   if(oldInventory.methods.stream().anyMatch(m->m.name.equals("getItemForAllocation")))throw new IllegalStateException("Already patched Inventory client");
+   oldInventory.methods.add(newInventory.methods.stream().filter(m->m.name.equals("getItemForAllocation")).findFirst().orElseThrow());
+   write(oldInventory,Path.of(args[2],"InventoryServiceRestemplateClient.class"));
   }
   System.out.println("Patched allocation transport and added Item warehouseId only; original methods preserved.");
  }
