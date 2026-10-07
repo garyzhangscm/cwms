@@ -89,7 +89,7 @@ public class OutboundServiceRestemplateClient {
                 AllocationResult.class,
                 builder.toUriString(),
                 HttpMethod.POST,
-                workOrder
+                allocationDataService.requestBody(workOrder)
         );
 
     }
