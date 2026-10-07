@@ -775,10 +775,15 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     private Map<Long, Long> getInprocessQuantities(AllocationResult allocationResult) {
+        return getInprocessQuantities(allocationResult, new HashMap<>());
+    }
+
+    private Map<Long, Long> getInprocessQuantities(AllocationResult allocationResult,
+                                                Map<Long, WorkOrderLine> allocationLines) {
         Map<Long, Long> inprocessQuantities = new HashMap<>();
 
         allocationResult.getPicks().stream().filter(
-                pick -> !isPickSparePart(pick.getWorkOrderLineId(), pick)
+                pick -> !isPickSparePart(getAllocationLine(allocationLines, pick.getWorkOrderLineId()), pick)
         ).forEach(pick -> {
             Long workOrderLineId = pick.getWorkOrderLineId();
             Long inprocessQuantity = inprocessQuantities.getOrDefault(workOrderLineId, 0L);
@@ -801,7 +806,17 @@ public class WorkOrderService implements TestDataInitiableService {
      * @return
      */
     private boolean isPickSparePart(Long workOrderLineId, Pick pick) {
-        WorkOrderLine workOrderLine = workOrderLineService.findById(workOrderLineId);
+        return isPickSparePart(workOrderLineService.findById(workOrderLineId, false), pick);
+    }
+
+    private WorkOrderLine getAllocationLine(Map<Long, WorkOrderLine> allocationLines, Long workOrderLineId) {
+        // Request-local entity reuse avoids fetching Picks/short allocations for every Pick.
+        return allocationLines.computeIfAbsent(workOrderLineId,
+                id -> workOrderLineService.findById(id, false));
+    }
+
+    private boolean isPickSparePart(WorkOrderLine workOrderLine, Pick pick) {
+        Long workOrderLineId = workOrderLine.getId();
         if (pick.getItemId().equals(workOrderLine.getItemId())) {
             return false;
         }
@@ -826,14 +841,15 @@ public class WorkOrderService implements TestDataInitiableService {
         // A map to store the quantities
         // Key: work order line id
         // value: pick quantity + short allocation quantity
-        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult);
+        Map<Long, WorkOrderLine> allocationLines = new HashMap<>();
+        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult, allocationLines);
         logger.debug("Get in process quantity out of allocation result for the work order line {} :\n {}",
                 workOrderLine.getId(), inprocessQuantities);
 
         inprocessQuantities.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(workOrderLine.getId()))
                 .forEach(entry ->{
-                    WorkOrderLine existingWorkOrderLine = workOrderLineService.findById(entry.getKey());
+                    WorkOrderLine existingWorkOrderLine = getAllocationLine(allocationLines, entry.getKey());
                     // Move the 'inprocess quantity' we just calculated from 'Open quantity'
                     // to 'inprocess quantity'
                     Long inprocessQuantity = entry.getValue();
@@ -848,7 +864,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
                     }
                     existingWorkOrderLine.setInprocessQuantity(existingWorkOrderLine.getInprocessQuantity() + inprocessQuantity);
-                    workOrderLineService.save(existingWorkOrderLine);
+                    workOrderLineService.save(existingWorkOrderLine, false);
         });
         // If the current work order's status is 'Pending', change it to 'INPROCESS'
         if (workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
@@ -858,15 +874,14 @@ public class WorkOrderService implements TestDataInitiableService {
 
     }
     private void processAllocationResultForSpareParts(AllocationResult allocationResult) {
+        Map<Long, WorkOrderLine> allocationLines = new HashMap<>();
 
         allocationResult.getPicks().stream().filter(
-                pick -> isPickSparePart(pick.getWorkOrderLineId(), pick)
+                pick -> isPickSparePart(getAllocationLine(allocationLines, pick.getWorkOrderLineId()), pick)
         ).forEach(
                 pick -> {
                     // for spare part, get the information first
-                    WorkOrderLine workOrderLine = workOrderLineService.findById(
-                            pick.getWorkOrderLineId()
-                    );
+                    WorkOrderLine workOrderLine = getAllocationLine(allocationLines, pick.getWorkOrderLineId());
                     WorkOrderLineSparePartDetail matchedWorkOrderLineSparePartDetail =
                             workOrderLine.getWorkOrderLineSpareParts().stream().map(
                                     workOrderLineSparePart -> workOrderLineSparePart.getWorkOrderLineSparePartDetails()
@@ -896,11 +911,12 @@ public class WorkOrderService implements TestDataInitiableService {
         // A map to store the quantities
         // Key: work order line id
         // value: pick quantity + short allocation quantity
-        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult);
+        Map<Long, WorkOrderLine> allocationLines = new HashMap<>();
+        Map<Long, Long> inprocessQuantities = getInprocessQuantities(allocationResult, allocationLines);
 
 
         inprocessQuantities.entrySet().stream().forEach(entry ->{
-            WorkOrderLine workOrderLine = workOrderLineService.findById(entry.getKey());
+            WorkOrderLine workOrderLine = getAllocationLine(allocationLines, entry.getKey());
             // Move the 'inprocess quantity' we just calculated from 'Open quantity'
             // to 'inprocess quantity'
             Long inprocessQuantity = entry.getValue();
@@ -915,7 +931,7 @@ public class WorkOrderService implements TestDataInitiableService {
 
             }
             workOrderLine.setInprocessQuantity(workOrderLine.getInprocessQuantity() + inprocessQuantity);
-            workOrderLineService.save(workOrderLine);
+            workOrderLineService.save(workOrderLine, false);
         });
         // If the current work order's status is 'Pending', change it to 'INPROCESS'
         if (workOrder.getStatus().equals(WorkOrderStatus.PENDING)) {
