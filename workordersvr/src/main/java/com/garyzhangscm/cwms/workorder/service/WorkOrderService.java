@@ -1111,7 +1111,12 @@ public class WorkOrderService implements TestDataInitiableService {
         WorkOrder workOrder = findById(workOrderId);
         String workOrderLineIds =
                 workOrder.getWorkOrderLines().stream()
-                        .map(WorkOrderLine::getId).map(String::valueOf).collect(Collectors.joining(","));
+                        .map(WorkOrderLine::getId).filter(Objects::nonNull)
+                        .map(String::valueOf).collect(Collectors.joining(","));
+        // An empty filter means all warehouse inventory to the inventory API.
+        if (workOrderLineIds.isEmpty()) {
+            return new ArrayList<>();
+        }
         return inventoryServiceRestemplateClient.getReturnedInventory(
                 workOrder.getWarehouseId(),workOrderLineIds
         );

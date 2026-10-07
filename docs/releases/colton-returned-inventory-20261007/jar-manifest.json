@@ -1,0 +1,8 @@
+{
+  "changed": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/clients/InventoryServiceRestemplateClient.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderService.class"
+  ],
+  "baseline_sha256": "f3a65d810301785b662acddf13f3743a30274954cef885089dd8630ec9fb9589",
+  "output_sha256": "f5722ca20ce96972cb67c8d6c7140fe617b498d27e40edff000c54def9389293"
+}
