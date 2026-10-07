@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-07",
+  "source_tests": 32,
+  "test_failures": 0,
+  "runtime_jar_probe": "passed",
+  "image": "brianwang1912/cwms-workorderserver:v1.62-colton-allocation-performance-20261007",
+  "image_uploaded": true,
+  "colton_deployed": true,
+  "fay_changed": false,
+  "approval": "explicit user authorized upload and deployment",
+  "source_commit": "893d1e852b37a5b8d14730b93bb74c56c0b85ed3",
+  "image_digest": "sha256:6a25ba6ea421bb3231134f4f890b4e67c190eea13b20939e2752d3f59cd6fe1c",
+  "jar_sha256": "f3a65d810301785b662acddf13f3743a30274954cef885089dd8630ec9fb9589",
+  "pod": "workorderservice-56dcf6d855-zvlz9",
+  "readiness": "1/1",
+  "restarts": 0,
+  "server_backup": "/root/k8s/backups/colton-allocation-performance-20261007",
+  "persistent_yaml": "/root/k8s/5-backend-app.yaml",
+  "real_allocations_by_agent": false,
+  "live_allocation_timing": "awaiting user next allocation"
+}
