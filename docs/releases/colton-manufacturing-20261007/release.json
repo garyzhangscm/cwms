@@ -1,0 +1,48 @@
+{
+  "target": "Colton formal",
+  "fayChanged": false,
+  "status": "deployed and healthy",
+  "images": {
+    "layout": "brianwang1912/cwms-layoutserver:v1.62-colton-manufacturing-20261007",
+    "outbound": "brianwang1912/cwms-outboundserver:v1.62-colton-manufacturing-20261007",
+    "web": "brianwang1912/mes-web:v19.2-colton-manufacturing-20261007"
+  },
+  "backendBaseline": "Actual JARs from currently running Colton formal services",
+  "unrelatedBackendClassesAndDependencies": "byte-identical",
+  "frontendBaseline": "ca6b8ef69dc9bda8988190927f399128781649c7, manufacturing changes only",
+  "actualJarProbe": "12 policy scenarios and legacy configuration preservation passed with network disabled",
+  "serverBackup": "/root/k8s/backups/colton-manufacturing-20261007",
+  "businessTestWritesByAgent": false,
+  "actualImages": {
+    "layoutservice": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
+    "outboundservice": "brianwang1912/cwms-outboundserver@sha256:5a97cd57c498fb910f0ecb849ffb698e1df532d11a3eb0d1d22c88926d3a7490",
+    "webclient": "brianwang1912/mes-web:v19.2-colton-manufacturing-20261007"
+  },
+  "registryDigests": {
+    "layout": "sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
+    "outbound": "sha256:5a97cd57c498fb910f0ecb849ffb698e1df532d11a3eb0d1d22c88926d3a7490",
+    "web": "sha256:42a6356d163b6eeee8855d7316cb5be726470cb2b0b7268d799275e6fe9a79d2"
+  },
+  "webNodeImageConfigId": "sha256:3692cd59bc5a9d2822941bb9ea206c551f2529a04060cf4a6b458943226866cf",
+  "webImageDelivery": "Private repository: exported authorized image and loaded through user-established application-node SSH. Node uses the unique version tag with IfNotPresent; direct registry-digest pulls lacked authorization. No Docker socket loader Pod was created.",
+  "pods": {
+    "layout": "layoutservice-7c494984c5-vgjbf",
+    "outbound": "outboundservice-5fcc467798-bl8jw",
+    "web": "webclient-76fdbd88f5-gs4zw"
+  },
+  "allPods": "1/1 Running, zero restarts",
+  "formalConfiguration": {
+    "manufacturingIssueRequireSourceLocation": false,
+    "manufacturingIssueRequireAllocatedLpn": false
+  },
+  "phoneAppChanged": false,
+  "formalManualPickPolicyDeployed": true,
+  "webHTTP": 200,
+  "webHealthHTTP": 200,
+  "liveBackendJarHashesMatch": true,
+  "persistentYaml": [
+    "/root/k8s/5-backend-app.yaml",
+    "/root/k8s/4-frontend-app.yaml"
+  ],
+  "approval": "User explicitly authorized all three Docker Hub uploads and Colton deployment; application-node SSH established by user."
+}

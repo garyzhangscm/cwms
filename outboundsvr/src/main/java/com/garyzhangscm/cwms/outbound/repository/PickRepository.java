@@ -33,6 +33,16 @@ import java.util.List;
 public interface PickRepository extends JpaRepository<Pick, Long>, JpaSpecificationExecutor<Pick> {
     Pick findByNumber(String number);
 
+    @Query("select p from Pick p where p.warehouseId = :warehouseId " +
+            "and p.workOrderLineId = :lineId and p.itemId = :itemId " +
+            "and p.destinationLocationId = :destinationId and p.quantity > p.pickedQuantity")
+    List<Pick> findOpenWorkOrderPicksForIssue(
+            @org.springframework.data.repository.query.Param("warehouseId") Long warehouseId,
+            @org.springframework.data.repository.query.Param("lineId") Long lineId,
+            @org.springframework.data.repository.query.Param("itemId") Long itemId,
+            @org.springframework.data.repository.query.Param("destinationId") Long destinationId);
+
+
     @Query("select p from Pick p " +
             " where p.itemId = :itemId and p.pickedQuantity < p.quantity " +
             " and p.quantity > 0")

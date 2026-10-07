@@ -51,6 +51,8 @@ public class PickService {
     @Autowired
     private PickRepository pickRepository;
     @Autowired
+    private ManufacturingIssuePolicyService manufacturingIssuePolicyService;
+    @Autowired
     private ShippingStageAreaConfigurationService shippingStageAreaConfigurationService;
     @Autowired
     private PickMovementService pickMovementService;
@@ -2037,6 +2039,9 @@ public class PickService {
         if (Strings.isBlank(lpn)) {
             throw PickingException.raiseException("Can't generate the manual pick as LPN is empty");
         }
+        if (!Objects.equals(warehouseId, workOrder.getWarehouseId())) {
+            throw PickingException.raiseException("Work order warehouse does not match the requested warehouse.");
+        }
         List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(warehouseId, lpn);
         if (inventories.size() == 0) {
             throw PickingException.raiseException("Can't find the LPN. Fail to generate the manual pick");
@@ -2196,6 +2201,16 @@ public class PickService {
 
         }
 
+
+        ProductionLine issueProductionLine = workOrder.getProductionLineAssignments().stream()
+                .filter(assignment -> productionLineId.equals(assignment.getProductionLine().getId()))
+                .findFirst().get().getProductionLine();
+        Long destinationId = issueProductionLine.getInboundStageLocationId();
+        if (destinationId == null && issueProductionLine.getInboundStageLocation() != null) {
+            destinationId = issueProductionLine.getInboundStageLocation().getId();
+        }
+        manufacturingIssuePolicyService.validate(workOrder.getWarehouseId(), workOrderLine.getId(), item.getId(),
+                destinationId, sourceLocation.getId(), lpn);
 
         AllocationResult allocationResult
                 = allocationService.allocate(workOrder, workOrderLine, item,  productionLineId,

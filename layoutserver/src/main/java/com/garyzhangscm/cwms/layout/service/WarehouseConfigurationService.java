@@ -97,6 +97,12 @@ public class WarehouseConfigurationService   {
 
 
     public WarehouseConfiguration save(WarehouseConfiguration warehouseConfiguration) {
+        if (warehouseConfiguration.getManufacturingIssueRequireSourceLocation() == null) {
+            warehouseConfiguration.setManufacturingIssueRequireSourceLocation(true);
+        }
+        if (warehouseConfiguration.getManufacturingIssueRequireAllocatedLpn() == null) {
+            warehouseConfiguration.setManufacturingIssueRequireAllocatedLpn(true);
+        }
         return warehouseConfigurationRepository.save(warehouseConfiguration);
     }
 
@@ -106,8 +112,18 @@ public class WarehouseConfigurationService   {
     }
 
     public WarehouseConfiguration saveOrUpdate(WarehouseConfiguration warehouseConfiguration) {
-        if (warehouseConfiguration.getId() == null && findByWarehouse(warehouseConfiguration.getWarehouse().getId()) != null) {
-            warehouseConfiguration.setId(findByWarehouse(warehouseConfiguration.getWarehouse().getId()).getId());
+        WarehouseConfiguration existing = findByWarehouse(warehouseConfiguration.getWarehouse().getId());
+        if (warehouseConfiguration.getId() == null && existing != null) {
+            warehouseConfiguration.setId(existing.getId());
+        }
+        // Older clients omit these fields. Preserve saved choices instead of resetting them.
+        if (warehouseConfiguration.getManufacturingIssueRequireSourceLocation() == null) {
+            warehouseConfiguration.setManufacturingIssueRequireSourceLocation(existing == null ||
+                    !Boolean.FALSE.equals(existing.getManufacturingIssueRequireSourceLocation()));
+        }
+        if (warehouseConfiguration.getManufacturingIssueRequireAllocatedLpn() == null) {
+            warehouseConfiguration.setManufacturingIssueRequireAllocatedLpn(existing == null ||
+                    !Boolean.FALSE.equals(existing.getManufacturingIssueRequireAllocatedLpn()));
         }
         return save(warehouseConfiguration);
     }

@@ -317,8 +317,22 @@ public class WarehouseLayoutServiceRestemplateClient {
     }
 
 
+    // Issue rules must take effect immediately after the warehouse configuration is saved.
+    @org.springframework.beans.factory.annotation.Value("${manufacturing.issue.configuration-url:http://apigateway:5555/api/layout/warehouse-configuration/by-warehouse/{warehouseId}}")
+    private String manufacturingIssueConfigurationUrl;
+
+    public WarehouseConfiguration getManufacturingIssueConfiguration(Long warehouseId) {
+        return restTemplateProxy.exchange(WarehouseConfiguration.class,
+                UriComponentsBuilder.fromUriString(manufacturingIssueConfigurationUrl)
+                        .buildAndExpand(warehouseId).toUriString(), HttpMethod.GET, null);
+    }
+
     @Cacheable(cacheNames = "OutboundService_WarehouseConfiguration", unless="#result == null")
     public WarehouseConfiguration getWarehouseConfiguration(Long warehouseId) {
+        return fetchWarehouseConfiguration(warehouseId);
+    }
+
+    private WarehouseConfiguration fetchWarehouseConfiguration(Long warehouseId) {
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
                         .scheme("http").host("apigateway").port(5555)
