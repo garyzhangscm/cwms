@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-07",
+  "environment": "Colton production",
+  "source_commit": "4e843db6",
+  "image": "brianwang1912/cwms-workorderserver@sha256:a3bd9a8de368712831d940a493a2db160f53074eb9aa6d71a92846a9332dbf9f",
+  "previous_image": "brianwang1912/cwms-workorderserver@sha256:0732f942ef5030fc4e328880796c1aba6530f439f3cb1c1bd0b9b84f0ea40116",
+  "jar_sha256": "5b68a21f3bd12d685ad99d48fc10128d6d9d3b03deb7821bebd158b1a994c6a3",
+  "validation": {
+    "allocation_tests": 11,
+    "completion_regression_tests": 10,
+    "runtime_json_probe": "passed",
+    "isolated_startup_check": "passed and removed",
+    "rollout": "successful",
+    "pod": "workorderservice-6c866cb688-6p8bk",
+    "restarts": 0
+  },
+  "server_backup": "/root/k8s/backups/colton-allocation-transport-20261007/",
+  "persistent_yaml": "/root/k8s/5-backend-app.yaml",
+  "real_allocations_by_agent": false,
+  "fay_changed": false,
+  "status": "healthy",
+  "fix": [
+    "explicit allocation JSON warehouse and material warehouseId",
+    "preserve Item warehouseId and validate cross-warehouse Items",
+    "fresh allocation Item lookup with request-scoped deduplication to tolerate legacy caches"
+  ]
+}
