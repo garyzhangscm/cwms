@@ -1,0 +1,9 @@
+{
+  "changed": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/clients/OutboundServiceRestemplateClient.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/model/Item.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/workorder/service/WorkOrderAllocationDataService.class"
+  ],
+  "baseline_sha256": "23afb60bfc7ea0c6f27f734fb94db310508d9a9746844e1b1d5c54eb35389f79",
+  "output_sha256": "e5e36c58127108d30954124962bb93fc41621ad1110edec05f0190c3124727d1"
+}

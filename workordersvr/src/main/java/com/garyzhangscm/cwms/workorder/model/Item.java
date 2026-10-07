@@ -30,6 +30,10 @@ import java.util.List;
 public class Item implements Serializable {
 
     private Long id;
+    private Long warehouseId;
+
+    public Long getWarehouseId() { return warehouseId; }
+    public void setWarehouseId(Long warehouseId) { this.warehouseId = warehouseId; }
 
     private String name;
     private String description;
