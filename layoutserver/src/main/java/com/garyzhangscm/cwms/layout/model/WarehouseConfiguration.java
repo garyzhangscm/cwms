@@ -34,6 +34,20 @@ public class WarehouseConfiguration extends AuditibleEntity<String> implements S
     @JsonProperty(value="id")
     private Long id;
 
+    @Column(name = "manufacturing_issue_require_source_location")
+    private Boolean manufacturingIssueRequireSourceLocation;
+
+    public Boolean getManufacturingIssueRequireSourceLocation() { return manufacturingIssueRequireSourceLocation; }
+    public void setManufacturingIssueRequireSourceLocation(Boolean value) { manufacturingIssueRequireSourceLocation = value; }
+
+    @Column(name = "manufacturing_issue_require_allocated_lpn")
+    private Boolean manufacturingIssueRequireAllocatedLpn;
+
+    public Boolean getManufacturingIssueRequireAllocatedLpn() { return manufacturingIssueRequireAllocatedLpn; }
+    public void setManufacturingIssueRequireAllocatedLpn(Boolean value) { manufacturingIssueRequireAllocatedLpn = value; }
+
+
+
     @OneToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;

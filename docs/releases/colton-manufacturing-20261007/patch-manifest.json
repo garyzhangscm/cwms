@@ -1,0 +1,34 @@
+{
+  "layout": {
+    "baselineSha256": "78c406193d7f7c5a7c373b75d5978124a640cee3f286865c2fc14e254d89ba82",
+    "releaseSha256": "1741f2f439ac1f766f7647e8dd8b7f94f2a7a932c45808ae77c478621e77874b",
+    "classesChanged": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/layout/model/WarehouseConfiguration.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/layout/service/WarehouseConfigurationService$1.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/layout/service/WarehouseConfigurationService.class"
+    ],
+    "sourceFiles": [
+      "model/WarehouseConfiguration.java",
+      "service/WarehouseConfigurationService.java"
+    ]
+  },
+  "outbound": {
+    "baselineSha256": "14c89bc16611fee85794e63bb983e78bf80fb0fbfe0e53fdb1b87528946508aa",
+    "releaseSha256": "370bdad48ebd4cfef3018ac355ba572f9d7ad7edfd2be2153674e61147d339ae",
+    "classesChanged": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/clients/WarehouseLayoutServiceRestemplateClient.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/model/WarehouseConfiguration.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/repository/PickRepository.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/ManufacturingIssuePolicyService.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/PickService$1.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/PickService.class"
+    ],
+    "sourceFiles": [
+      "model/WarehouseConfiguration.java",
+      "clients/WarehouseLayoutServiceRestemplateClient.java",
+      "repository/PickRepository.java",
+      "service/ManufacturingIssuePolicyService.java",
+      "service/PickService.java"
+    ]
+  }
+}

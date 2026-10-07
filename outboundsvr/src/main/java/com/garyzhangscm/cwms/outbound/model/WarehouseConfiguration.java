@@ -25,6 +25,18 @@ public class WarehouseConfiguration {
 
     private Long id;
 
+    private Boolean manufacturingIssueRequireSourceLocation;
+
+    public Boolean getManufacturingIssueRequireSourceLocation() { return manufacturingIssueRequireSourceLocation; }
+    public void setManufacturingIssueRequireSourceLocation(Boolean value) { manufacturingIssueRequireSourceLocation = value; }
+
+    private Boolean manufacturingIssueRequireAllocatedLpn;
+
+    public Boolean getManufacturingIssueRequireAllocatedLpn() { return manufacturingIssueRequireAllocatedLpn; }
+    public void setManufacturingIssueRequireAllocatedLpn(Boolean value) { manufacturingIssueRequireAllocatedLpn = value; }
+
+
+
     private Warehouse warehouse;
 
     private Boolean threePartyLogisticsFlag;
