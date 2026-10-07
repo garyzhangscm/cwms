@@ -107,6 +107,14 @@ public class InventoryServiceRestemplateClient {
 
     }
 
+    /** Allocation requires warehouse context absent from older cached Item objects. */
+    public Item getItemForAllocation(Long id) {
+        return restTemplateProxy.exchange(Item.class,
+                UriComponentsBuilder.newInstance().scheme("http").host("apigateway").port(5555)
+                        .path("/api/inventory/items/{id}").buildAndExpand(id).toUriString(),
+                HttpMethod.GET, null);
+    }
+
     @Cacheable(cacheNames = "WorkOrderService_Item", unless="#result == null")
     public Item getItemById(Long id) {
 

@@ -53,7 +53,7 @@ public class WorkOrderAllocationDataService {
 
     private Item item(Long id, Long warehouseId, Map<Long, Item> items, String context) {
         if (id == null || id <= 0) fail(context + "ID is missing.");
-        Item item = items.computeIfAbsent(id, inventory::getItemById);
+        Item item = items.computeIfAbsent(id, inventory::getItemForAllocation);
         if (item == null || !Objects.equals(item.getId(), id) || item.getName() == null || item.getName().isBlank())
             fail(context + id + " could not be loaded.");
         if (!Objects.equals(item.getWarehouseId(), warehouseId))
