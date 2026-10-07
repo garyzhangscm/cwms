@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-07",
+  "environment": "Colton formal workorder backend",
+  "source_commit": "7ed57ce7",
+  "image": "brianwang1912/cwms-workorderserver@sha256:0732f942ef5030fc4e328880796c1aba6530f439f3cb1c1bd0b9b84f0ea40116",
+  "before_image": "brianwang1912/cwms-workorderserver@sha256:75f209032e8cff85fd0572a5c95fa001de59eb9a98c4c96f28958712927f82cc",
+  "jar_sha256": "23afb60bfc7ea0c6f27f734fb94db310508d9a9746844e1b1d5c54eb35389f79",
+  "tests": {
+    "allocation_mock_tests": 8,
+    "completion_regression_tests": 10,
+    "failures": 0
+  },
+  "startup_check": "passed and removed",
+  "server_backup": "/root/k8s/backups/colton-allocation-20261007/",
+  "persistent_yaml": "/root/k8s/5-backend-app.yaml",
+  "test_page_uses_updated_backend": true,
+  "real_allocations_by_agent": false,
+  "fay_changed": false,
+  "status": "deployed and healthy"
+}
