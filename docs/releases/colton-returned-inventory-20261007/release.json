@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-07",
+  "source_tests": 38,
+  "test_failures": 0,
+  "runtime_jar_probe": "passed",
+  "image": "brianwang1912/cwms-workorderserver:v1.62-colton-returned-inventory-20261007",
+  "image_uploaded": true,
+  "colton_deployed": true,
+  "fay_changed": false,
+  "approval": "explicit user authorized deployment of this fix",
+  "diagnosis": {
+    "request": "GET /work-orders/2310/returned-inventory",
+    "empty_filter": "warehouseId=1&workOrderLineIds=",
+    "missing_location_id": 112,
+    "affected_lpn": "L0000110946",
+    "cancelled_pick": "PICK0000213171",
+    "cancelled_quantity": 16,
+    "database_writes_by_agent": false
+  },
+  "source_commit": "965e01085a42de40e1f8333f5856bf8bf2c6486c",
+  "image_digest": "sha256:2c0d2d88068a846f92120b56e32d7274af6df63ac17e63a929ea315ee95e62c2",
+  "jar_sha256": "f5722ca20ce96972cb67c8d6c7140fe617b498d27e40edff000c54def9389293",
+  "running_jar_probe": "passed with no network or database accessed",
+  "pod": "workorderservice-67dbcf755c-htc49",
+  "server_backup": "/root/k8s/backups/colton-returned-inventory-20261007",
+  "persistent_yaml": "/root/k8s/5-backend-app.yaml",
+  "readiness": "1/1",
+  "restarts": 0,
+  "rollout": "successful"
+}
