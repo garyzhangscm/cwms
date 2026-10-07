@@ -35,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 @Component
@@ -377,6 +378,11 @@ public class InventoryServiceRestemplateClient {
 
     }
     public List<Inventory>  getReturnedInventory(Long warehouseId, String workOrderLineIds) {
+
+        // This endpoint must never broaden an empty work-order filter to the whole warehouse.
+        if (workOrderLineIds == null || workOrderLineIds.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
