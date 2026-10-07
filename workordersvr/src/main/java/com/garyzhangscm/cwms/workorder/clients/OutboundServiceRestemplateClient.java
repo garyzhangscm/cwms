@@ -19,6 +19,7 @@
 package com.garyzhangscm.cwms.workorder.clients;
 
 import com.garyzhangscm.cwms.workorder.model.*;
+import com.garyzhangscm.cwms.workorder.service.WorkOrderAllocationDataService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +51,12 @@ public class OutboundServiceRestemplateClient {
 **/
     @Autowired
     private RestTemplateProxy restTemplateProxy;
+    @Autowired
+    private WorkOrderAllocationDataService allocationDataService;
 
     public AllocationResult allocateWorkOrder(WorkOrder workOrder, Long productionLineId, Long quantity) {
+
+        allocationDataService.prepare(workOrder);
 
         UriComponentsBuilder builder =
                 UriComponentsBuilder.newInstance()
