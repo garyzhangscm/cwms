@@ -170,3 +170,4 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Production Line Check Out",menu.mobile.work-order.production_line_check_out,production_line_check_out,6,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ProductionLineCheckOut,menu_workorder_checkout.png,true,false
 "Manual Pick",menu.mobile.work-order.manual-pick,work_order_manual_pick,7,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Manual-Pick,menu_workorder_manual_pick.png,true,false
 "Reverse Production",menu.mobile.work-order.reverse-production,work_order_reverse_production,8,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ReverseProduction,menu_reverse.png,true,false
+"Print Defective Labels",menu.main.qc.defective-labels,/qc/defective-labels,4,Main-Menu-QC,QC-Defective-Labels,,true,false

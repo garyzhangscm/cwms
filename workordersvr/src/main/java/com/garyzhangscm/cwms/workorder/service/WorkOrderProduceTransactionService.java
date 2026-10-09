@@ -243,7 +243,9 @@ public class WorkOrderProduceTransactionService  {
         logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
 
         // get the latest information
-        WorkOrder workOrder = workOrderService.findById(workOrderProduceTransaction.getWorkOrder().getId());
+        // Serialize validation and counter changes for reports on this work order.
+        // The lock is held until this reporting transaction commits or rolls back.
+        WorkOrder workOrder = workOrderService.lockForReporting(workOrderProduceTransaction.getWorkOrder().getId());
         if (Objects.isNull(workOrder.getWarehouse())) {
             workOrder.setWarehouse(
                     warehouseLayoutServiceRestemplateClient.getWarehouseById(
@@ -252,6 +254,8 @@ public class WorkOrderProduceTransactionService  {
             );
         }
         workOrderProduceTransaction.setWorkOrder(workOrder);
+        // Persist the authoritative warehouse for asynchronous result records.
+        workOrderProduceTransaction.setWarehouseId(workOrder.getWarehouseId());
 
         logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
@@ -404,6 +408,16 @@ public class WorkOrderProduceTransactionService  {
                 }
             }
         }
+        // Mobile machine summaries carry only identity fields. Resolve the
+        // persisted line before looking up staging locations; a null location
+        // id would otherwise call /locations/ instead of /locations/{id}.
+        if (Objects.isNull(workOrderProduceTransaction.getProductionLine()) ||
+                Objects.isNull(workOrderProduceTransaction.getProductionLine().getId())) {
+            throw WorkOrderException.raiseException("Please select a valid production line");
+        }
+        workOrderProduceTransaction.setProductionLine(productionLineService.findById(
+                workOrderProduceTransaction.getProductionLine().getId()));
+
         // setup the location for later use
         if (Objects.isNull(workOrderProduceTransaction.getProductionLine().getInboundStageLocation())) {
             workOrderProduceTransaction.getProductionLine().setInboundStageLocation(

@@ -2401,5 +2401,7 @@
   "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"By Allocation Sequence",
   "ALLOCATION-STRATEGY-TYPE-DEFAULT":"Default",
   "steps.item.attribute-tracking": "Attribute Tracking",
-  "production-line-dashboard": "Production Line Dashboard"
+  "production-line-dashboard": "Production Line Dashboard",
+  "menu.main.qc.defective-labels": "Print Defective Labels",
+  "REPORT-TYPE-DEFECTIVE_LPN_LABEL": "Defective LPN Label"
 }
