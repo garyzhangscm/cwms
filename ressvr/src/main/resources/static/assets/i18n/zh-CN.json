@@ -2396,5 +2396,7 @@
   "ALLOCATION-STRATEGY-TYPE-BY_ALLOCATION_SEQUENCE":"按分配顺序",
   "ALLOCATION-STRATEGY-TYPE-DEFAULT":"默认",
   "steps.item.attribute-tracking": "跟踪库存属性",
-  "production-line-dashboard": "产线仪表盘"
+  "production-line-dashboard": "产线仪表盘",
+  "menu.main.qc.defective-labels": "打印废品标签",
+  "REPORT-TYPE-DEFECTIVE_LPN_LABEL": "废品 LPN 标签"
 }

@@ -32,7 +32,8 @@ public enum ReportType {
     WAVE_PICK_SHEET_BY_LOCATION(false),
     WAVE_PACKING_SLIP(false),
     ORDER_MANUAL_PICK_SHEET(false),
-    WORK_ORDER_MANUAL_PICK_SHEET(false);
+    WORK_ORDER_MANUAL_PICK_SHEET(false),
+    DEFECTIVE_LPN_LABEL(true);
 
     private boolean isLabelFlag;
 

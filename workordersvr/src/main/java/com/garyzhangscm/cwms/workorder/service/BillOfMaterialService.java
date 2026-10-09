@@ -329,6 +329,14 @@ public class BillOfMaterialService  {
             return billOfMaterial;
         }
 
+        // Repository-loaded work orders only contain itemId; item is transient.
+        // Load it before matching rather than dereferencing an absent item.
+        if (Objects.isNull(workOrder.getItem()) && Objects.nonNull(workOrder.getItemId())) {
+            workOrder.setItem(inventoryServiceRestemplateClient.getItemById(workOrder.getItemId()));
+        }
+        if (Objects.isNull(workOrder.getItem()) || StringUtils.isBlank(workOrder.getItem().getName())) {
+            throw ResourceNotFoundException.raiseException("Item unavailable for BOM matching on work order " + workOrder.getNumber());
+        }
         // find by the item
         logger.debug("start to find bill of material by warehouse / item {}, {}",
                 workOrder.getWarehouseId(), workOrder.getItem().getName());

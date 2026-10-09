@@ -63,6 +63,14 @@ public class WorkOrderService implements TestDataInitiableService {
     @Autowired
     private WorkOrderRepository workOrderRepository;
     @Autowired
+    private ProductionQuantityService productionQuantityService;
+    @Autowired
+    private ProductionNotificationService productionNotificationService;
+
+    public WorkOrder lockForReporting(Long id) {
+        return productionQuantityService.lockForReporting(id);
+    }
+    @Autowired
     private WorkOrderLineService workOrderLineService;
     @Autowired
     private WorkOrderByProductService workOrderByProductService;
@@ -985,11 +993,17 @@ public class WorkOrderService implements TestDataInitiableService {
  **/
 
     public WorkOrder produce(WorkOrder workOrder, Long producedQuantity, boolean loadDetails) {
+        long quantityStarted = System.nanoTime();
         logger.debug("Will change the work order's produced quantity from {}, to {}",
                 workOrder.getProducedQuantity(),
                 workOrder.getProducedQuantity() + producedQuantity);
-        workOrder.setProducedQuantity(workOrder.getProducedQuantity() + producedQuantity);
-        return saveOrUpdate(workOrder, loadDetails);
+        String username = userService.getCurrentUserName();
+        WorkOrder updated = productionQuantityService.increment(workOrder, producedQuantity, username);
+        logger.debug("Production quantity SQL + flush/refresh: {} ms, workOrderId={}",
+                (System.nanoTime() - quantityStarted) / 1_000_000, workOrder.getId());
+        productionNotificationService.afterCommit(updated.getWarehouseId(), updated.getNumber(),
+                updated.getWorkOrderLines().size(), username);
+        return updated;
     }
 
 
