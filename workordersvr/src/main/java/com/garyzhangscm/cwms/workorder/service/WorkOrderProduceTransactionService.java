@@ -268,6 +268,9 @@ public class WorkOrderProduceTransactionService  {
 
         // save the transaction first
         WorkOrderProduceTransaction newWorkOrderProduceTransaction = save(workOrderProduceTransaction);
+        // JPA merge may return a different object and omit transient request fields.
+        newWorkOrderProduceTransaction.setSuppressLabelPrinting(
+                workOrderProduceTransaction.getSuppressLabelPrinting());
         logger.debug("5. startNewTransaction / new product transaction persist in DB @{}", System.currentTimeMillis());
 
         // total work order produced quantity
@@ -893,7 +896,8 @@ public class WorkOrderProduceTransactionService  {
                 workOrderProducedInventory.getItemPackageType());
 
         // see if the LPN is a new LPN, if so, we will print the label for the new LPN(depends on the configuration)
-        boolean newLPN = inventoryServiceRestemplateClient.findInventoryByLPN(
+        boolean newLPN = !Boolean.TRUE.equals(workOrderProduceTransaction.getSuppressLabelPrinting())
+                && inventoryServiceRestemplateClient.findInventoryByLPN(
                                 workOrder.getWarehouseId(),
                                 workOrderProducedInventory.getLpn()).size() == 0;
 
