@@ -89,6 +89,18 @@ public class WorkOrderProduceTransaction extends AuditibleEntity<String> {
     @Transient
     private ReasonCode reasonCode;
 
+    // Request-only control for workflows using labels printed in advance.
+    @Transient
+    private Boolean suppressLabelPrinting = false;
+
+    public Boolean getSuppressLabelPrinting() {
+        return suppressLabelPrinting;
+    }
+
+    public void setSuppressLabelPrinting(Boolean suppressLabelPrinting) {
+        this.suppressLabelPrinting = suppressLabelPrinting;
+    }
+
 
     @Override
     public String toString() {
