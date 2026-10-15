@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+CWMS_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+for candidate in "$CWMS_ROOT"/.local/tools/jdk-17*/Contents/Home; do
+  if [ -x "$candidate/bin/javac" ]; then
+    export JAVA_HOME="$candidate"
+    break
+  fi
+done
+: "${JAVA_HOME:?Install JDK 17 under .local/tools first}"
+export PATH="$JAVA_HOME/bin:$PATH"
+exec "$CWMS_ROOT/.local/tools/apache-maven-3.9.11/bin/mvn" \
+  "-Dmaven.repo.local=$CWMS_ROOT/.local/m2/repository" "$@"

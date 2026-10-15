@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+exec /Applications/Docker.app/Contents/Resources/bin/docker --context desktop-linux "$@"

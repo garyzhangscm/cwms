@@ -12,7 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 public class UserPasswordResetService {
     private final UserService users;
     private final HttpServletRequest httpRequest;
-    public UserPasswordResetService(UserService users,HttpServletRequest httpRequest){this.users=users;this.httpRequest=httpRequest;}
+    private final UserPasswordUpdateService passwordUpdates;
+    public UserPasswordResetService(UserService users,HttpServletRequest httpRequest,UserPasswordUpdateService passwordUpdates){this.users=users;this.httpRequest=httpRequest;this.passwordUpdates=passwordUpdates;}
     static boolean hasPasswordResetAccess(User actor) {
         if (Boolean.TRUE.equals(actor.getAdmin())) return true;
         return actor.getRoles() != null && actor.getRoles().stream().anyMatch(role ->
@@ -42,8 +43,6 @@ public class UserPasswordResetService {
         String password=request.getNewPassword();
         if(password==null || password.isBlank() || password.length()<8 || password.length()>128 || password.startsWith("{"))
             throw UserOperationException.raiseException("The password must contain 8–128 characters and cannot start with {.");
-        target.setPassword(password);
-        target.setChangePasswordAtNextLogon(request.isChangePasswordAtNextLogon());
-        users.changeUser(target);
+        passwordUpdates.update(target, password, request.isChangePasswordAtNextLogon());
     }
 }
