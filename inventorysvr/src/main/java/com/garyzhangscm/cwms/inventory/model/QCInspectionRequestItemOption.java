@@ -58,6 +58,12 @@ public class QCInspectionRequestItemOption extends AuditibleEntity<String> imple
     @Column(name = "double_value")
     private Double doubleValue;
 
+    @Column(name = "exception_notes", length = 2000)
+    private String exceptionNotes;
+
+    public String getExceptionNotes() { return exceptionNotes; }
+    public void setExceptionNotes(String exceptionNotes) { this.exceptionNotes = exceptionNotes; }
+
     // for display purpose
     @Transient
     private String qcRuleName;
