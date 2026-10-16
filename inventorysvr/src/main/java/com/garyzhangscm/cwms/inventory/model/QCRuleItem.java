@@ -46,6 +46,15 @@ public class QCRuleItem extends AuditibleEntity<String> implements Serializable 
     @Column(name = "check_point")
     private String checkPoint;
 
+    @Column(name = "check_point_es", length = 1000)
+    private String checkPointEs;
+
+    // Distinguish older clients omitting the field from an explicit clear.
+    @Transient
+    @JsonIgnore
+    private boolean checkPointEsProvided;
+
+
 
     @Column(name = "qc_rule_item_type")
     @Enumerated(EnumType.STRING)
@@ -92,6 +101,21 @@ public class QCRuleItem extends AuditibleEntity<String> implements Serializable 
 
     public void setCheckPoint(String checkPoint) {
         this.checkPoint = checkPoint;
+    }
+
+    public String getCheckPointEs() {
+        return checkPointEs;
+    }
+
+    public void setCheckPointEs(String checkPointEs) {
+        this.checkPointEs = checkPointEs == null || checkPointEs.trim().isEmpty()
+                ? null : checkPointEs.trim();
+        this.checkPointEsProvided = true;
+    }
+
+    @JsonIgnore
+    public boolean isCheckPointEsProvided() {
+        return checkPointEsProvided;
     }
 
     public QCRuleItemType getQcRuleItemType() {

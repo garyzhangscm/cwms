@@ -98,11 +98,26 @@ public class QCRuleService{
     }
 
 
+    @org.springframework.transaction.annotation.Transactional
     public QCRule saveOrUpdate(QCRule qcRule) {
         if (qcRule.getId() == null && findByName(qcRule.getWarehouseId(), qcRule.getName()) != null) {
             qcRule.setId(findByName(qcRule.getWarehouseId(), qcRule.getName()).getId());
         }
+        preserveOmittedTranslations(qcRule);
         return save(qcRule);
+    }
+
+    private void preserveOmittedTranslations(QCRule incoming) {
+        if (incoming.getId() == null) return;
+        qcRuleRepository.findById(incoming.getId()).ifPresent(existing -> {
+            incoming.getQcRuleItems().forEach(item -> {
+                if (item.getId() == null || item.isCheckPointEsProvided()) return;
+                existing.getQcRuleItems().stream()
+                        .filter(old -> item.getId().equals(old.getId()))
+                        .findFirst()
+                        .ifPresent(old -> item.setCheckPointEs(old.getCheckPointEs()));
+            });
+        });
     }
 
     private QCRule findByName(Long warehouseId, String name) {
@@ -121,6 +136,7 @@ public class QCRuleService{
     }
 
 
+    @org.springframework.transaction.annotation.Transactional
     public QCRule addQCRule(QCRule qcRule) {
         qcRule.getQcRuleItems().forEach(
                 qcRuleItem -> qcRuleItem.setQcRule(qcRule)
@@ -128,6 +144,7 @@ public class QCRuleService{
         return saveOrUpdate(qcRule);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public QCRule changeQCRule(Long id, QCRule qcRule) {
         qcRule.setId(id);
         return saveOrUpdate(qcRule);
