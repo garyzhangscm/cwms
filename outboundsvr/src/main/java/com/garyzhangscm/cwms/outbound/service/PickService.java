@@ -46,6 +46,7 @@ import com.google.common.collect.Interners;
 
 @Service
 public class PickService {
+    @Autowired private com.garyzhangscm.cwms.outbound.repository.ManualPickOperationRepository preprintedManualOperations;
     private static final Logger logger = LoggerFactory.getLogger(PickService.class);
 
     @Autowired
@@ -1648,6 +1649,8 @@ public class PickService {
     }
     public Pick confirmPick(Pick pick, Long quantity, Location nextLocation,
                             String lpn, String destinationLpn, String sessionId)   {
+        if (preprintedManualOperations.existsByPickId(pick.getId()))
+            throw PickingException.raiseException("Resume this pick in the preprinted Manual Pick flow; do not confirm it separately");
 
         logger.debug("==> Before the pick confirm, the destination location {} 's volume is {}",
                 warehouseLayoutServiceRestemplateClient.getLocationById(nextLocation.getId()).getName(),
@@ -1880,6 +1883,26 @@ public class PickService {
         }
         return quantityToBePicked;
 
+    }
+
+    // Inventory movement is already atomically acknowledged by the split operation.
+    // Caller holds a database lock on this pick; retries skip fully confirmed picks.
+    public Pick recordPreprintedManualPick(Pick pick, Long quantity, String pickedLpn, String requestId) {
+        if (quantity <= 0 || quantity > pick.getQuantity()-pick.getPickedQuantity())
+            throw PickingException.raiseException("Invalid remaining pick quantity");
+        OrderActivity activity=orderActivityService.createOrderActivity(pick.getWarehouseId(),pick.getShipmentLine(),pick,OrderActivityType.PICK_CONFIRM);
+        pick.setPickedQuantity(pick.getPickedQuantity()+quantity);
+        pick.setPickedTime(ZonedDateTime.now());
+        pick.setPickedByUsername(userService.getCurrentUserName());
+        saveOrUpdate(pick);
+        pickConfirmTransactionService.addConfirmation(null,pick.getWarehouseId(),pick,userService.getCurrentUserName(),quantity,pickedLpn,requestId);
+        pickListService.processPickConfirmed(pick);
+        if(Objects.nonNull(pick.getShortAllocation())) shortAllocationService.processPickConfirmed(pick,quantity);
+        activity.setQuantityByNewPick(pick);
+        orderActivityService.sendOrderActivity(activity);
+        if(pick.getQuantity().equals(pick.getPickedQuantity()) && Objects.nonNull(pick.getWorkTaskId()))
+            resourceServiceRestemplateClient.completeWorkTask(pick.getWarehouseId(),pick.getWorkTaskId());
+        return pick;
     }
 
     private boolean match(Inventory inventory, Pick pick) {

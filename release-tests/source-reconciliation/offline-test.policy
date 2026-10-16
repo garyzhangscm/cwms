@@ -1,0 +1,8 @@
+// Isolated report checks may read fixtures and load classes, but cannot open sockets.
+grant {
+  permission java.io.FilePermission "<<ALL FILES>>", "read,write,delete,execute";
+  permission java.util.PropertyPermission "*", "read,write";
+  permission java.lang.RuntimePermission "*";
+  permission java.lang.reflect.ReflectPermission "*";
+  permission java.security.SecurityPermission "*";
+};

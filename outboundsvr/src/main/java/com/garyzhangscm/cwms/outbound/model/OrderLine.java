@@ -247,74 +247,8 @@ public class OrderLine  extends AuditibleEntity<String> implements Serializable 
 
 
     public void setupManualPickableInventoryForDisplay(List<Inventory> inventories) {
-
-
-        Collections.sort(inventories, Comparator.comparing(Inventory::getInWarehouseDatetime));
-
-        // key: location name
-        // value: triple
-        //        1. location name
-        //        2. earliest in warehouse date in the location
-        //        3. latest in warehouse date in the location
-        Map<String, Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateMap = new HashMap<>();
-
-        // group inventory with locatin name
-        // key: location name;
-        // value: inventory in the location
-        Map<String, List<Inventory>> inventoryInLocation = new HashMap<>();
-        for(Inventory inventory : inventories) {
-            String locationName = inventory.getLocation().getName();
-            if (locationsWithInWarehouseDateMap.containsKey(locationName)) {
-                Triple<String, ZonedDateTime, ZonedDateTime> locationInWarehouseDate = locationsWithInWarehouseDateMap.get(locationName);
-                if (inventory.getInWarehouseDatetime().isBefore(locationInWarehouseDate.getMiddle())) {
-                    locationsWithInWarehouseDateMap.put(locationName,
-                            Triple.of(locationName, inventory.getInWarehouseDatetime(), locationInWarehouseDate.getRight()));
-                }
-                else if (inventory.getInWarehouseDatetime().isAfter(locationInWarehouseDate.getRight())) {
-                    locationsWithInWarehouseDateMap.put(locationName,
-                            Triple.of(locationName,  locationInWarehouseDate.getMiddle(), inventory.getInWarehouseDatetime()));
-
-                }
-            }
-            else {
-                locationsWithInWarehouseDateMap.put(locationName,
-                        Triple.of(locationName, inventory.getInWarehouseDatetime(), inventory.getInWarehouseDatetime()));
-            }
-            inventoryInLocation.computeIfAbsent(locationName, key -> new ArrayList<>()).add(inventory);
-
-        }
-
-        // sort the location based on the earliest in warehouse date
-
-        List<Triple<String, ZonedDateTime, ZonedDateTime>> locationsWithInWarehouseDateList
-                = new ArrayList<>(locationsWithInWarehouseDateMap.values());
-
-
-        Collections.sort(locationsWithInWarehouseDateList, Comparator.comparing(Triple::getMiddle));
-
-        manualPickableInventoryForDisplay = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-
-        locationsWithInWarehouseDateList.forEach(
-                locationWithInWarehouseDate -> {
-                    // show the location summary first
-                    manualPickableInventoryForDisplay.add(
-                            locationWithInWarehouseDate.getLeft() + ": " +
-                                    locationWithInWarehouseDate.getMiddle().format(formatter) + " ~ " +
-                                    locationWithInWarehouseDate.getRight().format(formatter)
-                    );
-
-                    // show each inventory in the location
-                    inventoryInLocation.get(locationWithInWarehouseDate.getLeft()).forEach(
-                            inventory ->
-                                    manualPickableInventoryForDisplay.add("    # " +
-                                            inventory.getLpn() + ", " +
-                                            inventory.getQuantity() + ", " +
-                                            inventory.getInWarehouseDatetime().format(formatter))
-                    );
-
-                }
-        );
+        manualPickableInventoryForDisplay =
+                com.garyzhangscm.cwms.outbound.reportfix.ManualPickReportRows.build(inventories);
     }
     public void setupRequiredInventoryAttributes() {
         requiredInventoryAttributes = new ArrayList<>();

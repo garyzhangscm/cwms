@@ -86,6 +86,8 @@ public class ExceptionResponse implements Serializable {
         this.path = path;
     }
 
+    @com.fasterxml.jackson.databind.annotation.JsonSerialize(
+            using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer.class)
     public Instant getTimestamp() {
         return timestamp;
     }

@@ -51,6 +51,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+    @javax.persistence.PersistenceContext private javax.persistence.EntityManager manualPickEntityManager;
+
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
@@ -1900,65 +1902,8 @@ public class OrderService {
     }
 
     private void setupOrderManualPickReportData(Report report, Order order) {
-
-
-        order.getOrderLines().forEach(
-                orderLine -> {
-                    List<Inventory> inventories =
-                            inventoryServiceRestemplateClient.getPickableInventory(
-                                    orderLine.getItemId(),
-                                    orderLine.getInventoryStatusId(),
-                                    null,
-                                    orderLine.getColor(),
-                                    orderLine.getProductSize(),
-                                    orderLine.getStyle(),
-                                    orderLine.getInventoryAttribute1(),
-                                    orderLine.getInventoryAttribute2(),
-                                    orderLine.getInventoryAttribute3(),
-                                    orderLine.getInventoryAttribute4(),
-                                    orderLine.getInventoryAttribute5(),
-                                    null, null
-                            );
-                    // setup the locations for the inventory as we will need to
-                    // show the location as well
-                    Set<Long> locationIds = new HashSet<>();
-                    Map<Long, List<Inventory>> inventoryInLocation = new HashMap<>();
-                    for (Inventory inventory : inventories) {
-                        if (Objects.isNull(inventory.getLocation())) {
-                            locationIds.add(inventory.getLocationId());
-                            inventoryInLocation.computeIfAbsent(
-                                    inventory.getLocationId(),  key -> new ArrayList<>()).add(inventory);
-
-                        }
-                    }
-
-                    // setup the location for each inventory
-                    if (!locationIds.isEmpty()) {
-                        List<Location> locations = warehouseLayoutServiceRestemplateClient.getLocationByIds(
-                                order.getWarehouseId(),
-                                Strings.join(locationIds, ',')
-                        );
-                        locations.stream().filter(location -> inventoryInLocation.containsKey(location.getId()))
-                                .forEach(
-                                        location -> {
-                                            inventoryInLocation.get(location.getId()).forEach(
-                                                    inventory -> inventory.setLocation(location)
-                                            );
-                                        }
-                                );
-                    }
-
-                    orderLine.setupManualPickableInventoryForDisplay(inventories );
-
-                    orderLine.setupRequiredInventoryAttributes();
-
-
-                    logger.debug("get {} pickable inventory for display for order line # {}",
-                            orderLine.getManualPickableInventoryForDisplay().size(),
-                            orderLine.getNumber());
-                }
-        );
-
+        // The manual pick sheet shows order demand, not a candidate inventory assignment.
+        // The actual pallet is chosen and validated in the existing Manual Pick flow.
         report.setData(order.getOrderLines());
     }
 
@@ -4237,6 +4182,7 @@ public class OrderService {
      * @param pickWholeLPN
      * @return
      */
+    @Transactional
     public List<Pick> processManualPick(Long warehouseId, Long clientId, String orderNumber, String lpn, Boolean pickWholeLPN) {
         Order order = findByNumber(warehouseId, clientId, orderNumber, false);
         if (Objects.isNull(order)) {
@@ -4276,6 +4222,7 @@ public class OrderService {
                 lpn);
     }
 
+    @Transactional
     public List<Pick> generateManualPick(Long orderId,
                                          String lpn,
                                          Boolean pickWholeLPN) {
@@ -4283,10 +4230,13 @@ public class OrderService {
 
         return generateManualPick(findById(orderId), lpn, pickWholeLPN);
     }
+    @Transactional
     public List<Pick> generateManualPick(Order order,
                                          String lpn,
                                          Boolean pickWholeLPN) {
-
+        // Order-level database lock also protects old clients from reserving the same demand twice.
+        order = manualPickEntityManager.find(Order.class, order.getId(), javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+        manualPickEntityManager.refresh(order);
         validateOrderForManualPick(order);
 
         List<Inventory> inventories = inventoryServiceRestemplateClient.getInventoryByLpn(
@@ -4469,6 +4419,9 @@ public class OrderService {
         if (Boolean.TRUE.equals(pickWholeLPN)) {
             // if the user specify to pick the whole LPN
             // then return the pickable quantity from this LPN
+            if (inventoryQuantity > quantityRequired) {
+                throw OrderOperationException.raiseException("Partial pallet required. Use the updated Manual Pick screen to scan a new LPN.");
+            }
             return inventoryQuantity;
         }
         return Math.min(inventoryQuantity, quantityRequired);

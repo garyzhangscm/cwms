@@ -1,0 +1,399 @@
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/service/OrderService.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/service/OrderService.java
+@@ -1173,83 +1173,27 @@
+         }
+     }
+ 
+-    @Transactional
++    @org.springframework.beans.factory.annotation.Autowired
++    @org.springframework.context.annotation.Lazy
++    private com.garyzhangscm.cwms.outbound.allocation.AllocationTaskService allocationTaskService;
++
+     public Order allocate(Long orderId, Boolean asynchronous) {
+-
+         Order order = findById(orderId);
+-
+-        logger.debug(">>>    Start to allocate order  {} ,asynchronous? : {}  <<<",
+-                order.getNumber(), asynchronous);
+-
+-        // if the order is already cancelled or request cancellation,
+-        // raise an error
+-        if (order.getStatus().equals(OrderStatus.COMPLETE)) {
+-
+-            throw OrderOperationException.raiseException("Order " + order.getNumber() + " is already complete, can't allocate it");
+-        }
+-        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+-
+-            throw OrderOperationException.raiseException("Order " + order.getNumber() + " is already cancelled, can't allocate it");
+-        }
+-        if (Boolean.TRUE.equals(order.getCancelRequested())) {
+-
+-            throw OrderOperationException.raiseException("There's a cancel request on Order " + order.getNumber() + ", " +
+-                    "please cancel it before you want to continue");
+-        }
+-
+-        // When we directly allocate the order, we will
+-        // 1. create a fake shipment for the order
+-        // 2. allocate the shipment
+-        // we will only plan the allocatable order lines into the shipment lines
+-        List<OrderLine> allocatableOrderLines =
+-                order.getOrderLines().stream().filter(
+-                        orderLine -> !Boolean.TRUE.equals(orderLine.getNonAllocatable())
+-                ).collect(Collectors.toList());
+-
+-        if (allocatableOrderLines.size() == 0) {
+-            throw OrderOperationException.raiseException("There's no allocatable order line in this order");
+-        }
+-
+-        order.setStatus(OrderStatus.ALLOCATING);
+-
+-
+-        // check if we will need to allocate asynchronously
+-        // 1. if the client explicitly want asynchronous
+-        // 2. if the warehouse is configured to allocate asynchronously
+-        if (Objects.isNull(asynchronous)) {
+-            // TO-DO: Will need to use pallet quantity instead of quantity
+-            long totalPalletQuantity = allocatableOrderLines.stream().map(
+-                    orderLine -> orderLineService.getPalletQuantityEstimation(
+-                            orderLine, orderLine.getExpectedQuantity() - orderLine.getShippedQuantity()
+-                    )
+-            ).mapToLong(Long::longValue).sum();
+-
+-            asynchronous  = outboundConfigurationService.isSynchronousAllocationRequired(
+-                    order.getWarehouseId(),totalPalletQuantity);
+-        }
+-
+-        logger.debug("allocate Asynchronously or Synchronously? {}",
+-                Boolean.TRUE.equals(asynchronous) ? "Asynchronously" : "Synchronously");
+-        if (Boolean.TRUE.equals(asynchronous)) {
+-            new Thread(() -> {
+-
+-                logger.debug("start to allocate the order asynchronously");
+-                allocate(order, allocatableOrderLines);
+-
+-                logger.debug("Asynchronously allocation is done");
+-                order.setStatus(OrderStatus.INPROCESS);
+-
+-                saveOrUpdate(order);
+-
+-            }).start();
+-        }
+-        else {
+-            allocate(order, allocatableOrderLines);
+-            logger.debug("Synchronously allocation is done");
+-            order.setStatus(OrderStatus.INPROCESS);
+-
+-        }
+-        return saveOrUpdate(order);
++        if (asynchronous == null) {
++            long pallets = order.getOrderLines().stream().filter(line -> !Boolean.TRUE.equals(line.getNonAllocatable()))
++                .mapToLong(line -> orderLineService.getPalletQuantityEstimation(line, line.getExpectedQuantity() - line.getShippedQuantity())).sum();
++            asynchronous = outboundConfigurationService.isSynchronousAllocationRequired(order.getWarehouseId(), pallets);
++        }
++        com.garyzhangscm.cwms.outbound.allocation.AllocationTask task = allocationTaskService.submit(
++            order.getWarehouseId(), orderId, java.util.UUID.randomUUID().toString(), Boolean.TRUE.equals(asynchronous));
++        if ("FAILED".equals(task.state) || "REVIEW_REQUIRED".equals(task.state)) throw OrderOperationException.raiseException(task.message);
++        return findById(orderId);
++    }
++
++    public void executeAllocationTask(Long orderId) {
++        Order order = findById(orderId);
++        List<OrderLine> lines = order.getOrderLines().stream().filter(line -> !Boolean.TRUE.equals(line.getNonAllocatable())).collect(Collectors.toList());
++        allocate(order, lines);
+     }
+ 
+     @Transactional
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/service/AllocationStrategyFactory.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/service/AllocationStrategyFactory.java
+@@ -25,6 +25,11 @@
+     }
+ 
+ 
++    public AllocationStrategy requireAllocationStrategy(AllocationStrategyType type) {
++        if (type == null) throw new com.garyzhangscm.cwms.outbound.allocation.AllocationValidationFailure("INVALID_STRATEGY", "An allocation strategy is required.");
++        return getAllocationStrategyByType(type).orElseThrow(() -> new com.garyzhangscm.cwms.outbound.allocation.AllocationValidationFailure("INVALID_STRATEGY", "Unsupported allocation strategy: " + type));
++    }
++
+     public AllocationStrategy getDefaultAllocationStrategy() {
+         return allocationStrategies.stream()
+                 .filter(allocationStrategy -> allocationStrategy.isDefault())
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/service/AllocationService.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/service/AllocationService.java
+@@ -312,13 +312,8 @@
+         // For now we only allow one strategy per request. We will ignore
+         // all allocation strategy other than the first one
+ 
+-        AllocationStrategy allocationStrategy =
+-                allocationRequest.getAllocationStrategyTypes().size() > 0 ?
+-                        allocationStrategyService.getAllocationStrategyByType(
+-                                allocationRequest.getAllocationStrategyTypes().get(0)
+-                        ).orElse(allocationStrategyService.getDefaultAllocationStrategy())
+-                        :
+-                        allocationStrategyService.getDefaultAllocationStrategy();
++        AllocationStrategy allocationStrategy = allocationStrategyService.requireAllocationStrategy(
++                allocationRequest.getAllocationStrategyTypes().isEmpty() ? null : allocationRequest.getAllocationStrategyTypes().get(0));
+         logger.debug("Will allocate with strategy: {}", allocationStrategy.getClass());
+         return allocationStrategy.allocate(allocationRequest, sourceLocation);
+ 
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationOrderGateway.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationOrderGateway.java
+@@ -0,0 +1,11 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++public interface AllocationOrderGateway {
++ // Called inside the task transaction; must lock the real order and verify its warehouse.
++ String lockAndGetState(long warehouseId, long orderId);
++ void validate(long warehouseId, long orderId);
++ void markAllocating(long warehouseId, long orderId);
++ void execute(long orderId);
++ // Preserve COMPLETE/CANCELLED and avoid restoring OPEN over partially planned work.
++ void finish(long warehouseId, long orderId, String originalState, boolean successful);
++ boolean hasPlannedWork(long orderId);
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskController.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskController.java
+@@ -0,0 +1,19 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import com.garyzhangscm.cwms.outbound.model.ClientValidationEndpoint;
++import com.garyzhangscm.cwms.outbound.model.BillableEndpoint;
++import java.util.*;
++import java.util.stream.Collectors;
++import org.springframework.web.bind.annotation.*;
++@RestController
++public class AllocationTaskController {
++ private final AllocationTaskService tasks;
++ public AllocationTaskController(AllocationTaskService tasks){this.tasks=tasks;}
++ @ClientValidationEndpoint @GetMapping("/allocation-tasks/capabilities")
++ public Map<String,Object> capabilities(@RequestParam("warehouseId") Long warehouseId){Map<String,Object> m=new HashMap<>();m.put("supported",true);m.put("version",1);return m;}
++ @BillableEndpoint @ClientValidationEndpoint @PostMapping("/orders/{orderId}/allocation-tasks")
++ public AllocationTask submit(@PathVariable("orderId") Long orderId,@RequestParam("warehouseId") Long warehouseId,@RequestBody Map<String,String> request){return tasks.submit(warehouseId,orderId,request.get("requestId"),true);}
++ @ClientValidationEndpoint @GetMapping("/allocation-tasks/{id}")
++ public AllocationTask get(@PathVariable("id") String id,@RequestParam("warehouseId") Long warehouseId){return tasks.get(warehouseId,id);}
++ @ClientValidationEndpoint @GetMapping("/allocation-tasks/latest")
++ public List<AllocationTask> latest(@RequestParam("warehouseId") Long warehouseId,@RequestParam("orderIds") String orderIds){return tasks.latest(warehouseId,Arrays.stream(orderIds.split(",")).filter(s->!s.isBlank()).map(Long::valueOf).distinct().collect(Collectors.toList()));}
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/ProductionAllocationGateway.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/ProductionAllocationGateway.java
+@@ -0,0 +1,40 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import com.garyzhangscm.cwms.outbound.model.*;
++import com.garyzhangscm.cwms.outbound.service.*;
++import javax.persistence.*;
++import java.util.*;
++import org.springframework.stereotype.Component;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.context.annotation.Lazy;
++@Component
++public class ProductionAllocationGateway implements AllocationOrderGateway {
++ @PersistenceContext private EntityManager em;
++ @Autowired @Lazy private OrderService orders;
++ @Autowired private AllocationStrategyFactory strategies;
++ private Order order(long warehouseId,long orderId) {
++  Order o=em.find(Order.class,orderId);
++  if(o==null || !Objects.equals(o.getWarehouseId(),warehouseId))throw new AllocationValidationFailure("ORDER_NOT_FOUND","Order was not found in this warehouse.");return o;
++ }
++ public String lockAndGetState(long warehouseId,long orderId) {
++  Order o=em.find(Order.class,orderId,LockModeType.PESSIMISTIC_WRITE);
++  if(o==null || !Objects.equals(o.getWarehouseId(),warehouseId))throw new AllocationValidationFailure("ORDER_NOT_FOUND","Order was not found in this warehouse.");return o.getStatus().name();
++ }
++ public void validate(long warehouseId,long orderId) {
++  Order o=order(warehouseId,orderId);
++  if(Boolean.TRUE.equals(o.getCancelRequested()) || Boolean.TRUE.equals(o.getAllowForManualPick()) || o.getCategory()==OrderCategory.OUTSOURCING_ORDER)throw new AllocationValidationFailure("ORDER_NOT_READY","This order is not eligible for automatic allocation.");
++  List<String> invalid=new ArrayList<>();int count=0;
++  for(OrderLine line:o.getOrderLines())if(!Boolean.TRUE.equals(line.getNonAllocatable())) {
++   ++count;
++   if(line.getAllocationStrategyType()==null || !strategies.getAllocationStrategyByType(line.getAllocationStrategyType()).isPresent())invalid.add(line.getNumber());
++  }
++  if(count==0)throw new AllocationValidationFailure("NO_ALLOCATABLE_LINES","The order has no allocatable lines.");
++  if(!invalid.isEmpty())throw new AllocationValidationFailure("INVALID_STRATEGY","Set a supported allocation strategy for line(s): "+String.join(", ",invalid.subList(0,Math.min(50,invalid.size())))+".");
++ }
++ public void markAllocating(long warehouseId,long orderId) {order(warehouseId,orderId).setStatus(OrderStatus.ALLOCATING);}
++ public void execute(long orderId) {orders.executeAllocationTask(orderId);}
++ public boolean hasPlannedWork(long orderId) {return em.createQuery("select count(sl) from ShipmentLine sl where sl.orderLine.order.id=:id",Long.class).setParameter("id",orderId).getSingleResult()>0;}
++ public void finish(long warehouseId,long orderId,String original,boolean success) {
++  Order o=order(warehouseId,orderId);
++  if(o.getStatus()==OrderStatus.ALLOCATING)o.setStatus(success || hasPlannedWork(orderId)?OrderStatus.INPROCESS:OrderStatus.valueOf(original));
++ }
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskStore.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskStore.java
+@@ -0,0 +1,38 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import java.sql.*;
++import java.time.Instant;
++import java.util.*;
++import org.springframework.jdbc.core.JdbcTemplate;
++import org.springframework.jdbc.core.RowMapper;
++public class AllocationTaskStore {
++ public final JdbcTemplate jdbc;
++ public AllocationTaskStore(JdbcTemplate jdbc) { this.jdbc = jdbc; }
++ private static Instant time(ResultSet r,String name) throws SQLException { Timestamp t=r.getTimestamp(name); return t==null?null:t.toInstant(); }
++ private final RowMapper<AllocationTask> mapper=(r,n)->{
++  AllocationTask t=new AllocationTask(); t.id=r.getString("id"); t.warehouseId=r.getLong("warehouse_id"); t.orderId=r.getLong("order_id");
++  t.requestId=r.getString("request_id"); t.activeOrderKey=r.getString("active_order_key"); t.state=r.getString("state"); t.originalOrderState=r.getString("original_order_state");
++  t.errorCode=r.getString("error_code"); t.message=r.getString("message"); t.requiresReview=r.getBoolean("requires_review");
++  t.createdAt=time(r,"created_at"); t.startedAt=time(r,"started_at"); t.finishedAt=time(r,"finished_at"); t.heartbeatAt=time(r,"heartbeat_at"); return t;
++ };
++ public AllocationTask one(String sql,Object...args) { List<AllocationTask> rows=jdbc.query(sql,mapper,args); return rows.isEmpty()?null:rows.get(0); }
++ public AllocationTask get(long warehouseId,String id) { return one("select * from outbound_allocation_task where warehouse_id=? and id=?",warehouseId,id); }
++ public AllocationTask request(long warehouseId,long orderId,String requestId) { return one("select * from outbound_allocation_task where warehouse_id=? and order_id=? and request_id=?",warehouseId,orderId,requestId); }
++ public AllocationTask active(long warehouseId,long orderId) { return one("select * from outbound_allocation_task where active_order_key=?",warehouseId+":"+orderId); }
++ public void insert(AllocationTask t) {
++  jdbc.update("insert into outbound_allocation_task (id,warehouse_id,order_id,request_id,active_order_key,state,original_order_state,error_code,message,requires_review,created_at,heartbeat_at,finished_at) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
++   t.id,t.warehouseId,t.orderId,t.requestId,t.activeOrderKey,t.state,t.originalOrderState,t.errorCode,t.message==null?null:t.message.substring(0,Math.min(1000,t.message.length())),t.requiresReview,Timestamp.from(t.createdAt),Timestamp.from(t.heartbeatAt),t.finishedAt==null?null:Timestamp.from(t.finishedAt));
++ }
++ public boolean start(AllocationTask t,Instant now) { return jdbc.update("update outbound_allocation_task set state='RUNNING',started_at=?,heartbeat_at=? where id=? and state='QUEUED'",Timestamp.from(now),Timestamp.from(now),t.id)==1; }
++ public void heartbeat(String id,Instant now) { jdbc.update("update outbound_allocation_task set heartbeat_at=? where id=? and state='RUNNING'",Timestamp.from(now),id); }
++ public void finish(AllocationTask t,String state,String code,String message,boolean review,Instant now) {
++  jdbc.update("update outbound_allocation_task set state=?,error_code=?,message=?,requires_review=?,finished_at=?,heartbeat_at=?,active_order_key=? where id=? and state in ('QUEUED','RUNNING')",
++   state,code,message==null?null:message.substring(0,Math.min(1000,message.length())),review,Timestamp.from(now),Timestamp.from(now),review?t.warehouseId+":"+t.orderId:null,t.id);
++ }
++ public List<AllocationTask> stale(Instant before) { return jdbc.query("select * from outbound_allocation_task where state in ('QUEUED','RUNNING') and heartbeat_at<?",mapper,Timestamp.from(before)); }
++ public List<AllocationTask> latest(long warehouseId,List<Long> orders) {
++  if(orders.isEmpty())return Collections.emptyList();
++  if(orders.size()>100)throw new AllocationValidationFailure("TOO_MANY_ORDERS","At most 100 order IDs are allowed.");
++  String markers=String.join(",",Collections.nCopies(orders.size(),"?")); List<Object> args=new ArrayList<>();args.add(warehouseId);args.addAll(orders);
++  return jdbc.query("select t.* from outbound_allocation_task t where t.warehouse_id=? and t.order_id in ("+markers+") and not exists (select 1 from outbound_allocation_task newer where newer.warehouse_id=t.warehouse_id and newer.order_id=t.order_id and newer.sequence_id>t.sequence_id)",mapper,args.toArray());
++ }
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskService.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskService.java
+@@ -0,0 +1,89 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import java.time.*;
++import java.util.*;
++import java.util.concurrent.*;
++import org.springframework.transaction.support.TransactionTemplate;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++public class AllocationTaskService implements AutoCloseable {
++ private static final Logger log=LoggerFactory.getLogger(AllocationTaskService.class);
++ private final AllocationTaskStore store;
++ private final AllocationOrderGateway orders;
++ private final TransactionTemplate tx;
++ private final Executor executor;
++ private final Clock clock;
++ private final ScheduledExecutorService heartbeats=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"allocation-heartbeat");t.setDaemon(true);return t;});
++ public AllocationTaskService(AllocationTaskStore store,AllocationOrderGateway orders,TransactionTemplate tx,Executor executor,Clock clock) {
++  this.store=store;this.orders=orders;this.tx=tx;this.executor=executor;this.clock=clock;
++ }
++ public AllocationTask submit(long warehouseId,long orderId,String requestId,boolean asynchronous) {
++  if(requestId==null || !requestId.matches("[A-Za-z0-9_-]{8,64}"))throw new AllocationValidationFailure("INVALID_REQUEST_ID","A stable request ID (8–64 letters, digits, underscores or hyphens) is required.");
++  final boolean[] created={false};
++  AllocationTask task=tx.execute(status->{
++   String original=orders.lockAndGetState(warehouseId,orderId);
++   AllocationTask old=store.request(warehouseId,orderId,requestId);if(old!=null)return old;
++   old=store.active(warehouseId,orderId);if(old!=null)return old;
++   AllocationTask t=new AllocationTask();t.id=UUID.randomUUID().toString();t.requestId=requestId;t.warehouseId=warehouseId;t.orderId=orderId;t.originalOrderState=original;t.createdAt=clock.instant();t.heartbeatAt=t.createdAt;
++   try {
++    if(!Arrays.asList("OPEN","INPROCESS").contains(original))throw new AllocationValidationFailure("ORDER_NOT_READY","Order state "+original+" does not allow a new task. Review any earlier allocation first.");
++    orders.validate(warehouseId,orderId);
++   } catch(AllocationValidationFailure invalid) {
++    t.state="FAILED";t.errorCode=invalid.code;t.message=invalid.getMessage();t.finishedAt=t.createdAt;store.insert(t);return t;
++   }
++   t.state="QUEUED";t.activeOrderKey=warehouseId+":"+orderId;store.insert(t);orders.markAllocating(warehouseId,orderId);created[0]=true;return t;
++  });
++  if(created[0]) {
++   if(asynchronous)try{executor.execute(()->run(task));}catch(RejectedExecutionException full){finish(task,false,"QUEUE_FULL","Allocation queue is full. No allocation work was started.",false);}
++   else run(task);
++  }
++  return store.get(warehouseId,task.id);
++ }
++ private void run(AllocationTask task) {
++  boolean started=Boolean.TRUE.equals(tx.execute(s->{orders.lockAndGetState(task.warehouseId,task.orderId);return store.start(task,clock.instant());}));
++  if(!started)return;
++  ScheduledFuture<?> beat=heartbeats.scheduleWithFixedDelay(()->{try{store.heartbeat(task.id,clock.instant());}catch(Exception e){log.error("Allocation heartbeat failed for task {}",task.id,e);}},5,5,TimeUnit.SECONDS);
++  try {
++   tx.execute(s->{String state=orders.lockAndGetState(task.warehouseId,task.orderId);if(!"ALLOCATING".equals(state))throw new AllocationValidationFailure("ORDER_CHANGED","Order state changed before allocation started.");orders.validate(task.warehouseId,task.orderId);return null;});
++   orders.execute(task.orderId);
++   finish(task,true,null,null,false);
++  } catch(Exception failure) {
++   log.error("Allocation task {} failed for order {}",task.id,task.orderId,failure);
++   Throwable reason=failure;
++   for(int i=0;i<10 && reason.getCause()!=null && reason.getCause()!=reason;i++)reason=reason.getCause();
++   String code=failure instanceof AllocationValidationFailure?((AllocationValidationFailure)failure).code:"ALLOCATION_FAILED";
++   String message=failure instanceof AllocationValidationFailure?failure.getMessage():"Allocation failed ("+reason.getClass().getSimpleName()+"). Review existing picks and shipment lines before retrying. Reference: "+task.id;
++   if(reason instanceof com.garyzhangscm.cwms.outbound.exception.AllocationException || reason instanceof com.garyzhangscm.cwms.outbound.exception.OrderOperationException) {
++    code="ALLOCATION_REJECTED";message=reason.getMessage();
++   } else if(reason instanceof java.sql.SQLException || reason instanceof org.springframework.dao.DataAccessException) {
++    code="DATABASE_ERROR";message="Allocation could not finish because a database operation failed. Reference: "+task.id;
++   } else if(reason instanceof org.springframework.web.client.RestClientException || reason instanceof java.net.SocketTimeoutException) {
++    code="UPSTREAM_ERROR";message="An allocation dependency was unavailable or timed out. Reference: "+task.id;
++   }
++   finish(task,false,code,message,true);
++  } finally {beat.cancel(false);}
++ }
++ private void finish(AllocationTask task,boolean success,String code,String message,boolean workStarted) {
++  tx.execute(s->{
++   orders.lockAndGetState(task.warehouseId,task.orderId);
++   AllocationTask current=store.get(task.warehouseId,task.id);
++   if(current==null || !current.active())return null;
++   boolean review=!success && workStarted && orders.hasPlannedWork(task.orderId);
++   orders.finish(task.warehouseId,task.orderId,task.originalOrderState,success);
++   store.finish(task,success?"SUCCEEDED":"FAILED",code,message,review,clock.instant());return null;
++  });
++ }
++ public void recoverStaleTasks() {
++  for(AllocationTask candidate:store.stale(clock.instant().minusSeconds(300)))tx.execute(s->{
++   orders.lockAndGetState(candidate.warehouseId,candidate.orderId);
++   AllocationTask current=store.get(candidate.warehouseId,candidate.id);
++   if(current!=null && current.active() && current.heartbeatAt.isBefore(clock.instant().minusSeconds(300))) {
++    // Keep the unique active key: uncertain work must never be automatically repeated.
++    orders.finish(current.warehouseId,current.orderId,current.originalOrderState,false);
++    store.finish(current,"REVIEW_REQUIRED","WORKER_LOST","Allocation worker stopped reporting progress. Review existing work before retrying. Reference: "+current.id,true,clock.instant());
++   }return null;
++  });
++ }
++ public AllocationTask get(long warehouseId,String id) { AllocationTask t=store.get(warehouseId,id);if(t==null)throw new AllocationValidationFailure("TASK_NOT_FOUND","Allocation task was not found in this warehouse.");return t; }
++ public List<AllocationTask> latest(long warehouseId,List<Long> ids) {return store.latest(warehouseId,ids);}
++ public void close(){heartbeats.shutdownNow();}
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTask.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTask.java
+@@ -0,0 +1,11 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import java.time.Instant;
++import com.fasterxml.jackson.annotation.JsonIgnore;
++public class AllocationTask {
++ public String id, requestId, state, errorCode, message;
++ public long warehouseId, orderId;
++ public boolean requiresReview;
++ public Instant createdAt, startedAt, finishedAt, heartbeatAt;
++ @JsonIgnore public String originalOrderState, activeOrderKey;
++ public boolean active() { return "QUEUED".equals(state) || "RUNNING".equals(state); }
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationValidationFailure.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationValidationFailure.java
+@@ -0,0 +1,5 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++public class AllocationValidationFailure extends RuntimeException {
++ public final String code;
++ public AllocationValidationFailure(String code, String message) { super(message); this.code = code; }
++}
+--- a/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskConfiguration.java
++++ b/src/main/java/com/garyzhangscm/cwms/outbound/allocation/AllocationTaskConfiguration.java
+@@ -0,0 +1,25 @@
++package com.garyzhangscm.cwms.outbound.allocation;
++import java.time.Clock;
++import javax.sql.DataSource;
++import org.springframework.beans.factory.annotation.Qualifier;
++import org.springframework.context.annotation.*;
++import org.springframework.jdbc.core.JdbcTemplate;
++import org.springframework.scheduling.annotation.Scheduled;
++import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
++import org.springframework.transaction.PlatformTransactionManager;
++import org.springframework.transaction.support.TransactionTemplate;
++@Configuration
++public class AllocationTaskConfiguration {
++ @Bean(name="orderAllocationExecutor") public ThreadPoolTaskExecutor executor() {
++  ThreadPoolTaskExecutor e=new ThreadPoolTaskExecutor();e.setCorePoolSize(2);e.setMaxPoolSize(2);e.setQueueCapacity(20);e.setThreadNamePrefix("order-allocation-");e.setWaitForTasksToCompleteOnShutdown(true);e.setAwaitTerminationSeconds(30);return e;
++ }
++ @Bean public AllocationTaskService allocationTaskService(DataSource ds,PlatformTransactionManager manager,ProductionAllocationGateway gateway,@Qualifier("orderAllocationExecutor") ThreadPoolTaskExecutor executor) {
++  return new AllocationTaskService(new AllocationTaskStore(new JdbcTemplate(ds)),gateway,new TransactionTemplate(manager),executor,Clock.systemUTC());
++ }
++ @Bean public RecoverySweep allocationRecoverySweep(AllocationTaskService service){return new RecoverySweep(service);}
++ public static class RecoverySweep {
++  private final AllocationTaskService service;
++  RecoverySweep(AllocationTaskService service){this.service=service;}
++  @Scheduled(fixedDelay=30000) public void check(){service.recoverStaleTasks();}
++ }
++}
