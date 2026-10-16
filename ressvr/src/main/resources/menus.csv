@@ -171,3 +171,5 @@ text,i18n,link,sequence,menuSubGruop,name,icon,enabled,isSystemAdminMenu
 "Manual Pick",menu.mobile.work-order.manual-pick,work_order_manual_pick,7,Mobile-Menu-WorkOrder,Mobile-WorkOrder-Manual-Pick,menu_workorder_manual_pick.png,true,false
 "Reverse Production",menu.mobile.work-order.reverse-production,work_order_reverse_production,8,Mobile-Menu-WorkOrder,Mobile-WorkOrder-ReverseProduction,menu_reverse.png,true,false
 "Print Defective Labels",menu.main.qc.defective-labels,/qc/defective-labels,4,Main-Menu-QC,QC-Defective-Labels,,true,false
+
+"Print LPN Labels",inventory.preprinted.title,/inventory/preprinted-lpns,90,Main-Menu-Inventory,Inventory-Preprinted-Lpns,,true,false
