@@ -4377,18 +4377,15 @@ public class OrderService {
         // otherwise, we can generate manual pick from the open order line and we will assume
         // the system will generate a shipment line with the full open order line quantity
         // later on
-        List<ShipmentLine> shipmentLines = shipmentLineService.findByOrderLineId(
-                order.getWarehouseId(), matchedOrderLine.getId()
-        );
+
 
 
 
         // get all the open quantity for this order line.
         // we can generate picks for any open quantity that still in shipment line
 
-        long quantityRequired = shipmentLines.isEmpty() ?
-                matchedOrderLine.getOpenQuantity() :
-                shipmentLines.stream().map(ShipmentLine::getOpenQuantity).mapToLong(Long::longValue).sum();
+        long quantityRequired = ManualPickDemand.remaining(order, matchedOrderLine,
+                shipmentService.findByOrder(order, false));
 
         logger.debug("we still need {} of item with id {} from the order {}, line {}",
                 quantityRequired,
