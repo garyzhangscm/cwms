@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='manual-pick-regression-') as tmp:
    if name.startswith(('BOOT-INF/classes/','BOOT-INF/lib/')): jar.extract(name,tmp)
  cp=os.pathsep.join(map(str,[tmp/'patched',tmp/'BOOT-INF/classes',tmp/'BOOT-INF/lib/*']))
  base=module/'src/main/java/com/garyzhangscm/cwms/outbound'
- files=['model/ManualPickOperation.java', 'repository/ManualPickOperationRepository.java', 'service/OrderService.java', 'service/PickService.java', 'service/PreprintedManualPickService.java', 'controller/PreprintedManualPickController.java']
+ files=['model/ManualPickOperation.java', 'repository/ManualPickOperationRepository.java', 'service/OrderService.java', 'service/PickService.java', 'service/PreprintedManualPickService.java', 'controller/PreprintedManualPickController.java', 'model/ManualPickDemand.java', 'controller/ManualPickAvailabilityController.java']
  sources=[base/file for file in files]+[here/'ManualPickOutboundRegression.java']
  subprocess.run([exe('javac'),'--release','17','-parameters','-cp',cp,'-d',str(tmp/'patched'),*map(str,sources)],check=True)
  subprocess.run([exe('java'),'-Xverify:all','-cp',cp,'ManualPickOutboundRegression',*[]],check=True)

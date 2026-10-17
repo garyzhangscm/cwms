@@ -22,7 +22,7 @@ public class ManualPickOutboundRegression {
    public InventoryConfiguration getInventoryConfiguration(Long w){return new InventoryConfiguration();}
    public List<Inventory> getPickableInventory(Long i,Long s,Long l,String lpn){return List.of(stock);}
   });
-  set(service,"shipmentLineService",new ShipmentLineService(){public List<ShipmentLine> findByOrderLineId(Long w,Long id){return List.of();}});
+  set(service,"shipmentService",new ShipmentService(){public List<Shipment> findByOrder(Order order,boolean details){return List.of();}});
   for(long amount:new long[]{1,39,40,41,325}){
    stock.setQuantity(amount);require(service.getPickableQuantityForManualPick(o,stock.getLpn(),false)==Math.min(40,amount),"Bound partial pick");
    if(amount>40){try{service.getPickableQuantityForManualPick(o,stock.getLpn(),true);throw new AssertionError("Legacy overpick accepted");}catch(OrderOperationException expected){}}
