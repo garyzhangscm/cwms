@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
+import com.garyzhangscm.cwms.workorder.service.WorkOrderQCSampleRegistrationListener;
 /**
  *
  */
 @Entity
 @Table(name = "work_order_qc_sample")
+@EntityListeners(WorkOrderQCSampleRegistrationListener.class)
 public class WorkOrderQCSample extends AuditibleEntity<String>{
 
     @Id

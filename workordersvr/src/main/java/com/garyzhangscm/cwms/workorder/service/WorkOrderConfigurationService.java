@@ -296,25 +296,19 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
 
         int index = 0;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        // the start time and end time will be added to today and then we will do the compare
+        // Compare recurring daily schedules against one fixed date, without audit-clock nanos.
+        LocalDate anchor = LocalDate.of(2000, 1, 1);
         for (ProductionShiftSchedule productionShiftSchedule : workOrderConfiguration.getProductionShiftSchedules()) {
             LocalTime shiftStart = LocalTime.parse(productionShiftSchedule.getShiftStartTime(), formatter);
             LocalTime shiftEnd = LocalTime.parse(productionShiftSchedule.getShiftEndTime(), formatter);
 
-            startTimes[index] = LocalDateTime.now().withHour(shiftStart.getHour())
-                    .withMinute(shiftStart.getMinute())
-                    .withSecond(shiftStart.getSecond());
-            if (Boolean.TRUE.equals(productionShiftSchedule.getShiftEndNextDay())) {
-                endTimes[index] = LocalDateTime.now().plusDays(1)
-                        .withHour(shiftEnd.getHour())
-                        .withMinute(shiftEnd.getMinute())
-                        .withSecond(shiftEnd.getSecond());
-            }
-            else {
-                endTimes[index] = LocalDateTime.now()
-                        .withHour(shiftEnd.getHour())
-                        .withMinute(shiftEnd.getMinute())
-                        .withSecond(shiftEnd.getSecond());
+            startTimes[index] = LocalDateTime.of(anchor, shiftStart);
+            endTimes[index] = LocalDateTime.of(
+                    Boolean.TRUE.equals(productionShiftSchedule.getShiftEndNextDay())
+                            ? anchor.plusDays(1) : anchor, shiftEnd);
+            long duration = Duration.between(startTimes[index], endTimes[index]).getSeconds();
+            if (duration <= 0 || duration > 24 * 60 * 60) {
+                throw WorkOrderException.raiseException("Shift duration must be greater than zero and at most 24 hours");
             }
             index++;
 
@@ -322,7 +316,10 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
 
         for(int i = 0; i < shiftNumbers - 1; i++) {
             for (int j = i + 1; j < shiftNumbers; j ++) {
-                if (isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j], endTimes[j])) {
+                // Daily repetition also requires comparing yesterday's and tomorrow's shift.
+                if (isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j], endTimes[j])
+                        || isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j].minusDays(1), endTimes[j].minusDays(1))
+                        || isTimeRangeOverLapping(startTimes[i], endTimes[i], startTimes[j].plusDays(1), endTimes[j].plusDays(1))) {
                     throw WorkOrderException.raiseException("Can't setup the shift schedule as the following time overlapping: " +
                             "[" + startTimes[i].toLocalTime().format(formatter) + "," + endTimes[i].toLocalTime().format(formatter) + "] and " +
                             "[" + startTimes[j].toLocalTime().format(formatter) + "," +  endTimes[j].toLocalTime().format(formatter)+ "]");
@@ -345,19 +342,8 @@ public class WorkOrderConfigurationService implements TestDataInitiableService{
      */
     private boolean isTimeRangeOverLapping(LocalDateTime startTime1, LocalDateTime endTime1,
                                            LocalDateTime startTime2, LocalDateTime endTime2) {
-        // not over lapping if one of the following condition meet
-        // 1. end time 1 < start time 2
-        // 2. start time 1 > end time 2
-        logger.debug("check if [{}, {}] is overlapping with [{}, {}]",
-                startTime1, endTime1,
-                startTime2, endTime2);
-        if (endTime1.isBefore(startTime2)) {
-            return false;
-        }
-        else if (startTime1.isAfter(endTime2)) {
-            return false;
-        }
-        return true;
+        // Half-open intervals [start, end): adjacent shifts share a boundary, not work time.
+        return startTime1.isBefore(endTime2) && startTime2.isBefore(endTime1);
     }
 
     private void loadProductionShiftSchedule(List<WorkOrderConfiguration> workOrderConfigurations) {

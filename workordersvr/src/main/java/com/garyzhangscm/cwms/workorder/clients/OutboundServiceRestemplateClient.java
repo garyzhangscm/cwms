@@ -94,31 +94,13 @@ public class OutboundServiceRestemplateClient {
 
     }
 
-    public Pick cancelPick(Long pickId){
-
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("apigateway").port(5555)
-                        .path("/api/outbound/picks/{id}");
-
-/**
-        ResponseBodyWrapper<Pick> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.buildAndExpand(pickId).toUriString(),
-                HttpMethod.DELETE,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<Pick>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
- **/
-
-        return restTemplateProxy.exchange(
-                Pick.class,
-                builder.buildAndExpand(pickId).toUriString(),
-                HttpMethod.DELETE,
-                null
-        );
-
+    public List<Pick> cancelPick(Long pickId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .scheme("http").host("apigateway").port(5555)
+                .path("/api/outbound/picks/{id}");
+        // The endpoint returns a list, including an empty list when no picks remain.
+        return restTemplateProxy.exchangeList(Pick.class,
+                builder.buildAndExpand(pickId).toUriString(), HttpMethod.DELETE, null);
     }
 
 
