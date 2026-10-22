@@ -15,7 +15,7 @@ must not block later batches. Prefix and cleanup-policy validation occurs before
 any network request. These changes do not alter the host's existing daily import
 services or schedules.
 
-Build: `docker build --platform linux/amd64 -t brianwang1912/mes-import-operator:v20261022 .`
+Build: `docker build --platform linux/amd64 -t brianwang1912/mes-import-operator:v20261022-02 .`
 The build runs all 99 mock/temporary-file tests before assembling runtime code.
 The runtime contains only Python modules, no tests, examples, credentials or state.
 
@@ -33,8 +33,10 @@ For a source not configured at a factory, `--unconfigured-reason` starts an expl
 unavailable endpoint: health reports configured=false; all business methods return
 503 with that message. It creates no queue and starts no worker. It never points at
 another factory's source or fabricates a healthy empty exception list. FAY has no
-existing Work Order source; its handling awaits the user's scope decision.
+existing Work Order source; the user selected the explicit unconfigured endpoint and prohibited retry while preserving the original import setup.
 
 After cutover, verify health and unauthenticated rejection through the new image,
 then perform authenticated read-only browser acceptance. Do not test retry against
 real batches or upload/create a real sales order as a deployment check.
+
+Runtime: Python 3.12 Alpine is used for compatibility with the existing Docker 20.10.8 hosts. The first glibc candidate failed the empty-queue preflight before any live API was stopped. No global Docker upgrade or seccomp relaxation is part of this release.
