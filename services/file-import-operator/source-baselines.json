@@ -1,0 +1,22 @@
+{
+  "colton-item": {
+    "adapter.py": "de8af20ebb7da07c267bf4865228d055ecfd600b14ff7cb5505639bff811b8fb",
+    "item_import_api.py": "9258bc099d43b937cbb1dd936644f75a366f2430829565c17edda00e5f579f8a",
+    "oracle_items.py": "b414b80c067cef6636dd8049ed9d1c6b897b6552244fe7dc2c34ee236120b877",
+    "oracle_work_orders.py": "97ea5a4765f2ff4aed45e53f3b55a4f7f00c1367e8de93fabf4711c18bb783b9",
+    "settings_api.py": "08c4cadf344f7317d243f952463d7f6c91edc52ee292a4fb199aa5433404b1ad",
+    "work_order_api.py": "19c5e691655d8d6bed6b91694f91fa50021c4c510348fc551fbf16e65255b751"
+  },
+  "colton-work-order": {
+    "adapter.py": "11b864da87c06b03e8057df34fc54cbc15c7c57aee09cbf622a7e6e1512e296a",
+    "oracle_items.py": "add8e3a0e228600667de2596a7932550fd440f9855b76c8741685693f1e0ecfc",
+    "oracle_work_orders.py": "97ea5a4765f2ff4aed45e53f3b55a4f7f00c1367e8de93fabf4711c18bb783b9",
+    "settings_api.py": "08c4cadf344f7317d243f952463d7f6c91edc52ee292a4fb199aa5433404b1ad",
+    "work_order_api.py": "3c7c07d0d69f93d1c60a7dea2cd0635ff39648f31d38ec2b5ee3ca3f2f829901"
+  },
+  "fay-item": {
+    "adapter.py": "9face8ec4d0a1eb3ce33d7d4e33c2ca94bd8dfcfcc1c737ca6fc6b42e05f55a9",
+    "oracle_items.py": "add8e3a0e228600667de2596a7932550fd440f9855b76c8741685693f1e0ecfc",
+    "run_fay_batch.py": "2916abf16d7a5c30e977473ac4c90704d1b768daceb9e000dd7b2cd7d01ea522"
+  }
+}

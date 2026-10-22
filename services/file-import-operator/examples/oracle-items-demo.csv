@@ -1,0 +1,4 @@
+item_number,item_description,item_type,pieces_per_carton,pieces_per_pallet
+TEST-ITEM-001,Test item normal packaging,01,12,360
+TEST-ITEM-002,Test item empty carton and zero pallet,01,,0
+TEST-ITEM-003,Test item zero carton and empty pallet,01,0,

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<batch>
+  <record>
+    <recordId>receipts-event-001</recordId>
+    <companyCode>TEST_ONLY</companyCode>
+    <warehouseName>TEST_WAREHOUSE</warehouseName>
+    <number>PO-001</number>
+    <supplierName>SUP-001</supplierName>
+    <line>
+      <number>1</number>
+      <itemName>ITEM-001</itemName>
+      <expectedQuantity>10</expectedQuantity>
+    </line>
+  </record>
+  <record>
+    <recordId>receipts-event-001</recordId>
+    <companyCode>TEST_ONLY</companyCode>
+    <warehouseName>TEST_WAREHOUSE</warehouseName>
+    <number>PO-001</number>
+    <supplierName>SUP-001</supplierName>
+    <line>
+      <number>2</number>
+      <itemName>ITEM-002</itemName>
+      <expectedQuantity>3</expectedQuantity>
+    </line>
+  </record>
+</batch>
