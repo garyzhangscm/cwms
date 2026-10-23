@@ -1,0 +1,12 @@
+{
+  "colton": {
+    "order_manual_pick_sheet.jrxml": "f6dc4746da47e703d31c89e0f95abcca5c2d847507a47919d097046505c9bd59",
+    "order_manual_pick_sheet_en_US.properties": "52eb23a5d86b920429095b6f40e07677afe214bc65658e76dc9451868471d580",
+    "order_manual_pick_sheet_zh_CN.properties": "91f4fcc7a9c991be4079763388cf2bc90c154fd2aa6f9c3c5d3e58d992dc8a15"
+  },
+  "fay": {
+    "order_manual_pick_sheet.jrxml": "cd6dc182473449c7c79feb21fc41732fb7d4ba23578e443f4ca615c7091f7677",
+    "order_manual_pick_sheet_en_US.properties": "a1940b3813e594693f3635e6c624f488204cba832f7558d7ccbfa7a38875d8c1",
+    "order_manual_pick_sheet_zh_CN.properties": "f4c3ef679343650575b740830a9a756ede41a021546383160b507698f42cc711"
+  }
+}
