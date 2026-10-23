@@ -1,0 +1,23 @@
+{
+  "site": "fay",
+  "service": "outboundservice",
+  "image": "brianwang1912/cwms-outboundserver:v1.62-fay-order-remove-20261023-01@sha256:894ba56d623c23cc80a30a285f8571ef7c38b9f287f253802f94af79eef1ef20",
+  "ready": true,
+  "checks": [
+    {
+      "health": 200,
+      "jarHashVerified": true,
+      "unauthenticatedRulesDenied": true,
+      "transitConfigurationPreserved": true
+    },
+    {
+      "readOnlyPrintPolicyPassed": true,
+      "sampleShipmentCount": 1
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/order-remove-20261023T201144Z-outboundservice"
+}

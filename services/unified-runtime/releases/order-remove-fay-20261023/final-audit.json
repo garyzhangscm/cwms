@@ -1,0 +1,16 @@
+{
+  "fayReady": true,
+  "healthVerified": true,
+  "publishedJarHashVerified": true,
+  "existingPrintPolicyVerified": true,
+  "coltonUnchanged": true,
+  "protectedFayServicesUnchanged": [
+    "integrationservice",
+    "inboundservice",
+    "resourceservice",
+    "webclient"
+  ],
+  "databaseSchemaChanged": false,
+  "productionOrderDeletionExecuted": false,
+  "productionInventoryTransactionsExecuted": false
+}
