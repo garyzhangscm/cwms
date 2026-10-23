@@ -10,3 +10,39 @@ file-integration/state/
 *.ovpn
 *.p12
 *.auth
+
+# Private deployment material
+.env
+.env.*
+!.env.example
+*.local.env
+config/private/
+*.pem
+*.key
+*.p12
+*.pfx
+hs_err_pid*.log
+
+# Private deployment material
+.env
+.env.*
+!.env.example
+*.local.env
+config/private/
+*.pem
+*.key
+*.p12
+*.pfx
+hs_err_pid*.log
+
+# Private deployment material
+.env
+.env.*
+!.env.example
+*.local.env
+config/private/
+*.pem
+*.key
+*.p12
+*.pfx
+hs_err_pid*.log
