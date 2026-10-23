@@ -1,0 +1,45 @@
+{
+  "inventoryservice": {
+    "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
+    "jarSha256": "f46e1c52b7cf2f435df75bdc25d3ca84e20e6226187dc0f75c4a8c3ed52b36bd",
+    "jarPath": "/usr/local/service/inventoryserver-v1.62.jar"
+  },
+  "outboundservice": {
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
+    "jarSha256": "b29cfd48e5e86d5f52ecb5f87ab5be144c703545f71e066b4338b4587cd28f67",
+    "jarPath": "/usr/local/service/outboundserver-v1.62.jar"
+  },
+  "resourceservice": {
+    "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
+    "jarSha256": "fe33f4bf76c9d8dad630444310166d6da0c7514a36c230aa73c590590c67e629",
+    "jarPath": "/usr/local/service/resourceserver-v1.62.jar"
+  },
+  "inboundservice": {
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
+    "jarSha256": "9f75b13e45c3f84630eace286e68c7042b4af2b0cd864fa0cd9d6aa9884d3da4",
+    "jarPath": "/usr/local/service/inboundserver-v1.62.jar"
+  },
+  "adminservice": {
+    "image": "garyzhangscm/cwms-adminserver:v1.62@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
+    "jarSha256": "ab9ae186f5065b7c194b9b341da27253e616023e6fca8e1a4ea7316de023f279",
+    "jarPath": "/usr/local/service/adminserver-v1.62.jar"
+  },
+  "apigateway": {
+    "image": "garyzhangscm/cwms-apigateway:v1.62@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
+    "jarSha256": "556c65280f6c8882fafc013d34c41a23625437481fccc6ff4eb546f340c74d99",
+    "jarPath": "/usr/local/service/APIGateway-v1.62.jar"
+  },
+  "authserver": {
+    "image": "garyzhangscm/cwms-auth:v1.62@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
+    "jarSha256": "15eaea1f4a090d6debb0d69a37e6732c48b9fa2aeeaec42b095913cab7c5fd55",
+    "jarPath": "/usr/local/service/authenticationserver-v1.62.jar"
+  },
+  "commonservice": {
+    "image": "garyzhangscm/cwms-commonserver:v1.62@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
+    "jarSha256": "2cf5d4bdf5e16faacc4a32d720469b3d4a8c2dc455e54251c7fa0a0837116c03",
+    "jarPath": "/usr/local/service/commonserver-v1.62.jar"
+  },
+  "layoutservice": {
+    "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb"
+  }
+}

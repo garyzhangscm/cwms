@@ -1120,15 +1120,18 @@ public class ReceiptService {
         lpnLabelContent.put("item_name", receiptLine.getItem().getName());
         lpnLabelContent.put("item_description", receiptLine.getItem().getDescription());
 
+        if (Boolean.parseBoolean(System.getProperty("MES_RECEIVING_EXTENDED_LABEL_CONTENT",
+                System.getenv().getOrDefault("MES_RECEIVING_EXTENDED_LABEL_CONTENT", "true")))) {
+            String description = Objects.toString(receiptLine.getItem().getDescription(), "");
         // if item description is too long, split into multiple lines
         lpnLabelContent.put("item_description_1", receiptLine.getItem().getDescription());
         // logger.debug("item_description_1 passed in: {}", receiptLine.getItem().getDescription());
 
-        if (Strings.isNotBlank(receiptLine.getItem().getDescription().trim()) &&
-                receiptLine.getItem().getDescription().trim().length() > 20) {
+        if (Strings.isNotBlank(description.trim()) &&
+                description.trim().length() > 20) {
 
             // split the description into lines,
-            String[] tokens = receiptLine.getItem().getDescription().split(" ");
+            String[] tokens = description.split(" ");
             String line = tokens[0];
             int lineIndex = 1;
 
@@ -1149,6 +1152,8 @@ public class ReceiptService {
             }
             lpnLabelContent.put("item_description_" + lineIndex, line);
             // logger.debug("item_description_" + lineIndex + " passed in: {}", line);
+        }
+
         }
 
         qrCode.append("itemName=").append(receiptLine.getItem().getName()).append(";");
@@ -1304,9 +1309,14 @@ public class ReceiptService {
         }
 
 
-        lpnLabelContent.put("stockUOM", receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
-        logger.debug("stockUOM is passed in: {}",
-                receiptLine.getItem().getDefaultItemPackageType().getStockItemUnitOfMeasure().getUnitOfMeasure().getName());
+        if (Boolean.parseBoolean(System.getProperty("MES_RECEIVING_EXTENDED_LABEL_CONTENT",
+                System.getenv().getOrDefault("MES_RECEIVING_EXTENDED_LABEL_CONTENT", "true")))) {
+            ItemPackageType defaultPackage = receiptLine.getItem().getDefaultItemPackageType();
+            ItemUnitOfMeasure stock = defaultPackage == null ? null : defaultPackage.getStockItemUnitOfMeasure();
+            String stockName = stock == null || stock.getUnitOfMeasure() == null ? "" :
+                    Objects.toString(stock.getUnitOfMeasure().getName(), "");
+            lpnLabelContent.put("stockUOM", stockName);
+        }
 
         if(Boolean.TRUE.equals(ignoreInventoryQuantity)) {
             lpnLabelContent.put("quantity", "");

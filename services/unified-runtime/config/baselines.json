@@ -1,0 +1,316 @@
+{
+  "colton": [
+    {
+      "name": "adminservice",
+      "image": "garyzhangscm/cwms-adminserver:v1.62",
+      "resourceVersion": "399232785",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "apigateway",
+      "image": "garyzhangscm/cwms-apigateway:v1.62",
+      "resourceVersion": "399232591",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "authserver",
+      "image": "garyzhangscm/cwms-auth:v1.62",
+      "resourceVersion": "399232798",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "commonservice",
+      "image": "garyzhangscm/cwms-commonserver:v1.62",
+      "resourceVersion": "399232753",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "inboundservice",
+      "image": "garyzhangscm/cwms-inboundserver:v1.62",
+      "resourceVersion": "399232739",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "integrationservice",
+      "image": "brianwang1912/cwms-integrationserver@sha256:deb3722f1a9b519e0db732831be0d212d43d3fd82ee0e13309d069f77c9e5763",
+      "resourceVersion": "399784960",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ",
+        "HOST_API_ENABLED"
+      ]
+    },
+    {
+      "name": "inventoryservice",
+      "image": "brianwang1912/cwms-inventoryserver:v1.62-colton-preprinted-lpn-20261016@sha256:a74eebf6bda0ed0837f8947e01941e830b97e1251dec2f756e64b1d8104582af",
+      "resourceVersion": "402195019",
+      "ready": 1,
+      "envNames": [
+        "INVENTORY_REMOVAL_QUEUE_WORKERS",
+        "INVENTORY_REMOVAL_QUEUE_CAPACITY",
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "layoutservice",
+      "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
+      "resourceVersion": "400284813",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "outboundservice",
+      "image": "mes-local/cwms-outboundserver:v1.62-colton-repick-20261016-01",
+      "resourceVersion": "402222539",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ",
+        "ALLOCATION_CANDIDATES_COMPACT_ENABLED"
+      ]
+    },
+    {
+      "name": "qc-shift-report",
+      "image": "brianwang1912/mes-qc-shift-report:v20261022-receiving-history@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
+      "resourceVersion": "403505566",
+      "ready": 1,
+      "envNames": [
+        "QC_DB_HOST",
+        "QC_DB_PORT",
+        "QC_DB_NAME",
+        "QC_DB_USER",
+        "QC_DB_PASSWORD_FILE",
+        "QC_GATEWAY_URL",
+        "QC_LEGACY_TIMEZONE",
+        "QC_SITE_TIMEZONES"
+      ]
+    },
+    {
+      "name": "resourceservice",
+      "image": "brianwang1912/cwms-ressvr:v1.62-colton-preprinted-lpn-20261016@sha256:5e84d3adc8d3188cd7fd2f7e747803c11fa3b1d990d5457e24ee7fb36744d33f",
+      "resourceVersion": "402194651",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ",
+        "LANG",
+        "LOADER_PATH",
+        "RF_OTA_POLICY_FILE"
+      ]
+    },
+    {
+      "name": "webclient",
+      "image": "brianwang1912/mes-web:v19.2-import-orders-20261022-02@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
+      "resourceVersion": "403507502",
+      "ready": 1,
+      "envNames": []
+    },
+    {
+      "name": "workorderservice",
+      "image": "brianwang1912/cwms-workorderserver:v1.62-qc-full-20261019@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
+      "resourceVersion": "402910879",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    }
+  ],
+  "fay": [
+    {
+      "name": "adminservice",
+      "image": "garyzhangscm/cwms-adminserver:v1.60",
+      "resourceVersion": "305878617",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "apigateway",
+      "image": "garyzhangscm/cwms-apigateway:v1.60",
+      "resourceVersion": "305878509",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "authserver",
+      "image": "garyzhangscm/cwms-auth:v1.60",
+      "resourceVersion": "305878532",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "commonservice",
+      "image": "garyzhangscm/cwms-commonserver:v1.60",
+      "resourceVersion": "305878568",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "inboundservice",
+      "image": "garyzhangscm/cwms-inboundserver:v1.60",
+      "resourceVersion": "305878610",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "integrationservice",
+      "image": "cwms-fay-integrationserver:v1.60-item-d5e3fd34bba7",
+      "resourceVersion": "305878741",
+      "ready": 1,
+      "envNames": [
+        "SPRING_APPLICATION_NAME",
+        "SERVER_PORT",
+        "SPRING_PROFILES_ACTIVE",
+        "SPRING_CONFIG_ADDITIONAL_LOCATION",
+        "SPRING_JPA_HIBERNATE_DDL_AUTO",
+        "HOST_API_ENABLED",
+        "SPRING_KAFKA_LISTENER_AUTO_STARTUP",
+        "JAVA_TOOL_OPTIONS",
+        "TZ"
+      ]
+    },
+    {
+      "name": "inventoryservice",
+      "image": "brianwang1912/cwms-inventoryserver:v1.62-fay-rfid-upc-20261021@sha256:0c1243e4c489cf541bb7fb66139e9e40298464d59ba0e095deb9eafbaf3e98e0",
+      "resourceVersion": "309167363",
+      "ready": 1,
+      "envNames": [
+        "INVENTORY_REMOVAL_QUEUE_WORKERS",
+        "INVENTORY_REMOVAL_QUEUE_CAPACITY",
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "layoutservice",
+      "image": "brianwang1912/cwms-layoutserver:v1.62-colton-manufacturing-20261007",
+      "resourceVersion": "306485978",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "outboundservice",
+      "image": "brianwang1912/cwms-outboundserver:v1.62-fay-preprinted-lpn-20261016@sha256:bc20da87e0196d96a3eabdfae4f00cee8b4f52d69571f76b278b1a8dce756c5a",
+      "resourceVersion": "308143418",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    },
+    {
+      "name": "qc-shift-report",
+      "image": "brianwang1912/mes-qc-shift-report:v20261022-receiving-history@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
+      "resourceVersion": "309391286",
+      "ready": 1,
+      "envNames": [
+        "QC_DB_HOST",
+        "QC_DB_PORT",
+        "QC_DB_NAME",
+        "QC_DB_USER",
+        "QC_DB_PASSWORD_FILE",
+        "QC_GATEWAY_URL",
+        "QC_LEGACY_TIMEZONE"
+      ]
+    },
+    {
+      "name": "resourceservice",
+      "image": "brianwang1912/cwms-ressvr:v1.62-fay-preprinted-lpn-20261016@sha256:d52d14d1240bf0bccf5b282f2d92d5399564dc3886faa665c1096dfcad9ddd7c",
+      "resourceVersion": "308143137",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ",
+        "LANG",
+        "LOADER_PATH",
+        "RF_OTA_POLICY_FILE"
+      ]
+    },
+    {
+      "name": "webclient",
+      "image": "brianwang1912/mes-web:v19.2-import-orders-20261022-02@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
+      "resourceVersion": "309390833",
+      "ready": 1,
+      "envNames": [
+        "COLTON_API_TARGET",
+        "MES_ITEM_SETTINGS_TARGET",
+        "MES_INVENTORY_HANDOFF_TARGET",
+        "ADMINER_TARGET"
+      ]
+    },
+    {
+      "name": "workorderservice",
+      "image": "brianwang1912/cwms-workorderserver:v1.62-qc-full-20261019@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
+      "resourceVersion": "308818889",
+      "ready": 1,
+      "envNames": [
+        "ENCRYPT_KEY",
+        "COMPOSE_PROJECT_NAME",
+        "TZ"
+      ]
+    }
+  ]
+}

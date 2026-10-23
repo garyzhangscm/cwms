@@ -1,0 +1,14 @@
+{
+  "colton": {
+    "inventoryservice": {"MES_INVENTORY_ATTRIBUTE_LABELS":"true","MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME":"true","MES_RFID_LOOKUP_ENABLED":"false"},
+    "outboundservice": {"MES_OUTBOUND_MANUAL_PICK_REMAINDER":"true","MES_OUTBOUND_MANUAL_PICK_REPORT_V2":"true","ALLOCATION_CANDIDATES_COMPACT_ENABLED":"true"},
+    "resourceservice": {"MES_OUTBOUND_MANUAL_PICK_REPORT_V2":"true"},
+    "inboundservice": {"MES_RECEIVING_EXTENDED_LABEL_CONTENT":"true"}
+  },
+  "fay": {
+    "inventoryservice": {"MES_INVENTORY_ATTRIBUTE_LABELS":"false","MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME":"false","MES_RFID_LOOKUP_ENABLED":"true"},
+    "outboundservice": {"MES_OUTBOUND_MANUAL_PICK_REMAINDER":"false","MES_OUTBOUND_MANUAL_PICK_REPORT_V2":"false","ALLOCATION_CANDIDATES_COMPACT_ENABLED":"false"},
+    "resourceservice": {"MES_OUTBOUND_MANUAL_PICK_REPORT_V2":"false"},
+    "inboundservice": {"MES_RECEIVING_EXTENDED_LABEL_CONTENT":"false"}
+  }
+}
