@@ -1,0 +1,29 @@
+{
+  "site": "colton",
+  "service": "webclient",
+  "image": "brianwang1912/mes-web:v19.2-print-policy-20261023-01@sha256:8390455dee4d22f04c484735b10bcf5517e2868c2b4fdcdc089b6391fae1532f",
+  "ready": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/mes-public-config-20261023.js",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/en-US.json",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/zh-CN.json",
+      "status": 200
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/pick-print-policy-20261023T184207Z-webclient"
+}

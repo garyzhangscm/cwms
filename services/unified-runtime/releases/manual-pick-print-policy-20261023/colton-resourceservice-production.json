@@ -1,0 +1,21 @@
+{
+  "site": "colton",
+  "service": "resourceservice",
+  "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261023-pick-sheet-01@sha256:0438067592ae6f5c6980742c133dd2e816684062ded6d69ffc57920f842320e1",
+  "ready": true,
+  "checks": [
+    {
+      "health": 200,
+      "jarHashVerified": true,
+      "itemOnlyTemplateWithDropOffBarcode": true
+    },
+    {
+      "activeManualPickTemplatesVerified": true
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/pick-print-policy-20261023T183905Z-resourceservice"
+}

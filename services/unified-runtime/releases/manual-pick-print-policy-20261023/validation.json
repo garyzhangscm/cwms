@@ -6,12 +6,21 @@
   "jasperRenderPassed": true,
   "emptyLocationBarcodeSkipped": true,
   "outboundImagePolicyPassed": true,
-  "productionDeployed": false,
+  "productionDeployed": true,
   "existingOutboundImageRegressionsPerSite": {
     "workOrderScope": 8,
     "nullDates": 10,
     "transitRouting": 21,
     "transitAuthorization": 10,
     "transitShipmentFlow": 45
-  }
+  },
+  "fayCompletedOrderManualEndpointDenied": true,
+  "fayCompletedShipmentShippingReprintAllowed": true,
+  "fayActiveReportTemplatesVerified": true,
+  "productionSites": [
+    "FAY",
+    "Colton"
+  ],
+  "completedAtUtc": "2026-10-23T18:45:26.740854+00:00",
+  "allSixServiceRolloutsVerified": true
 }

@@ -5,13 +5,13 @@
     "jarPath": "/usr/local/service/inventoryserver-v1.62.jar"
   },
   "outboundservice": {
-    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-null-dates-01@sha256:a99d0b8549bbfe27e8a803008d078a0a9f8eeee2aa23297125dc8bc52014f039",
-    "jarSha256": "8388605177fdf4b6faa89b7881cbaecd6790086c8a9129d55bce163066a81f7b",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-print-policy-01@sha256:e5cfa7bb97ad17a746f5346df9dfc140d4035f11440843eeae44ed5d23c5aca0",
+    "jarSha256": "ba852feab5d47609e8dc137b8ecd60f232dec912b63f2f67cf7d6074716bfe8e",
     "jarPath": "/usr/local/service/outboundserver-v1.62.jar"
   },
   "resourceservice": {
-    "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
-    "jarSha256": "fe33f4bf76c9d8dad630444310166d6da0c7514a36c230aa73c590590c67e629",
+    "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261023-pick-sheet-01@sha256:0438067592ae6f5c6980742c133dd2e816684062ded6d69ffc57920f842320e1",
+    "jarSha256": "e035c5cc8cd395202b743272b326dccb6b9afecc8941d6997a4735c204c68977",
     "jarPath": "/usr/local/service/resourceserver-v1.62.jar"
   },
   "inboundservice": {

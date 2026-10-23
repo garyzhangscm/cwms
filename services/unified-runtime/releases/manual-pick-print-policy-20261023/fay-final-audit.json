@@ -1,0 +1,21 @@
+{
+  "site": "fay",
+  "services": {
+    "outboundservice": {
+      "ready": true,
+      "imageMatches": true
+    },
+    "resourceservice": {
+      "ready": true,
+      "imageMatches": true
+    },
+    "webclient": {
+      "ready": true,
+      "imageMatches": true
+    }
+  },
+  "transitSettingPreserved": true,
+  "siteConfigurationPreservedByRollout": true,
+  "integrationUnchanged": true,
+  "businessWritesForAudit": false
+}
