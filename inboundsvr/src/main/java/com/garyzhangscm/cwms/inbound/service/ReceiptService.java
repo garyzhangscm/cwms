@@ -1180,9 +1180,13 @@ public class ReceiptService {
             lpnLabelContent.put("item_package_type_name", receiptLine.getItemPackageType().getName());
             qrCode.append("itemPackageTypeName=").append(receiptLine.getItemPackageType().getName()).append(";");
 
-            ItemUnitOfMeasure caseItemUnitOfMeasure = receiptLine.getItemPackageType().getItemUnitOfMeasures().stream().filter(
-                    itemUnitOfMeasure -> Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())
-            ).findFirst().orElse(null);
+            ItemUnitOfMeasure caseItemUnitOfMeasure = null;
+            for (ItemUnitOfMeasure itemUnitOfMeasure : receiptLine.getItemPackageType().getItemUnitOfMeasures()) {
+                if (Boolean.TRUE.equals(itemUnitOfMeasure.getCaseFlag())) {
+                    caseItemUnitOfMeasure = itemUnitOfMeasure;
+                    break;
+                }
+            }
             if (Objects.nonNull(caseItemUnitOfMeasure)) {
 
                 logger.debug("Find case quantity {} for this item package type {} / {}",

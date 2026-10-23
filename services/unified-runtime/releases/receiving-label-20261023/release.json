@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-23",
+  "problem": "Receipt label generation fails with NoSuchMethodError when the receipt line has a package type",
+  "cause": "Method-only merge omitted the freshly compiled lambda implementation; original fixtures never attached a package type to the receipt line",
+  "fix": "Use an inline loop retaining first case UOM selection and reject unresolved lambda bootstrap handles during method replacement",
+  "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+  "jarSha256": "c763dd04e6869856a5217d52289c2582ec4de3187a650cf957480a9843ff7182",
+  "offlineCasesPerSite": 12,
+  "actualImageCasesPerSite": 12,
+  "sites": [
+    "fay",
+    "colton"
+  ],
+  "scope": "Only receiving label method; site flags, other services and database unchanged",
+  "rollbackImage": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
+  "physicalPrinterAcceptance": "pending operator retry"
+}

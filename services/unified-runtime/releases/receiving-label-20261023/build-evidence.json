@@ -1,0 +1,47 @@
+{
+  "baselineSha256": "9f75b13e45c3f84630eace286e68c7042b4af2b0cd864fa0cd9d6aa9884d3da4",
+  "candidateSha256": "c763dd04e6869856a5217d52289c2582ec4de3187a650cf957480a9843ff7182",
+  "changedEntries": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/inbound/service/ReceiptService.class"
+  ],
+  "entrySetPreserved": true,
+  "tests": [
+    {
+      "site": "fay",
+      "exit": 0,
+      "cases": [
+        "RESULT case=0 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=1 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=2 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=3 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=4 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=5 OK quantity=27",
+        "RESULT case=6 OK quantity=27",
+        "RESULT receiptPackage=true caseUnit=false ignoreQuantity=false OK",
+        "RESULT receiptPackage=true caseUnit=false ignoreQuantity=true OK",
+        "RESULT receiptPackage=true caseUnit=true ignoreQuantity=false OK",
+        "RESULT receiptPackage=true caseUnit=true ignoreQuantity=true OK",
+        "RESULT inferredPackageQuantity=240 OK"
+      ]
+    },
+    {
+      "site": "colton",
+      "exit": 0,
+      "cases": [
+        "RESULT case=0 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=1 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=2 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=3 OK split=3 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=4 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+        "RESULT case=5 OK quantity=27",
+        "RESULT case=6 OK quantity=27",
+        "RESULT receiptPackage=true caseUnit=false ignoreQuantity=false OK",
+        "RESULT receiptPackage=true caseUnit=false ignoreQuantity=true OK",
+        "RESULT receiptPackage=true caseUnit=true ignoreQuantity=false OK",
+        "RESULT receiptPackage=true caseUnit=true ignoreQuantity=true OK",
+        "RESULT inferredPackageQuantity=240 OK"
+      ]
+    }
+  ],
+  "businessWrites": false
+}

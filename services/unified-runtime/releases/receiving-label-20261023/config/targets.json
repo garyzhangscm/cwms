@@ -1,0 +1,7 @@
+{
+  "inboundservice": {
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+    "jarSha256": "c763dd04e6869856a5217d52289c2582ec4de3187a650cf957480a9843ff7182",
+    "jarPath": "/usr/local/service/inboundserver-v1.62.jar"
+  }
+}

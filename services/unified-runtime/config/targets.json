@@ -15,8 +15,8 @@
     "jarPath": "/usr/local/service/resourceserver-v1.62.jar"
   },
   "inboundservice": {
-    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
-    "jarSha256": "9f75b13e45c3f84630eace286e68c7042b4af2b0cd864fa0cd9d6aa9884d3da4",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+    "jarSha256": "c763dd04e6869856a5217d52289c2582ec4de3187a650cf957480a9843ff7182",
     "jarPath": "/usr/local/service/inboundserver-v1.62.jar"
   },
   "adminservice": {

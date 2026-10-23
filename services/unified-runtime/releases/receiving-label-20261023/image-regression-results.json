@@ -1,0 +1,40 @@
+[
+  {
+    "site": "fay",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01",
+    "exit": 0,
+    "cases": [
+      "RESULT case=0 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27",
+      "RESULT receiptPackage=true caseUnit=false ignoreQuantity=false OK",
+      "RESULT receiptPackage=true caseUnit=false ignoreQuantity=true OK",
+      "RESULT receiptPackage=true caseUnit=true ignoreQuantity=false OK",
+      "RESULT receiptPackage=true caseUnit=true ignoreQuantity=true OK",
+      "RESULT inferredPackageQuantity=240 OK"
+    ]
+  },
+  {
+    "site": "colton",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01",
+    "exit": 0,
+    "cases": [
+      "RESULT case=0 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=3 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27",
+      "RESULT receiptPackage=true caseUnit=false ignoreQuantity=false OK",
+      "RESULT receiptPackage=true caseUnit=false ignoreQuantity=true OK",
+      "RESULT receiptPackage=true caseUnit=true ignoreQuantity=false OK",
+      "RESULT receiptPackage=true caseUnit=true ignoreQuantity=true OK",
+      "RESULT inferredPackageQuantity=240 OK"
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "colton": {
+    "inboundservice": {
+      "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "true"
+    }
+  },
+  "fay": {
+    "inboundservice": {
+      "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "false"
+    }
+  }
+}
