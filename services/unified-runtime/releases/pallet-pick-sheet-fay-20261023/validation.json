@@ -1,0 +1,17 @@
+{
+  "palletCalculationAndWireRenderChecks": 20,
+  "actualJasperRenderPassed": true,
+  "emptyDropOffPassed": true,
+  "productionDeployed": false,
+  "targetSites": [
+    "FAY"
+  ],
+  "coltonUnchanged": true,
+  "existingPrintPolicyImageChecks": 18,
+  "faySamplePackagingVerified": {
+    "palletUnit": "PL",
+    "unitsPerPallet": 36,
+    "stockUnit": "PCS",
+    "stockUnitQuantity": 1
+  }
+}

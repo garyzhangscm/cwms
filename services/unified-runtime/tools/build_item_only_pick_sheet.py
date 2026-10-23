@@ -36,7 +36,7 @@ for service, source in [('outboundservice', a.outbound), ('resourceservice', a.r
         run(java, '-cp', str(tools) + ':' + asm, 'ItemOnlyManualPick', classes / name, patched)
         updates['BOOT-INF/classes/' + name] = patched.read_bytes()
         fresh = out / 'policy-classes'
-        run(javac, '--release', '17', '-parameters', '-sourcepath', '', '-cp', str(classes) + ':' + str(root / 'BOOT-INF/lib/*'), '-d', fresh, *sorted((repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix').glob('OrderPrint*.java')), repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix/ShippingReportScope.java', repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix/ManualPickDemandRows.java')
+        run(javac, '--release', '17', '-parameters', '-sourcepath', '', '-cp', str(classes) + ':' + str(root / 'BOOT-INF/lib/*'), '-d', fresh, *sorted((repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix').glob('OrderPrint*.java')), repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix/ShippingReportScope.java', repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix/ManualPickDemandRows.java', repo / 'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix/PalletBreakdown.java')
         for f in fresh.rglob('*.class'):
             updates['BOOT-INF/classes/' + str(f.relative_to(fresh))] = f.read_bytes()
     else:

@@ -8,7 +8,7 @@ public final class ManualPickDemandRows {
   for(OrderLine line:order.getOrderLines()){
    long quantity=Math.max(0L,line.getOpenQuantity()==null?0L:line.getOpenQuantity())+remaining.getOrDefault(line.getId(),0L);
    if(quantity<=0)continue;
-   Map<String,Object> row=new HashMap<>();row.put("number",line.getNumber());row.put("item",line.getItem());row.put("openQuantity",quantity);rows.add(row);
+   Map<String,Object> row=new HashMap<>();row.put("number",line.getNumber());row.put("item",line.getItem());row.put("openQuantity",quantity);row.putAll(PalletBreakdown.calculate(line.getItem(),quantity));rows.add(row);
   }return rows;
  }
 }

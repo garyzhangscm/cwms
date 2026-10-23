@@ -1,0 +1,2 @@
+FROM brianwang1912/cwms-ressvr:v1.62-unified-20261023-pick-sheet-01@sha256:0438067592ae6f5c6980742c133dd2e816684062ded6d69ffc57920f842320e1
+COPY service.jar /usr/local/service/resourceserver-v1.62.jar

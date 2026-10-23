@@ -1,0 +1,29 @@
+[
+  {
+    "service": "outboundservice",
+    "baselineSha256": "ba852feab5d47609e8dc137b8ecd60f232dec912b63f2f67cf7d6074716bfe8e",
+    "candidateSha256": "97fda2c311fe87b0661e5f483898907cacf33546e1232a2cbf1c9c6dff44fd26",
+    "changed": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/reportfix/ManualPickDemandRows.class"
+    ],
+    "added": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/reportfix/PalletBreakdown.class"
+    ],
+    "allOtherEntriesPreserved": true
+  },
+  {
+    "service": "resourceservice",
+    "baselineSha256": "e035c5cc8cd395202b743272b326dccb6b9afecc8941d6997a4735c204c68977",
+    "candidateSha256": "274e7c178e99f4488774ac389e394ce3673a78f26a1c9cf9fcb80e6d0f217be7",
+    "changed": [
+      "BOOT-INF/classes/reports/meta/order_manual_pick_sheet.jrxml",
+      "BOOT-INF/classes/reports/meta/order_manual_pick_sheet_en_US.properties",
+      "BOOT-INF/classes/reports/meta/order_manual_pick_sheet_zh_CN.properties",
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet.jrxml",
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet_en_US.properties",
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet_zh_CN.properties"
+    ],
+    "added": [],
+    "allOtherEntriesPreserved": true
+  }
+]

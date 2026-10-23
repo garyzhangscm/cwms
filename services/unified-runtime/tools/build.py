@@ -29,7 +29,7 @@ patch_switch('outboundservice',ob+'service/OrderService','MES_OUTBOUND_MANUAL_PI
 # Compile report-only policy/scoping helpers against production dependencies.
 obcp=str(baseline('colton','outboundservice'))+':'+str(a.inputs/'baseline/colton/outboundservice/BOOT-INF/lib/*')
 report_sources=repo/'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix'
-run([jc,'--release','17','-parameters','-sourcepath','','-cp',obcp,'-d',overlay/'outboundservice',*sorted(report_sources.glob('OrderPrint*.java')),report_sources/'ShippingReportScope.java',report_sources/'ManualPickDemandRows.java'])
+run([jc,'--release','17','-parameters','-sourcepath','','-cp',obcp,'-d',overlay/'outboundservice',*sorted(report_sources.glob('OrderPrint*.java')),report_sources/'ShippingReportScope.java',report_sources/'ManualPickDemandRows.java',report_sources/'PalletBreakdown.java'])
 # Compile the RFID endpoint against the exact unchanged production dependency set.
 invcp=str(baseline('colton','inventoryservice'))+':'+str(a.inputs/'baseline/colton/inventoryservice/BOOT-INF/lib/*')
 run([jc,'--release','17','-parameters','-sourcepath','','-cp',invcp,'-d',overlay/'inventoryservice',repo/'inventorysvr/src/main/java'/ (inv+'controller/RfidItemLookupController.java'),repo/'inventorysvr/src/main/java'/(inv+'service/RfidItemLookupService.java')])
