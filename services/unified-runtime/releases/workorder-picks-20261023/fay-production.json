@@ -1,0 +1,20 @@
+{
+  "site": "fay",
+  "service": "outboundservice",
+  "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01@sha256:376c2f8cae876c7f95c4a29c73bcc3954640167d39992ac3687ac338ddc71e02",
+  "imageID": "docker-pullable://brianwang1912/cwms-outboundserver@sha256:376c2f8cae876c7f95c4a29c73bcc3954640167d39992ac3687ac338ddc71e02",
+  "ready": true,
+  "health": {
+    "tcp": true,
+    "httpStatus": 200,
+    "path": "/actuator/health"
+  },
+  "configuration": {
+    "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "false",
+    "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false",
+    "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "false",
+    "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
+  },
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true
+}

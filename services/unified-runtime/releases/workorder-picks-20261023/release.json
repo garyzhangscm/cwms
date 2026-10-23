@@ -7,5 +7,5 @@
   "actualImageBackendCasesPerSite": 8,
   "frontendServiceCases": 25,
   "scope": "Shared images, preserved site flags, no database changes or business operations",
-  "productionRollout": "authorized; pending rollout verification"
+  "productionRollout": "verified at FAY and Colton; ready, health checks passed, persistent manifests updated, site configuration and Integration preserved"
 }
