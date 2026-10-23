@@ -1883,19 +1883,16 @@ public class OrderService {
 
         report.addParameter("order_number", order.getNumber());
 
+        // This is the drop-off destination, never a suggested inventory source.
         if (Objects.nonNull(order.getStageLocation())) {
-
             report.addParameter("destination_location", order.getStageLocation().getName());
         }
         else if (Objects.nonNull(order.getStageLocationId())) {
-
             report.addParameter("destination_location",
                     warehouseLayoutServiceRestemplateClient.getLocationById(
-                            order.getStageLocationId()
-                    ).getName());
+                            order.getStageLocationId()).getName());
         }
         else {
-
             report.addParameter("destination_location", "");
         }
 
@@ -1904,7 +1901,7 @@ public class OrderService {
     private void setupOrderManualPickReportData(Report report, Order order) {
         // The manual pick sheet shows order demand, not a candidate inventory assignment.
         // The actual pallet is chosen and validated in the existing Manual Pick flow.
-        report.setData(order.getOrderLines());
+        report.setData(com.garyzhangscm.cwms.outbound.reportfix.ManualPickDemandRows.build(order, pickService.findByOrder(order)));
     }
 
     /**
@@ -2317,11 +2314,11 @@ public class OrderService {
         // inventory information in the pack slip
 
         List<Inventory> pickedInventories = new ArrayList<>();
-        List<Pick> picks = pickService.findByOrder(order);
+        List<Pick> picks = com.garyzhangscm.cwms.outbound.reportfix.ShippingReportScope.picks(pickService, order);
         if (picks.size() > 0) {
             pickedInventories
                     = inventoryServiceRestemplateClient.getPickedInventory(
-                        order.getWarehouseId(), pickService.findByOrder(order),
+                        order.getWarehouseId(), com.garyzhangscm.cwms.outbound.reportfix.ShippingReportScope.picks(pickService, order),
                     true
                     );
         }
@@ -2586,11 +2583,11 @@ public class OrderService {
         // inventory information in the pack slip
 
         List<Inventory> pickedInventories = new ArrayList<>();
-        List<Pick> picks = pickService.findByOrder(order);
+        List<Pick> picks = com.garyzhangscm.cwms.outbound.reportfix.ShippingReportScope.picks(pickService, order);
         if (picks.size() > 0) {
             pickedInventories
                     = inventoryServiceRestemplateClient.getPickedInventory(
-                    order.getWarehouseId(), pickService.findByOrder(order),
+                    order.getWarehouseId(), com.garyzhangscm.cwms.outbound.reportfix.ShippingReportScope.picks(pickService, order),
                     true
             );
         }

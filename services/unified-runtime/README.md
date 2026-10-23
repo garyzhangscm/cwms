@@ -24,7 +24,7 @@ Do not choose behavior by IP address, warehouse name or a hardcoded factory name
 | `MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME` | true | false | Preserve each deployment's existing activity date filter interpretation |
 | `MES_RFID_LOOKUP_ENABLED` | false | true | Register the authenticated, client-restricted RFID UPC lookup endpoint |
 | `MES_OUTBOUND_MANUAL_PICK_REMAINDER` | true | false | Shipment remainder versus existing shipment-line quantity calculation |
-| `MES_OUTBOUND_MANUAL_PICK_REPORT_V2` | true | false | Matching Manual Pick row preparation and Resource template set |
+| `MES_OUTBOUND_MANUAL_PICK_REPORT_V2` | true | false | Historical report switch; item-only pick sheet now uses the same order-line data and template at both sites |
 | `ALLOCATION_CANDIDATES_COMPACT_ENABLED` | true | false | Keep compact allocation transport confined to its existing caller |
 | `MES_RECEIVING_EXTENDED_LABEL_CONTENT` | true | false | Description wrapping and stock UOM in receiving labels |
 

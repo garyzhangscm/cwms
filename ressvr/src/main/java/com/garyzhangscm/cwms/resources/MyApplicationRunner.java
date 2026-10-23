@@ -161,12 +161,8 @@ public class MyApplicationRunner implements ApplicationRunner {
     private void copyReportFile(Resource resource) throws IOException {
 
         String file = resource.getFilename();
-        if (!Boolean.parseBoolean(System.getProperty("MES_OUTBOUND_MANUAL_PICK_REPORT_V2",
-                System.getenv().getOrDefault("MES_OUTBOUND_MANUAL_PICK_REPORT_V2", "true"))) &&
-                java.util.Set.of("order_manual_pick_sheet.jrxml", "order_manual_pick_sheet_en_US.properties",
-                        "order_manual_pick_sheet_zh_CN.properties").contains(file)) {
-            resource = new org.springframework.core.io.ClassPathResource("reports/site-legacy/" + file);
-        }
+        // Both sites use the item-only manual pick sheet. Site-specific picking
+        // rules remain separate from the printed list of order requirements.
 
         InputStream inputStream = resource.getInputStream();
         // create the destination directory

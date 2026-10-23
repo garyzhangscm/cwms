@@ -1,0 +1,10 @@
+{
+  "backendPolicyChecks": 18,
+  "webPrintPolicyChecks": 16,
+  "existingWorkOrderWebChecks": 25,
+  "existingQcWebChecks": 17,
+  "jasperRenderPassed": true,
+  "emptyLocationBarcodeSkipped": true,
+  "outboundImagePolicyPassed": true,
+  "productionDeployed": false
+}

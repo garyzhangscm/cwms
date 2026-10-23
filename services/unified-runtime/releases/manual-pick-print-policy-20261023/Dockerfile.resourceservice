@@ -1,0 +1,2 @@
+FROM brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d
+COPY service.jar /usr/local/service/resourceserver-v1.62.jar

@@ -23,7 +23,13 @@ patch_switch('outboundservice',ob+'model/OrderLine','MES_OUTBOUND_MANUAL_PICK_RE
 legacy_rows=overlay/'outboundservice'/(ob+'model/OrderLine.class')
 run([java,'-cp',str(tools)+':'+asm,'NullSafeLegacyManualPick',legacy_rows,legacy_rows])
 patch_switch('outboundservice',ob+'service/OrderService','MES_OUTBOUND_MANUAL_PICK_REPORT_V2','setupOrderManualPickReportData')
+order_report=overlay/'outboundservice'/(ob+'service/OrderService.class')
+run([java,'-cp',str(tools)+':'+asm,'ItemOnlyManualPick',order_report,order_report])
 patch_switch('outboundservice',ob+'service/OrderService','MES_OUTBOUND_MANUAL_PICK_REMAINDER','getPickableQuantityForManualPick')
+# Compile report-only policy/scoping helpers against production dependencies.
+obcp=str(baseline('colton','outboundservice'))+':'+str(a.inputs/'baseline/colton/outboundservice/BOOT-INF/lib/*')
+report_sources=repo/'outboundsvr/src/main/java/com/garyzhangscm/cwms/outbound/reportfix'
+run([jc,'--release','17','-parameters','-sourcepath','','-cp',obcp,'-d',overlay/'outboundservice',*sorted(report_sources.glob('OrderPrint*.java')),report_sources/'ShippingReportScope.java',report_sources/'ManualPickDemandRows.java'])
 # Compile the RFID endpoint against the exact unchanged production dependency set.
 invcp=str(baseline('colton','inventoryservice'))+':'+str(a.inputs/'baseline/colton/inventoryservice/BOOT-INF/lib/*')
 run([jc,'--release','17','-parameters','-sourcepath','','-cp',invcp,'-d',overlay/'inventoryservice',repo/'inventorysvr/src/main/java'/ (inv+'controller/RfidItemLookupController.java'),repo/'inventorysvr/src/main/java'/(inv+'service/RfidItemLookupService.java')])
@@ -49,13 +55,16 @@ for service in ['inventoryservice','outboundservice','resourceservice','inbounds
   with zipfile.ZipFile(P(changes[service]['fayJar'])) as z:
    for n in changes[service]['changedResources']:
     if not n.startswith('BOOT-INF/classes/reports/meta/order_manual_pick_sheet'):raise RuntimeError('Unexpected resource difference')
-    updates[n.replace('/reports/meta/','/reports/site-legacy/')]=z.read(n)
+    updates[n.replace('/reports/meta/','/reports/site-legacy/')]=(repo/'ressvr/src/main/resources/reports/meta'/P(n).name).read_bytes()
+  for f in (repo/'ressvr/src/main/resources/reports/meta').glob('order_manual_pick_sheet*'):
+   updates['BOOT-INF/classes/reports/meta/'+f.name]=f.read_bytes()
  with zipfile.ZipFile(base) as src,zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED) as dest:
   for item in src.infolist():dest.writestr(item,updates.pop(item.filename,src.read(item.filename)))
   for name,value in updates.items():dest.writestr(name,value)
  with zipfile.ZipFile(base) as src,zipfile.ZipFile(target) as candidate:
   altered=[n for n in src.namelist() if src.read(n)!=candidate.read(n)];added=sorted(set(candidate.namelist())-set(src.namelist()))
   expected={('BOOT-INF/classes/'+str(f.relative_to(overlay/service))) for f in (overlay/service).rglob('*.class')}
+  if service=='resourceservice':expected|={n for n in candidate.namelist() if n.startswith('BOOT-INF/classes/reports/meta/order_manual_pick_sheet')}
   if not set(altered)<=expected:raise RuntimeError('Unselected production code changed')
   if service=='resourceservice':expected|={n for n in candidate.namelist() if n.startswith('BOOT-INF/classes/reports/site-legacy/')}
   if not set(added)<=expected:raise RuntimeError('Unselected entry added')
