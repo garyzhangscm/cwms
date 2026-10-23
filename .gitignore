@@ -1,3 +1,14 @@
 /.local/
 
 ._*
+
+# Real deployment settings and credentials belong outside the repository.
+.env
+.env.*
+!.env.example
+*.local.env
+config/private/
+*.pem
+*.key
+*.p12
+*.pfx

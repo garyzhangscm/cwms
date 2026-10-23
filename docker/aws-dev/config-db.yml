@@ -12,7 +12,7 @@ services:
     ports:
        - "8888:8888"
     environment:
-      ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+      ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
       TZ: "America/Los_Angeles"
     labels:
@@ -29,10 +29,10 @@ services:
     #  - vpcbr
     #   ipv4_address: server.example.invalid
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:}"
       MYSQL_DATABASE: cwms
       MYSQL_USER: cwms_dba
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:}"
       COMPOSE_PROJECT_NAME: "DATABASE"
     labels:
       - "co.elastic.logs/enabled=false"

@@ -10,5 +10,5 @@ services:
       DATABASE_URL: "jdbc:mysql://database:3306/cwms"
       CONFIGSERVER_PORT:   "8888"
       DATABASESERVER_PORT: "3306"
-      ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+      ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
       COMPOSE_PROJECT_NAME: "CWMS-APP"

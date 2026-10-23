@@ -26,7 +26,7 @@
           "image": "garyzhangscm/cwms-adminserver:v1.62@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "imageID": "docker-pullable://garyzhangscm/cwms-adminserver@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -35,7 +35,7 @@
           "image": "garyzhangscm/cwms-apigateway:v1.62@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "imageID": "docker-pullable://garyzhangscm/cwms-apigateway@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -44,7 +44,7 @@
           "image": "garyzhangscm/cwms-auth:v1.62@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "imageID": "docker-pullable://garyzhangscm/cwms-auth@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -53,7 +53,7 @@
           "image": "garyzhangscm/cwms-commonserver:v1.62@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "imageID": "docker-pullable://garyzhangscm/cwms-commonserver@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -62,7 +62,7 @@
           "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "imageID": "docker-pullable://brianwang1912/cwms-inboundserver@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "true"
           },
@@ -73,7 +73,7 @@
           "image": "brianwang1912/cwms-integrationserver@sha256:deb3722f1a9b519e0db732831be0d212d43d3fd82ee0e13309d069f77c9e5763",
           "imageID": "docker-pullable://brianwang1912/cwms-integrationserver@sha256:deb3722f1a9b519e0db732831be0d212d43d3fd82ee0e13309d069f77c9e5763",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": true
         },
@@ -82,7 +82,7 @@
           "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "imageID": "docker-pullable://brianwang1912/cwms-inventoryserver@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_INVENTORY_ATTRIBUTE_LABELS": "true",
             "MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME": "true",
@@ -95,7 +95,7 @@
           "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "imageID": "docker-pullable://brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -104,7 +104,7 @@
           "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "imageID": "docker-pullable://brianwang1912/cwms-outboundserver@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "true",
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true",
@@ -117,7 +117,7 @@
           "image": "brianwang1912/mes-qc-shift-report:v20261022-receiving-history@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
           "imageID": "docker-pullable://brianwang1912/mes-qc-shift-report@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
           "ready": 1,
-          "node": "k8s-app2",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -126,7 +126,7 @@
           "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "imageID": "docker-pullable://brianwang1912/cwms-ressvr@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true"
           },
@@ -137,7 +137,7 @@
           "image": "brianwang1912/mes-web:v19.2-import-orders-20261022-02@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
           "imageID": "docker-pullable://brianwang1912/mes-web@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -146,7 +146,7 @@
           "image": "brianwang1912/cwms-workorderserver:v1.62-qc-full-20261019@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
           "imageID": "docker-pullable://brianwang1912/cwms-workorderserver@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
           "ready": 1,
-          "node": "k8s-app1",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         }
@@ -182,7 +182,7 @@
           "service": "resourceservice",
           "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "imageID": "docker-pullable://brianwang1912/cwms-ressvr@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
-          "pod": "resourceservice-6bbf99c7bf-lb78x",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -193,7 +193,7 @@
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000436Z/resourceservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -202,7 +202,7 @@
           "service": "inboundservice",
           "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "imageID": "docker-pullable://brianwang1912/cwms-inboundserver@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
-          "pod": "inboundservice-5f587b9654-2cvvr",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -213,7 +213,7 @@
             "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "true",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000436Z/inboundservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -222,7 +222,7 @@
           "service": "inventoryservice",
           "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "imageID": "docker-pullable://brianwang1912/cwms-inventoryserver@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
-          "pod": "inventoryservice-7f8cc6b694-j9lp9",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -235,7 +235,7 @@
             "MES_RFID_LOOKUP_ENABLED": "false",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000436Z/inventoryservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -244,7 +244,7 @@
           "service": "outboundservice",
           "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "imageID": "docker-pullable://brianwang1912/cwms-outboundserver@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
-          "pod": "outboundservice-8544f87565-jt6tr",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -257,7 +257,7 @@
             "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "true",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000436Z/outboundservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -266,7 +266,7 @@
           "service": "commonservice",
           "image": "garyzhangscm/cwms-commonserver:v1.62@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "imageID": "docker-pullable://garyzhangscm/cwms-commonserver@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
-          "pod": "commonservice-55b4dc9795-nn7hk",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -276,7 +276,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T001009Z/commonservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -285,7 +285,7 @@
           "service": "adminservice",
           "image": "garyzhangscm/cwms-adminserver:v1.62@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "imageID": "docker-pullable://garyzhangscm/cwms-adminserver@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
-          "pod": "adminservice-78bd8964b-jxmdr",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -295,7 +295,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T001009Z/adminservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -304,7 +304,7 @@
           "service": "authserver",
           "image": "garyzhangscm/cwms-auth:v1.62@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "imageID": "docker-pullable://garyzhangscm/cwms-auth@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
-          "pod": "authserver-575b8bf5d5-gmmkg",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -314,7 +314,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T001009Z/authserver",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -323,7 +323,7 @@
           "service": "apigateway",
           "image": "garyzhangscm/cwms-apigateway:v1.62@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "imageID": "docker-pullable://garyzhangscm/cwms-apigateway@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
-          "pod": "apigateway-6b9d964fcc-98w58",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -331,7 +331,7 @@
             "path": "/actuator/health"
           },
           "configuration": {},
-          "backup": "/root/k8s/backups/unified-runtime-20261023T001009Z/apigateway",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -340,7 +340,7 @@
           "service": "layoutservice",
           "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "imageID": "docker-pullable://brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
-          "pod": "layoutservice-7866ff87b6-m5rgz",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -350,7 +350,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T001009Z/layoutservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         }
@@ -366,7 +366,7 @@
           "image": "garyzhangscm/cwms-adminserver:v1.62@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "imageID": "docker-pullable://garyzhangscm/cwms-adminserver@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -375,7 +375,7 @@
           "image": "garyzhangscm/cwms-apigateway:v1.62@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "imageID": "docker-pullable://garyzhangscm/cwms-apigateway@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -384,7 +384,7 @@
           "image": "garyzhangscm/cwms-auth:v1.62@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "imageID": "docker-pullable://garyzhangscm/cwms-auth@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -393,7 +393,7 @@
           "image": "garyzhangscm/cwms-commonserver:v1.62@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "imageID": "docker-pullable://garyzhangscm/cwms-commonserver@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -402,7 +402,7 @@
           "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "imageID": "docker-pullable://brianwang1912/cwms-inboundserver@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "false"
           },
@@ -413,7 +413,7 @@
           "image": "cwms-fay-integrationserver:v1.60-item-d5e3fd34bba7",
           "imageID": "docker://sha256:66a23f5e71bc6e48ab539b400cab3afe72baa2fd53daaed5d6e28dba7b47c224",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": true
         },
@@ -422,7 +422,7 @@
           "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "imageID": "docker-pullable://brianwang1912/cwms-inventoryserver@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_INVENTORY_ATTRIBUTE_LABELS": "false",
             "MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME": "false",
@@ -435,7 +435,7 @@
           "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "imageID": "docker-pullable://brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -444,7 +444,7 @@
           "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "imageID": "docker-pullable://brianwang1912/cwms-outboundserver@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "false",
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false",
@@ -457,7 +457,7 @@
           "image": "brianwang1912/mes-qc-shift-report:v20261022-receiving-history@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
           "imageID": "docker-pullable://brianwang1912/mes-qc-shift-report@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -466,7 +466,7 @@
           "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "imageID": "docker-pullable://brianwang1912/cwms-ressvr@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false"
           },
@@ -477,7 +477,7 @@
           "image": "brianwang1912/mes-web:v19.2-import-orders-20261022-02@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
           "imageID": "docker-pullable://brianwang1912/mes-web@sha256:d4c92a82f0d79da059982325fb625f2649275bfbf0e891de375e34f627406ae3",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         },
@@ -486,7 +486,7 @@
           "image": "brianwang1912/cwms-workorderserver:v1.62-qc-full-20261019@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
           "imageID": "docker-pullable://brianwang1912/cwms-workorderserver@sha256:e50f3fea8cbdb3738da8d4901d6efa9e490a540515111bb6ccadd1e0a94a06a5",
           "ready": 1,
-          "node": "k8s-app1-ar",
+          "node": "[server-local value redacted]",
           "configuration": {},
           "integrationExcluded": false
         }
@@ -522,7 +522,7 @@
           "service": "resourceservice",
           "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
           "imageID": "docker-pullable://brianwang1912/cwms-ressvr@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
-          "pod": "resourceservice-6bd7854fc6-sfjg2",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -533,7 +533,7 @@
             "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000427Z/resourceservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -542,7 +542,7 @@
           "service": "inboundservice",
           "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
           "imageID": "docker-pullable://brianwang1912/cwms-inboundserver@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
-          "pod": "inboundservice-b946f5cbc-28c6m",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -553,7 +553,7 @@
             "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "false",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000427Z/inboundservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -562,7 +562,7 @@
           "service": "inventoryservice",
           "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
           "imageID": "docker-pullable://brianwang1912/cwms-inventoryserver@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
-          "pod": "inventoryservice-6d9d54cd9c-p8r84",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -575,7 +575,7 @@
             "MES_RFID_LOOKUP_ENABLED": "true",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000427Z/inventoryservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -584,7 +584,7 @@
           "service": "outboundservice",
           "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
           "imageID": "docker-pullable://brianwang1912/cwms-outboundserver@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
-          "pod": "outboundservice-6c9ddc7c95-cdn5s",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -597,7 +597,7 @@
             "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "false",
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000427Z/outboundservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -606,7 +606,7 @@
           "service": "commonservice",
           "image": "garyzhangscm/cwms-commonserver:v1.62@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
           "imageID": "docker-pullable://garyzhangscm/cwms-commonserver@sha256:ffa38fb8daba06ce4008d354340825dc7a18c2a6129dc4434bedc07cb6ca487b",
-          "pod": "commonservice-7f8df4d6f9-8r5cn",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -616,7 +616,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000958Z/commonservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -625,7 +625,7 @@
           "service": "adminservice",
           "image": "garyzhangscm/cwms-adminserver:v1.62@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
           "imageID": "docker-pullable://garyzhangscm/cwms-adminserver@sha256:67b99229d5fdec7cfe4ac6df7168d20450ccee7ac62143e753574eedc80c8dd4",
-          "pod": "adminservice-785665fb7b-gn2nj",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -635,7 +635,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000958Z/adminservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -644,7 +644,7 @@
           "service": "authserver",
           "image": "garyzhangscm/cwms-auth:v1.62@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
           "imageID": "docker-pullable://garyzhangscm/cwms-auth@sha256:221bfbab1b2bb1db4c4af24fb33d1f1c1f193736b3396c3cf26accd705f93464",
-          "pod": "authserver-67c7956985-6sf89",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -654,7 +654,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000958Z/authserver",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -663,7 +663,7 @@
           "service": "apigateway",
           "image": "garyzhangscm/cwms-apigateway:v1.62@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
           "imageID": "docker-pullable://garyzhangscm/cwms-apigateway@sha256:684baef0b3b62360ea1b4e16cc0da4dd67d4645d88810ba32851137e4ee700e2",
-          "pod": "apigateway-8fc49d684-bfwk5",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -671,7 +671,7 @@
             "path": "/actuator/health"
           },
           "configuration": {},
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000958Z/apigateway",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         },
@@ -680,7 +680,7 @@
           "service": "layoutservice",
           "image": "brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
           "imageID": "docker-pullable://brianwang1912/cwms-layoutserver@sha256:d68e07e5e1231ce296897cfd3ccadb0ef0dd77c88bbd452f6e3921aa5b95c9cb",
-          "pod": "layoutservice-54c8db98c6-z8pcc",
+          "pod": "[server-local value redacted]",
           "ready": true,
           "health": {
             "tcp": true,
@@ -690,7 +690,7 @@
           "configuration": {
             "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
           },
-          "backup": "/root/k8s/backups/unified-runtime-20261023T000958Z/layoutservice",
+          "backup": "[server-local value redacted]",
           "persistentManifestUpdated": true,
           "integrationUnchanged": true
         }

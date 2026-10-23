@@ -3,10 +3,10 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${CWMS_LOCAL_MYSQL_ROOT_PASSWORD:}
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:}"
       MYSQL_DATABASE: cwms_local
       MYSQL_USER: cwms_local
-      MYSQL_PASSWORD: ${CWMS_LOCAL_MYSQL_PASSWORD:}
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:}"
     ports:
       - "127.0.0.1:13306:3306"
     volumes:

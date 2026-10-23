@@ -6,7 +6,7 @@ services:
       service: database
     environment:
       POSTGRES_USER: "postgres_prod"
-      POSTGRES_PASSWORD:  "${POSTGRES_PASSWORD}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:}"
       POSTGRES_DB: "eagle_eye_prod"
   configserver:
     extends:

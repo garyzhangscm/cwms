@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+*.local.env
+config/private
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx

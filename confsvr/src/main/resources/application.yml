@@ -20,7 +20,6 @@
 #       git:
 #         uri: https://github.com/carnellj/config-repo/
 #         searchPaths: licensingservice,organizationservice
-#         username: native-cloud-apps
 
 
 ####

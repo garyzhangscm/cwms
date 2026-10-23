@@ -10,7 +10,7 @@
         "cause": "Static-file regex took precedence over API JSON routes",
         "configMap": "mes-web-imports-fay-api-priority-20261022-02",
         "imageUnchanged": true,
-        "backup": "/root/k8s/backups/fay-api-priority-20261023T012135Z",
+        "backup": "[server-local value redacted]",
         "persistentManifestUpdated": true,
         "businessWritesForVerification": false,
         "checks": [
@@ -80,7 +80,7 @@
     {
       "issue": "FAY frontend manifest did not embed the active Nginx ConfigMap",
       "status": "fixed; persistent manifest only",
-      "backup": "/root/k8s/backups/fay-web-manifest-20261023T012412Z"
+      "backup": "[server-local value redacted]"
     },
     {
       "issue": "Both Resource manifests omitted existing OTA policy and report-result environment/mounts",
@@ -91,7 +91,7 @@
         "existingEnvironmentAndMountsPersisted": true,
         "liveResourcesChanged": false,
         "businessWrites": false,
-        "backup": "/root/k8s/backups/resource-manifest-20261023T012720Z"
+        "backup": "[server-local value redacted]"
       },
       "fay": {
         "site": "fay",
@@ -99,7 +99,7 @@
         "existingEnvironmentAndMountsPersisted": true,
         "liveResourcesChanged": false,
         "businessWrites": false,
-        "backup": "/root/k8s/backups/resource-manifest-20261023T012706Z"
+        "backup": "[server-local value redacted]"
       }
     }
   ],

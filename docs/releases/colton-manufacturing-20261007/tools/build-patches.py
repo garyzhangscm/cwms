@@ -1,6 +1,6 @@
 from pathlib import Path
-import zipfile,subprocess,json,hashlib
-b=Path('/Users/LOCAL_USER/Documents/ChatGPT/MES APP');r=Path('/private/tmp/colton-manufacturing-release-20261007');jdk=next((b/'.local/tools').glob('jdk-17*/Contents/Home/bin/javac'))
+import zipfile,subprocess,json,hashlib,os
+b=Path(__file__).resolve().parents[4];r=Path('/private/tmp/colton-manufacturing-release-20261007');jdk=Path(os.environ['JAVA_HOME'])/'bin/javac'
 changes={'layout':['model/WarehouseConfiguration.java','service/WarehouseConfigurationService.java'], 'outbound':['model/WarehouseConfiguration.java','clients/WarehouseLayoutServiceRestemplateClient.java','repository/PickRepository.java','service/ManufacturingIssuePolicyService.java','service/PickService.java']}
 manifest={}
 for kind,module in [('layout','layoutserver'),('outbound','outboundsvr')]:

@@ -62,12 +62,12 @@ def main():
             if kind=='items':
                 config=json.loads(P('/etc/cwms-fay-oracle-items/config.json').read_text())
                 if config['oracleItems'].get('filenamePrefix')!='fayint_item' or config.get('deleteSourceFiles') is not False:raise RuntimeError('Unexpected FAY prefix/retention policy')
-                config['oracleItems'].setdefault('inventoryBaseUrl','http://server.example.invalid:30330')
+                if not config['oracleItems'].get('inventoryBaseUrl'):config['oracleItems']['inventoryBaseUrl']=os.environ['MES_INVENTORY_BASE_URL']
             else:
                 config={'stateDirectory':'/var/lib/cwms-fay-work-order-operator/state','unconfiguredReason':'Work Order file import is not configured for FAY. Import retry is unavailable.'}
                 P(config['stateDirectory']).mkdir(parents=True,exist_ok=True)
-            config['operatorApi']={'authBaseUrl':'http://server.example.invalid:30640','userBaseUrl':'http://server.example.invalid:32412','layoutBaseUrl':'http://server.example.invalid:30138','bind':'server.example.invalid','port':18793 if kind=='items' else 18792}
-            if 'redacted-site-prefix.' in json.dumps(config):raise RuntimeError('Cross-factory target in FAY configuration')
+            config['operatorApi']={'authBaseUrl':os.environ['MES_AUTH_BASE_URL'],'userBaseUrl':os.environ['MES_USER_BASE_URL'],'layoutBaseUrl':os.environ['MES_LAYOUT_BASE_URL'],'bind':os.environ['MES_OPERATOR_BIND_ADDRESS'],'port':18793 if kind=='items' else 18792}
+            if os.environ['MES_FORBIDDEN_SITE_PREFIX'] in json.dumps(config):raise RuntimeError('Cross-factory target in FAY configuration')
             config_file.parent.mkdir(mode=0o750,parents=True,exist_ok=True);os.chown(str(config_file.parent),0,user.pw_gid);config_file.write_text(json.dumps(config,indent=2));os.chown(str(config_file),0,user.pw_gid);os.chmod(str(config_file),0o640)
         timer_name='cwms-fay-oracle-items' if kind=='items' else 'cwms-fay-oracle-work-orders'
     else:

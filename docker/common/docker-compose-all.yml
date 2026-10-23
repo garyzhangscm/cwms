@@ -11,7 +11,7 @@ services:
     ports:
        - "8888:8888"
     environment:
-      ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+      ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
       COMPOSE_PROJECT_NAME: "CONFIGURATION"
   database:
     image: mysql
@@ -23,7 +23,7 @@ services:
 #      - vpcbr
      #   ipv4_address: server.example.invalid
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:}"
       COMPOSE_PROJECT_NAME: "DATABASE"
 
 # adminer is a standard dock to configure database

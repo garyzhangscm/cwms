@@ -5,7 +5,7 @@ services:
     ports:
        - "8888:8888"
     environment:
-      ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+      ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
   database:
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
@@ -13,7 +13,7 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:}"
 
 # adminer is a standard dock to configure database
 # database name will be "database", which is the service name
@@ -38,7 +38,7 @@ services:
           CONFIGSERVER_URI: "http://localhost:8888"
           CONFIGSERVER_PORT:   "8888"
           DATABASESERVER_PORT: "3306"
-          ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+          ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
 
 #  licensingservice:
 #    image: johncarnell/tmx-licensing-service:chapter3

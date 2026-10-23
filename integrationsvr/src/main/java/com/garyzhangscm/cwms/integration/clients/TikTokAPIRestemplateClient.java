@@ -65,7 +65,7 @@ public class TikTokAPIRestemplateClient {
     TiktokRestTemplateProxy tiktokRestTemplateProxy;
 
     public TiktokRequestAccessTokenAPICallResponse requestSellerAccessToken(String authCode)   {
-        // OAuth credentials are supplied at runtime.
+        // OAuth credentials and authorization codes are supplied at runtime.
 
 
         UriComponentsBuilder builder =

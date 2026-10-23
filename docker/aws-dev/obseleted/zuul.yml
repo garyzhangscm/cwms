@@ -8,7 +8,7 @@ services:
        SPRING_PROFILE: "aws-dev"
        CONFIGSERVER_URI: "http://configserver:8888"
        CONFIGSERVER_PORT:   "8888"
-       ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+       ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
        COMPOSE_PROJECT_NAME: "CWMS-APP"
     labels:
       - "co.elastic.logs/enabled=false"

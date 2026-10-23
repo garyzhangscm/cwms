@@ -1,7 +1,7 @@
 from pathlib import Path
-import subprocess,zipfile,json,hashlib
-root=Path('/Users/LOCAL_USER/Documents/ChatGPT/MES APP');out=Path('/private/tmp/colton-allocate-wo390-20261007');ctx=out/'transport-image';ctx.mkdir(exist_ok=True)
-java=root/'.local/tools/jdk-17.0.20.1+1/Contents/Home/bin';cp=':'.join(str(root/'.local/m2/repository/org/ow2/asm'/n/'9.5'/(n+'-9.5.jar')) for n in ['asm','asm-tree'])
+import subprocess,zipfile,json,hashlib,os
+root=Path(__file__).resolve().parents[4];out=Path('/private/tmp/colton-allocate-wo390-20261007');ctx=out/'transport-image';ctx.mkdir(exist_ok=True)
+java=Path(os.environ['JAVA_HOME'])/'bin';cp=os.environ['MES_ASM_CLASSPATH']
 subprocess.run([str(java/'javac'),'-cp',cp,'-d',str(out),str(out/'PatchWorkOrderAllocationTransport.java')],check=True)
 base=out/'image/workorderserver-v1.62.jar';assert hashlib.sha256(base.read_bytes()).hexdigest()=='23afb60bfc7ea0c6f27f734fb94db310508d9a9746844e1b1d5c54eb35389f79'
 subprocess.run([str(java/'java'),'-cp',str(out)+':'+cp,'PatchWorkOrderAllocationTransport',str(base),str(root/'workordersvr/target/classes'),str(out)],check=True)

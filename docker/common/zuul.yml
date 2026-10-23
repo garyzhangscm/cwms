@@ -8,5 +8,5 @@ services:
        SPRING_PROFILE: "dev"
        CONFIGSERVER_URI: "http://configserver:8888"
        CONFIGSERVER_PORT:   "8888"
-       ENCRYPT_KEY:       "${ENCRYPT_KEY}"
+       ENCRYPT_KEY: "${ENCRYPT_KEY:?Set ENCRYPT_KEY outside Git}"
        COMPOSE_PROJECT_NAME: "CWMS-APP"
