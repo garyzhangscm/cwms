@@ -2,7 +2,7 @@
   {
     "service": "outboundservice",
     "baselineSha256": "ba852feab5d47609e8dc137b8ecd60f232dec912b63f2f67cf7d6074716bfe8e",
-    "candidateSha256": "97fda2c311fe87b0661e5f483898907cacf33546e1232a2cbf1c9c6dff44fd26",
+    "candidateSha256": "24e5f599cf928e5b6357601aa146a2d3a2a5292a974e5f3c87d6294ef5e5765f",
     "changed": [
       "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/reportfix/ManualPickDemandRows.class"
     ],

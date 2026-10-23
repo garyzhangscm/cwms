@@ -23,7 +23,8 @@ for name,src in [('outboundservice',a.outbound),('resourceservice',a.resource)]:
  allowed=set(updates);target=a.output/(name+'.jar')
  with zipfile.ZipFile(src) as old,zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED) as new:
   for n in old.infolist():new.writestr(n,updates.pop(n.filename,old.read(n.filename)))
-  for n,b in updates.items():new.writestr(n,b)
+  for n,b in updates.items():
+   entry=zipfile.ZipInfo(n,date_time=(1980,1,1,0,0,0));entry.compress_type=zipfile.ZIP_DEFLATED;new.writestr(entry,b)
  with zipfile.ZipFile(src) as old,zipfile.ZipFile(target) as new:
   changed=[n for n in old.namelist() if old.read(n)!=new.read(n)];added=sorted(set(new.namelist())-set(old.namelist()));assert set(changed+added)<=allowed
  evidence.append({'service':name,'baselineSha256':sha(src),'candidateSha256':sha(target),'changed':changed,'added':added,'allOtherEntriesPreserved':True})

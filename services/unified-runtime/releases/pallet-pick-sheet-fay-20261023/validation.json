@@ -13,5 +13,8 @@
     "unitsPerPallet": 36,
     "stockUnit": "PCS",
     "stockUnitQuantity": 1
-  }
+  },
+  "repeatedBuildIdentical": true,
+  "imageArtifactHashesVerified": true,
+  "initialMismatchedArtifactRolledBack": true
 }
