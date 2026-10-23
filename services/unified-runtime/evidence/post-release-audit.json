@@ -1,0 +1,1075 @@
+{
+  "date": "2026-10-22",
+  "scope": "Colton and FAY live post-release compatibility review",
+  "findings": [
+    {
+      "issue": "FAY disabled handoff/settings API prefixes were intercepted by static JSON regex",
+      "status": "fixed",
+      "liveFix": {
+        "site": "fay",
+        "cause": "Static-file regex took precedence over API JSON routes",
+        "configMap": "mes-web-imports-fay-api-priority-20261022-02",
+        "imageUnchanged": true,
+        "backup": "/root/k8s/backups/fay-api-priority-20261023T012135Z",
+        "persistentManifestUpdated": true,
+        "businessWritesForVerification": false,
+        "checks": [
+          {
+            "url": "http://server.example.invalid/",
+            "status": 200,
+            "jsonObject": false
+          },
+          {
+            "url": "http://server.example.invalid/api/resource/assets/i18n/en-US.json",
+            "status": 200,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/resource/assets/i18n/zh-CN.json",
+            "status": 200,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/inventory-handoff/__audit__.json",
+            "status": 503,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/integration-settings/__audit__.json",
+            "status": 503,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/missing-ota-release-check.js",
+            "status": 404,
+            "jsonObject": false
+          },
+          {
+            "url": "http://server.example.invalid/",
+            "status": 200,
+            "jsonObject": false
+          },
+          {
+            "url": "http://server.example.invalid/api/resource/assets/i18n/en-US.json",
+            "status": 200,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/resource/assets/i18n/zh-CN.json",
+            "status": 200,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/inventory-handoff/__audit__.json",
+            "status": 503,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/api/integration-settings/__audit__.json",
+            "status": 503,
+            "jsonObject": true
+          },
+          {
+            "url": "http://server.example.invalid/missing-ota-release-check.js",
+            "status": 404,
+            "jsonObject": false
+          }
+        ]
+      }
+    },
+    {
+      "issue": "FAY frontend manifest did not embed the active Nginx ConfigMap",
+      "status": "fixed; persistent manifest only",
+      "backup": "/root/k8s/backups/fay-web-manifest-20261023T012412Z"
+    },
+    {
+      "issue": "Both Resource manifests omitted existing OTA policy and report-result environment/mounts",
+      "status": "fixed; live resources unchanged",
+      "colton": {
+        "site": "colton",
+        "service": "resourceservice",
+        "existingEnvironmentAndMountsPersisted": true,
+        "liveResourcesChanged": false,
+        "businessWrites": false,
+        "backup": "/root/k8s/backups/resource-manifest-20261023T012720Z"
+      },
+      "fay": {
+        "site": "fay",
+        "service": "resourceservice",
+        "existingEnvironmentAndMountsPersisted": true,
+        "liveResourcesChanged": false,
+        "businessWrites": false,
+        "backup": "/root/k8s/backups/resource-manifest-20261023T012706Z"
+      }
+    }
+  ],
+  "sites": {
+    "colton": {
+      "runtime": {
+        "site": "colton",
+        "services": [
+          {
+            "service": "adminservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "apigateway",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "authserver",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "commonservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "inboundservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "integrationservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "inventoryservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "layoutservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "outboundservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "qc-shift-report",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "resourceservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "webclient",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "workorderservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          }
+        ],
+        "staticAssetsChecked": 293,
+        "staticAssetFailures": [],
+        "readOnlyHttpChecks": [
+          {
+            "path": "/api/resource/assets/i18n/en-US.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api/resource/assets/i18n/zh-CN.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api//resource/assets/i18n/en-US.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api/resource/assets/file-templates/inventories.csv",
+            "status": 403,
+            "contentType": "",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/qc-shift-report/health",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/item-import/batches",
+            "status": 403,
+            "contentType": "application/json; charset=utf-8",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/work-order-import/batches",
+            "status": 403,
+            "contentType": "application/json; charset=utf-8",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/inventory-handoff/__audit__.json",
+            "status": 404,
+            "contentType": "application/json; charset=utf-8",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/integration-settings/__audit__.json",
+            "status": 404,
+            "contentType": "application/json; charset=utf-8",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/adminer/?__audit__=1",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "nginxStatic404": false
+          }
+        ],
+        "nginxLocations": [
+          "= /healthz",
+          "= /index.html",
+          "~* \"^/(?:.*/)?[^/]+-[A-Z0-9]",
+          "~* \\.mjs$",
+          "~* \\.(?:js|mjs|css|json|map)$",
+          "@missing_asset",
+          "/",
+          "^~ /api/item-import/",
+          "^~ /api/work-order-import/",
+          "^~ /api/inventory-handoff/",
+          "^~ /api/integration-settings/",
+          "^~ /api/qc-shift-report/",
+          "^~ /api/",
+          "^~ /adminer/"
+        ],
+        "businessWrites": false,
+        "logWindowLimit": "Last 60 minutes, maximum 12000 lines per pod; counts are diagnostic patterns, not confirmed regressions"
+      },
+      "manifest": {
+        "deployments": [
+          {
+            "service": "apigateway",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "adminer",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "kafka-server",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "redis",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "webclient",
+            "manifest": "4-frontend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "authserver",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "dblinkserver",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "layoutservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "resourceservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "commonservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "inventoryservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "inboundservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "outboundservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "workorderservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "adminservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "qc-shift-report",
+            "manifest": "6-qc-shift-report.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          }
+        ],
+        "webConfigMaps": [],
+        "businessWrites": false
+      },
+      "capabilities": [
+        {
+          "service": "inboundservice",
+          "configuration": {
+            "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "true"
+          }
+        },
+        {
+          "service": "inventoryservice",
+          "configuration": {
+            "MES_INVENTORY_ATTRIBUTE_LABELS": "true",
+            "MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME": "true",
+            "MES_RFID_LOOKUP_ENABLED": "false"
+          }
+        },
+        {
+          "service": "outboundservice",
+          "configuration": {
+            "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "true",
+            "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true",
+            "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "true"
+          }
+        },
+        {
+          "service": "resourceservice",
+          "configuration": {
+            "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true"
+          }
+        }
+      ],
+      "reportTemplates": [
+        {
+          "file": "order_manual_pick_sheet.jrxml",
+          "sha256": "f6dc4746da47e703d31c89e0f95abcca5c2d847507a47919d097046505c9bd59",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        },
+        {
+          "file": "order_manual_pick_sheet_en_US.properties",
+          "sha256": "52eb23a5d86b920429095b6f40e07677afe214bc65658e76dc9451868471d580",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        },
+        {
+          "file": "order_manual_pick_sheet_zh_CN.properties",
+          "sha256": "91f4fcc7a9c991be4079763388cf2bc90c154fd2aa6f9c3c5d3e58d992dc8a15",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        }
+      ],
+      "rfidRoute": {
+        "enabled": false,
+        "invalidUpcRejected": false,
+        "routeAbsent": true
+      },
+      "integrationImageUnchanged": true
+    },
+    "fay": {
+      "runtime": {
+        "site": "fay",
+        "services": [
+          {
+            "service": "adminservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "apigateway",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "authserver",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "commonservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "inboundservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "integrationservice",
+            "ready": true,
+            "restartCount": 1,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "inventoryservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "layoutservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "outboundservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "qc-shift-report",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "resourceservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            },
+            "originalEnvironmentPreserved": true,
+            "originalVolumesPreserved": true,
+            "originalMountsPreserved": true,
+            "originalCommandArgsPreserved": true,
+            "originalResourcesPreserved": true
+          },
+          {
+            "service": "webclient",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          },
+          {
+            "service": "workorderservice",
+            "ready": true,
+            "restartCount": 0,
+            "errorPatternsLast60Minutes": {
+              "schema": 0,
+              "nullPointer": 0,
+              "databaseConnection": 0,
+              "networkTimeout": 0,
+              "reportCompilation": 0,
+              "applicationStartFailure": 0
+            }
+          }
+        ],
+        "staticAssetsChecked": 293,
+        "staticAssetFailures": [],
+        "readOnlyHttpChecks": [
+          {
+            "path": "/api/resource/assets/i18n/en-US.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api/resource/assets/i18n/zh-CN.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api//resource/assets/i18n/en-US.json",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false,
+            "validLanguageObject": true
+          },
+          {
+            "path": "/api/resource/assets/file-templates/inventories.csv",
+            "status": 403,
+            "contentType": "",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/qc-shift-report/health",
+            "status": 200,
+            "contentType": "application/json",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/item-import/batches",
+            "status": 403,
+            "contentType": "application/json; charset=utf-8",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/work-order-import/batches",
+            "status": 503,
+            "contentType": "application/json",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/inventory-handoff/__audit__.json",
+            "status": 503,
+            "contentType": "application/json",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/api/integration-settings/__audit__.json",
+            "status": 503,
+            "contentType": "application/json",
+            "nginxStatic404": false
+          },
+          {
+            "path": "/adminer/?__audit__=1",
+            "status": 200,
+            "contentType": "text/html; charset=utf-8",
+            "nginxStatic404": false
+          }
+        ],
+        "nginxLocations": [
+          "= /healthz",
+          "= /index.html",
+          "/",
+          "^~ /api/qc-shift-report/",
+          "^~ /api/inventory-handoff/",
+          "^~ /api/integration-settings/",
+          "^~ /api/item-import/",
+          "^~ /api/work-order-import/",
+          "~* \\.mjs$",
+          "~* \\.(?:js|css|json|map)$",
+          "^~ /api/",
+          "/adminer/"
+        ],
+        "businessWrites": false,
+        "logWindowLimit": "Last 60 minutes, maximum 12000 lines per pod; counts are diagnostic patterns, not confirmed regressions"
+      },
+      "manifest": {
+        "deployments": [
+          {
+            "service": "apigateway",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "adminer",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "kafka-server",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "redis",
+            "manifest": "3-framework.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "webclient",
+            "manifest": "4-frontend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "authserver",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "layoutservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "resourceservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "commonservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "inventoryservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "inboundservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "outboundservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "workorderservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "adminservice",
+            "manifest": "5-backend-app.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          },
+          {
+            "service": "qc-shift-report",
+            "manifest": "6-qc-shift-report.yaml",
+            "imageMatchesLive": true,
+            "environmentMatchesLive": true,
+            "volumeSourcesMatchLive": true
+          }
+        ],
+        "webConfigMaps": [
+          {
+            "name": "mes-web-imports-fay-api-priority-20261022-02",
+            "dataMatchesLive": true
+          }
+        ],
+        "businessWrites": false
+      },
+      "capabilities": [
+        {
+          "service": "inboundservice",
+          "configuration": {
+            "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "false"
+          }
+        },
+        {
+          "service": "inventoryservice",
+          "configuration": {
+            "MES_INVENTORY_ATTRIBUTE_LABELS": "false",
+            "MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME": "false",
+            "MES_RFID_LOOKUP_ENABLED": "true"
+          }
+        },
+        {
+          "service": "outboundservice",
+          "configuration": {
+            "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "false",
+            "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false",
+            "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "false"
+          }
+        },
+        {
+          "service": "resourceservice",
+          "configuration": {
+            "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false"
+          }
+        }
+      ],
+      "reportTemplates": [
+        {
+          "file": "order_manual_pick_sheet.jrxml",
+          "sha256": "cd6dc182473449c7c79feb21fc41732fb7d4ba23578e443f4ca615c7091f7677",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        },
+        {
+          "file": "order_manual_pick_sheet_en_US.properties",
+          "sha256": "a1940b3813e594693f3635e6c624f488204cba832f7558d7ccbfa7a38875d8c1",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        },
+        {
+          "file": "order_manual_pick_sheet_zh_CN.properties",
+          "sha256": "f4c3ef679343650575b740830a9a756ede41a021546383160b507698f42cc711",
+          "selectedVersionMatches": true,
+          "existingCustomizationMatches": false
+        }
+      ],
+      "rfidRoute": {
+        "enabled": true,
+        "invalidUpcRejected": true,
+        "routeAbsent": false
+      },
+      "integrationImageUnchanged": true
+    }
+  },
+  "limitations": [
+    "No authenticated receiving, picking, shipping or import transactions executed.",
+    "No physical scanner or printer acceptance performed.",
+    "Log inspection covered selected patterns, last 60 minutes, at most 12000 lines per pod.",
+    "Anonymous file-template and import requests returning 403 verify access guards, not authenticated functionality."
+  ],
+  "fayIntegrationHistoricalRestart": {
+    "finishedAtUTC": "2026-10-05T21:17:43Z",
+    "predatesRelease": true,
+    "currentReady": true
+  }
+}

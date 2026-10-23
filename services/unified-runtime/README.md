@@ -88,3 +88,28 @@ restored to its prior Pod template when no concurrent template change is detecte
 previously completed services remain recorded in `results.json`. Restore image,
 capability settings and matching Resource/Outbound report settings together. Do not
 restore business data or erase import queues as part of image rollback.
+
+## Follow-up live compatibility audit
+
+`tools/audit_runtime.py` compares the running services with their private pre-release
+Deployment backups without exposing environment values. It checks preserved mounts,
+startup arguments, resource settings and all published JavaScript, CSS, JSON and font
+resources, and samples read-only API paths. It also summarizes selected error patterns
+in at most 12,000 log lines per pod from the last hour; this is not a complete log audit.
+`tools/audit_manifests.py` compares persisted image, environment and volume references
+with the current running configuration. Both tools invoke no business transaction.
+
+The audit found FAY's disabled handoff/settings JSON prefixes could still be intercepted
+by a static-file regex. The Web configuration fix preserves their intentional 503 JSON
+response; those services remain disabled. It also embeds the actual active Nginx
+ConfigMap in FAY's persistent frontend manifest.
+
+Both sites' Resource manifests lacked existing OTA policy and report-result mounts
+present in their running Deployments. `tools/persist_resource_config.py` backs up and
+reconciles only that server-local manifest with the existing environment/mounts; it
+does not change or restart live resources. The release deployer now preserves those
+fields in future manifest updates as well. See `evidence/post-release-audit.json`.
+
+These results cover resources, configuration, read-only routes, runtime readiness and
+the earlier isolated label/report regressions. They do not constitute physical scanner,
+printer or authenticated receiving/picking/shipping business acceptance.

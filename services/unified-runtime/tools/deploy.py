@@ -35,7 +35,11 @@ def persist(file,name,image,flags,podspec):
  docs=list(yaml.safe_load_all(file.read_text()));count=0
  for d in docs:
   if not d or d.get('kind')!='Deployment' or d.get('metadata',{}).get('name')!=name:continue
-  count+=1;s=d['spec']['template']['spec'];c=s['containers'][0];c['image']=image;env=c.setdefault('env',[]);env[:]=[e for e in env if e['name'] not in flags]+[{'name':k,'value':v} for k,v in sorted(flags.items())]
+  count+=1;s=d['spec']['template']['spec'];c=s['containers'][0];c['image']=image
+  # Preserve already-deployed site mounts and environment, including OTA/report paths.
+  c['env']=podspec['containers'][0].get('env',[])
+  c['volumeMounts']=podspec['containers'][0].get('volumeMounts',[])
+  s['volumes']=podspec.get('volumes',[])
   s['nodeSelector']=podspec['nodeSelector'];c['readinessProbe']=podspec['containers'][0]['readinessProbe']
  if count!=1:raise RuntimeError('Persistent Deployment not uniquely found')
  file.write_text(yaml.safe_dump_all(docs))
