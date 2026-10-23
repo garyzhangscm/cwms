@@ -1,0 +1,23 @@
+{
+  "site": "fay",
+  "service": "outboundservice",
+  "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-print-policy-01@sha256:e5cfa7bb97ad17a746f5346df9dfc140d4035f11440843eeae44ed5d23c5aca0",
+  "ready": true,
+  "checks": [
+    {
+      "health": 200,
+      "jarHashVerified": true,
+      "unauthenticatedRulesDenied": true,
+      "transitConfigurationPreserved": true
+    },
+    {
+      "readOnlyPrintPolicyPassed": true,
+      "sampleShipmentCount": 1
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/pick-print-policy-20261023T183144Z-outboundservice"
+}

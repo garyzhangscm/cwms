@@ -15,13 +15,14 @@ def pod_for(deployment):
  if len(ready)!=1:raise RuntimeError('Expected one ready target pod')
  return ready[0]
 def http(url):
- for attempt in range(6):
+ attempts=60 if url.endswith('/actuator/health') else 6
+ for attempt in range(attempts):
   try:
    response=urllib.request.urlopen(url,timeout=5);body=response.read()
    if response.status!=200:raise RuntimeError('HTTP check failed')
    return body
   except (OSError,urllib.error.URLError):
-   if attempt==5:raise
+   if attempt==attempts-1:raise
    time.sleep(2)
 def persist(file,name,template):
  parts=file.read_text().split('\n---');count=0
