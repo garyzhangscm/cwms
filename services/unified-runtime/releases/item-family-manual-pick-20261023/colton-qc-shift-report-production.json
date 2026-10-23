@@ -1,0 +1,17 @@
+{
+  "site": "colton",
+  "service": "qc-shift-report",
+  "image": "brianwang1912/mes-qc-shift-report:v20261023-item-family@sha256:e293ee03f840903583606f47d397168ae11c81f616535b384a25b5bed37e05c5",
+  "ready": true,
+  "checks": [
+    {
+      "timezone": "America/Los_Angeles",
+      "customReadOnlyQueryPassed": true,
+      "familyReadOnlyQueryPassed": true
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false
+}

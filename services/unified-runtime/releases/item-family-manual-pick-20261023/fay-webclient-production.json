@@ -1,0 +1,28 @@
+{
+  "site": "fay",
+  "service": "webclient",
+  "image": "brianwang1912/mes-web:v19.2-item-family-20261023-01@sha256:e2d0a50f22b80f52f0a5e841698c1591e58c5d577bad4f71c0d3eff1dc678aeb",
+  "ready": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/mes-public-config-20261023.js",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/en-US.json",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/zh-CN.json",
+      "status": 200
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false
+}

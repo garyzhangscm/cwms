@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-23",
+  "productionRollout": "verified at FAY and Colton",
+  "sameImageDigestsAtBothSites": true,
+  "manualPickFix": "Only legacy OrderLine row formatting changed; missing dates display Unknown; candidate location, LPN and quantities retained",
+  "itemFamilyFilter": "Multi-select OR; omission includes all; totals, coverage, details and exports share the selected scope",
+  "actualImageChecks": {
+    "outboundPerSite": 94,
+    "qcReport": 54,
+    "frontend": 17,
+    "productionAngularBuild": "passed"
+  },
+  "realReadOnlyFamilyQueries": "passed at both sites",
+  "transitConfiguration": "preserved: FAY enabled, Colton disabled",
+  "databaseSchemaOrInventoryWrites": false,
+  "physicalPrintingExecutedForValidation": false
+}
