@@ -1,0 +1,36 @@
+[
+  {
+    "site": "fay",
+    "service": "inboundservice",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+    "imageID": "docker-pullable://brianwang1912/cwms-inboundserver@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+    "pod": "inboundservice-58fbd4848c-97m97",
+    "ready": true,
+    "health": {
+      "tcp": true,
+      "httpStatus": 200,
+      "path": "/actuator/health"
+    },
+    "configuration": {
+      "MES_RECEIVING_EXTENDED_LABEL_CONTENT": "false",
+      "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"
+    },
+    "backup": "/root/k8s/backups/unified-runtime-20261023T133517Z/inboundservice",
+    "persistentManifestUpdated": true,
+    "integrationUnchanged": true
+  },
+  {
+    "site": "colton",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261023-receiving-label-01@sha256:d8e30a99e6fbf01d8c123c6eef85e70aab5d4770fd9e38842dfb073f64925998",
+    "jarSha256": "c763dd04e6869856a5217d52289c2582ec4de3187a650cf957480a9843ff7182",
+    "ready": true,
+    "health": {
+      "tcp": true,
+      "httpStatus": 200,
+      "path": "/actuator/health"
+    },
+    "persistentManifestReconciled": false,
+    "persistentManifestImageMatches": true,
+    "databaseChanged": false
+  }
+]
