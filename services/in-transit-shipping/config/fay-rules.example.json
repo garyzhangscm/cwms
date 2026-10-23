@@ -1,0 +1,9 @@
+{
+  "revision": 0,
+  "modifiedBy": "deployment",
+  "modifiedAt": null,
+  "rules": [
+    {"customerId": 1, "destinationLocationId": 16169, "enabled": true},
+    {"customerId": 25, "destinationLocationId": 16169, "enabled": true}
+  ]
+}

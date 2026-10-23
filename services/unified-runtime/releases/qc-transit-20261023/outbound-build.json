@@ -1,0 +1,19 @@
+{
+  "baselineSha256": "15da73e384fa4ba0cd1ff94f7c44e9a7548c01c6cffe22646936fc07047dbbcc",
+  "releaseSha256": "024c4e53b594b03000ac75d107ea4ac6899bf41842b7c53dbe2514f88966d9f0",
+  "changedExistingEntries": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/ShipmentService.class"
+  ],
+  "changedExistingMethods": [
+    "completeShipmentByOrder(Lcom/garyzhangscm/cwms/outbound/model/Shipment;Lcom/garyzhangscm/cwms/outbound/model/Order;)V"
+  ],
+  "addedEntries": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitConfigurationStore.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitRuleAccess.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitShippingConfiguration$Rule.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitShippingConfiguration.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitShippingController.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/transit/TransitShippingService.class"
+  ],
+  "allOtherEntriesAndMethodCodePreserved": true
+}

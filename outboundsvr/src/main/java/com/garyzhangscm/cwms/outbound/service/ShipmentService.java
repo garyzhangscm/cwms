@@ -50,6 +50,9 @@ import java.util.stream.Stream;
 public class ShipmentService {
     private static final Logger logger = LoggerFactory.getLogger(ShipmentService.class);
 
+    @Autowired(required = false)
+    private com.garyzhangscm.cwms.outbound.transit.TransitShippingService transitShippingService;
+
     @Autowired
     private ShipmentRepository shipmentRepository;
     @Autowired
@@ -1278,7 +1281,8 @@ public class ShipmentService {
         // Move all the staged inventory to a location
         // that stands for the order
         Location location
-                = warehouseLayoutServiceRestemplateClient.createOrderLocation(order.getWarehouseId(), order);
+                = com.garyzhangscm.cwms.outbound.transit.TransitShippingService.destination(
+                        warehouseLayoutServiceRestemplateClient, order.getWarehouseId(), order, transitShippingService);
         completeShipment(shipment, location);
 
     }

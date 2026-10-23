@@ -1,0 +1,41 @@
+{
+  "webclient": {
+    "image": "brianwang1912/mes-web:v19.2-qc-transit-20261023-01@sha256:b6cb00b0b141d8ede2f8b2e951998c30159260558f4aee7fcc4d55ab4ac14e55",
+    "baseline": "brianwang1912/mes-web:v19.2-role-search-20261023-01@sha256:5ae7797d0734495a87eb8ef38125741949f425f35dd4b4db45004de499cfa2ab",
+    "manifest": "4-frontend-app.yaml"
+  },
+  "qc-shift-report": {
+    "image": "brianwang1912/mes-qc-shift-report:v20261023-custom-period@sha256:6fb9ec6743b464618cf40903ae77beca781a39d9e7f21cd1b61ae4c0b69d7331",
+    "baseline": "brianwang1912/mes-qc-shift-report:v20261022-receiving-history@sha256:3abc0f80c118653255c18be0330f10bc7ae60e165a9a5fedf987387d6e86b4cf",
+    "manifest": "6-qc-shift-report.yaml"
+  },
+  "outboundservice": {
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-transit-01@sha256:ff96adf85ab1206782fd64f877a76a99c725d1d5fcdb29a620db36b832aca12d",
+    "baseline": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01@sha256:376c2f8cae876c7f95c4a29c73bcc3954640167d39992ac3687ac338ddc71e02",
+    "manifest": "5-backend-app.yaml"
+  },
+  "outboundJarHash": "024c4e53b594b03000ac75d107ea4ac6899bf41842b7c53dbe2514f88966d9f0",
+  "qcSourceHashes": {
+    "report_api.py": "9826691b747527c68b7451182d652616591ba0cec18ff5b12f28c671e646745d",
+    "report_core.py": "9717ad2cf51d6df860e61efda1c69434e683f6a9f7c6dfe57db2052fa374ec9b",
+    "report_pdf.py": "e9632a1b967b43b69b17bdf131a34e221248a389cbc716c132ef7468199c166a",
+    "report_history.py": "e21b359e731503fa2b1612d914e0c0a42a50e16faf13525955e0a48c72870de0"
+  },
+  "fayRules": {
+    "revision": 0,
+    "modifiedBy": "deployment",
+    "modifiedAt": null,
+    "rules": [
+      {
+        "customerId": 1,
+        "destinationLocationId": 16169,
+        "enabled": true
+      },
+      {
+        "customerId": 25,
+        "destinationLocationId": 16169,
+        "enabled": true
+      }
+    ]
+  }
+}

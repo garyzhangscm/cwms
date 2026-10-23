@@ -1,0 +1,66 @@
+[
+  {
+    "site": "fay",
+    "test": "TransitRegression",
+    "exit": 0,
+    "results": [
+      "PASS: 21 regression checks, including actual patched ShipmentService; no remote requests or inventory writes."
+    ]
+  },
+  {
+    "site": "fay",
+    "test": "TransitAccessRegression",
+    "exit": 0,
+    "results": [
+      "PASS: 10 authorization checks; no external requests."
+    ]
+  },
+  {
+    "site": "fay",
+    "test": "TransitShipmentFlow",
+    "exit": 0,
+    "results": [
+      "PASS: 45 isolated shipment-flow checks; actual completion methods, no production writes or remote requests."
+    ]
+  },
+  {
+    "site": "fay",
+    "test": "WorkOrderPickScope",
+    "exit": 0,
+    "results": [
+      "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+    ]
+  },
+  {
+    "site": "colton",
+    "test": "TransitRegression",
+    "exit": 0,
+    "results": [
+      "PASS: 21 regression checks, including actual patched ShipmentService; no remote requests or inventory writes."
+    ]
+  },
+  {
+    "site": "colton",
+    "test": "TransitAccessRegression",
+    "exit": 0,
+    "results": [
+      "PASS: 10 authorization checks; no external requests."
+    ]
+  },
+  {
+    "site": "colton",
+    "test": "TransitShipmentFlow",
+    "exit": 0,
+    "results": [
+      "PASS: 45 isolated shipment-flow checks; actual completion methods, no production writes or remote requests."
+    ]
+  },
+  {
+    "site": "colton",
+    "test": "WorkOrderPickScope",
+    "exit": 0,
+    "results": [
+      "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+    ]
+  }
+]
