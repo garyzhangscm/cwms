@@ -1,0 +1,96 @@
+[
+  {
+    "service": "inventoryservice",
+    "site": "colton",
+    "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
+    "exit": 0,
+    "results": [
+      "RESULT inventory legacy={item_family=, item_name=TEST-ITEM, lpn=TEST-LPN, quantity=27}",
+      "RESULT RFID variants and conditional registration passed; enabled=false"
+    ],
+    "error": ""
+  },
+  {
+    "service": "inventoryservice",
+    "site": "fay",
+    "image": "brianwang1912/cwms-inventoryserver:v1.62-unified-20261022-01@sha256:60d9c218ea05d5a05928963d03fb94121776e23433a623a10b5819d4ba21e20f",
+    "exit": 0,
+    "results": [
+      "RESULT inventory legacy={item_family=, item_name=TEST-ITEM, lpn=TEST-LPN, quantity=27}",
+      "RESULT RFID variants and conditional registration passed; enabled=true"
+    ],
+    "error": ""
+  },
+  {
+    "service": "outboundservice",
+    "site": "colton",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
+    "exit": 0,
+    "results": [
+      "RESULT outbound rows=[TEST-A: 10/01/2026 ~ 10/01/2026,     # , 10, 10/01/2026,     # , 10, 10/01/2026]"
+    ],
+    "error": ""
+  },
+  {
+    "service": "outboundservice",
+    "site": "fay",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261022-01@sha256:aadf50f3acc64bdf32284973843b94b38251e4efef7d435c01055f3de063c2b7",
+    "exit": 0,
+    "results": [
+      "RESULT outbound rows=[TEST-A: 10/01/2026 ~ 10/01/2026,     # , 10, 10/01/2026,     # , 10, 10/01/2026]"
+    ],
+    "error": ""
+  },
+  {
+    "service": "resourceservice",
+    "site": "colton",
+    "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
+    "exit": 0,
+    "results": [
+      "RESULT all three report resources selected exactly by configuration"
+    ],
+    "error": ""
+  },
+  {
+    "service": "resourceservice",
+    "site": "fay",
+    "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261022-01@sha256:33745ecdffefade4c22ebb66e7ac921210559b3f60dc5c87f1836ddb36b9327d",
+    "exit": 0,
+    "results": [
+      "RESULT all three report resources selected exactly by configuration"
+    ],
+    "error": ""
+  },
+  {
+    "service": "inboundservice",
+    "site": "colton",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
+    "exit": 0,
+    "results": [
+      "RESULT case=0 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=3 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27"
+    ],
+    "error": ""
+  },
+  {
+    "service": "inboundservice",
+    "site": "fay",
+    "image": "brianwang1912/cwms-inboundserver:v1.62-unified-20261022-01@sha256:0db47994f53e75783832098d9e7e12bb58ef3dc457932fa20eb7e0c041e59bcb",
+    "exit": 0,
+    "results": [
+      "RESULT case=0 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27"
+    ],
+    "error": ""
+  }
+]

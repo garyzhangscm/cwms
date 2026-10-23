@@ -1,0 +1,51 @@
+[
+  {
+    "site": "colton",
+    "service": "inventoryservice",
+    "image": "brianwang1912/cwms-inventoryserver:v1.62-colton-preprinted-lpn-20261016@sha256:a74eebf6bda0ed0837f8947e01941e830b97e1251dec2f756e64b1d8104582af",
+    "jarPath": "/usr/local/service/inventoryserver-v1.62.jar",
+    "sha256": "ec4ce0e68cd2c999b5500a829de36e72317fc2bf9493e8a8a858471e007c9593"
+  },
+  {
+    "site": "fay",
+    "service": "inventoryservice",
+    "image": "brianwang1912/cwms-inventoryserver:v1.62-fay-rfid-upc-20261021@sha256:0c1243e4c489cf541bb7fb66139e9e40298464d59ba0e095deb9eafbaf3e98e0",
+    "jarPath": "/usr/local/service/inventoryserver-v1.60.jar",
+    "sha256": "1ffee0729a2727e73755938d9944eecf3a1a94b855db7cc5998162409581fe96"
+  },
+  {
+    "site": "colton",
+    "service": "outboundservice",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-colton-repick-baseline-20261022@sha256:1bd44f6a00e819178cdc298490f5c37728dd1b47d4de034f9514a74358e574cf",
+    "jarPath": "/usr/local/service/outboundserver-v1.62.jar",
+    "sha256": "8de8e39a412548bfa2f0f424f59f879fe68b65676113982cf49e955cafb0ae3d"
+  },
+  {
+    "site": "fay",
+    "service": "outboundservice",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-fay-preprinted-lpn-20261016@sha256:bc20da87e0196d96a3eabdfae4f00cee8b4f52d69571f76b278b1a8dce756c5a",
+    "jarPath": "/usr/local/service/outboundserver-v1.62.jar",
+    "sha256": "b2210396330c52361b1cdc4bec6e38f1262651c921c176cbf9f9a3cec41a8157"
+  },
+  {
+    "site": "colton",
+    "service": "resourceservice",
+    "image": "brianwang1912/cwms-ressvr:v1.62-colton-preprinted-lpn-20261016@sha256:5e84d3adc8d3188cd7fd2f7e747803c11fa3b1d990d5457e24ee7fb36744d33f",
+    "jarPath": "/usr/local/service/resourceserver-v1.62.jar",
+    "sha256": "e81ace2fd1757aa7ae23dccdb956ae49844fa0a0c935ad4d3143a9a63c7d48d7"
+  },
+  {
+    "site": "fay",
+    "service": "resourceservice",
+    "image": "brianwang1912/cwms-ressvr:v1.62-fay-preprinted-lpn-20261016@sha256:d52d14d1240bf0bccf5b282f2d92d5399564dc3886faa665c1096dfcad9ddd7c",
+    "jarPath": "/usr/local/service/resourceserver-v1.62.jar",
+    "sha256": "6f2f4662039285adfe67a1b8a7586df7990a1125da8496f2738356d47bcc50c1"
+  },
+  {
+    "site": "colton",
+    "service": "inboundservice",
+    "image": "garyzhangscm/cwms-inboundserver:v1.62@sha256:658900aeda5b4a441f77d78b12951f65b2b76dedf5b04db3dffc73f62ca302b4",
+    "jarPath": "/usr/local/service/inboundserver-v1.62.jar",
+    "sha256": "37aceb65ab4b4549278bf8f7f8b5b9f9fe58baef54d7936b27c09303faaab465"
+  }
+]

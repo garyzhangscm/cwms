@@ -1,0 +1,88 @@
+[
+  {
+    "service": "inventoryservice",
+    "site": "colton",
+    "exit": 0,
+    "results": [
+      "RESULT inventory legacy={item_family=, item_name=TEST-ITEM, lpn=TEST-LPN, quantity=27}",
+      "RESULT RFID variants and conditional registration passed; enabled=false"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "inventoryservice",
+    "site": "fay",
+    "exit": 0,
+    "results": [
+      "RESULT inventory legacy={item_family=, item_name=TEST-ITEM, lpn=TEST-LPN, quantity=27}",
+      "RESULT RFID variants and conditional registration passed; enabled=true"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "outboundservice",
+    "site": "colton",
+    "exit": 0,
+    "results": [
+      "RESULT outbound rows=[TEST-A: 10/01/2026 ~ 10/01/2026,     # , 10, 10/01/2026,     # , 10, 10/01/2026]"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "outboundservice",
+    "site": "fay",
+    "exit": 0,
+    "results": [
+      "RESULT outbound rows=[TEST-A: 10/01/2026 ~ 10/01/2026,     # , 10, 10/01/2026,     # , 10, 10/01/2026]"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "inboundservice",
+    "site": "colton",
+    "exit": 0,
+    "results": [
+      "RESULT case=0 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=3 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=1 stockUOM=PCS barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "inboundservice",
+    "site": "fay",
+    "exit": 0,
+    "results": [
+      "RESULT case=0 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=1 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=2 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=3 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=4 OK split=0 stockUOM=null barcode=qrcode:lpn=OFFLINE-LPN;itemName=OFFLINE-TEST;itemId=1;receiptId=1;receiptLineId=1;quantity=27;",
+      "RESULT case=5 OK quantity=27",
+      "RESULT case=6 OK quantity=27"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "resourceservice",
+    "site": "colton",
+    "exit": 0,
+    "results": [
+      "RESULT all three report resources selected exactly by configuration"
+    ],
+    "errors": ""
+  },
+  {
+    "service": "resourceservice",
+    "site": "fay",
+    "exit": 0,
+    "results": [
+      "RESULT all three report resources selected exactly by configuration"
+    ],
+    "errors": ""
+  }
+]

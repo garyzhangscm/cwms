@@ -1,0 +1,51 @@
+[
+  {
+    "service": "inventoryservice",
+    "baseJarSha256": "ec4ce0e68cd2c999b5500a829de36e72317fc2bf9493e8a8a858471e007c9593",
+    "candidateJarSha256": "f46e1c52b7cf2f435df75bdc25d3ca84e20e6226187dc0f75c4a8c3ed52b36bd",
+    "changedEntries": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/service/InventoryActivityService.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/service/InventoryService.class"
+    ],
+    "addedEntries": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/controller/RfidItemLookupController.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/service/RfidItemLookupService.class"
+    ],
+    "allOtherEntriesPreserved": true
+  },
+  {
+    "service": "outboundservice",
+    "baseJarSha256": "8de8e39a412548bfa2f0f424f59f879fe68b65676113982cf49e955cafb0ae3d",
+    "candidateJarSha256": "b29cfd48e5e86d5f52ecb5f87ab5be144c703545f71e066b4338b4587cd28f67",
+    "changedEntries": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/model/OrderLine.class",
+      "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/OrderService.class"
+    ],
+    "addedEntries": [],
+    "allOtherEntriesPreserved": true
+  },
+  {
+    "service": "resourceservice",
+    "baseJarSha256": "e81ace2fd1757aa7ae23dccdb956ae49844fa0a0c935ad4d3143a9a63c7d48d7",
+    "candidateJarSha256": "fe33f4bf76c9d8dad630444310166d6da0c7514a36c230aa73c590590c67e629",
+    "changedEntries": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/resources/MyApplicationRunner.class"
+    ],
+    "addedEntries": [
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet.jrxml",
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet_en_US.properties",
+      "BOOT-INF/classes/reports/site-legacy/order_manual_pick_sheet_zh_CN.properties"
+    ],
+    "allOtherEntriesPreserved": true
+  },
+  {
+    "service": "inboundservice",
+    "baseJarSha256": "37aceb65ab4b4549278bf8f7f8b5b9f9fe58baef54d7936b27c09303faaab465",
+    "candidateJarSha256": "9f75b13e45c3f84630eace286e68c7042b4af2b0cd864fa0cd9d6aa9884d3da4",
+    "changedEntries": [
+      "BOOT-INF/classes/com/garyzhangscm/cwms/inbound/service/ReceiptService.class"
+    ],
+    "addedEntries": [],
+    "allOtherEntriesPreserved": true
+  }
+]

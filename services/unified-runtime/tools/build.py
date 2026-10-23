@@ -13,6 +13,9 @@ def replace(service,owner,fresh,names,original=None):
  target=overlay/service/(owner+'.class');source=original or baseline('colton',service)/(owner+'.class')
  run([java,'-cp',str(tools)+':'+asm,'ReplaceMethods',source,fresh/(owner+'.class'),target,names])
 overlay=out/'overlay';changes=json.loads((a.inputs/'jar-comparison.json').read_text())
+for row in json.loads((repo/'services/unified-runtime/config/input-artifacts.json').read_text()):
+ path=(a.compat/'jars/colton/inboundservice.jar') if row['service']=='inboundservice' else P(changes[row['service']][row['site']+'Jar'])
+ if hashlib.sha256(path.read_bytes()).hexdigest()!=row['sha256']:raise RuntimeError('Unverified input JAR: '+row['service'])
 inv='com/garyzhangscm/cwms/inventory/';ob='com/garyzhangscm/cwms/outbound/'
 patch_switch('inventoryservice',inv+'service/InventoryService','MES_INVENTORY_ATTRIBUTE_LABELS','generateLPNLabel','getLPNLabelContent,setupPrePrintLPNLabelData')
 patch_switch('inventoryservice',inv+'service/InventoryActivityService','MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME','lambda$findAll$7f758a3b$1,lambda$findPaginatedInventoryActivities$83626c34$1')
