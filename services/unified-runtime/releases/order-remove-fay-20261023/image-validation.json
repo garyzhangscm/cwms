@@ -1,0 +1,33 @@
+{
+  "image": "brianwang1912/cwms-outboundserver:v1.62-fay-order-remove-20261023-01",
+  "jarHash": "d68c1cf07f99084314e9e4efeda1119a6ec223b7fe14531f99ebfd61da1743a9",
+  "jarIdentityVerified": true,
+  "network": "none",
+  "tests": [
+    {
+      "suite": "OrderRemovePersistenceCheck",
+      "exit": 0,
+      "results": [
+        "RESULT empty passed",
+        "RESULT duplicate passed",
+        "RESULT pick passed",
+        "RESULT short passed",
+        "RESULT complete passed",
+        "RESULT allocating passed",
+        "RESULT shipped passed",
+        "RESULT dispatched passed",
+        "RESULT line-shipped passed",
+        "RESULT shared passed",
+        "RESULT rollback passed",
+        "RESULT 11 real Hibernate removal cases passed; production writes=0"
+      ]
+    },
+    {
+      "suite": "OrderPrintPolicyCheck",
+      "exit": 0,
+      "results": [
+        "PASS 18 policy/scoping/demand checks"
+      ]
+    }
+  ]
+}

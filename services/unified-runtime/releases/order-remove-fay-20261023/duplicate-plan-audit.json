@@ -1,0 +1,11 @@
+{
+  "site": "fay",
+  "readOnly": true,
+  "scope": "active order lines with sum of non-cancelled shipment quantities exceeding expected quantity",
+  "overplannedLineCount": 1,
+  "associatedPlanCount": 2,
+  "planCreationYear": 2023,
+  "originalTriggerProven": false,
+  "automaticDeduplication": false,
+  "productionBusinessWrites": false
+}

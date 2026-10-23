@@ -2694,35 +2694,58 @@ public class OrderService {
 
     @Transactional
     public void removeOrder(Long id) {
-
-        Order order = findById(id);
-        // make sure we don't have any pick / short allocation
-        if (pickService.findByOrder(order).size() > 0) {
+        // Delete the managed aggregate, without report/display enrichment or a merge
+        // of its stale shipment graph after shipment children have been removed.
+        Order order = findById(id, false);
+        manualPickEntityManager.lock(order, javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+        if (OrderStatus.COMPLETE.equals(order.getStatus()) || OrderStatus.ALLOCATING.equals(order.getStatus())) {
+            throw OrderOperationException.raiseException("Can't remove a completed or allocating order");
+        }
+        Set<Long> shipmentIds = new LinkedHashSet<>();
+        for (OrderLine line : order.getOrderLines()) {
+            if (line.getShippedQuantity() != null && line.getShippedQuantity() > 0) {
+                throw OrderOperationException.raiseException("Can't remove an order with shipped quantity");
+            }
+            for (ShipmentLine shipmentLine : line.getShipmentLines()) {
+                Shipment shipment = shipmentLine.getShipment();
+                if (ShipmentStatus.DISPATCHED.equals(shipment.getStatus()) ||
+                        (shipmentLine.getShippedQuantity() != null && shipmentLine.getShippedQuantity() > 0)) {
+                    throw OrderOperationException.raiseException("Can't remove an order with dispatched shipments");
+                }
+                // A shared shipment must never delete another order's demand.
+                for (ShipmentLine related : shipment.getShipmentLines()) {
+                    if (!Objects.equals(related.getOrderLine().getOrder().getId(), id)) {
+                        throw OrderOperationException.raiseException("Can't remove an order with a shared shipment");
+                    }
+                }
+                shipmentIds.add(shipment.getId());
+            }
+        }
+        if (!pickService.findByOrder(order).isEmpty()) {
             throw OrderOperationException.raiseException("Can't remove order while it has open picks");
         }
-        if (shortAllocationService.findByOrder(order).size() > 0){
+        if (!shortAllocationService.findByOrder(order).isEmpty()) {
             throw OrderOperationException.raiseException("Can't remove order while it has open short allocations");
         }
-
-        // if the order reserves any stage locations, release them
-        changeAssignedStageLocations(order, null, null);
-
-
-        // if we have shipment related to this order, remove the shipment as well
-        Set<Long> shipmentIds = new HashSet<>();
-        for (OrderLine orderLine : order.getOrderLines()) {
-            orderLine.getShipmentLines().forEach(
-                    shipmentLine -> shipmentIds.add(shipmentLine.getShipment().getId())
-            );
-        }
-        logger.debug("We already have {} shipment assigned to this order", shipmentIds.size());
         for (Long shipmentId : shipmentIds) {
             shipmentService.removeShipment(shipmentId);
         }
-
-
-        // remove the order
+        // Shipment REMOVE already cascades to its lines. Do not cascade REMOVE
+        // to those same (now deleted) children again through OrderLine.
+        for (OrderLine line : order.getOrderLines()) {
+            line.getShipmentLines().clear();
+        }
+        manualPickEntityManager.flush();
+        // Release the remote reservation only after all local delete guards pass.
+        // Avoid saveOrUpdate here: merging this graph can resurrect deleted lines.
+        if (order.getStageLocationId() != null) {
+            warehouseLayoutServiceRestemplateClient.unreserveLocation(
+                    order.getWarehouseId(), order.getStageLocationId());
+        }
+        order.setStageLocationId(null);
+        order.setStageLocationGroupId(null);
         delete(order);
+        manualPickEntityManager.flush();
     }
 
     public String validateNewOrderNumber(Long warehouseId, Long clientId,  String orderNumber) {

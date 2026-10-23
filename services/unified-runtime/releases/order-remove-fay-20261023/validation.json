@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "suite": "OrderRemovePersistenceCheck",
+      "exit": 0,
+      "results": [
+        "RESULT empty passed",
+        "RESULT duplicate passed",
+        "RESULT pick passed",
+        "RESULT short passed",
+        "RESULT complete passed",
+        "RESULT allocating passed",
+        "RESULT shipped passed",
+        "RESULT dispatched passed",
+        "RESULT line-shipped passed",
+        "RESULT shared passed",
+        "RESULT rollback passed",
+        "RESULT 11 real Hibernate removal cases passed; production writes=0"
+      ]
+    },
+    {
+      "suite": "OrderPrintPolicyCheck",
+      "exit": 0,
+      "results": [
+        "PASS 18 policy/scoping/demand checks"
+      ]
+    }
+  ],
+  "productionBusinessWrites": false,
+  "baselineDoubleDeleteReproduced": true
+}
