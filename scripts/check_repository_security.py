@@ -4,7 +4,7 @@ import argparse,ipaddress,pathlib,re,subprocess,sys
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser();parser.add_argument('--ref');args=parser.parse_args()
 ip_pattern=re.compile(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])')
-token_pattern=re.compile(r'(?<![\w-])(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[A-Z0-9]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{40,}|xox[baprs]-[A-Za-z0-9-]{20,})(?![\w-])')
+token_pattern=re.compile(r'(?<![\w-])(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[A-Z0-9]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{40,}|xox[baprs]-[A-Za-z0-9-]{20,}|shp(?:at|ca|pa|ss)_[A-Fa-f0-9]{32,}|AIza[A-Za-z0-9_-]{35})(?![\w-])')
 key_pattern=re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----')
 assignment=re.compile(r'(?i)^\s*(?:#\s*)?([\w.-]*(?:password|passwd|secret|token|encrypt[_\.]?key)[\w.-]*)\s*[:=]\s*(.*)$')
 def private_host(value):
@@ -35,6 +35,10 @@ for name in filter(None,names):
     if value and not value.startswith(('$','<','[')) and value not in ('null','false','true','NOT-SET-YET'):rules.append('literal-credential-setting')
   if re.search(r'(?i)<(?:password|passphrase)>[^<$][^<]+</',line):rules.append('xml-credential')
   if re.search(r'(?i)https?://[^/\s:@]+:[^/\s@]+@',line):rules.append('url-credential')
+  if name.endswith('.java') and '/src/test/' not in name and re.search(r'(?:\.setPassword\(|new LoginCredential\()\s*"',line):rules.append('literal-password-in-code')
+  if name.endswith('/JwtService.java') and re.search(r'\bString\s+(?:SECRET|SECRET_KEY|JWT_SECRET|secret)\s*=\s*"[^"\r\n]+"',line):rules.append('jwt-secret-literal')
+  if name.endswith(('/OAuth2Service.java','/QuickBookOnlineTokenService.java')) and re.search(r'\bString\s+(?:secret|clientSecret|clientID|clientId)\s*=\s*"[^"\r\n]+"',line):rules.append('oauth-client-credential')
+  if re.search(r'/(?:users|user-roles|working-team-users)-[^/]+\.csv$',name) and number>1 and line.strip():rules.append('account-seed-data')
   if rules:findings.append((name,number,','.join(rules)))
 for name,number,rules in findings:print(f'{name}:{number}: {rules}')
 print(f'Checked {len(list(filter(None,names)))} files; {len(findings)} findings.',file=sys.stderr)
