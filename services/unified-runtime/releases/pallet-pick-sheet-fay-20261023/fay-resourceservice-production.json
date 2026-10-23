@@ -1,0 +1,21 @@
+{
+  "site": "fay",
+  "service": "resourceservice",
+  "image": "brianwang1912/cwms-ressvr:v1.62-fay-pallet-sheet-20261023-01@sha256:4eb5b0a885242930900e097a7a06b9fc261765e2ee4b5afa81628e71671cb5e2",
+  "ready": true,
+  "checks": [
+    {
+      "health": 200,
+      "jarHashVerified": true,
+      "itemOnlyTemplateWithDropOffBarcode": true
+    },
+    {
+      "activeManualPickTemplatesVerified": true
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/pallet-pick-sheet-20261023T191217Z-resourceservice"
+}

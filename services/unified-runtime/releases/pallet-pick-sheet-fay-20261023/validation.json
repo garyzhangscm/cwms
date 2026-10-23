@@ -2,7 +2,7 @@
   "palletCalculationAndWireRenderChecks": 20,
   "actualJasperRenderPassed": true,
   "emptyDropOffPassed": true,
-  "productionDeployed": false,
+  "productionDeployed": true,
   "targetSites": [
     "FAY"
   ],
@@ -16,5 +16,6 @@
   },
   "repeatedBuildIdentical": true,
   "imageArtifactHashesVerified": true,
-  "initialMismatchedArtifactRolledBack": true
+  "initialMismatchedArtifactRolledBack": true,
+  "completedAtUtc": "2026-10-23T19:15:09.475134+00:00"
 }

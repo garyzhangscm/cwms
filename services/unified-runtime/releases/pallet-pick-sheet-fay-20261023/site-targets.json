@@ -1,13 +1,23 @@
 {
   "fay": {
     "outboundservice": {
-      "image": "brianwang1912/cwms-outboundserver:v1.62-fay-pallet-sheet-20261023-01@sha256:39383df09fbb351be3ed6dfa44886362bac903ad301b7495161e87c8a2c3628c",
-      "jarSha256": "97fda2c311fe87b0661e5f483898907cacf33546e1232a2cbf1c9c6dff44fd26"
+      "image": "brianwang1912/cwms-outboundserver:v1.62-fay-pallet-sheet-20261023-02@sha256:a9fe523cebced14b04d0689b4a0ac1c70665eefae547d38023918021922e2e53",
+      "jarSha256": "24e5f599cf928e5b6357601aa146a2d3a2a5292a974e5f3c87d6294ef5e5765f"
     },
     "resourceservice": {
       "image": "brianwang1912/cwms-ressvr:v1.62-fay-pallet-sheet-20261023-01@sha256:4eb5b0a885242930900e097a7a06b9fc261765e2ee4b5afa81628e71671cb5e2",
       "jarSha256": "274e7c178e99f4488774ac389e394ce3673a78f26a1c9cf9fcb80e6d0f217be7"
     }
   },
-  "colton": "Unchanged: shared print-policy release remains deployed"
+  "colton": {
+    "outboundservice": {
+      "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-print-policy-01@sha256:e5cfa7bb97ad17a746f5346df9dfc140d4035f11440843eeae44ed5d23c5aca0",
+      "jarSha256": "ba852feab5d47609e8dc137b8ecd60f232dec912b63f2f67cf7d6074716bfe8e"
+    },
+    "resourceservice": {
+      "image": "brianwang1912/cwms-ressvr:v1.62-unified-20261023-pick-sheet-01@sha256:0438067592ae6f5c6980742c133dd2e816684062ded6d69ffc57920f842320e1",
+      "jarSha256": "e035c5cc8cd395202b743272b326dccb6b9afecc8941d6997a4735c204c68977"
+    }
+  },
+  "pilotOnly": true
 }

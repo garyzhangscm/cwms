@@ -1,0 +1,30 @@
+[
+  {
+    "site": "fay",
+    "service": "outboundservice",
+    "imageVerified": true,
+    "ready": true,
+    "coltonUnchanged": false
+  },
+  {
+    "site": "fay",
+    "service": "resourceservice",
+    "imageVerified": true,
+    "ready": true,
+    "coltonUnchanged": false
+  },
+  {
+    "site": "colton",
+    "service": "outboundservice",
+    "imageVerified": true,
+    "ready": true,
+    "coltonUnchanged": true
+  },
+  {
+    "site": "colton",
+    "service": "resourceservice",
+    "imageVerified": true,
+    "ready": true,
+    "coltonUnchanged": true
+  }
+]

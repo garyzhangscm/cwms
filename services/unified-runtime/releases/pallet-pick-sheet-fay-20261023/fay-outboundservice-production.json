@@ -1,0 +1,23 @@
+{
+  "site": "fay",
+  "service": "outboundservice",
+  "image": "brianwang1912/cwms-outboundserver:v1.62-fay-pallet-sheet-20261023-02@sha256:a9fe523cebced14b04d0689b4a0ac1c70665eefae547d38023918021922e2e53",
+  "ready": true,
+  "checks": [
+    {
+      "health": 200,
+      "jarHashVerified": true,
+      "unauthenticatedRulesDenied": true,
+      "transitConfigurationPreserved": true
+    },
+    {
+      "readOnlyPrintPolicyPassed": true,
+      "sampleShipmentCount": 1
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false,
+  "backup": "/root/k8s/backups/pallet-pick-sheet-20261023T191105Z-outboundservice"
+}
