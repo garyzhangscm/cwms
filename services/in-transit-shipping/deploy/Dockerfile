@@ -1,0 +1,2 @@
+FROM brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01@sha256:376c2f8cae876c7f95c4a29c73bcc3954640167d39992ac3687ac338ddc71e02
+COPY build/outboundservice.jar /usr/local/service/outboundserver-v1.62.jar

@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-23",
+  "productionRollout": "verified at FAY and Colton",
+  "sameImagesAtBothSites": true,
+  "fayTransit": {
+    "enabled": true,
+    "warehouseId": 1,
+    "customerIds": [
+      1,
+      25
+    ],
+    "locationId": 16169,
+    "persistentRulesVerified": true,
+    "manualClearingOnly": true
+  },
+  "coltonTransit": {
+    "enabled": false
+  },
+  "qcTimezones": {
+    "fay": "America/Chicago",
+    "colton": "America/Los_Angeles"
+  },
+  "checks": {
+    "outboundActualImageChecksPerSite": 84,
+    "qcActualImageTests": 49,
+    "frontendPeriodChecks": 13,
+    "workOrderFrontendRegressionChecks": 25,
+    "angularProductionBuild": "passed",
+    "realReadOnlyCustomQueries": "passed at both sites"
+  },
+  "integrationChanged": false,
+  "databaseSchemaChanged": false,
+  "realShipmentOrInventoryMovementExecutedForValidation": false
+}

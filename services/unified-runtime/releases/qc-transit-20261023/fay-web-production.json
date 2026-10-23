@@ -1,0 +1,28 @@
+{
+  "site": "fay",
+  "service": "webclient",
+  "image": "brianwang1912/mes-web:v19.2-qc-transit-20261023-01@sha256:b6cb00b0b141d8ede2f8b2e951998c30159260558f4aee7fcc4d55ab4ac14e55",
+  "ready": true,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/mes-public-config-20261023.js",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/en-US.json",
+      "status": 200
+    },
+    {
+      "path": "/api/resource/assets/i18n/zh-CN.json",
+      "status": 200
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false
+}

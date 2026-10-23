@@ -1,0 +1,18 @@
+{
+  "site": "colton",
+  "service": "qc-shift-report",
+  "image": "brianwang1912/mes-qc-shift-report:v20261023-custom-period@sha256:6fb9ec6743b464618cf40903ae77beca781a39d9e7f21cd1b61ae4c0b69d7331",
+  "ready": true,
+  "checks": [
+    {
+      "timezone": "America/Los_Angeles",
+      "startTime": "2026-10-23T07:00:00+00:00",
+      "endTime": "2026-10-23T07:01:00+00:00",
+      "customReadOnlyQueryPassed": true
+    }
+  ],
+  "siteConfigurationPreserved": true,
+  "persistentManifestUpdated": true,
+  "integrationUnchanged": true,
+  "databaseChanged": false
+}
