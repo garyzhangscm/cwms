@@ -6,5 +6,12 @@
   "jasperRenderPassed": true,
   "emptyLocationBarcodeSkipped": true,
   "outboundImagePolicyPassed": true,
-  "productionDeployed": false
+  "productionDeployed": false,
+  "existingOutboundImageRegressionsPerSite": {
+    "workOrderScope": 8,
+    "nullDates": 10,
+    "transitRouting": 21,
+    "transitAuthorization": 10,
+    "transitShipmentFlow": 45
+  }
 }

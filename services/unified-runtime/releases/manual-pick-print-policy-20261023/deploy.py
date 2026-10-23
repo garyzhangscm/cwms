@@ -66,6 +66,12 @@ def main():
    actual=run(K+['exec',pod['metadata']['name'],'--','sha256sum','/usr/local/service/resourceserver-v1.62.jar']).split()[0]
    if actual!=config['resourceJarHash']:raise RuntimeError('Unexpected resource JAR hash')
    checks.append({'health':200,'jarHashVerified':True,'itemOnlyTemplateWithDropOffBarcode':True})
+   for filename,expected in config['reportHashes'].items():
+    path='/usr/local/reports/templates/'+filename
+    actual=run(K+['exec',pod['metadata']['name'],'--','sha256sum',path]).split()[0]
+    if actual!=expected:raise RuntimeError('Active report template differs from candidate: '+filename)
+   checks.append({'activeManualPickTemplatesVerified':True})
+
   else:
    http(base+'/actuator/health')
    actual=run(K+['exec',pod['metadata']['name'],'--','sha256sum','/usr/local/service/outboundserver-v1.62.jar']).split()[0]
@@ -74,6 +80,13 @@ def main():
    except urllib.error.HTTPError as e:
     if e.code not in (401,403):raise
    checks.append({'health':200,'jarHashVerified':True,'unauthenticatedRulesDenied':True,'transitConfigurationPreserved':True})
+   code="from report_api import database\nwith database() as c:\n c.execute('SELECT outbound_order_id FROM outbound_order ORDER BY outbound_order_id LIMIT 1'); r=c.fetchone(); print(r['outbound_order_id'] if r else '')"
+   sample=run(K+['exec','deployment/qc-shift-report','--','python','-c',code]).strip()
+   if sample:
+    response=json.loads(http(base+'/orders/'+sample+'/print-eligibility')); data=response.get('data',response)
+    if not isinstance(data.get('manualPick'),bool) or not isinstance(data.get('shipping'),bool) or not isinstance(data.get('shipments'),list):raise RuntimeError('Invalid print policy response')
+    checks.append({'readOnlyPrintPolicyPassed':True,'sampleShipmentCount':len(data['shipments'])})
+
   for s,value in protected.items():
    if get('deployment',s)['spec']['template']!=value:raise RuntimeError('Protected service changed')
   persist(file,name,ours)
