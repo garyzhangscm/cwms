@@ -1,0 +1,21 @@
+{
+  "baselineSha256": "024c4e53b594b03000ac75d107ea4ac6899bf41842b7c53dbe2514f88966d9f0",
+  "candidateSha256": "8388605177fdf4b6faa89b7881cbaecd6790086c8a9129d55bce163066a81f7b",
+  "changedEntries": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/model/OrderLine.class"
+  ],
+  "tests": [
+    {
+      "site": "fay",
+      "cases": 10,
+      "passed": true
+    },
+    {
+      "site": "colton",
+      "cases": 10,
+      "passed": true
+    }
+  ],
+  "siteFlagsAndShippingPreserved": true,
+  "businessWrites": false
+}

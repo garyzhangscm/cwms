@@ -20,6 +20,8 @@ inv='com/garyzhangscm/cwms/inventory/';ob='com/garyzhangscm/cwms/outbound/'
 patch_switch('inventoryservice',inv+'service/InventoryService','MES_INVENTORY_ATTRIBUTE_LABELS','generateLPNLabel','getLPNLabelContent,setupPrePrintLPNLabelData')
 patch_switch('inventoryservice',inv+'service/InventoryActivityService','MES_INVENTORY_ACTIVITY_WAREHOUSE_TIME','lambda$findAll$7f758a3b$1,lambda$findPaginatedInventoryActivities$83626c34$1')
 patch_switch('outboundservice',ob+'model/OrderLine','MES_OUTBOUND_MANUAL_PICK_REPORT_V2','setupManualPickableInventoryForDisplay')
+legacy_rows=overlay/'outboundservice'/(ob+'model/OrderLine.class')
+run([java,'-cp',str(tools)+':'+asm,'NullSafeLegacyManualPick',legacy_rows,legacy_rows])
 patch_switch('outboundservice',ob+'service/OrderService','MES_OUTBOUND_MANUAL_PICK_REPORT_V2','setupOrderManualPickReportData')
 patch_switch('outboundservice',ob+'service/OrderService','MES_OUTBOUND_MANUAL_PICK_REMAINDER','getPickableQuantityForManualPick')
 # Compile the RFID endpoint against the exact unchanged production dependency set.

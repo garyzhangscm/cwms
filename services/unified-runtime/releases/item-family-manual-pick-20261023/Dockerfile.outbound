@@ -1,0 +1,2 @@
+FROM brianwang1912/cwms-outboundserver:v1.62-unified-20261023-transit-01@sha256:ff96adf85ab1206782fd64f877a76a99c725d1d5fcdb29a620db36b832aca12d
+COPY service.jar /usr/local/service/outboundserver-v1.62.jar

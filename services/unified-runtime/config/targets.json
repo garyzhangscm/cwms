@@ -5,8 +5,8 @@
     "jarPath": "/usr/local/service/inventoryserver-v1.62.jar"
   },
   "outboundservice": {
-    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-transit-01@sha256:ff96adf85ab1206782fd64f877a76a99c725d1d5fcdb29a620db36b832aca12d",
-    "jarSha256": "024c4e53b594b03000ac75d107ea4ac6899bf41842b7c53dbe2514f88966d9f0",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-null-dates-01@sha256:a99d0b8549bbfe27e8a803008d078a0a9f8eeee2aa23297125dc8bc52014f039",
+    "jarSha256": "8388605177fdf4b6faa89b7881cbaecd6790086c8a9129d55bce163066a81f7b",
     "jarPath": "/usr/local/service/outboundserver-v1.62.jar"
   },
   "resourceservice": {
