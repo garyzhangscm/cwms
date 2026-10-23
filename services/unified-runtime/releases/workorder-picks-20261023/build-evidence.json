@@ -1,0 +1,25 @@
+{
+  "baselineSha256": "b29cfd48e5e86d5f52ecb5f87ab5be144c703545f71e066b4338b4587cd28f67",
+  "candidateSha256": "15da73e384fa4ba0cd1ff94f7c44e9a7548c01c6cffe22646936fc07047dbbcc",
+  "changedEntries": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/PickService.class"
+  ],
+  "entrySetPreserved": true,
+  "tests": [
+    {
+      "site": "fay",
+      "exit": 0,
+      "cases": [
+        "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+      ]
+    },
+    {
+      "site": "colton",
+      "exit": 0,
+      "cases": [
+        "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+      ]
+    }
+  ],
+  "businessWrites": false
+}

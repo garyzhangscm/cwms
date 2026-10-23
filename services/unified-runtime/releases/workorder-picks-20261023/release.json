@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-23",
+  "problem": "Work orders without material lines query warehouse-wide picks and fail on an unrelated historical missing location",
+  "backendFix": "Return no picks for empty/invalid material lines; correctly place line IDs in the filter argument",
+  "frontendFix": "Both work-order pick helpers return an empty observable without HTTP for empty/invalid lines; generic pick and sales-order queries are unchanged",
+  "offlineBackendCasesPerSite": 8,
+  "actualImageBackendCasesPerSite": 8,
+  "frontendServiceCases": 25,
+  "scope": "Shared images, preserved site flags, no database changes or business operations",
+  "productionRollout": "authorized; pending rollout verification"
+}

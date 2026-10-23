@@ -1,0 +1,7 @@
+{
+  "outboundservice": {
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01@sha256:376c2f8cae876c7f95c4a29c73bcc3954640167d39992ac3687ac338ddc71e02",
+    "jarSha256": "15da73e384fa4ba0cd1ff94f7c44e9a7548c01c6cffe22646936fc07047dbbcc",
+    "jarPath": "/usr/local/service/outboundserver-v1.62.jar"
+  }
+}

@@ -429,15 +429,23 @@ public class PickService {
                 null, null, null, null, null, null, null, null, null);
     }
     public List<Pick> findByWorkOrder(WorkOrder workOrder) {
-        String workOrderLineIds
-                = workOrder.getWorkOrderLines().stream().
-                        map(WorkOrderLine::getId).
-                        map(Object::toString).
-                        collect( Collectors.joining( "," ) );
-        return findAll(workOrder.getWarehouseId(), null, null, null,null, null,  null,
-                null, null,  null,null, null, null, null,
-                null, null,  null,null, null, null, null,
-                null, workOrderLineIds, null,null, null, null, null, null, null);
+        StringJoiner lineIds = new StringJoiner(",");
+        if (workOrder.getWorkOrderLines() != null) {
+            for (WorkOrderLine line : workOrder.getWorkOrderLines()) {
+                if (line != null && line.getId() != null && line.getId() > 0) {
+                    lineIds.add(line.getId().toString());
+                }
+            }
+        }
+        if (lineIds.length() == 0) {
+            return new ArrayList<>();
+        }
+        String workOrderLineIds = lineIds.toString();
+        return findAll(workOrder.getWarehouseId(), null, null, null, null, null,
+                null, null, null, null, null,
+                null, null, null, null, workOrderLineIds,
+                null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null);
     }
     public List<Pick> findByWave(Wave wave) {
 

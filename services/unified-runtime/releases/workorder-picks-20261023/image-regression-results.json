@@ -1,0 +1,18 @@
+[
+  {
+    "site": "fay",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01",
+    "exit": 0,
+    "cases": [
+      "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+    ]
+  },
+  {
+    "site": "colton",
+    "image": "brianwang1912/cwms-outboundserver:v1.62-unified-20261023-workorder-pick-scope-01",
+    "exit": 0,
+    "cases": [
+      "RESULT 8 work-order pick scope cases passed; no remote or repository calls."
+    ]
+  }
+]

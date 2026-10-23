@@ -1,0 +1,16 @@
+{
+  "colton": {
+    "outboundservice": {
+      "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "true",
+      "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "true",
+      "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "true"
+    }
+  },
+  "fay": {
+    "outboundservice": {
+      "MES_OUTBOUND_MANUAL_PICK_REMAINDER": "false",
+      "MES_OUTBOUND_MANUAL_PICK_REPORT_V2": "false",
+      "ALLOCATION_CANDIDATES_COMPACT_ENABLED": "false"
+    }
+  }
+}
