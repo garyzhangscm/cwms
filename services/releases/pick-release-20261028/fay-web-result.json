@@ -1,0 +1,8 @@
+{
+  "site": "fay",
+  "image": "brianwang1912/mes-web:v19.2-fay-pick-release-20261028-02",
+  "ready": true,
+  "indexSha256": "64c6201577943214ab19dca09169cdd850d2c25c0c3ca4ac3cce70c10cd4c5a4",
+  "configPreserved": true,
+  "scriptsVerified": true
+}

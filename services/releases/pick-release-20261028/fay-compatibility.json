@@ -1,0 +1,9 @@
+{
+  "baselineVerified": true,
+  "preservedFayClasses": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/OrderService.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/reportfix/ManualPickDemandRows.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/reportfix/PalletBreakdown.class"
+  ],
+  "jarSha256": "18d627d846a83bf0aa494a3c7dc39bf1604afaa32d56ad0e23f0d64c62d4a03c"
+}

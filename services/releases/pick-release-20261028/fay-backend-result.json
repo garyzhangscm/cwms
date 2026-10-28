@@ -1,0 +1,43 @@
+{
+  "backendReady": true,
+  "manualSplitFastEnabled": true,
+  "pipelineEnabled": true,
+  "compactSourceBytes": 0,
+  "previousSourceBytes": 0,
+  "reserveChecksTotal": true,
+  "pickChecksTotal": false,
+  "pickPolicy": "SCANNED_LPN_AND_HELD_QUANTITY",
+  "images": {
+    "inventory": "brianwang1912/cwms-inventoryserver:v1.62-unpick-fast-20261028-01",
+    "outbound": "brianwang1912/cwms-outboundserver:v1.62-fay-pick-release-20261028-01"
+  },
+  "formalWebUnchanged": true,
+  "testWebUnchanged": true,
+  "continuousPickQueueEnabled": true,
+  "strictReservationMode": true,
+  "ledgerPreserved": true,
+  "schemaChanged": false,
+  "businessWritesByRelease": false,
+  "maintenanceRemoved": true,
+  "completedOperationGuardVerified": false,
+  "inventoryCapability": {
+    "enabled": true,
+    "schema": "manual-pick-fast-v1"
+  },
+  "outboundCapability": {
+    "enabled": true,
+    "schema": "manual-pick-fast-v1"
+  },
+  "inventoryPipeline": {
+    "schema": "manual-pick-pipeline-v1",
+    "compactSource": true,
+    "batchAuditNumbers": true
+  },
+  "outboundPipeline": {
+    "enabled": true,
+    "compactSource": true,
+    "schema": "manual-pick-pipeline-v1",
+    "wholePalletEndpoint": true,
+    "requestScopedSource": true
+  }
+}
