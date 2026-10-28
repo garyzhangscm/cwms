@@ -57,6 +57,13 @@ public class WorkOrderQCSampleController {
 
 
 
+    @RequestMapping(value="/qc-samples/assignment/latest", method = RequestMethod.GET)
+    public List<WorkOrderQCSample> findLatestWorkOrderQCSample(
+            @RequestParam(name="warehouseId") Long warehouseId,
+            @RequestParam(name="productionLineAssignmentId") Long productionLineAssignmentId) {
+        return workOrderQCSampleService.findLatestForAssignment(warehouseId, productionLineAssignmentId);
+    }
+
     @BillableEndpoint
     @RequestMapping(value="/qc-samples", method = RequestMethod.PUT)
     public WorkOrderQCSample addWorkOrderQCSample(

@@ -32,11 +32,15 @@ public class UserService {
 
 
     public String getCurrentUserName() {
-        if (Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
+        if (org.springframework.web.context.request.RequestContextHolder.getRequestAttributes() != null && Objects.nonNull(request) && Strings.isNotBlank(request.getHeader("username"))) {
 
             return request.getHeader("username");
         }
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || Strings.isBlank(authentication.getName())) {
+            throw new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException("Unable to identify the signed-in user. Sign in again before picking");
+        }
+        return authentication.getName();
     }
 
 

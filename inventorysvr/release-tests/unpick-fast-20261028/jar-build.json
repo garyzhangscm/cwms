@@ -1,0 +1,8 @@
+{
+  "baselineSha256": "34b791f8deb23ef98bf12b0e0fb490ab1d4c9b9d1468404a8f3ea65909c51049",
+  "candidateSha256": "110d3080997dea7ec78ed1d61f31acb7923fb5176c9c2fb672ef71d8edbb7a97",
+  "changed": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/service/InventoryConsolidationService.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/inventory/service/InventoryService.class"
+  ]
+}

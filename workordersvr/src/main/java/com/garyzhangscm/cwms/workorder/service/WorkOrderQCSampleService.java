@@ -24,6 +24,8 @@ import com.garyzhangscm.cwms.workorder.exception.WorkOrderException;
 import com.garyzhangscm.cwms.workorder.model.*;
 import com.garyzhangscm.cwms.workorder.repository.WorkOrderQCSampleRepository;
 import jakarta.persistence.criteria.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -60,6 +62,31 @@ public class WorkOrderQCSampleService   {
 
     @Value("${workorder.qc.sampleImageFolder}")
     private String qcSampleImageFolder;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    static final String LATEST_SAMPLE_ID_QUERY =
+            "select sample.id from WorkOrderQCSample sample " +
+            "where sample.warehouseId = :warehouseId " +
+            "and sample.productionLineAssignment.id = :assignmentId " +
+            "and sample.removed = false " +
+            "order by sample.createdTime desc, sample.number desc, sample.id desc";
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<WorkOrderQCSample> findLatestForAssignment(Long warehouseId, Long assignmentId) {
+        if (warehouseId == null || warehouseId <= 0 || assignmentId == null || assignmentId <= 0) {
+            throw WorkOrderException.raiseException("Valid warehouse and production line assignment are required");
+        }
+        // Limit in SQL before loading associations. Do not load or count history.
+        List<Long> ids = entityManager.createQuery(LATEST_SAMPLE_ID_QUERY, Long.class)
+                .setParameter("warehouseId", warehouseId)
+                .setParameter("assignmentId", assignmentId)
+                .setMaxResults(1)
+                .getResultList();
+        if (ids.isEmpty()) return java.util.Collections.emptyList();
+        return java.util.Collections.singletonList(findById(ids.get(0)));
+    }
 
     public WorkOrderQCSample findById(Long id) {
         return findById(id, true);

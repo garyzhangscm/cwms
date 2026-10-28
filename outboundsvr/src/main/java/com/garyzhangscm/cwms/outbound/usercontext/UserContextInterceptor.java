@@ -32,6 +32,8 @@ public class UserContextInterceptor implements ClientHttpRequestInterceptor {
         headers.add(UserContext.WAREHOUSE_ID,
                 UserContextHolder.getContext().getWarehouseId());
         headers.add("innerCall", "true");
+        String queuedActor = com.garyzhangscm.cwms.outbound.service.ManualPickQueueService.workerUsername();
+        if (queuedActor != null) headers.add("username", queuedActor);
 
         if (Strings.isBlank(UserContextHolder.getContext().getAuthToken())) {
             headers.add(UserContext.AUTH_TOKEN, "Bearer " + innerCallJWTToken);

@@ -1,0 +1,33 @@
+    public Inventory unpick(Inventory inventory, Location destinationLocation, boolean immediateMove) {
+        if (inventory.getPickId() == null) {
+            // The inventory is not a picked inventory
+            return inventory;
+        }
+
+        // update the pick
+        List<Pick> newPicks =
+                outbuondServiceRestemplateClient.unpick(inventory.getPickId(), inventory.getQuantity());
+
+        // disconnect the inventory from the pick and
+        // clear all the movement path
+        inventory.setPickId(null);
+        inventoryMovementService.clearInventoryMovement(inventory);
+        inventoryActivityService.logInventoryActivitiy(inventory, InventoryActivityType.UNPICKING,
+                "quantity", String.valueOf(inventory.getQuantity()), "",
+                String.valueOf(inventory.getPickId()));
+
+
+        // Move the inventory to the destination location
+        if (immediateMove) {
+            logger.debug("Immediate move the unpicked inventory {} to the destinationLocation {}",
+                    inventory.getLpn(), destinationLocation.getName());
+            // Immediate movement already saves the final inventory, including consolidation.
+            return moveInventory(inventory, destinationLocation);
+        }
+        else {
+            generateMovementWork(inventory, destinationLocation);
+        }
+        return saveOrUpdate(inventory);
+
+    }
+

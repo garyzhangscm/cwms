@@ -31,6 +31,9 @@ public class InventoryConsolidationService {
 
 
         logger.debug("Check if we will need to consolidate inventory at location: {}", location.getName());
+        InventoryConsolidationHandler inventoryConsolidationHandler = getInventoryConsolidationHandler(location);
+        // NONE does not need candidate inventory; decide before loading the location.
+        if (inventoryConsolidationHandler instanceof InventoryConsolidationDefault) return inventory;
         // Let's get all the inventory that already in the location
         List<Inventory> inventoriesInTheLocation = inventoryService.findByLocationId(location.getId(), false);
 
@@ -40,7 +43,7 @@ public class InventoryConsolidationService {
         }
 
         logger.debug(">> we found {} existing inventory record in the location, included the current moved one", inventoriesInTheLocation.size());
-        InventoryConsolidationHandler inventoryConsolidationHandler = getInventoryConsolidationHandler(location);
+
         Inventory consolidatedInventory = inventoryConsolidationHandler.consolidate(inventory, inventoriesInTheLocation);
         // if the inventory consolidation strategy is consolidate by inventory
         // but there's nothing to be consolidated in this NON empty location(probably the inventory attribute doesn't match)

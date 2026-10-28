@@ -1,0 +1,8 @@
+{
+  "candidateSha256": "d0cec975f9ee08248426d40f81fe967156b3cd4240875aec062814934c63efbf",
+  "baselineSha256": "bfa2943822affa9a48184a87401924040dc251fe478beff309479f2dc3b6fec4",
+  "changed": [
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/ManualPickPreparationScope$Context.class",
+    "BOOT-INF/classes/com/garyzhangscm/cwms/outbound/service/ManualPickPreparationScope.class"
+  ]
+}

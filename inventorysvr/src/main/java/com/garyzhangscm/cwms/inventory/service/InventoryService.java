@@ -2783,7 +2783,8 @@ public class InventoryService {
         if (immediateMove) {
             logger.debug("Immediate move the unpicked inventory {} to the destinationLocation {}",
                     inventory.getLpn(), destinationLocation.getName());
-            inventory = moveInventory(inventory, destinationLocation);
+            // Immediate movement already saves the final inventory, including consolidation.
+            return moveInventory(inventory, destinationLocation);
         }
         else {
             generateMovementWork(inventory, destinationLocation);

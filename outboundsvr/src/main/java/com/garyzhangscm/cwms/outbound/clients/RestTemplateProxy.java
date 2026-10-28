@@ -55,8 +55,20 @@ public class RestTemplateProxy {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private volatile RestTemplate queuedRestTemplate;
     public RestOperations getRestTemplate()  {
-        return restTemplate;
+        if (com.garyzhangscm.cwms.outbound.service.ManualPickQueueService.workerUsername() == null) return restTemplate;
+        if (queuedRestTemplate == null) synchronized (this) {
+            if (queuedRestTemplate == null) {
+                org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+                factory.setConnectTimeout(3000);
+                factory.setReadTimeout(15000);
+                RestTemplate bounded = new RestTemplate(factory);
+                bounded.setInterceptors(restTemplate.getInterceptors());
+                queuedRestTemplate = bounded;
+            }
+        }
+        return queuedRestTemplate;
     }
   /*
     public RestOperations getRestTemplate()  {
