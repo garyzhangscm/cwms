@@ -1,6 +1,6 @@
 # Batch reservation capacity
 
-Candidate code; not deployed. Enable outbound QUANTITY_ALLOCATION_BATCH_ENABLED only after inventory batch endpoint is deployed and verified. Inventory uses existing QUANTITY_CAPACITY_SCOPED_SUMMARY. Index SQL must be executed by the user on Fay, then checked with EXPLAIN and read-only timing.
+Deployed on 2026-10-29; release-validation.json contains sanitized timings and verification booleans only. Enable outbound QUANTITY_ALLOCATION_BATCH_ENABLED only after inventory batch endpoint is deployed and verified. Inventory uses existing QUANTITY_CAPACITY_SCOPED_SUMMARY. Index SQL must be executed by the user on Fay, then checked with EXPLAIN and read-only timing.
 
 One capacity POST covers up to 200 unique warehouse/item/status/owner scopes, aggregated in one SQL request. Location IDs across scopes are deduplicated and loaded in chunks of 200 through the existing warehouse-scoped locations endpoint, including disabled locations so their policy can be evaluated explicitly. No cross-request cache is introduced. Missing locations, ACL failures, overflow, malformed scope responses and incomplete replies fail closed.
 

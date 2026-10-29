@@ -1,0 +1,12 @@
+{
+  "deployed": true,
+  "capacityEquivalent": true,
+  "ledgerPreserved": true,
+  "webUnchanged": true,
+  "singleQueryMs": [
+    1787.4,
+    808.7
+  ],
+  "twoScopeBatchMs": 586.2,
+  "maintenanceRemoved": true
+}
