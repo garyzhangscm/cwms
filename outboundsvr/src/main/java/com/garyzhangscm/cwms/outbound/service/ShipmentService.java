@@ -50,6 +50,8 @@ import java.util.stream.Stream;
 public class ShipmentService {
     private static final Logger logger = LoggerFactory.getLogger(ShipmentService.class);
 
+    @Autowired(required=false) private ShipmentCompletionBatchService completionBatch;
+
     @Autowired(required = false)
     private com.garyzhangscm.cwms.outbound.transit.TransitShippingService transitShippingService;
 
@@ -964,6 +966,9 @@ public class ShipmentService {
     }
 
     public void completeShipment(Shipment shipment) {
+        if (completionBatch != null && completionBatch.applies(shipment)) {
+            completionBatch.complete(shipment);
+        } else {
         if (!validateShipmentReadyForComplete(shipment)) {
             throw ShippingException.raiseException("Shipment  " + shipment.getNumber() +
                     " is not ready for complete yet" +
@@ -981,6 +986,8 @@ public class ShipmentService {
         else {
             completeShipmentByTrailerAppointment(shipment,
                     shipment.getStop().getTrailerAppointment());
+        }
+
         }
 
         // print delivery note after we complete the order

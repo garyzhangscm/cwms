@@ -1,0 +1,11 @@
+package checks;
+import jakarta.persistence.*;import java.util.*;import org.springframework.jdbc.datasource.*;import org.springframework.jdbc.core.*;import org.springframework.orm.jpa.*;import org.springframework.orm.jpa.vendor.*;import org.springframework.transaction.support.*;
+public class JpaJdbcAtomicChecks {
+ @Entity @Table(name="test_stock") public static class Stock {@Id public Long id;public Long quantity;public Stock(){}}
+ public static void main(String[] args){DriverManagerDataSource ds=new DriverManagerDataSource("jdbc:h2:mem:atomic;MODE=MySQL;DB_CLOSE_DELAY=-1","sa","");JdbcTemplate db=new JdbcTemplate(ds);db.execute("CREATE TABLE test_stock(id BIGINT PRIMARY KEY,quantity BIGINT)");db.execute("CREATE TABLE test_receipt(id BIGINT PRIMARY KEY)");db.update("INSERT INTO test_stock VALUES(1,10)");
+ LocalContainerEntityManagerFactoryBean f=new LocalContainerEntityManagerFactoryBean();f.setDataSource(ds);f.setPackagesToScan("checks");f.setJpaVendorAdapter(new HibernateJpaVendorAdapter());f.setJpaPropertyMap(Map.of("hibernate.hbm2ddl.auto","none"));f.afterPropertiesSet();EntityManagerFactory factory=f.getObject();JpaTransactionManager manager=new JpaTransactionManager(factory);TransactionTemplate tx=new TransactionTemplate(manager);
+ try{tx.execute(status->{EntityManager em=EntityManagerFactoryUtils.getTransactionalEntityManager(factory);Stock s=em.find(Stock.class,1L,LockModeType.PESSIMISTIC_WRITE);s.quantity=0L;em.flush();db.update("INSERT INTO test_receipt VALUES(1)");throw new IllegalStateException("injected");});}catch(IllegalStateException expected){}
+ if(db.queryForObject("SELECT quantity FROM test_stock WHERE id=1",Long.class)!=10L||db.queryForObject("SELECT COUNT(*) FROM test_receipt",Long.class)!=0L)throw new AssertionError("JPA/JDBC rollback diverged");
+ tx.execute(status->{EntityManager em=EntityManagerFactoryUtils.getTransactionalEntityManager(factory);em.find(Stock.class,1L).quantity=0L;db.update("INSERT INTO test_receipt VALUES(1)");return null;});if(db.queryForObject("SELECT quantity FROM test_stock WHERE id=1",Long.class)!=0L||db.queryForObject("SELECT COUNT(*) FROM test_receipt",Long.class)!=1L)throw new AssertionError();factory.close();System.out.println("PASS real JpaTransactionManager commits and rolls back stock entity and JDBC receipt together");
+ }
+}
