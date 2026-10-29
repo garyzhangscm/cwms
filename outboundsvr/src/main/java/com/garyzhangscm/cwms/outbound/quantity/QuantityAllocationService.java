@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 @Service
 public class QuantityAllocationService {
     @Value("${quantity.allocation.enabled:false}") private boolean enabled;
+    @Value("${quantity.allocation.batch-enabled:false}") private boolean batchEnabled;
     @Value("${quantity.allocation.summary-enabled:false}") private boolean summaryEnabled;
     @Value("${quantity.allocation.pick-lpn-only:false}") private boolean pickLpnOnly;
     public boolean pickLpnOnly(){return pickLpnOnly;}
@@ -162,21 +163,30 @@ public class QuantityAllocationService {
                 try { return json.readValue((String)previous.get("result_json"),Map.class); } catch(Exception e) {throw bad("Saved allocation result needs review");}
             }
             Map<Long,OrderLine> lines=new HashMap<>();for(OrderLine line:order.getOrderLines()) lines.put(line.getId(),line);
+            Map<Long,Map<String,Object>> ledgerRows=new HashMap<>();
+            for(Map<String,Object> row:db.queryForList("SELECT * FROM quantity_allocation_line WHERE order_id=?",id))ledgerRows.put(number(row,"order_line_id"),row);
             // Validate every line before changing any; a stale second line must roll back the first.
             for(Update change:request.lines) {
                 OrderLine line=lines.get(change.orderLineId); if(line==null) throw bad("Order line does not belong to this order");
-                Map<String,Object> row=ledger(line.getId()); unchanged(line,row);
+                Map<String,Object> row=ledgerRows.get(line.getId()); if(row==null)throw bad("Quantity allocation line was not found"); unchanged(line,row);
                 if(number(row,"revision")!=change.revision) throw bad("Allocation changed in another session. Refresh before saving");
                 QuantityBalance before=balance(row);
                 if(change.held>before.demand-before.committed) throw bad("Reservation exceeds unpicked order demand");
             }
             // Process decreases first, so a multi-line edit never depends on display order.
             List<Update> changes=new ArrayList<>(request.lines);
-            changes.sort(Comparator.comparingLong(change->change.held-number(ledger(change.orderLineId),"held")));
+            changes.sort(Comparator.comparingLong(change->change.held-number(ledgerRows.get(change.orderLineId),"held")));
+            Map<String,Long> capacities=batchEnabled?batchCapacities(warehouse,changes,ledgerRows):null;
+            Map<String,Long> promised=new HashMap<>();
+            if(batchEnabled&&!ledgerRows.isEmpty()) {
+                String items=ledgerRows.values().stream().map(row->number(row,"item_id")).distinct().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+                for(Map<String,Object> row:db.queryForList("SELECT item_id,inventory_status_id,client_id,SUM(held) held FROM quantity_allocation_line WHERE warehouse_id=? AND item_id IN ("+items+") GROUP BY item_id,inventory_status_id,client_id",warehouse))promised.put(scopeKey(row),number(row,"held"));
+            }
             for(Update change:changes) {
-                Map<String,Object> row=ledger(change.orderLineId); QuantityBalance before=balance(row);
-                long available=change.held<=before.held ? before.held : Math.max(0,capacity(warehouse,number(row,"item_id"),number(row,"inventory_status_id"),number(row,"client_id"))-held(warehouse,number(row,"item_id"),number(row,"inventory_status_id"),number(row,"client_id"))+before.held);
+                Map<String,Object> row=ledgerRows.get(change.orderLineId); QuantityBalance before=balance(row);
+                long available=change.held<=before.held ? before.held : Math.max(0,(capacities==null?capacity(warehouse,number(row,"item_id"),number(row,"inventory_status_id"),number(row,"client_id")):capacities.get(scopeKey(row)))-(batchEnabled?promised.getOrDefault(scopeKey(row),0L):held(warehouse,number(row,"item_id"),number(row,"inventory_status_id"),number(row,"client_id")))+before.held);
                 QuantityBalance after=before.target(change.held,available); save(change.orderLineId,after);
+                if(batchEnabled)promised.put(scopeKey(row),Math.addExact(promised.getOrDefault(scopeKey(row),0L),change.held-before.held));
             }
             Map<String,Object> result=snapshot(order);
             try {db.update("INSERT INTO quantity_allocation_request (request_id,order_id,warehouse_id,fingerprint,result_json,created_by) VALUES (?,?,?,?,?,?)",request.requestId,id,warehouse,fingerprint,json.writeValueAsString(result),users.getCurrentUserName());}
@@ -314,6 +324,33 @@ public class QuantityAllocationService {
             view.put("demand",value.demand);view.put("held",value.held);view.put("committed",value.committed);view.put("shortage",value.shortage());view.put("revision",number(row,"revision"));rows.add(view);
         }
         result.put("lines",rows);return result;
+    }
+    private String scopeKey(Map<String,Object> row){return number(row,"item_id")+":"+number(row,"inventory_status_id")+":"+number(row,"client_id");}
+    private Map<String,Long> batchCapacities(long warehouse,List<Update> changes,Map<Long,Map<String,Object>> rows) {
+        Map<String,Map<String,Long>> scopes=new LinkedHashMap<>();
+        for(Update change:changes){Map<String,Object> row=rows.get(change.orderLineId);if(change.held>number(row,"held"))scopes.put(scopeKey(row),Map.of("itemId",number(row,"item_id"),"inventoryStatusId",number(row,"inventory_status_id"),"clientId",number(row,"client_id")));}
+        Map<String,Long> result=new HashMap<>();List<Map<String,Long>> values=new ArrayList<>(scopes.values());
+        for(int start=0;start<values.size();start+=200) {
+            List<Map<String,Long>> chunk=values.subList(start,Math.min(start+200,values.size()));
+            List<Map> replies=rest.exchangeList(Map.class,"http://apigateway:5555/api/inventory/inventories/pickable/quantity-capacity-batch-v1?warehouseId="+warehouse,HttpMethod.POST,chunk);
+            if(replies==null||replies.size()!=chunk.size())throw bad("Capacity batch is incomplete");
+            for(int n=0;n<chunk.size();n++) {
+                Map v=replies.get(n);Map<String,Long> expected=chunk.get(n);
+                if(!"quantity-capacity-v1".equals(v.get("schema"))||summaryNumber(v,"warehouseId")!=warehouse)throw bad("Capacity batch scope mismatch");
+                for(String key:expected.keySet())if(summaryNumber(v,key)!=expected.get(key))throw bad("Capacity batch scope mismatch");
+                long physical=summaryNumber(v,"physicalQuantity"),count=summaryNumber(v,"candidateCount"),eligible=summaryNumber(v,"eligibleCount");
+                if(physical<0||count<0||count>=100000||eligible<0||eligible>count)throw bad("Capacity batch cannot be verified");
+                result.put(expected.get("itemId")+":"+expected.get("inventoryStatusId")+":"+expected.get("clientId"),physical);
+            }
+        }
+        // Same conservative open-Pick subtraction, aggregated once per request.
+        Map<Long,Long> hard=new HashMap<>();
+        if(!scopes.isEmpty()) {
+            String ids=scopes.values().stream().map(v->v.get("itemId")).distinct().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+            for(Map<String,Object> row:db.queryForList("SELECT item_id,SUM(quantity-picked_quantity) hard FROM pick WHERE warehouse_id=? AND item_id IN ("+ids+") AND quantity>0 AND picked_quantity<quantity GROUP BY item_id",warehouse))hard.put(number(row,"item_id"),number(row,"hard"));
+        }
+        for(Map.Entry<String,Map<String,Long>> scope:scopes.entrySet())result.compute(scope.getKey(),(k,v)->Math.max(0,v-hard.getOrDefault(scope.getValue().get("itemId"),0L)));
+        return result;
     }
     private long capacity(long warehouse,long item,long status,long client) {
         long physical=physicalCapacity(warehouse,item,status,client);

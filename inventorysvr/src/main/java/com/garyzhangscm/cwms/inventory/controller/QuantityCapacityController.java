@@ -18,6 +18,7 @@ import com.garyzhangscm.cwms.inventory.clients.WarehouseLayoutServiceRestemplate
 public class QuantityCapacityController {
     private final InventoryController delegate;
     @Autowired private DataSource source;
+    @Autowired private com.garyzhangscm.cwms.inventory.clients.RestTemplateProxy rest;
     @Autowired private WarehouseLayoutServiceRestemplateClient layout;
     @Value("${quantity.capacity.scoped-summary:false}") private boolean scopedSummary;
     // Preserve the existing selector's lock semantics (allow_pick=true excludes stock).
@@ -45,23 +46,47 @@ public class QuantityCapacityController {
                 "","","","","","","","","","",null,"",false,100000);
         return summarize(warehouseId,itemId,inventoryStatusId,clientId,candidates);
     }
-    private Map<String,Object> scopedCapacity(long warehouse,long item,long status,long client) {
-        long started=System.nanoTime(),physical=0,count=0;
-        List<Map<String,Object>> groups=new JdbcTemplate(source).queryForList(SCOPED_SQL,warehouse,item,status,client);
+    protected List<Location> locations(long warehouse,Set<Long> ids) {
+        List<Location> result=new ArrayList<>();List<Long> keys=new ArrayList<>(ids);
+        for(int start=0;start<keys.size();start+=200) {
+            String joined=keys.subList(start,Math.min(start+200,keys.size())).stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+            result.addAll(rest.exchangeList(Location.class,"http://apigateway:5555/api/layout/locations?warehouseId="+warehouse+"&includeDisabledLocation=true&ids="+joined,org.springframework.http.HttpMethod.GET,null));
+        }
+        return result;
+    }
+    @PostMapping("/inventories/pickable/quantity-capacity-batch-v1") @ClientValidationEndpoint
+    public List<Map<String,Object>> batch(@RequestParam Long warehouseId,@RequestBody List<Map<String,Long>> scopes,ClientRestriction restriction) {
+        if(!scopedSummary||scopes==null||scopes.isEmpty()||scopes.size()>200)throw new IllegalArgumentException("Invalid capacity batch");
+        List<String> queries=new ArrayList<>();List<Object> args=new ArrayList<>();Set<String> unique=new HashSet<>();
+        for(int n=0;n<scopes.size();n++) {
+            Map<String,Long> scope=scopes.get(n);Long item=scope.get("itemId"),status=scope.get("inventoryStatusId"),client=scope.get("clientId");
+            validate(warehouseId,item,status,client,restriction);
+            if(!unique.add(item+":"+status+":"+client))throw new IllegalArgumentException("Duplicate capacity scope");
+            queries.add(SCOPED_SQL.replace("SELECT i.location_id", "SELECT "+n+" scope_index, i.location_id"));
+            Collections.addAll(args,warehouseId,item,status,client);
+        }
+        List<Map<String,Object>> groups=new JdbcTemplate(source).queryForList(String.join(" UNION ALL ",queries),args.toArray());
+        Set<Long> ids=new HashSet<>();for(Map<String,Object> group:groups)ids.add(exact(group.get("location_id")));
+        Map<Long,Location> positions=new HashMap<>();for(Location location:locations(warehouseId,ids))if(location!=null)positions.put(location.getId(),location);
+        long[] physical=new long[scopes.size()],count=new long[scopes.size()];
         for(Map<String,Object> group:groups) {
-            if(group.get("location_id")==null)throw new IllegalArgumentException("Inventory location is missing; review stock before reserving");
-            Location location=layout.getLocationById(exact(group.get("location_id")));
-            if(location==null||(location.getWarehouse()!=null&&!Objects.equals(location.getWarehouse().getId(),warehouse))||location.getLocationGroup()==null||location.getLocationGroup().getLocationGroupType()==null)
+            Location location=positions.get(exact(group.get("location_id")));
+            if(location==null||(location.getWarehouse()!=null&&!Objects.equals(location.getWarehouse().getId(),warehouseId))||location.getLocationGroup()==null||location.getLocationGroup().getLocationGroupType()==null)
                 throw new IllegalArgumentException("Inventory location scope is unavailable; review stock before reserving");
             if(!Boolean.TRUE.equals(location.getEnabled())||!Boolean.TRUE.equals(location.getLocationGroup().getPickable())||!Boolean.TRUE.equals(location.getLocationGroup().getLocationGroupType().getFourWallInventory()))continue;
             if(exact(group.get("null_count"))!=0)throw new IllegalArgumentException("Inventory quantity is missing");
-            count=Math.addExact(count,exact(group.get("row_count")));
-            physical=Math.addExact(physical,exact(group.get("physical_quantity")));
+            int at=Math.toIntExact(exact(group.get("scope_index")));count[at]=Math.addExact(count[at],exact(group.get("row_count")));physical[at]=Math.addExact(physical[at],exact(group.get("physical_quantity")));
         }
-        if(count>=100000)throw new IllegalArgumentException("Inventory candidate limit requires review");
-        org.slf4j.LoggerFactory.getLogger(QuantityCapacityController.class).info("Scoped quantity capacity: warehouse={}, item={}, locations={}, eligible={}, elapsedMs={}",warehouse,item,groups.size(),count,(System.nanoTime()-started)/1000000);
-        return Map.of("schema","quantity-capacity-v1","warehouseId",warehouse,"itemId",item,"inventoryStatusId",status,
-                "clientId",client,"physicalQuantity",physical,"candidateCount",count,"eligibleCount",count);
+        List<Map<String,Object>> results=new ArrayList<>();
+        for(int n=0;n<scopes.size();n++) {
+            if(count[n]>=100000)throw new IllegalArgumentException("Inventory candidate limit requires review");
+            Map<String,Long> scope=scopes.get(n);
+            results.add(Map.of("schema","quantity-capacity-v1","warehouseId",warehouseId,"itemId",scope.get("itemId"),"inventoryStatusId",scope.get("inventoryStatusId"),"clientId",scope.get("clientId"),"physicalQuantity",physical[n],"candidateCount",count[n],"eligibleCount",count[n]));
+        }
+        return results;
+    }
+    private Map<String,Object> scopedCapacity(long warehouse,long item,long status,long client) {
+        return batch(warehouse,List.of(Map.of("itemId",item,"inventoryStatusId",status,"clientId",client)),null).get(0);
     }
     private static long exact(Object value) {
         if(!(value instanceof Number))throw new IllegalArgumentException("Invalid inventory aggregate");
