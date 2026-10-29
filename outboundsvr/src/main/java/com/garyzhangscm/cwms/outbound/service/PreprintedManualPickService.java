@@ -30,7 +30,16 @@ public class PreprintedManualPickService {
   if(!Objects.equals(order.getWarehouseId(),warehouseId))throw bad("Order not found in warehouse");
   List<Inventory> rows=inventory.getInventoryByLpn(warehouseId,sourceLpn);
   if(rows.size()!=1)throw bad("This split flow requires a single inventory record on the LPN; ask a supervisor to consolidate mixed stock");
-  long quantity=orders.getPickableQuantityForManualPick(order,sourceLpn,false);
+  long quantity;
+  try {quantity=orders.getPickableQuantityForManualPick(order,sourceLpn,false);}
+  catch(OrderOperationException rejected) {
+   if(rejected.getMessage()!=null&&rejected.getMessage().contains(" is not pickable.")) {
+    Location position=rows.get(0).getLocation();
+    if(position==null&&rows.get(0).getLocationId()!=null)try{position=layout.getLocationById(rows.get(0).getLocationId());}catch(RuntimeException unavailable){/* Explain only facts we could verify. */}
+    throw bad(ManualPickRejection.message(sourceLpn,rows.get(0),position));
+   }
+   throw rejected;
+  }
   return new SourcePreview(rows.get(0),quantity);
  }
  public Map<String,Object> preview(Long warehouseId,Long orderId,String sourceLpn) {

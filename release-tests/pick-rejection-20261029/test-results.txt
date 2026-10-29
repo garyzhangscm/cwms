@@ -1,0 +1,1 @@
+PASS verified transfer, assigned, disabled, unknown and missing location explanations
