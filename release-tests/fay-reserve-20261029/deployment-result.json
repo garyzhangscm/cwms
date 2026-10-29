@@ -1,0 +1,39 @@
+{
+  "backendReady": true,
+  "images": {
+    "outbound": "brianwang1912/cwms-outboundserver:v1.62-fay-reserve-fix-20261029-01@sha256:49aeac712a763d2f0cda459ce6e6c487ba7569715a84ab69ae63dcf41b1ad09a",
+    "inventory": "brianwang1912/cwms-inventoryserver:v1.62-fay-reserve-fix-20261029-01@sha256:e20c3fcfcea2e7d9575af13a158d755b6878eefac5b83d5491a1e4ae90c470ee"
+  },
+  "formalWebUnchanged": true,
+  "testWebUnchanged": true,
+  "ledgerPreserved": true,
+  "schemaChanged": false,
+  "businessWritesByRelease": false,
+  "maintenanceRemoved": true,
+  "backup": "/root/k8s/backups/reserve-deadlock-fix-20261029T155251Z",
+  "legacyCapacitySeconds": 45.004681108985096,
+  "newCapacityReads": [
+    {
+      "milliseconds": 6178.4,
+      "bytes": 212,
+      "physical": 411138,
+      "eligible": 11417
+    },
+    {
+      "milliseconds": 2002.3,
+      "bytes": 212,
+      "physical": 411138,
+      "eligible": 11417
+    }
+  ],
+  "capacityEquivalent": true,
+  "orderBefore": [
+    {
+      "order_line_id": 88,
+      "demand": 864,
+      "held": 864,
+      "committed": 0,
+      "revision": 1
+    }
+  ]
+}
