@@ -245,7 +245,8 @@ public class ShipmentService {
     }
 
     public void delete(Long id) {
-        shipmentRepository.deleteById(id);
+        // The public batch-delete endpoint must use the same guards and cleanup.
+        removeShipment(findById(id));
     }
 
     public void delete(String shipmentIds) {
@@ -1407,6 +1408,11 @@ public class ShipmentService {
         allocationTransactionHistoryService.removeAllocationTransactionHistory(shipment);
 
 
+        // Match completion/cancellation: release by this shipment's reservation
+        // code even when stageLocationId is null. Keep the shipment if release
+        // fails, so the cleanup can be retried instead of leaving an orphan.
+        warehouseLayoutServiceRestemplateClient.releaseLocations(
+                shipment.getWarehouseId(), shipment);
         delete(shipment);
     }
 
