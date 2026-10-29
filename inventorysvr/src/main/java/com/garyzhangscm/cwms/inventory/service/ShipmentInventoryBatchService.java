@@ -86,7 +86,11 @@ public class ShipmentInventoryBatchService {
      List<Map<String,Object>> saved=decode((String)currentReceipt.get("snapshot_json"));
      Map<String,Object> savedRow=saved.stream().filter(r->n(r.get("id"))==n(row.get("id"))).findFirst().orElseThrow();
      if(Boolean.TRUE.equals(savedRow.get("batchShipped")))return null;
-     Inventory i=em.find(Inventory.class,n(row.get("id")),LockModeType.PESSIMISTIC_WRITE);require(i!=null,"Inventory no longer exists");em.refresh(i,LockModeType.PESSIMISTIC_WRITE);
+     // Lock only this stock row. JPA pessimistic find/refresh joins eager Item
+     // and InventoryStatus and locks those shared master rows too, creating a
+     // deadlock with concurrent inventory inserts' foreign-key checks.
+     require(db.queryForList("SELECT inventory_id FROM inventory WHERE inventory_id=? AND warehouse_id=? FOR UPDATE",n(row.get("id")),w).size()==1,"Inventory no longer exists");
+     Inventory i=em.find(Inventory.class,n(row.get("id")));require(i!=null,"Inventory no longer exists");em.refresh(i);
      require(Objects.equals(i.getWarehouseId(),w)&&Objects.equals(i.getQuantity(),n(row.get("quantity")))&&i.getQuantity()>0&&Objects.equals(i.getPickId(),n(row.get("pickId")))&&Objects.equals(i.getItemId(),n(row.get("itemId")))&&Objects.equals(i.getLocationId(),n(row.get("locationId"))),"Inventory changed; refresh before completing");
      access(i.getClientId(),restriction);require(Objects.equals(i.getLpn(),row.get("lpn"))&&Objects.equals(i.getClientId(),row.get("clientId")==null?null:n(row.get("clientId"))),"Inventory owner or LPN changed");
      Location source=layout.getLocationById(i.getLocationId());require(source!=null&&source.getLocationGroup()!=null&&Boolean.TRUE.equals(source.getLocationGroup().getLocationGroupType().getShippingStage()),"Inventory is no longer in shipping stage");

@@ -11,3 +11,9 @@ No automatic receipt deletion: receipts support recovery if Outbound rolls back 
 Tests use synthetic fixtures only: successful batch; same-request replay; changed request rejected; partial failure and resume; source quantity change; missing snapshot row; concurrent same-shipment submissions; real JPA/JDBC commit/rollback; 33-row outbound aggregation, single snapshot/POST/line save with 33 billing events; unfinished Pick protection. Production validation is read-only until an operator performs a real completion.
 
 Performance log markers: `shipment-complete-batch` (prepare/ship/finalize) and `shipment-inventory-batch` (prepare/moves and receipts). No latency promise is inferred from isolated tests.
+
+## Stock-row lock correction
+
+A JPA pessimistic find/refresh on Inventory joins eager Item and InventoryStatus associations. On MySQL this also locks shared master rows; a concurrent stock insert's foreign-key checks can form an Item/Status lock cycle. The batch now obtains `SELECT inventory_id ... WHERE inventory_id=? AND warehouse_id=? FOR UPDATE` first, then reads/refreshes the entity without a JPA lock hint. The stock row remains locked for quantity/owner/Pick/source checks and movement/receipt commit. No eligibility checks or progress records are removed.
+
+The isolated MySQL 8 test reproduces the old shared-master lock/FK-insert deadlock, then runs six concurrent pairs with a stock-only lock without deadlock. It uses synthetic tables in a dedicated no-network test container. The batch regression also rejects any reintroduction of pessimistic eager find/refresh and verifies partial progress/resume and concurrent idempotency.
