@@ -1,0 +1,2 @@
+FROM brianwang1912/cwms-inventoryserver:v1.62-unpick-fast-20261028-01
+COPY inventory-fixed.jar /usr/local/service/inventoryserver-v1.62.jar

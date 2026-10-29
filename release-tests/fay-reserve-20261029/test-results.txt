@@ -1,0 +1,5 @@
+PASS 76 quantity allocation checks, real JDBC transactions, concurrent reservations, no business network
+PASS JPA/JDBC shared transaction: rollback and commit preserve soft-to-hard quantity exactly
+PASS 212 inventory summary checks; existing selector delegation and legacy-equivalent arithmetic
+PASS 13 scoped SQL checks across 1500 randomized rows: scopes, QC, locks, virtual, locations, null, overflow, ACL and bounded payload
+{"mysql8": true, "oldDeadlockReproduced": true, "fixedConcurrentRequests": 24, "concurrentFirstUse": 16, "deadlocksAfterFix": 0, "held": 10, "limit": 10, "productionAccess": false}

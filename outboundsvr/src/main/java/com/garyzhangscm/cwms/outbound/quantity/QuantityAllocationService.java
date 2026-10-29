@@ -100,8 +100,9 @@ public class QuantityAllocationService {
     public <T> T locked(long warehouse, Supplier<T> action) {
         requireEnabled();
         return tx.execute(status -> {
-            // MySQL unique-key locking also serializes concurrent first use of a warehouse.
-            db.update("INSERT IGNORE INTO quantity_allocation_mutex (warehouse_id) VALUES (?)",warehouse);
+            // Acquire the exclusive record lock directly, including concurrent first use.
+            // INSERT IGNORE takes shared duplicate-key locks; concurrent S-to-X upgrades deadlock.
+            db.update("INSERT INTO quantity_allocation_mutex (warehouse_id) VALUES (?) ON DUPLICATE KEY UPDATE warehouse_id=VALUES(warehouse_id)",warehouse);
             db.queryForObject("SELECT warehouse_id FROM quantity_allocation_mutex WHERE warehouse_id=? FOR UPDATE",Long.class,warehouse);
             return action.get();
         });
