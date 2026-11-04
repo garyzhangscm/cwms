@@ -313,30 +313,7 @@ public class InventoryServiceRestemplateClient {
     public List<Inventory> findDeliveredInventory(Long warehouseId,
                                                   Long productionLocationId, String pickIds) {
 
-        UriComponentsBuilder builder =
-                UriComponentsBuilder.newInstance()
-                        .scheme("http").host("apigateway").port(5555)
-                        .path("/api/inventory/inventories")
-                        .queryParam("warehouseId", warehouseId)
-                        .queryParam("locationId", productionLocationId)
-                        .queryParam("pickIds", pickIds);
-/**
-        ResponseBodyWrapper<List<Inventory>> responseBodyWrapper
-                = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<ResponseBodyWrapper<List<Inventory>>>() {}).getBody();
-
-        return responseBodyWrapper.getData();
- **/
-        return restTemplateProxy.exchangeList(
-                Inventory.class,
-                builder.toUriString(),
-                HttpMethod.GET,
-                null
-        );
-
+        return DeliveredInventoryBatches.load(restTemplateProxy, warehouseId, productionLocationId, pickIds);
     }
     public List<Inventory> getProducedByProduct(Long warehouseId, String workOrderByProductIds, String lpn) {
 
