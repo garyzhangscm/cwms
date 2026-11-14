@@ -1,7 +1,7 @@
 # Colton continuous Manual Pick — 2026-10-28
 
 Deployed backend: `brianwang1912/cwms-outboundserver:v1.62-manual-pick-queue-20261028-03`.
-Production Web, Fay and mobile OTA were not published. Unpick UI is on the source development server at `http://10.0.202.70:4200/`. The mobile build is installed only on the local iPhone 16 Plus simulator.
+Production Web, Fay and mobile OTA were not published. Unpick UI is on the source development server at `http://<site-host>:4200/`. The mobile build is installed only on the local iPhone 16 Plus simulator.
 
 ## Behavior
 
