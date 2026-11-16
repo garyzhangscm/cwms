@@ -79,6 +79,10 @@ public class WorkOrderProduceTransactionService  {
     @Autowired
     private WorkOrderConfigurationService workOrderConfigurationService;
     @Autowired
+    private ProductionSubmissionStore productionSubmissions;
+    @Autowired
+    private ProductionReceiptJobs productionReceipts;
+    @Autowired
     private ResourceServiceRestemplateClient resourceServiceRestemplateClient;
 
     public WorkOrderProduceTransaction findById(Long id, boolean loadDetails) {
@@ -236,16 +240,29 @@ public class WorkOrderProduceTransactionService  {
     @Transactional
     public WorkOrderProduceTransaction startNewTransaction(
             WorkOrderProduceTransaction workOrderProduceTransaction, String rfCode) {
+        return startNewTransaction(workOrderProduceTransaction, rfCode, null, null, null);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(
+            isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
+    public WorkOrderProduceTransaction startNewTransaction(
+            WorkOrderProduceTransaction workOrderProduceTransaction, String rfCode,
+            String requestKey, String requestedBy, String requestHash) {
 
         logger.debug("1. startNewTransaction / start new work order product transaction @{}", System.currentTimeMillis());
 
-        setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
-        logger.debug("2. startNewTransaction / data setup for this new product transaction @{}", System.currentTimeMillis());
+        resolveWorkOrder(workOrderProduceTransaction);
 
         // get the latest information
         // Serialize validation and counter changes for reports on this work order.
         // The lock is held until this reporting transaction commits or rolls back.
         WorkOrder workOrder = workOrderService.lockForReporting(workOrderProduceTransaction.getWorkOrder().getId());
+        if (requestKey != null) {
+            Long existingId = productionSubmissions.claim(workOrder.getWarehouseId(), requestKey, requestedBy, requestHash);
+            if (existingId != null) {
+                return findById(existingId);
+            }
+        }
         if (Objects.isNull(workOrder.getWarehouse())) {
             workOrder.setWarehouse(
                     warehouseLayoutServiceRestemplateClient.getWarehouseById(
@@ -256,6 +273,7 @@ public class WorkOrderProduceTransactionService  {
         workOrderProduceTransaction.setWorkOrder(workOrder);
         // Persist the authoritative warehouse for asynchronous result records.
         workOrderProduceTransaction.setWarehouseId(workOrder.getWarehouseId());
+        setupNewWorkOrderProduceTransactionData(workOrderProduceTransaction);
 
         logger.debug("3. startNewTransaction / work order information setup for this new product transaction @{}", System.currentTimeMillis());
 
@@ -298,47 +316,7 @@ public class WorkOrderProduceTransactionService  {
                 continue;
             }
             totalProducedQuantity += workOrderProducedInventory.getQuantity();
-            // Let's create the inventory
-
-            logger.debug("6.{}.3 startNewTransaction / start receive the inventory {} of {} @{}",
-                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
-                    System.currentTimeMillis());
-
-            // logger.debug("===  1. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
-            logger.debug("===  1. newWorkOrderProduceTransaction  ===");
-            // asynchronously receive the inventory to increase the productivity
-            new Thread(() -> {
-                logger.debug("6.x.3.1 startNewTransaction / receive inventory in a separate transaction");
-                try {
-                    // logger.debug("===  2. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
-                    logger.debug("start to receive inventory from the work order {}", workOrder.getNumber());
-                    receiveInventoryFromWorkOrder(workOrder, workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
-                    workOrderProducedInventoryResultRepository.save(
-                            new WorkOrderProducedInventoryResult(
-                                    newWorkOrderProduceTransaction.getWarehouseId(),
-                                    workOrderProducedInventory,
-                                    true, ""
-                            )
-                    );
-                    logger.debug("inventory {} saved from the work order", workOrderProducedInventory.getLpn());
-                }
-                catch (Exception exception) {
-                    logger.debug("Error while receive inventory \n {}", exception.getMessage());
-                    // logger.debug("===  3. newWorkOrderProduceTransaction  ===\n {}", newWorkOrderProduceTransaction);
-                    workOrderProducedInventoryResultRepository.save(
-                            new WorkOrderProducedInventoryResult(
-                                    newWorkOrderProduceTransaction.getWarehouseId(),
-                                    workOrderProducedInventory,
-                                    false, exception.getMessage()
-                            )
-                    );
-                }
-
-            }).start();
-            logger.debug("6.{}.4 startNewTransaction / inventory {} of {} received @{}",
-                    index, index, newWorkOrderProduceTransaction.getWorkOrderProducedInventories().size(),
-                    System.currentTimeMillis());
-
+            productionReceipts.enqueue(workOrderProducedInventory, newWorkOrderProduceTransaction, rfCode);
         }
         // Change the produced quantity of the work order
         workOrderService.produce(workOrder, totalProducedQuantity, false);
@@ -378,11 +356,14 @@ public class WorkOrderProduceTransactionService  {
         logger.debug("10. startNewTransaction / work order KPI saved @{}", System.currentTimeMillis());
 
 
+        if (requestKey != null) {
+            productionSubmissions.complete(workOrder.getWarehouseId(), requestKey, newWorkOrderProduceTransaction.getId());
+        }
         return newWorkOrderProduceTransaction;
 
     }
 
-    private void setupNewWorkOrderProduceTransactionData(WorkOrderProduceTransaction workOrderProduceTransaction) {
+    private void resolveWorkOrder(WorkOrderProduceTransaction workOrderProduceTransaction) {
 
         if (Objects.isNull(workOrderProduceTransaction.getWorkOrder())) {
             // work order information is not passed in, let's see if we can get the work order from
@@ -411,6 +392,9 @@ public class WorkOrderProduceTransactionService  {
                 }
             }
         }
+    }
+
+    private void setupNewWorkOrderProduceTransactionData(WorkOrderProduceTransaction workOrderProduceTransaction) {
         // Mobile machine summaries carry only identity fields. Resolve the
         // persisted line before looking up staging locations; a null location
         // id would otherwise call /locations/ instead of /locations/{id}.

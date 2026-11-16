@@ -575,6 +575,10 @@ public class InventoryServiceRestemplateClient {
     }
 
     public Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder, Inventory inventory) {
+        return receiveInventoryFromWorkOrder(workOrder, inventory, null);
+    }
+
+    public Inventory receiveInventoryFromWorkOrder(WorkOrder workOrder, Inventory inventory, Long productionDetailId) {
 
         // Convert the inventory to JSON and send to the inventory service
         logger.debug("Will receive inventory under the document number {}",
@@ -585,6 +589,9 @@ public class InventoryServiceRestemplateClient {
                         .scheme("http").host("apigateway").port(5555)
                         .path("/api/inventory/receive")
                 .queryParam("documentNumber", workOrder.getNumber());
+        if (productionDetailId != null) {
+            builder.queryParam("productionDetailId", productionDetailId);
+        }
 
         /**
         ResponseBodyWrapper<Inventory> responseBodyWrapper

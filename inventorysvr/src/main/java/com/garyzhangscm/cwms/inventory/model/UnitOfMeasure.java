@@ -48,6 +48,15 @@ public class UnitOfMeasure implements Serializable {
         return null;
     }
 
+    private String level;
+
+    public String getLevel() { return level; }
+    public void setLevel(String level) {
+        if (level != null && !java.util.Arrays.asList("ITEM", "CASE", "PALLET").contains(level))
+            throw new IllegalArgumentException("Level must be Item, Case, Pallet or unclassified");
+        this.level = level;
+    }
+
     public Long getId() {
         return id;
     }

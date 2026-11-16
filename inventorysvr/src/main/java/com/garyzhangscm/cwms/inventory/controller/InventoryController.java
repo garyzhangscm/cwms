@@ -26,6 +26,7 @@ import com.garyzhangscm.cwms.inventory.exception.RequestValidationFailException;
 import com.garyzhangscm.cwms.inventory.model.*;
 import com.garyzhangscm.cwms.inventory.service.FileService;
 import com.garyzhangscm.cwms.inventory.service.InventoryService;
+import com.garyzhangscm.cwms.inventory.service.ProductionInventoryReceiptService;
 import com.garyzhangscm.cwms.inventory.service.UploadFileService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -52,6 +53,8 @@ public class InventoryController {
     private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
     @Autowired
     InventoryService inventoryService;
+    @Autowired
+    private ProductionInventoryReceiptService productionInventoryReceiptService;
     @Autowired
     private WarehouseLayoutServiceRestemplateClient warehouseLayoutServiceRestemplateClient;
 
@@ -532,13 +535,23 @@ public class InventoryController {
                                              @RequestParam(name = "kitInventoryUseDefaultAttribute", required = false, defaultValue = "true") Boolean kitInventoryUseDefaultAttribute,
                                              @RequestParam(name = "documentNumber", required = false, defaultValue = "") String documentNumber,
                                              @RequestParam(name = "comment", required = false, defaultValue = "") String comment,
-                                             @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId) {
+                                             @RequestParam(name = "reasonCodeId", required = false, defaultValue = "") Long reasonCodeId,
+                                             @RequestParam(name = "productionDetailId", required = false) Long productionDetailId) {
         logger.debug("Start to receive inventory: {}, document number: {}, comment: {}, reason code id: {} / {}",
                 inventory.getLpn(), documentNumber, comment, reasonCodeId, inventory.getReasonCodeId());
 
         // if the reason code is not passed in explicitly, use the one from the inventory
         if (Objects.isNull(reasonCodeId)) {
             reasonCodeId = inventory.getReasonCodeId();
+        }
+
+        if (productionDetailId != null) {
+            if (inventory.getWorkOrderId() == null || inventory.getReceiptId() != null
+                    || inventory.getWorkOrderLineId() != null || inventory.getWorkOrderByProductId() != null) {
+                throw RequestValidationFailException.raiseException("Production detail requires a work order receipt");
+            }
+            return productionInventoryReceiptService.receive(productionDetailId, inventory, documentNumber,
+                    comment, reasonCodeId, kitInventoryUseDefaultAttribute);
         }
 
         // We may receive  from a receipt, or a work order

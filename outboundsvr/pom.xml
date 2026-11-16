@@ -11,12 +11,12 @@
 	</parent>
 	<groupId>com.garyzhangscm.cwms</groupId>
 	<artifactId>outboundserver</artifactId>
-    <version>v1.64</version>
+    <version>v1.65</version>
 	<name>Outbound Server</name>
 	<description>Outbound Server - order / shipment / wave / etc</description>
 
 	<properties>
-		<java.version>13</java.version>
+		<java.version>17</java.version>
         <spring-cloud.version>2021.0.5</spring-cloud.version>
         <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -343,8 +343,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             -->

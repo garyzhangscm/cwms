@@ -19,21 +19,37 @@
 package com.garyzhangscm.cwms.workorder.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.garyzhangscm.cwms.workorder.ResponseBodyWrapper;
 import com.garyzhangscm.cwms.workorder.model.BillableEndpoint;
 import com.garyzhangscm.cwms.workorder.model.WorkOrderProduceTransaction;
 import com.garyzhangscm.cwms.workorder.service.WorkOrderProduceTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class WorkOrderProduceTransactionController {
     @Autowired
     WorkOrderProduceTransactionService workOrderProduceTransactionService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
 
@@ -54,11 +70,39 @@ public class WorkOrderProduceTransactionController {
     @BillableEndpoint
     @RequestMapping(value="/work-order-produce-transactions", method = RequestMethod.POST)
     public WorkOrderProduceTransaction addWorkOrderProduceTransaction(
-            @RequestBody WorkOrderProduceTransaction workOrderProduceTransaction,
-            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode) {
-        return workOrderProduceTransactionService.startNewTransaction(workOrderProduceTransaction, rfCode);
+            @RequestBody JsonNode request,
+            @RequestParam(name = "rfCode", required = false, defaultValue = "") String rfCode,
+            @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestHeader(name = "username", required = false) String username,
+            Authentication authentication) throws NoSuchAlgorithmException {
+        try {
+            WorkOrderProduceTransaction transaction = objectMapper.treeToValue(request, WorkOrderProduceTransaction.class);
+            if (idempotencyKey == null) {
+                return workOrderProduceTransactionService.startNewTransaction(transaction, rfCode);
+            }
+            String key = UUID.fromString(idempotencyKey).toString();
+            if (!key.equalsIgnoreCase(idempotencyKey)) {
+                throw new IllegalArgumentException("Idempotency-Key must be a UUID");
+            }
+            String actor = authentication != null ? authentication.getName()
+                    : username == null || username.isBlank() ? "CWMS-USER" : username;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(rfCode.getBytes(StandardCharsets.UTF_8));
+            digest.update((byte) 0);
+            byte[] body = objectMapper.writer().with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                    .writeValueAsBytes(objectMapper.convertValue(request, Object.class));
+            return workOrderProduceTransactionService.startNewTransaction(
+                    transaction, rfCode, key, actor, HexFormat.of().formatHex(digest.digest(body)));
+        } catch (JsonProcessingException | IllegalArgumentException error) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid production submission", error);
+        }
     }
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ResponseBodyWrapper<Void>> productionSubmissionError(ResponseStatusException error) {
+        return ResponseEntity.status(error.getStatusCode()).body(
+                new ResponseBodyWrapper<>(error.getStatusCode().value(), error.getReason(), null));
+    }
 
     @RequestMapping(value="/work-order-produce-transactions/{id}", method = RequestMethod.GET)
     public WorkOrderProduceTransaction findWorkOrderProduceTransaction(@PathVariable Long id) {
