@@ -673,6 +673,7 @@ public class OrderService {
         return save(order, true);
     }
     public Order save(Order order, boolean loadDetails) {
+        TransferShipTo.onCreate(order, warehouseLayoutServiceRestemplateClient);
         // send alert for new order or order change
         boolean newOrderFlag = false;
         if (Objects.isNull(order.getId())) {
@@ -2245,6 +2246,7 @@ public class OrderService {
 
 
 
+        TransferShipTo.onReport(report, order, warehouseLayoutServiceRestemplateClient);
     }
 
     /**
@@ -2514,6 +2516,7 @@ public class OrderService {
 
 
 
+        TransferShipTo.onReport(report, order, warehouseLayoutServiceRestemplateClient);
     }
 
     private void setupOrderBillOfLadingData(Report report, Order order) {
