@@ -1,0 +1,20 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "namespace": "staging",
+    "name": "webclient"
+  },
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "webclient",
+            "image": "docker.io/brianwang1912/cwms-client:V19.1.65@sha256:e5121f182467ed2f102bd83ee36b9bdb6a1a5912842fd05b7094600f5892efe8"
+          }
+        ]
+      }
+    }
+  }
+}

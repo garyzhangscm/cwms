@@ -90,7 +90,7 @@ class ItemOperatorTests(unittest.TestCase):
 
     def test_queue_selection_detail_audit_and_item_role(self):
         with tempfile.TemporaryDirectory() as temp:
-            store=self.store(Path(temp));user={'username':'alice'}
+            store=self.store(Path(temp));user={'username':'alice','roles':[{'name':'Item Import Operator','enabled':True,'companyId':store.company_id}]}
             job=store.enqueue({'file':NAME,'itemName':'GOOD','action':'check'},user)
             self.assertEqual(store.detail(NAME,'GOOD')['history'][0]['actor'],'alice')
             self.assertEqual(len(store.detail(NAME,'GOOD')['originalRows']),1)

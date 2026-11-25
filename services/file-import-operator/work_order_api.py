@@ -148,6 +148,11 @@ class WorkOrderStore:
     def enqueue(self, payload, user):
         if not isinstance(payload, dict) or set(payload) - {'file', self.number_key, 'action'}:
             raise SettingsError(400, 'Invalid action request')
+        if not may_retry(user, self.company_id, self.role):
+            selected = payload.get(self.number_key)
+            if (self.route != '/work-order-import' or not isinstance(selected, str)
+                    or not selected.strip() or selected != selected.strip()):
+                raise SettingsError(403, 'Import operator access required for batch actions')
         name = self.filename(payload.get('file'))
         action = payload.get('action')
         number = payload.get(self.number_key, '')
@@ -289,7 +294,9 @@ class Handler(BaseHTTPRequestHandler):
             if not writing and parsed.path == '/healthz':
                 self.reply(200, {'healthy': True})
                 return
-            user = self.server.store.authorize(self.headers, writing)
+            single_route = (self.server.store.route == '/work-order-import' and
+                            parsed.path == '/work-order-import/actions')
+            user = self.server.store.authorize(self.headers, writing and not single_route)
             query = urllib.parse.parse_qs(parsed.query)
             if writing and parsed.path == self.server.store.route + '/actions':
                 length = int(self.headers.get('Content-Length', '0'))
@@ -300,6 +307,8 @@ class Handler(BaseHTTPRequestHandler):
             elif not writing and parsed.path == self.server.store.route + '/batches':
                 result = self.server.store.listing(query)
                 result['canRetry'] = may_retry(user, self.server.store.company_id, self.server.store.role)
+                if self.server.store.route == '/work-order-import':
+                    result['canActOnSingle'] = True
                 self.reply(200, result)
             elif not writing and parsed.path == self.server.store.route + '/batch':
                 self.reply(200, self.server.store.detail(query.get('file', [''])[0], query.get('number', [''])[0]))

@@ -134,10 +134,30 @@ class ImportOperatorTests(unittest.TestCase):
             with self.assertRaises(web.SettingsError): store.enqueue(dict(payload, command='rm'), user)
             self.assertEqual(store.job_list()[0]['id'], job['id'])
 
+    def test_single_order_permission_does_not_grant_batch_actions(self):
+        for action in ('check', 'retry'):
+            with tempfile.TemporaryDirectory() as temp:
+                store = self.store(Path(temp))
+                request = {'file': 'int_workorder_demo.csv', 'action': action}
+                viewer = {'username': 'viewer'}
+                for selection in ({}, {'workOrderNumber': ''}, {'workOrderNumber': '  '}):
+                    with self.assertRaises(web.SettingsError) as error:
+                        store.enqueue(dict(request, **selection), viewer)
+                    self.assertEqual(error.exception.status, 403)
+                self.assertEqual(store.job_list(), [])
+                job = store.enqueue(dict(request, workOrderNumber='WO-TEST-001'), viewer)
+                self.assertEqual(job['workOrderNumber'], 'WO-TEST-001')
+            for user in ({'username': 'admin', 'admin': True},
+                         {'username': 'operator', 'roles': [
+                             {'name': web.ROLE, 'enabled': True, 'companyId': 1}]}):
+                with tempfile.TemporaryDirectory() as temp:
+                    job = self.store(Path(temp)).enqueue(request, user)
+                    self.assertEqual(job['workOrderNumber'], '')
+
     def test_job_waits_for_daily_lock_and_check_does_not_send(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp); store = self.store(path)
-            job = store.enqueue({'file': 'int_workorder_demo.csv', 'action': 'check'}, {'username': 'alice'})
+            job = store.enqueue({'file': 'int_workorder_demo.csv', 'action': 'check'}, {'username': 'alice', 'admin': True})
             with a.state_lock(path):
                 self.assertFalse(store.run_next())
                 self.assertEqual(store.job_list()[0]['state'], 'QUEUED')
